@@ -1,0 +1,34 @@
+std = "lua51"
+max_line_length = 120
+codes = true
+exclude_files = { ".lua/", ".luarocks/", "build/" }
+ignore = { "212/self", "211/_.*", "212/_.*" }
+
+globals = {
+	"MemoriesDB",
+	"MemoriesCharDB",
+	"Memories_OnAddonCompartmentClick",
+	"SLASH_MEMORIES1",
+	"SLASH_MEMORIES2",
+	"SlashCmdList",
+}
+
+read_globals = {
+	"C_Map",
+	"C_Timer",
+	"ChatFontNormal",
+	"CreateFrame",
+	"DEFAULT_CHAT_FRAME",
+	"InCombatLockdown",
+	"UIParent",
+	"UISpecialFrames",
+	"date",
+	"debugprofilestop",
+	"debugstack",
+	"geterrorhandler",
+	"hooksecurefunc",
+	"issecretvalue",
+	"time",
+}
+
+files["spec/"] = { std = "+busted", globals = { "_G", "print" } }

@@ -1,0 +1,4 @@
+return {
+	include = { "^addons/" },
+	reporter = "default",
+}

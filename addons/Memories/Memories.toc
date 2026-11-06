@@ -1,0 +1,17 @@
+## Interface: 16001
+## Title: Memories
+## Notes: Records your journey.
+## Author: Felipe M.
+## Version: 0.1.0
+## SavedVariables: MemoriesDB
+## SavedVariablesPerCharacter: MemoriesCharDB
+## LoadSavedVariablesFirst: 1
+## AddonCompartmentFunc: Memories_OnAddonCompartmentClick
+## IconTexture: Interface\Icons\INV_Misc_Book_09
+## Category: Map
+
+Core\Core.lua
+Core\Secret.lua
+Core\Util.lua
+UI\Slash.lua
+Init.lua

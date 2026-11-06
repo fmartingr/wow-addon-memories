@@ -1,0 +1,7 @@
+build/
+dist-characters/
+backups/
+luacov.*.out
+.lua/
+.luarocks/
+coverage.out
