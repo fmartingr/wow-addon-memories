@@ -18,6 +18,14 @@ function U.Split(s, sep)
 	end
 end
 
+-- Returns t[key], replacing a missing or non-table value with a new empty table.
+function U.TableAt(t, key)
+	if type(t[key]) ~= "table" then
+		t[key] = {}
+	end
+	return t[key]
+end
+
 function U.Copy(t)
 	if type(t) ~= "table" then
 		return t

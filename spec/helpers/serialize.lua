@@ -110,7 +110,11 @@ end
 
 -- Returns a table of the globals that the text sets, or nil and the load error.
 function serialize.load(text)
-	local chunk, err = loadstring(text, "=SavedVariables")
+	-- Lua 5.1 passes a parse error through the error handler of an enclosing xpcall (busted has one), which hides
+	-- the message. A new coroutine has no such handler.
+	local chunk, err = coroutine.wrap(function()
+		return loadstring(text, "=SavedVariables")
+	end)()
 	if not chunk then
 		return nil, err
 	end

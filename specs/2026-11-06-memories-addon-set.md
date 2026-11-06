@@ -320,7 +320,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 2. Journal storage: kinds, line codec, packed log, counts, snapshots
+### [x] 2. Journal storage: kinds, line codec, packed log, counts, snapshots
 - **Outcome:** The core has a journal object that writes packed lines, counts and snapshots into `MemoriesCharDB`. 300,000 lines save and load under Lua 5.1.
 - **Depends on:** 1 (module system, harness, serializer).
 - **Covers:** AC8; risks "API text with | or line breaks" (codec part), "A character with an old name and a new GUID" (core part), "Saved data from a newer Memories" (core part).
@@ -355,13 +355,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - `spec/limit_spec.lua` (integration): write 300,000 lines (short fields that differ in each line), serialize `MemoriesCharDB`, `loadstring` under Lua 5.1 succeeds and `Lines()` returns 300,000 lines in order. A control case: a table of 300,000 distinct plain strings fails `loadstring` with "constant table overflow" (this proves the test can detect the limit). Mark the spec with a busted tag `slow` if it takes more than 10 s.
 - **Verify:** `make test-lua`, `busted spec/limit_spec.lua`, `make coverage-lua`, `make lint` (unverified).
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 3. Sub-addon registry and the public `Memories` global
 - **Outcome:** A sub-addon can register, get its own journal in its own saved file and use core services. A test sub-addon works in both load orders.

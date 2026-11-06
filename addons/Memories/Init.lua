@@ -36,6 +36,11 @@ end, "init")
 
 ns.On("PLAYER_LOGIN", function()
 	timed("login", function()
+		-- Every recorder writes through the core journal, so without it they stay off instead of failing one by one.
+		if not ns.Safe("store", ns.Store.Init) then
+			ns.stopped = true
+			return
+		end
 		each("OnLogin")
 		ns.loggedIn = true
 		ns.Emit("LOGIN")
@@ -43,6 +48,9 @@ ns.On("PLAYER_LOGIN", function()
 end, "login")
 
 ns.On("PLAYER_ENTERING_WORLD", function(_, isLogin, isReload)
+	if ns.stopped then
+		return
+	end
 	if isLogin or isReload then
 		timed("world", each, "OnEnterWorld", isLogin, isReload)
 	else

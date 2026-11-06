@@ -13,5 +13,9 @@
 Core\Core.lua
 Core\Secret.lua
 Core\Util.lua
+Data\Kinds.lua
+Data\Codec.lua
+Data\Journal.lua
+Data\Store.lua
 UI\Slash.lua
 Init.lua
