@@ -10,8 +10,6 @@ Journal.CHUNK = 200
 local CHUNK = Journal.CHUNK
 local EMPTY = {}
 
-ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
-
 -- The kind gate. It lets every kind through until the settings replace it.
 function ns.KindOn()
 	return true
@@ -83,11 +81,11 @@ function Journal:LineCount()
 end
 
 function Journal:WriteAt(at, kind, ...)
+	local spec = ns.Kinds.Get(kind)
+	assert(spec, "unknown kind " .. tostring(kind))
 	if self.readOnly then
 		return nil, "read only"
 	end
-	local spec = ns.Kinds.Get(kind)
-	assert(spec, "unknown kind " .. tostring(kind))
 	if not spec.always and not ns.KindOn(kind) then
 		return nil, "off"
 	end
@@ -96,16 +94,23 @@ function Journal:WriteAt(at, kind, ...)
 	l.open[#l.open + 1] = line
 	pack(l)
 	self.data.lines = self:LineCount()
-	ns.Emit("LINE_WRITTEN", self.addon, kind, line)
+	-- One decode serves every listener, and none happens while nobody listens.
+	local ev = ns.Listening("LINE_WRITTEN") and ns.Codec.DecodeLine(line) or nil
+	ns.Emit("LINE_WRITTEN", self.addon, kind, line, ev)
 	return line
 end
 
-function Journal:Write(kind, ...)
+-- The time, played time and place of a line written now. Inside an instance the place stays empty.
+function Journal.At()
 	local at = { t = Journal.Now(), p = ns.Store.PlayedNow() }
 	if not IsInInstance() then
 		at.m, at.x, at.y = ns.Position()
 	end
-	return self:WriteAt(at, kind, ...)
+	return at
+end
+
+function Journal:Write(kind, ...)
+	return self:WriteAt(Journal.At(), kind, ...)
 end
 
 -- Splits one chunk at a time, so a long journal never sits in memory as one list of lines. It yields the lines that

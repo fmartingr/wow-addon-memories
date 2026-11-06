@@ -53,7 +53,7 @@ end
 -- itself; a new character empties it in place. Returns the journal.
 function Store.Open(addon, data)
 	local guid = ns.R(UnitGUID("player"))
-	local readOnly = Store.ReadOnlyAll() or false
+	local readOnly = Store.ReadOnlyAll()
 	local oldGuid
 	local char = type(data.char) == "table" and data.char or nil
 	-- An orphan keeps the old data whole, so it is moved even when a newer Memories wrote it.
@@ -108,11 +108,22 @@ local function coreChar(data)
 	end
 end
 
+-- Kinds already saved stay: a sub-addon can be off on this character while its saved lines still need their kinds.
+function Store.SaveKinds()
+	if Store.ReadOnlyAll() then
+		return
+	end
+	local kinds = ns.U.TableAt(MemoriesDB, "kinds")
+	for kind, text in pairs(ns.Kinds.Describe()) do
+		kinds[kind] = text
+	end
+end
+
 -- Runs on PLAYER_LOGIN before the modules' OnLogin.
 function Store.Init()
 	if not Store.ReadOnlyAll() then
 		MemoriesDB.schema = MemoriesDB.schema or ns.SCHEMA
-		MemoriesDB.kinds = ns.Kinds.Describe()
+		Store.SaveKinds()
 	end
 	core = Store.Open(ADDON, MemoriesCharDB)
 	if core:CanWrite() then

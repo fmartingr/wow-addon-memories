@@ -363,7 +363,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 3. Sub-addon registry and the public `Memories` global
+### [x] 3. Sub-addon registry and the public `Memories` global
 - **Outcome:** A sub-addon can register, get its own journal in its own saved file and use core services. A test sub-addon works in both load orders.
 - **Depends on:** 2 (journal, store, kinds).
 - **Covers:** AC2, AC11; AC1 (sub-addon TOC rules); risks "`## Dependencies` load order", "A character with an old name and a new GUID" and "Saved data from a newer Memories" (sub-addon part).
@@ -393,13 +393,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** `spec/registry_spec.lua` (integration): boot core + `Memories_Test`; the test addon registers the test kinds `zz` and `zy` and writes them into its own saved global and none into `MemoriesCharDB`; `wow.reload()` keeps both; `LINE_WRITTEN` carries the addon name; the `InFight` state follows `PLAYER_REGEN_*`; each refusal reason; late registration after login calls `OnLogin`; `MemoriesDB.kinds` includes the test addon's kinds; `Memories.Addons()` states.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified).
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 4. Backups, data guard, save reminder, minimap button and compartment
 - **Outcome:** Each addon's journal has a rolling backup. An empty journal with a backup triggers the data guard. The player gets a save reminder and a minimap button.

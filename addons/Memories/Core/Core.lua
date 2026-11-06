@@ -2,6 +2,13 @@ local ADDON, ns = ...
 
 ns.name = ADDON
 ns.modules = {}
+ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
+
+-- The public table exists from the first core file on, so a sub-addon that loads right after the core finds it.
+-- The registry checks ns.API_VERSION: any addon can change the fields of the public table.
+ns.API_VERSION = 1
+Memories = { API_VERSION = ns.API_VERSION, VERSION = ns.VERSION }
+ns.Public = Memories
 
 local MAX_ERRORS = 100
 local PREFIX = "|cff9fd3ffMemories|r:"
@@ -160,6 +167,10 @@ function ns.Listen(msg, fn, where)
 	return handle
 end
 
+function ns.Listening(msg)
+	return messages[msg] ~= nil
+end
+
 function ns.Emit(msg, ...)
 	dispatch(messages[msg], msg, ...)
 end
@@ -191,10 +202,11 @@ function ns.AfterCombat(key, fn)
 	waiting[key] = fn
 end
 
-ns.On("PLAYER_REGEN_ENABLED", function()
+-- Services.lua registers it on PLAYER_REGEN_ENABLED after the fight ends, so a waiting function sees the fight over.
+function ns.RunAfterCombat()
 	local fns, order = waiting, waitingOrder
 	waiting, waitingOrder = {}, {}
 	for _, key in ipairs(order) do
 		ns.Safe("after combat:" .. tostring(key), fns[key])
 	end
-end, "after combat")
+end

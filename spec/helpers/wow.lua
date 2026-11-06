@@ -494,6 +494,14 @@ local function install_units()
 	_G.UnitClass = unit_values("class")
 	_G.UnitRace = unit_values("race")
 	_G.UnitFactionGroup = unit_values("faction")
+	_G.UnitExists = function(u)
+		return unit(u) ~= nil
+	end
+	-- A unit of opts.units attacks and can be attacked when it has hostile = true.
+	_G.UnitCanAttack = function(_, u)
+		local data = unit(u)
+		return data ~= nil and data.hostile == true
+	end
 	_G.GetRealmName = function()
 		return wow.player.realm
 	end

@@ -5,6 +5,7 @@ exclude_files = { ".lua/", ".luarocks/", "build/" }
 ignore = { "212/self", "211/_.*", "212/_.*" }
 
 globals = {
+	"Memories",
 	"MemoriesDB",
 	"MemoriesCharDB",
 	"Memories_OnAddonCompartmentClick",
@@ -16,6 +17,7 @@ globals = {
 read_globals = {
 	"C_AddOns",
 	"C_Map",
+	"C_Spell",
 	"C_Timer",
 	"ChatFontNormal",
 	"CreateFrame",
@@ -26,8 +28,10 @@ read_globals = {
 	"IsInInstance",
 	"UIParent",
 	"UISpecialFrames",
+	"UnitCanAttack",
 	"UnitClass",
 	"UnitFactionGroup",
+	"UnitExists",
 	"UnitGUID",
 	"UnitLevel",
 	"UnitName",
@@ -42,4 +46,7 @@ read_globals = {
 	"time",
 }
 
-files["spec/"] = { std = "+busted", globals = { "_G", "print" } }
+files["spec/"] = {
+	std = "+busted",
+	globals = { "_G", "print", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "SomeBlizzardFunc" },
+}

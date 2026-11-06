@@ -56,13 +56,13 @@ function U.Utf8Cut(s, maxBytes)
 	return string.sub(s, 1, cut)
 end
 
--- A nil target hooks the global function named by method.
-function U.Hook(target, method, fn)
+-- A nil target hooks the global function named by method. where names the hook in the error log.
+function U.Hook(target, method, fn, where)
 	local tbl = target or _G
 	if type(tbl) ~= "table" or type(tbl[method]) ~= "function" then
 		return false
 	end
-	local where = "hook:" .. method
+	where = where or "hook:" .. method
 	local function guarded(...)
 		ns.Safe(where, fn, ...)
 	end

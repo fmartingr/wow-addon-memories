@@ -145,13 +145,17 @@ describe("journal", function()
 		assert.same({ [10] = { money = 1234 } }, data.snap)
 	end)
 
-	it("emits LINE_WRITTEN with the addon, kind and line", function()
-		local got
+	it("emits LINE_WRITTEN with the addon, kind, line and one decoded event for every listener", function()
+		local got, other
 		ns.Listen("LINE_WRITTEN", function(_, ...)
 			got = { ... }
 		end)
+		ns.Listen("LINE_WRITTEN", function(_, _, _, _, ev)
+			other = ev
+		end)
 		local line = j:WriteAt({ t = 1 }, "lv", 2)
-		assert.same({ "Memories", "lv", line }, got)
+		assert.same({ "Memories", "lv", line, { t = 1, k = "lv", level = 2, raw = { "2" } } }, got)
+		assert.equal(got[4], other)
 	end)
 
 	it("asserts on an unregistered kind", function()

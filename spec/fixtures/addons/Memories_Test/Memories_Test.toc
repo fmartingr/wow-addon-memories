@@ -1,0 +1,11 @@
+## Interface: 16001
+## Title: Memories - Test
+## Notes: A sub-addon for the tests.
+## Version: 0.1.0
+## Dependencies: Memories
+## Group: Memories
+## SavedVariablesPerCharacter: MemoriesTestCharDB
+## LoadSavedVariablesFirst: 1
+## X-Memories-API: 1
+
+Test.lua

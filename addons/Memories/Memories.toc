@@ -17,5 +17,7 @@ Data\Kinds.lua
 Data\Codec.lua
 Data\Journal.lua
 Data\Store.lua
+Api\Services.lua
+Api\Registry.lua
 UI\Slash.lua
 Init.lua

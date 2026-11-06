@@ -9,13 +9,46 @@ local order = {}
 -- Codec.DecodeLine puts the fixed columns and raw under these keys, so a field may not use them.
 local RESERVED = { t = true, p = true, m = true, x = true, y = true, k = true, raw = true }
 
+-- Returns why kind and spec cannot be registered, or nil when they can.
+function Kinds.Check(kind, spec)
+	if type(kind) ~= "string" or not kind:match("^%w+$") then
+		return "bad kind " .. tostring(kind)
+	end
+	if byKind[kind] then
+		return "duplicate kind " .. kind
+	end
+	if type(spec) ~= "table" or type(spec.addon) ~= "string" then
+		return "bad spec for kind " .. kind
+	end
+	-- Describe joins addon and group with ";", so a ";" in either shifts the fields that the converter reads.
+	if spec.addon:find(";", 1, true) or (type(spec.group) == "string" and spec.group:find(";", 1, true)) then
+		return "bad spec for kind " .. kind
+	end
+	if spec.fields ~= nil and type(spec.fields) ~= "table" then
+		return "bad fields in " .. kind
+	end
+	local seen = {}
+	for _, field in ipairs(spec.fields or {}) do
+		if type(field) ~= "string" or not field:match("^#?%w+$") then
+			return "bad field " .. tostring(field) .. " in " .. kind
+		end
+		local name = field:gsub("^#", "")
+		if RESERVED[name] then
+			return "reserved field " .. name .. " in " .. kind
+		end
+		-- A decoded line holds one value per name.
+		if seen[name] then
+			return "duplicate field " .. name .. " in " .. kind
+		end
+		seen[name] = true
+	end
+end
+
 -- spec = { addon, group, name, fields = { "name", "#npc", ... }, always }. A "#" marks a numeric field. A kind with
 -- always = true has no setting: the kind gate never stops it.
 function Kinds.Register(kind, spec)
-	assert(type(kind) == "string" and kind:match("^%w+$"), "bad kind " .. tostring(kind))
-	assert(not byKind[kind], "duplicate kind " .. kind)
-	assert(type(spec) == "table" and type(spec.addon) == "string", "bad spec for kind " .. kind)
-	local fields = spec.fields or {}
+	local err = Kinds.Check(kind, spec)
+	assert(not err, err)
 	local entry = {
 		kind = kind,
 		addon = spec.addon,
@@ -26,10 +59,8 @@ function Kinds.Register(kind, spec)
 		numeric = {},
 		always = spec.always == true,
 	}
-	for i, field in ipairs(fields) do
-		assert(type(field) == "string" and field:match("^#?%w+$"), "bad field " .. tostring(field) .. " in " .. kind)
+	for i, field in ipairs(spec.fields or {}) do
 		local name = field:gsub("^#", "")
-		assert(not RESERVED[name], "reserved field " .. name .. " in " .. kind)
 		entry.fields[i] = field
 		entry.names[i] = name
 		entry.numeric[i] = name ~= field

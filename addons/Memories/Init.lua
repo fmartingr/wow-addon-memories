@@ -39,21 +39,31 @@ ns.On("PLAYER_LOGIN", function()
 		-- Every recorder writes through the core journal, so without it they stay off instead of failing one by one.
 		if not ns.Safe("store", ns.Store.Init) then
 			ns.stopped = true
+			ns.Registry.Stop()
 			return
 		end
 		each("OnLogin")
+		ns.Safe("registry", ns.Registry.Login)
 		ns.loggedIn = true
 		ns.Emit("LOGIN")
 	end)
 end, "login")
+
+-- A registration while this runs waits for the loop below, so its OnEnterWorld runs once.
+local function enterWorld(isLogin, isReload)
+	ns.enteringWorld = true
+	each("OnEnterWorld", isLogin, isReload)
+	ns.Safe("registry", ns.Registry.EnterWorld, isLogin, isReload)
+	ns.enteringWorld = false
+end
 
 ns.On("PLAYER_ENTERING_WORLD", function(_, isLogin, isReload)
 	if ns.stopped then
 		return
 	end
 	if isLogin or isReload then
-		timed("world", each, "OnEnterWorld", isLogin, isReload)
+		timed("world", enterWorld, isLogin, isReload)
 	else
-		each("OnEnterWorld", isLogin, isReload)
+		enterWorld(isLogin, isReload)
 	end
 end, "enter world")
