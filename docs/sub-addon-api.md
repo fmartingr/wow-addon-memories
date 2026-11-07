@@ -172,9 +172,20 @@ A `/reload` in combat starts a new fight at login.
 | `DIED` | `info` | Task 7 |
 | `ALIVE` | `how` | Task 7 |
 | `LOW_HEALTH` | `inCombat` | Task 7 |
+| `RESTORED` | `addon` | a backup replaced the journal of `addon` (data guard); its counts, snapshots and `data.state` are the backup's now |
 
 A recorder that reacts to another recorder listens to these messages, never to `LINE_WRITTEN`: a message fires even when
 its kind is off.
+
+## Backups and the data guard
+
+The core backs up every open journal, the sub-addons' too, into `MemoriesDB.backups[guid][addon]`: 5 s after login,
+every 15 minutes and on `LEVEL_UP`, one addon per frame and never in combat. A sub-addon needs no code for it.
+
+When a journal opens with 0 lines while its backup has lines, the core holds that backup (no new backup replaces it) and
+asks the player to restore it or start fresh. A restore replaces the saved table's content, opens the journal again and
+emits `RESTORED(addon)`. A recorder that keeps state in memory listens to `RESTORED` for its own addon and reads its
+state again.
 
 ## Tests
 

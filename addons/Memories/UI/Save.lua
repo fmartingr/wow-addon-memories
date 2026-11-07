@@ -1,0 +1,55 @@
+local _, ns = ...
+
+-- The client writes the saved files only at logout or on a UI reload, so a reload is the save.
+local Save = {}
+ns.Save = Save
+
+Save.REMIND_AFTER = 60 * 60
+Save.CHECK_EVERY = 60
+
+local since, ticker
+local reminded = false
+
+-- Seconds since the last save: the login or reload that started this session.
+function Save.Age()
+	return since and GetTime() - since or 0
+end
+
+function Save.Now()
+	if InCombatLockdown() then
+		ns.Print("cannot save in combat.")
+		return false
+	end
+	C_UI.Reload()
+	return true
+end
+
+-- The left and right click of the minimap button and of the addon compartment entry.
+function Save.Click(button)
+	if button == "RightButton" then
+		ns.OpenSettings()
+	else
+		Save.Now()
+	end
+end
+
+function Save.Check()
+	if reminded or not ns.Setting("saveReminder") or Save.Age() < Save.REMIND_AFTER then
+		return
+	end
+	reminded = true
+	if ticker then
+		ticker:Cancel()
+		ticker = nil
+	end
+	ns.Print("1 hour since the last save. Click the minimap button to save (reloads the UI).")
+	ns.Emit("SAVE_REMINDER")
+end
+
+ns.Listen("LOGIN", function()
+	since = GetTime()
+	reminded = false
+	ticker = C_Timer.NewTicker(Save.CHECK_EVERY, function()
+		ns.Safe("save", Save.Check)
+	end)
+end, "save")

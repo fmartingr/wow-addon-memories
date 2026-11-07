@@ -111,6 +111,7 @@ local function open(entry)
 			_G[saved] = {}
 		end
 		entry.journal = ns.Store.Open(entry.addon, _G[saved])
+		ns.Emit("JOURNAL_OPENED", entry.addon, entry.journal)
 	end)
 	if not ok then
 		entry.state = "failed"
@@ -226,4 +227,45 @@ function ns.Public.Addons()
 		end
 	end
 	return out
+end
+
+local function coreItem()
+	local core = ns.Store.Core()
+	if core and not ns.stopped then
+		return { addon = ADDON, saved = "MemoriesCharDB", journal = core }
+	end
+end
+
+local function entryItem(entry)
+	if entry and entry.state == "on" and entry.journal then
+		return { addon = entry.addon, saved = entry.saved, journal = entry.journal }
+	end
+end
+
+-- Every open journal as { addon, saved, journal }: the core first, then the sub-addons in registration order.
+function Registry.Journals()
+	local out = {}
+	out[1] = coreItem()
+	for _, entry in ipairs(entries) do
+		out[#out + 1] = entryItem(entry)
+	end
+	return out
+end
+
+function Registry.Journal(addon)
+	if addon == ADDON then
+		return coreItem()
+	end
+	return entryItem(byAddon[addon])
+end
+
+-- Opens the addon's saved table again as its journal, after its content changed under the open journal.
+function Registry.Reopen(addon)
+	if addon == ADDON then
+		return ns.Store.Reopen()
+	end
+	local entry = byAddon[addon]
+	entry.journal = ns.Store.Open(addon, _G[entry.saved])
+	ns.Emit("JOURNAL_OPENED", addon, entry.journal)
+	return entry.journal
 end

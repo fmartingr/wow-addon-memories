@@ -12,20 +12,28 @@ globals = {
 	"SLASH_MEMORIES1",
 	"SLASH_MEMORIES2",
 	"SlashCmdList",
+	"StaticPopupDialogs",
 }
 
 read_globals = {
 	"C_AddOns",
+	"C_EncodingUtil",
 	"C_Map",
 	"C_Spell",
 	"C_Timer",
+	"C_UI",
 	"ChatFontNormal",
 	"CreateFrame",
 	"DEFAULT_CHAT_FRAME",
+	"Enum",
+	"GameTooltip",
+	"GetCursorPosition",
 	"GetRealmName",
 	"GetTime",
 	"InCombatLockdown",
 	"IsInInstance",
+	"Minimap",
+	"StaticPopup_Show",
 	"UIParent",
 	"UISpecialFrames",
 	"UnitCanAttack",
@@ -48,5 +56,5 @@ read_globals = {
 
 files["spec/"] = {
 	std = "+busted",
-	globals = { "_G", "print", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "SomeBlizzardFunc" },
+	globals = { "_G", "print", "C_EncodingUtil", "Enum", "MemoriesMinimapButton", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "SomeBlizzardFunc" },
 }

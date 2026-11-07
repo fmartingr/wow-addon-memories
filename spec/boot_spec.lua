@@ -141,10 +141,22 @@ describe("boot", function()
 			assert.equal(4, #wow.chat())
 		end)
 
-		it("prints the command list from the addon compartment", function()
+		it("prints the command list on a right click of the addon compartment", function()
 			wow.boot()
-			Memories_OnAddonCompartmentClick()
+			Memories_OnAddonCompartmentClick("Memories", "RightButton")
 			assert.equal("Memories: commands:", wow.chat()[1])
+			assert.equal(0, wow.reloads)
+		end)
+
+		it("saves on a left click of the addon compartment, never in combat", function()
+			wow.boot()
+			wow.combat = true
+			Memories_OnAddonCompartmentClick("Memories", "LeftButton")
+			assert.equal(0, wow.reloads)
+			assert.same({ "Memories: cannot save in combat." }, wow.chat())
+			wow.combat = false
+			Memories_OnAddonCompartmentClick("Memories", "LeftButton")
+			assert.equal(1, wow.reloads)
 		end)
 
 		it("adds a sub-command", function()

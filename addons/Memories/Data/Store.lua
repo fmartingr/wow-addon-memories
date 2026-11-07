@@ -38,7 +38,7 @@ function Store.ReadOnlyAll()
 end
 
 -- Moves every key into a new table, so the saved global keeps its identity and the old data costs no copy.
-local function moveOut(data)
+function Store.MoveOut(data)
 	local old = {}
 	for k, v in pairs(data) do
 		old[k] = v
@@ -47,6 +47,13 @@ local function moveOut(data)
 		data[k] = nil
 	end
 	return old
+end
+
+-- Moves the addon's data into a new record of MemoriesDB.orphans. why is nil for a new character.
+function Store.Orphan(addon, guid, name, data, why)
+	local orphans = ns.U.TableAt(MemoriesDB, "orphans")
+	orphans[#orphans + 1] =
+		{ t = time(), guid = guid, name = name, addon = addon, why = why, data = Store.MoveOut(data) }
 end
 
 -- Opens one addon's character table as a journal with the schema and new-GUID rules. data is the saved table
@@ -59,8 +66,7 @@ function Store.Open(addon, data)
 	-- An orphan keeps the old data whole, so it is moved even when a newer Memories wrote it.
 	if not readOnly and guid and char and char.guid and char.guid ~= guid then
 		oldGuid = char.guid
-		local orphans = ns.U.TableAt(MemoriesDB, "orphans")
-		orphans[#orphans + 1] = { t = time(), guid = oldGuid, name = char.name, addon = addon, data = moveOut(data) }
+		Store.Orphan(addon, oldGuid, char.name, data)
 	elseif newer(data.schema) then
 		readOnly = true
 	end
@@ -125,10 +131,18 @@ function Store.Init()
 		MemoriesDB.schema = MemoriesDB.schema or ns.SCHEMA
 		Store.SaveKinds()
 	end
+	Store.Reopen()
+end
+
+-- Opens MemoriesCharDB again as the core journal, for example after a backup filled it. JOURNAL_OPENED fires once
+-- Store.Core() returns the new journal.
+function Store.Reopen()
 	core = Store.Open(ADDON, MemoriesCharDB)
 	if core:CanWrite() then
 		coreChar(MemoriesCharDB)
 	end
+	ns.Emit("JOURNAL_OPENED", ADDON, core)
+	return core
 end
 
 function Store.Core()

@@ -98,6 +98,11 @@ SlashCmdList.MEMORIES = function(msg)
 	ns.Safe("slash", Slash.Run, msg)
 end
 
-function Memories_OnAddonCompartmentClick()
+-- The right click of the minimap button and of the compartment entry. The Settings page replaces it.
+function ns.OpenSettings()
 	Slash.Help()
+end
+
+function Memories_OnAddonCompartmentClick(_, button)
+	ns.Safe("compartment", ns.Save.Click, button)
 end

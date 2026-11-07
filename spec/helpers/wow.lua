@@ -63,7 +63,6 @@ for _, name in ipairs({
 	"SetMovable",
 	"SetMultiLine",
 	"SetNormalTexture",
-	"SetPoint",
 	"SetPushedTexture",
 	"SetScrollChild",
 	"SetSize",
@@ -189,6 +188,22 @@ end
 
 function Frame:HighlightText()
 	self.highlighted = true
+end
+
+function Frame:GetCenter()
+	return unpack(self.center or { 0, 0 })
+end
+
+function Frame:GetWidth()
+	return self.width or 0
+end
+
+function Frame:GetEffectiveScale()
+	return self.scale or 1
+end
+
+function Frame:SetPoint(...)
+	self.point = pack(...)
 end
 
 function Frame:CreateTexture(name)
@@ -640,6 +655,23 @@ function wow.reset(opts)
 	end
 	_G.UIParent = new_frame("Frame", "UIParent")
 	_G.Minimap = new_frame("Frame", "Minimap", _G.UIParent)
+	_G.Minimap.center, _G.Minimap.width, _G.Minimap.scale = { 700, 500 }, 140, 2
+	wow.cursor = { 0, 0 }
+	_G.GetCursorPosition = function()
+		return wow.cursor[1], wow.cursor[2]
+	end
+	wow.tooltip = { lines = {} }
+	_G.GameTooltip = new_frame("GameTooltip", "GameTooltip", _G.UIParent)
+	_G.GameTooltip.shown = false
+	function _G.GameTooltip:SetOwner(owner, anchor)
+		self.owner, self.anchor, wow.tooltip.lines = owner, anchor, {}
+	end
+	function _G.GameTooltip:SetText(text)
+		wow.tooltip.lines = { text }
+	end
+	function _G.GameTooltip:AddLine(text)
+		wow.tooltip.lines[#wow.tooltip.lines + 1] = text
+	end
 	_G.ChatFontNormal = {}
 	_G.SlashCmdList = {}
 	_G.StaticPopupDialogs = {}

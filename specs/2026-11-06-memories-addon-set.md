@@ -401,7 +401,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 4. Backups, data guard, save reminder, minimap button and compartment
+### [x] 4. Backups, data guard, save reminder, minimap button and compartment
 - **Outcome:** Each addon's journal has a rolling backup. An empty journal with a backup triggers the data guard. The player gets a save reminder and a minimap button.
 - **Depends on:** 3 (all journals known to the core).
 - **Covers:** AC12 (backups, data guard), AC13 (minimap, compartment, save reminder, data guard popup); risk "A sub-addon file is damaged or empty".
@@ -420,13 +420,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** `spec/backup_spec.lua` (unit with the reversible encoder stub): write, read, restore round trip; skip rules; one addon per frame; `AfterCombat`. `spec/guard_spec.lua` (integration): empty core journal with a backup → popup shown, no new backup written, restore brings the lines back and writes `nt`; "Start fresh" clears the hold. `spec/save_spec.lua` (unit): reminder after 60 min, once; button click calls `C_UI.Reload` out of combat only; angle saved.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). Manual: add the data guard, minimap and save items to `docs/manual-checklist.md`.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 5. Settings: kind toggles, new findings only, the Settings page and `/memories status`
 - **Outcome:** The player turns any kind on or off, uses the group buttons and the new-only boxes, and sees the state of each addon.
