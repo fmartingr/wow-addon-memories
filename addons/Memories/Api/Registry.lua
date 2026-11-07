@@ -22,6 +22,23 @@ local function optional(v, kind)
 	return v == nil or type(v) == kind
 end
 
+-- A non-empty list with no holes and no other keys, so ipairs and unpack see every entry.
+local function isList(t)
+	if type(t) ~= "table" then
+		return false
+	end
+	local n = 0
+	for _ in pairs(t) do
+		n = n + 1
+	end
+	for i = 1, n do
+		if t[i] == nil then
+			return false
+		end
+	end
+	return n > 0
+end
+
 local function checkKinds(def)
 	local own = {}
 	for _, k in ipairs(def.kinds or {}) do
@@ -49,7 +66,7 @@ local function checkKinds(def)
 			or byBox[box.key]
 			or boxes[box.key]
 			or not optional(box.label, "string")
-			or type(box.kinds) ~= "table"
+			or not isList(box.kinds)
 		then
 			return "bad def"
 		end
@@ -132,14 +149,16 @@ local function register(def)
 		ns.Kinds.Register(k.kind, { addon = def.addon, group = k.group, name = k.name, fields = k.fields })
 	end
 	-- saved is kept from the checked def: the def stays the sub-addon's table, and a later change must not reach _G.
-	local entry = { addon = def.addon, saved = def.saved, def = def, state = "on" }
+	local boxes = {}
+	local entry = { addon = def.addon, saved = def.saved, def = def, state = "on", boxes = boxes }
+	for i, box in ipairs(def.newOnly or {}) do
+		boxes[i] = { key = box.key, label = box.label, kinds = { unpack(box.kinds) } }
+		byBox[box.key] = entry
+	end
 	entry.handle = ns.NewHandle(entry)
 	entries[#entries + 1] = entry
 	byAddon[def.addon] = entry
 	bySaved[def.saved] = entry
-	for _, box in ipairs(def.newOnly or {}) do
-		byBox[box.key] = entry
-	end
 	if ns.loggedIn then
 		ns.Store.SaveKinds()
 		open(entry)
@@ -148,6 +167,7 @@ local function register(def)
 		if inWorld and not ns.enteringWorld then
 			call(entry, "OnEnterWorld", false, false)
 		end
+		ns.Emit("REGISTERED", entry.addon, ns.U.Copy(entry.boxes))
 	elseif ns.stopped then
 		entry.state = "failed"
 	end
@@ -161,6 +181,16 @@ function ns.Public.RegisterModule(def)
 		return nil, "error"
 	end
 	return h, reason
+end
+
+-- The registered sub-addons in registration order, as { addon, boxes }: boxes is a copy of the key, label and kinds of
+-- each def.newOnly box, so a listener cannot change the registry's own.
+function Registry.Registered()
+	local out = {}
+	for i, entry in ipairs(entries) do
+		out[i] = { addon = entry.addon, boxes = ns.U.Copy(entry.boxes) }
+	end
+	return out
 end
 
 -- Runs on PLAYER_LOGIN after the core's own modules. A sub-addon that registers from an OnLogin joins this loop, so

@@ -10,11 +10,6 @@ Journal.CHUNK = 200
 local CHUNK = Journal.CHUNK
 local EMPTY = {}
 
--- The kind gate. It lets every kind through until the settings replace it.
-function ns.KindOn()
-	return true
-end
-
 function Journal.Now()
 	return time()
 end
@@ -86,6 +81,7 @@ function Journal:WriteAt(at, kind, ...)
 	if self.readOnly then
 		return nil, "read only"
 	end
+	-- ns.KindOn is the settings' kind gate.
 	if not spec.always and not ns.KindOn(kind) then
 		return nil, "off"
 	end

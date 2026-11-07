@@ -428,7 +428,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 5. Settings: kind toggles, new findings only, the Settings page and `/memories status`
+### [x] 5. Settings: kind toggles, new findings only, the Settings page and `/memories status`
 - **Outcome:** The player turns any kind on or off, uses the group buttons and the new-only boxes, and sees the state of each addon.
 - **Depends on:** 3 (registered kinds and new-only keys from all addons), 4 (settings shown for the save reminder and minimap).
 - **Covers:** AC4, AC5, AC6 (settings part), AC13 (Settings page, `status`, `options`); risks "A disabled sub-addon records nothing" (status part), "Load time grows" (status part), "A Settings API helper behaves differently".
@@ -451,13 +451,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** `spec/settings_spec.lua` (unit): defaults, `Set` emits, `KindOn`, `SetGroup`, the gate stops lines and keeps counts (with the test sub-addon from Task 3). `spec/options_spec.lua` (integration with the Settings stubs): one checkbox per registered kind, one button pair per group, the 4 new-only boxes under the correct groups, a late registration adds a section, a Settings stub that errors leaves `/memories options` with the error message. `spec/status_spec.lua`: the 6 lines with each state.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). Manual: add Settings page items to `docs/manual-checklist.md`.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 6. Core recorders: Sessions, Trail, Progress
 - **Outcome:** The core records sessions, /played, away state, the position trail, levels, experience, quests, discoveries and rested state.

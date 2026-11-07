@@ -75,8 +75,8 @@ end
 
 - `kinds`: each kind is letters or digits, unique across the whole set. A `#` before a field name marks a number.
   The field names `t`, `p`, `m`, `x`, `y`, `k` and `raw` are reserved.
-- `newOnly`: the "New findings only" boxes of the Settings page. Each box lists only kinds of this addon, and its
-  `key` is unique across the whole set.
+- `newOnly`: the "New findings only" boxes of the Settings page. Each box lists at least one kind, only kinds of this
+  addon, and its `key` is unique across the whole set. The box shows under the group of its first kind.
 - `addon` and each `group` hold no `;`: `MemoriesDB.kinds` joins them with it.
 - `OnLogin(h)`: runs once, after the core's own modules, when the journal is open.
 - `OnEnterWorld(h, isLogin, isReload)`: runs on every `PLAYER_ENTERING_WORLD`.
@@ -124,7 +124,7 @@ apply:
 | `h:Counts(module)` | the counts table of a module |
 | `h:IsFirst(module, key)` | true when the count is 0 or missing |
 | `h:Snap(level, key, value)` | sets a snapshot value, or returns it without `value` |
-| `h:NewOnly(key)` | the "New findings only" setting of a box |
+| `h:NewOnly(key)` | true when the player turned on the "New findings only" box `key` (`MemoriesDB.settings.newOnly[key]`) |
 | `h:Here()` | `{ t, p, m, x, y }` of now; `m`, `x`, `y` stay empty inside an instance |
 | `h:Level()` | the player's level, the new one already during `PLAYER_LEVEL_UP` |
 | `h:InFight()` | true from `PLAYER_REGEN_DISABLED` to `PLAYER_REGEN_ENABLED` |
@@ -144,7 +144,7 @@ Rules:
 - `h:Count`, `h:Counts`, `h:IsFirst` and `h:Snap` raise an error before login, when no journal is open.
 - Every listener, hook and timer runs through the core's error guard. An error is logged with
   `where = "<addon>:<event or message>"` and never stops the other recorders.
-- A kind that is off writes no line. Count anyway: counts never stop.
+- A kind that is off writes no line (`h:Write` returns `nil, "off"`). Count anyway: counts never stop.
 
 ## Fights
 
@@ -172,10 +172,21 @@ A `/reload` in combat starts a new fight at login.
 | `DIED` | `info` | Task 7 |
 | `ALIVE` | `how` | Task 7 |
 | `LOW_HEALTH` | `inCombat` | Task 7 |
+| `SETTING_CHANGED` | `path, value` | a setting changed, for example `"kinds.ki"`, `"newOnly.kills"` or `"recordRate"` |
 | `RESTORED` | `addon` | a backup replaced the journal of `addon` (data guard); its counts, snapshots and `data.state` are the backup's now |
 
 A recorder that reacts to another recorder listens to these messages, never to `LINE_WRITTEN`: a message fires even when
 its kind is off.
+
+## Settings page
+
+The core builds the Settings page at login, after every sub-addon that registered before it. For each addon and each
+group of its kinds, in registration order, the page has a header `<Addon> — <Group>`, an "Enable all" and a
+"Disable all" button, one checkbox per kind (labelled with the kind's `name`) and the addon's new-only boxes of that
+group. A sub-addon that registers after login gets its section at once. A sub-addon needs no code for it.
+
+The player's choices live in `MemoriesDB.settings` (account-wide): `kinds[kind] = false` turns a kind off, and
+`newOnly[key] = true` turns a box on. The choices of an addon that is not loaded stay saved.
 
 ## Backups and the data guard
 

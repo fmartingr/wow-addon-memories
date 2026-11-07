@@ -12,6 +12,18 @@ The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-0
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`).
 - `docs/manual-checklist.md` — the checks to run in the game.
 
+## In the game
+
+- `/memories` (or `/mem`) lists the commands.
+- `/mem options` (or `/mem settings`) opens the Settings page: the recording rate, the screenshot, save reminder,
+  minimap and low-health settings, one checkbox per kind with "Enable all" and "Disable all" for each group, and the
+  "New findings only" boxes. Settings are account-wide, in `MemoriesDB.settings`.
+- `/mem status` shows each addon of the set (on, off, missing, failed or newer api), its lines, its kinds that are off
+  and the age of its backup, then the login time.
+- `/mem errors` shows the saved errors, ready to copy.
+- The minimap button and the addon compartment entry save (reload) with a left click and open the Settings page with a
+  right click.
+
 ## Make targets
 
 | Target | What it does |

@@ -92,15 +92,20 @@ Slash.Add("errors", function()
 	f.EditBox:HighlightText()
 end, "show the saved errors, ready to copy")
 
+local function options()
+	ns.Options.Open()
+end
+
+Slash.Add("options", options, "open the settings page")
+Slash.Add("settings", options, "open the settings page")
+Slash.Add("status", function()
+	ns.Status.Print()
+end, "show the state of each Memories addon")
+
 SLASH_MEMORIES1 = "/memories"
 SLASH_MEMORIES2 = "/mem"
 SlashCmdList.MEMORIES = function(msg)
 	ns.Safe("slash", Slash.Run, msg)
-end
-
--- The right click of the minimap button and of the compartment entry. The Settings page replaces it.
-function ns.OpenSettings()
-	Slash.Help()
 end
 
 function Memories_OnAddonCompartmentClick(_, button)

@@ -2,26 +2,6 @@ local _, ns = ...
 
 local U = ns.U
 
--- The "New findings only" setting of a key. The settings replace it.
-function ns.NewOnly()
-	return false
-end
-
-local DEFAULTS = { saveReminder = true, minimapButton = true }
-
--- An account setting from MemoriesDB.settings, else its default. The settings replace it.
-function ns.Setting(key)
-	local settings = type(MemoriesDB) == "table" and MemoriesDB.settings
-	local v
-	if type(settings) == "table" then
-		v = settings[key]
-	end
-	if v == nil then
-		return DEFAULTS[key]
-	end
-	return v
-end
-
 -- Where and when the player is now, as { t, p, m, x, y }. The trail replaces it with its current point.
 function ns.Here()
 	return ns.Journal.At()
@@ -186,7 +166,7 @@ function Handle:Snap(level, key, value)
 end
 
 function Handle:NewOnly(key)
-	return ns.NewOnly(key) == true
+	return ns.Settings.NewOnly(key)
 end
 
 function Handle:Here()

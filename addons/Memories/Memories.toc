@@ -17,6 +17,7 @@ Data\Kinds.lua
 Data\Codec.lua
 Data\Journal.lua
 Data\Store.lua
+Data\Settings.lua
 Data\Backup.lua
 Api\Services.lua
 Api\Registry.lua
@@ -24,4 +25,6 @@ UI\Slash.lua
 UI\Save.lua
 UI\Minimap.lua
 UI\Guard.lua
+UI\Options.lua
+UI\Status.lua
 Init.lua

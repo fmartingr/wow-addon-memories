@@ -133,18 +133,22 @@ describe("boot", function()
 		it("prints the command list with no argument or an unknown one", function()
 			wow.boot()
 			SlashCmdList.MEMORIES("")
-			assert.same(
-				{ "Memories: commands:", "  /memories errors - show the saved errors, ready to copy" },
-				wow.chat()
-			)
+			assert.same({
+				"Memories: commands:",
+				"  /memories errors - show the saved errors, ready to copy",
+				"  /memories options - open the settings page",
+				"  /memories settings - open the settings page",
+				"  /memories status - show the state of each Memories addon",
+			}, wow.chat())
 			SlashCmdList.MEMORIES("nope")
-			assert.equal(4, #wow.chat())
+			assert.equal(10, #wow.chat())
 		end)
 
-		it("prints the command list on a right click of the addon compartment", function()
+		it("opens the settings page on a right click of the addon compartment", function()
 			wow.boot()
 			Memories_OnAddonCompartmentClick("Memories", "RightButton")
-			assert.equal("Memories: commands:", wow.chat()[1])
+			assert.equal(wow.categories[1]:GetID(), wow.opened)
+			assert.same({}, wow.chat())
 			assert.equal(0, wow.reloads)
 		end)
 
@@ -162,13 +166,13 @@ describe("boot", function()
 		it("adds a sub-command", function()
 			local ns = wow.boot()
 			local got
-			ns.Slash.Add("status", function(rest)
+			ns.Slash.Add("probe", function(rest)
 				got = rest
-			end, "show the status")
-			SlashCmdList.MEMORIES("  STATUS  all now ")
+			end, "probe")
+			SlashCmdList.MEMORIES("  PROBE  all now ")
 			assert.equal("all now", got)
 			assert.has_error(function()
-				ns.Slash.Add("status", function() end, "again")
+				ns.Slash.Add("probe", function() end, "again")
 			end)
 		end)
 

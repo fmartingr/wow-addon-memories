@@ -74,7 +74,7 @@ end
 
 function MinimapButton.Refresh()
 	if button then
-		button:SetShown(ns.Setting("minimapButton") ~= false)
+		button:SetShown(ns.Settings.Get("minimapButton"))
 	end
 end
 

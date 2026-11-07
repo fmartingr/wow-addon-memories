@@ -370,66 +370,134 @@ end
 
 -- Settings -------------------------------------------------------------------
 
+-- Stubs of the client's Settings API with the argument checks of Blizzard_Settings.lua and Blizzard_Setting.lua.
+-- wow.categories holds each category with its layout items and its settings by variable; wow.settings_calls records
+-- every call. wow.settings_fail[name] = message makes that function raise.
 local function install_settings()
 	wow.categories = {}
 	wow.settings_calls = {}
+	wow.settings_fail = {}
 	wow.opened = nil
-	local function category_layout(category)
+	local variables = {}
+
+	local function new_layout(category)
 		return {
 			AddInitializer = function(_, initializer)
 				category.items[#category.items + 1] = initializer
 			end,
+			GetInitializers = function()
+				return category.items
+			end,
 		}
 	end
-	local function control(kind)
-		return function(category, setting, options, tooltip)
-			local initializer = { type = kind, setting = setting, options = options, tooltip = tooltip }
-			category.items[#category.items + 1] = initializer
-			return initializer
+
+	local Setting = {}
+	Setting.__index = Setting
+	function Setting:GetValue()
+		return self.tbl[self.key]
+	end
+	function Setting:GetDefaultValue()
+		return self.default
+	end
+	function Setting:GetVariable()
+		return self.variable
+	end
+	function Setting:GetVariableType()
+		return self.varType
+	end
+	function Setting:GetName()
+		return self.name
+	end
+	function Setting:NotifyUpdate()
+		self.notified = (self.notified or 0) + 1
+		self:TriggerValueChanged(self:GetValue())
+	end
+	function Setting:TriggerValueChanged(value)
+		for _, fn in ipairs(self.callbacks) do
+			fn(self, value)
 		end
 	end
+	function Setting:SetValue(value)
+		if self.tbl[self.key] ~= value then
+			if type(value) ~= self.varType then
+				error(("SetValue '%s' requires '%s' type, not '%s' type."):format(self.name, self.varType, type(value)))
+			end
+			self.tbl[self.key] = value
+		end
+		self:TriggerValueChanged(value)
+	end
+	function Setting:SetValueChangedCallback(fn)
+		self.callbacks[#self.callbacks + 1] = fn
+	end
+
+	local function add(category, initializer)
+		category.items[#category.items + 1] = initializer
+		return initializer
+	end
+
 	local api = {
-		VarType = { Boolean = "boolean", Number = "number", String = "string" },
+		VarType = { Boolean = "boolean", String = "string", Number = "number" },
+		Default = { True = true, False = false },
 		RegisterVerticalLayoutCategory = function(name)
 			local category = { name = name, items = {}, settings = {}, id = #wow.categories + 1 }
 			function category:GetID()
 				return self.id
 			end
+			function category:GetName()
+				return self.name
+			end
+			category.layout = new_layout(category)
 			wow.categories[#wow.categories + 1] = category
-			return category, category_layout(category)
+			return category, category.layout
 		end,
 		RegisterAddOnCategory = function(category)
 			category.registered = true
 		end,
 		RegisterAddOnSetting = function(category, variable, key, tbl, varType, name, default)
-			local setting =
-				{ variable = variable, key = key, tbl = tbl, varType = varType, name = name, default = default }
-			function setting:GetValue()
-				local v = self.tbl[self.key]
-				if v == nil then
-					return self.default
-				end
-				return v
+			if type(name) ~= "string" then
+				error(("'name' for variable '%s' requires string type."):format(tostring(variable)))
 			end
-			function setting:SetValue(v)
-				self.tbl[self.key] = v
-				if self.callback then
-					self.callback(self, v)
-				end
+			if type(variable) ~= "string" then
+				error(("'variable' for '%s' requires string type."):format(name))
 			end
-			function setting:SetValueChangedCallback(fn)
-				self.callback = fn
+			if type(varType) ~= "string" then
+				error(("'variableType' for '%s', '%s' requires string type."):format(name, variable))
 			end
+			if default ~= nil and type(default) ~= varType then
+				error(("'defaultValue' argument for '%s', '%s' doesn't match."):format(name, variable))
+			end
+			assert(type(tbl) == "table", "'variableTbl' argument must be a table.")
+			assert(not variables[variable], "variable " .. variable .. " registered twice")
+			variables[variable] = true
+			if tbl[key] == nil then
+				tbl[key] = default
+			end
+			local setting = setmetatable({
+				category = category,
+				variable = variable,
+				key = key,
+				tbl = tbl,
+				varType = varType,
+				name = name,
+				default = default,
+				callbacks = {},
+			}, Setting)
 			category.settings[variable] = setting
 			return setting
 		end,
 		CreateCheckbox = function(category, setting, tooltip)
-			return control("checkbox")(category, setting, nil, tooltip)
+			return add(category, { type = "checkbox", setting = setting, tooltip = tooltip })
 		end,
-		CreateSlider = control("slider"),
-		CreateDropdown = control("dropdown"),
-		CreateSliderOptions = function(min, max, step)
-			return { min = min, max = max, step = step, SetLabelFormatter = noop }
+		CreateSlider = function(category, setting, options, tooltip)
+			assert(setting.varType == "number" and options ~= nil)
+			return add(category, { type = "slider", setting = setting, options = options, tooltip = tooltip })
+		end,
+		CreateDropdown = function(category, setting, options, tooltip)
+			assert(options ~= nil)
+			return add(category, { type = "dropdown", setting = setting, options = options, tooltip = tooltip })
+		end,
+		CreateSliderOptions = function(min, max, rate)
+			return { minValue = min or 0, maxValue = max or 1, steps = rate and (max - min) / rate or 100 }
 		end,
 		CreateControlTextContainer = function()
 			local container = { data = {} }
@@ -441,39 +509,51 @@ local function install_settings()
 			end
 			return container
 		end,
-		OpenToCategory = function(id)
-			wow.opened = id
+		OpenToCategory = function(categoryID, scrollToElementName)
+			wow.opened = categoryID
+			wow.opened_element = scrollToElementName
 		end,
 	}
+
+	local function wrap(name, fn)
+		return function(...)
+			wow.settings_calls[#wow.settings_calls + 1] = { name = name, args = pack(...) }
+			if wow.settings_fail[name] then
+				error(wow.settings_fail[name], 2)
+			end
+			return fn(...)
+		end
+	end
+
 	_G.Settings = {}
 	for name, v in pairs(api) do
-		if type(v) == "function" then
-			_G.Settings[name] = function(...)
-				wow.settings_calls[#wow.settings_calls + 1] = { name = name, args = pack(...) }
-				return v(...)
-			end
-		else
-			_G.Settings[name] = v
-		end
+		_G.Settings[name] = type(v) == "function" and wrap(name, v) or v
 	end
 	_G.SettingsPanel = {
 		GetLayout = function(_, category)
-			return category_layout(category)
+			return category.layout
 		end,
 	}
-	_G.CreateSettingsListSectionHeaderInitializer = function(name, tooltip)
-		return { type = "header", name = name, tooltip = tooltip }
-	end
-	_G.CreateSettingsButtonInitializer = function(name, buttonText, buttonClick, tooltip, addSearchTags)
-		return {
-			type = "button",
-			name = name,
-			buttonText = buttonText,
-			click = buttonClick,
-			tooltip = tooltip,
-			addSearchTags = addSearchTags,
-		}
-	end
+	_G.CreateSettingsListSectionHeaderInitializer = wrap(
+		"CreateSettingsListSectionHeaderInitializer",
+		function(name, tooltip, newTagID)
+			return { type = "header", name = name, tooltip = tooltip, newTagID = newTagID }
+		end
+	)
+	_G.CreateSettingsButtonInitializer = wrap(
+		"CreateSettingsButtonInitializer",
+		function(name, buttonText, buttonClick, tooltip, addSearchTags)
+			assert(addSearchTags ~= nil)
+			return {
+				type = "button",
+				name = name,
+				buttonText = buttonText,
+				click = buttonClick,
+				tooltip = tooltip,
+				addSearchTags = addSearchTags,
+			}
+		end
+	)
 end
 
 -- Units, maps and add-ons ----------------------------------------------------

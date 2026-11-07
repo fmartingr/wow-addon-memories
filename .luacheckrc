@@ -24,6 +24,8 @@ read_globals = {
 	"C_UI",
 	"ChatFontNormal",
 	"CreateFrame",
+	"CreateSettingsButtonInitializer",
+	"CreateSettingsListSectionHeaderInitializer",
 	"DEFAULT_CHAT_FRAME",
 	"Enum",
 	"GameTooltip",
@@ -33,6 +35,7 @@ read_globals = {
 	"InCombatLockdown",
 	"IsInInstance",
 	"Minimap",
+	"Settings",
 	"StaticPopup_Show",
 	"UIParent",
 	"UISpecialFrames",
@@ -56,5 +59,5 @@ read_globals = {
 
 files["spec/"] = {
 	std = "+busted",
-	globals = { "_G", "print", "C_EncodingUtil", "Enum", "MemoriesMinimapButton", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "SomeBlizzardFunc" },
+	globals = { "_G", "print", "C_EncodingUtil", "Enum", "MemoriesMinimapButton", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "MemoriesSocialCharDB", "SomeBlizzardFunc", "Settings" },
 }

@@ -238,6 +238,15 @@ describe("sub-addon registry", function()
 				{ kinds = { { kind = "zq" } }, newOnly = { { key = "x", kinds = { "lv" } } } },
 				{ kinds = { { kind = "zq" } }, newOnly = { "x" } },
 				{ kinds = { { kind = "zq" } }, newOnly = { { key = "x", label = 3, kinds = { "zq" } } } },
+				{ kinds = { { kind = "zq" } }, newOnly = { { key = "x", kinds = {} } } },
+				{ kinds = { { kind = "zq" } }, newOnly = { { key = "x", kinds = { nil, "zq" } } } },
+				{ kinds = { { kind = "zq" } }, newOnly = { { key = "x", kinds = { "zq", [3] = "zq" } } } },
+				{ kinds = { { kind = "zq" } }, newOnly = { { key = "x", kinds = { "zq", other = "zq" } } } },
+				{
+					kinds = { { kind = "zq" } },
+					newOnly = { { key = "x", kinds = { "zq", [3] = "zq", other = "zq" } } },
+				},
+				{ kinds = { { kind = "zq" } }, newOnly = { { key = "x", kinds = "zq" } } },
 				{
 					kinds = { { kind = "zq" } },
 					newOnly = { { key = "x", kinds = { "zq" } }, { key = "x", kinds = { "zq" } } },
