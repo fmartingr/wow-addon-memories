@@ -103,12 +103,16 @@ describe("sessions", function()
 		end)
 
 		it("reads the realm rules once at login", function()
+			local function rules()
+				local f = MemoriesCharDB.flags
+				return { hardcore = f.hardcore, selfFoundAllowed = f.selfFoundAllowed }
+			end
 			wow.boot({ rules = { hardcore = true, selfFound = false } })
-			assert.same({ hardcore = true, selfFoundAllowed = false }, MemoriesCharDB.flags)
+			assert.same({ hardcore = true, selfFoundAllowed = false }, rules())
 			wow.boot({ rules = { hardcore = wow.secret(true), selfFound = true } })
-			assert.same({ selfFoundAllowed = true }, MemoriesCharDB.flags)
+			assert.same({ selfFoundAllowed = true }, rules())
 			wow.boot()
-			assert.same({}, MemoriesCharDB.flags)
+			assert.same({}, rules())
 		end)
 	end)
 

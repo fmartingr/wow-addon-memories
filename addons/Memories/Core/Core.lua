@@ -61,10 +61,14 @@ function ns.Errors()
 	return list
 end
 
-function ns.LogError(where, err, stack)
+-- quiet saves the error for /memories errors without a chat line or the client's error handler.
+function ns.LogError(where, err, stack, quiet)
 	where = tostring(where)
 	local entry = { t = time(), where = where, msg = tostring(err), stack = stack }
 	push(ns.Errors(), entry)
+	if quiet then
+		return
+	end
 	if not printed[where] then
 		printed[where] = true
 		ns.Print("error in " .. where .. ". See /memories errors.")

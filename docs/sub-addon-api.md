@@ -169,9 +169,9 @@ A `/reload` in combat starts a new fight at login.
 | `LEVEL_UP` | `level` | `PLAYER_LEVEL_UP`, also when the kind `lv` is off |
 | `AWAY_CHANGED` | `isAway, state` | the away state changed; `state` is `"afk"`, `"idle"` (120 s without activity) or nil |
 | `TRAIL_LIVE` | `m, x, y` | the trail kept a new point (map, x and y 0..10000) |
-| `DIED` | `info` | Task 7 |
-| `ALIVE` | `how` | Task 7 |
-| `LOW_HEALTH` | `inCombat` | Task 7 |
+| `DIED` | `info` | a death was confirmed, also when the kind `de` is off; `info` has the `de` fields: `killer`, `npc`, `spell`, `env`, `place` (`"world"` or the instance name), `boss` and `byPlayer` (booleans), `klevel`, `kclass`, `amount`, `inst` (`"pvp"` or nil). A death that a reload brings back with the same recap fires no second `DIED` |
+| `ALIVE` | `how` | the player is alive again, also when the kind `al` is off; `how` is `"corpse"`, `"spirit"`, `"res"` or `"soulstone"` |
+| `LOW_HEALTH` | `inCombat` | the game's low-health flash showed (not while dead or behind a fullscreen panel), also when the kind `lh` is off |
 | `SETTING_CHANGED` | `path, value` | a setting changed, for example `"kinds.ki"`, `"newOnly.kills"` or `"recordRate"` |
 | `RESTORED` | `addon` | a backup replaced the journal of `addon` (data guard); its counts, snapshots and `data.state` are the backup's now |
 

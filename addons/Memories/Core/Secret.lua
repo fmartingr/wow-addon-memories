@@ -84,3 +84,12 @@ function ns.Here()
 	at.m, at.x, at.y = ns.OutdoorPosition(ns.InInstance())
 	return at
 end
+
+-- The player's world position as { x, y, inst } in yards, else nil.
+function ns.World()
+	local y, x, _, inst, secret = ns.RN(UnitPosition("player"))
+	if secret or type(x) ~= "number" or type(y) ~= "number" then
+		return nil
+	end
+	return { x = x, y = y, inst = inst }
+end

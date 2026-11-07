@@ -16,6 +16,17 @@ globals = {
 }
 
 read_globals = {
+	"UnitIsDeadOrGhost",
+	"UnitClassification",
+	"UnitAffectingCombat",
+	"StaticPopup_Hide",
+	"RetrieveCorpse",
+	"LowHealthFrame",
+	"GetUIPanel",
+	"C_DeathRecap",
+	"C_DeathInfo",
+	"C_CVar",
+	"AcceptResurrect",
 	"CHAT_FRAMES",
 	"COMBATLOG_XPGAIN_FIRSTPERSON",
 	"COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED",
@@ -80,5 +91,5 @@ read_globals = {
 
 files["spec/"] = {
 	std = "+busted",
-	globals = { "_G", "print", "C_EncodingUtil", "Enum", "MemoriesMinimapButton", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "MemoriesSocialCharDB", "SomeBlizzardFunc", "Settings", "CHAT_FRAMES", "ChatFrame1", "C_GameRules", "UnitIsAFK", "GetXPExhaustion", "C_QuestLog", "UnitPosition", "date" },
+	globals = { "_G", "print", "C_EncodingUtil", "Enum", "MemoriesMinimapButton", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "MemoriesSocialCharDB", "SomeBlizzardFunc", "Settings", "CHAT_FRAMES", "ChatFrame1", "C_GameRules", "UnitIsAFK", "GetXPExhaustion", "C_QuestLog", "UnitPosition", "date", "C_DeathRecap", "C_CVar", "LowHealthFrame", "SetCVar" },
 }

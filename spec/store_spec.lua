@@ -48,7 +48,7 @@ describe("store", function()
 		assert.same({ t = wow.wall, level = 10, m = 1453, x = 5000, y = 2500, wait = true }, char.first)
 		assert.equal(1, #MemoriesCharDB.sessions)
 		assert.same({ v = 1, chunks = {} }, MemoriesCharDB.trail)
-		assert.same({}, MemoriesCharDB.flags)
+		assert.same({ lowHealthFlash = true }, MemoriesCharDB.flags)
 		assert.equal(1, MemoriesDB.schema)
 	end)
 

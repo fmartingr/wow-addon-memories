@@ -671,6 +671,12 @@ local function install_units()
 	_G.InCombatLockdown = function()
 		return wow.combat
 	end
+	_G.UnitIsDeadOrGhost = function(u)
+		return flag("dead")(u) or flag("ghost")(u)
+	end
+	-- wow.flags.combat stands for UnitAffectingCombat; wow.combat for InCombatLockdown.
+	_G.UnitAffectingCombat = flag("combat")
+	_G.UnitClassification = unit_value("classification")
 	_G.C_Map = {
 		GetBestMapForUnit = function(u)
 			if u == "player" then
@@ -731,6 +737,59 @@ local function install_addons()
 			return false, state == "disabled" and "DISABLED" or "MISSING"
 		end,
 	}
+end
+
+-- Deaths and CVars -----------------------------------------------------------
+
+-- wow.recap is the death recap list of C_DeathRecap; wow.res counts the revive calls; wow.cvars holds the CVars, and
+-- wow.cvar_fail.get or .set makes that call raise. SetCVar fires CVAR_UPDATE at once, as the client does.
+local function install_deaths()
+	wow.recap = wow.opts.recap
+	_G.C_DeathRecap = {
+		HasRecapEvents = function()
+			return wow.recap ~= nil and #wow.recap > 0
+		end,
+		GetRecapEvents = function()
+			return wow.recap or {}
+		end,
+	}
+	wow.res = { accept = 0, corpse = 0, self = 0 }
+	_G.AcceptResurrect = function()
+		wow.res.accept = wow.res.accept + 1
+	end
+	_G.RetrieveCorpse = function()
+		wow.res.corpse = wow.res.corpse + 1
+	end
+	_G.C_DeathInfo = {
+		UseSelfResurrectOption = function()
+			wow.res.self = wow.res.self + 1
+		end,
+	}
+	wow.panels = {}
+	_G.GetUIPanel = function(key)
+		return wow.panels[key]
+	end
+	wow.cvars = merge({ doNotFlashLowHealthWarning = "0" }, wow.opts.cvars)
+	wow.cvar_fail = {}
+	wow.cvar_sets = {}
+	local function get(name)
+		if wow.cvar_fail.get then
+			error(wow.cvar_fail.get, 2)
+		end
+		return wow.cvars[name]
+	end
+	local function set(name, value)
+		if wow.cvar_fail.set then
+			error(wow.cvar_fail.set, 2)
+		end
+		value = tostring(value)
+		wow.cvars[name] = value
+		wow.cvar_sets[#wow.cvar_sets + 1] = { name, value }
+		wow.fire("CVAR_UPDATE", name, value)
+		return true
+	end
+	_G.C_CVar = { GetCVar = get, SetCVar = set }
+	_G.GetCVar, _G.SetCVar = get, set
 end
 
 -- Reset ----------------------------------------------------------------------
@@ -806,6 +865,7 @@ function wow.reset(opts)
 	install_settings()
 	install_units()
 	install_addons()
+	install_deaths()
 
 	_G.CreateFrame = function(kind, name, parent, template)
 		return new_frame(kind, name, parent, template)
@@ -813,6 +873,9 @@ function wow.reset(opts)
 	_G.UIParent = new_frame("Frame", "UIParent")
 	_G.Minimap = new_frame("Frame", "Minimap", _G.UIParent)
 	_G.Minimap.center, _G.Minimap.width, _G.Minimap.scale = { 700, 500 }, 140, 2
+	if opts.lowHealthFrame ~= false then
+		new_frame("Frame", "LowHealthFrame", _G.UIParent).shown = false
+	end
 	wow.cursor = { 0, 0 }
 	_G.GetCursorPosition = function()
 		return wow.cursor[1], wow.cursor[2]
@@ -1004,7 +1067,8 @@ end
 -- login (false stops before PLAYER_LOGIN), installed (addon name -> "enabled" or "disabled" for addons not booted),
 -- reloading (enter the world as a /reload), spells, map, maps, units, unknownEvents, noSecrets, clock, wall,
 -- flags (taxi, flying, mounted, ghost, dead, swimming, moving, afk), world ({ x, y, inst } yards), zone, rested,
--- quests (id -> title), rules ({ hardcore, selfFound } for C_GameRules), strings (GlobalStrings over Spanish ones).
+-- quests (id -> title), rules ({ hardcore, selfFound } for C_GameRules), strings (GlobalStrings over Spanish ones),
+-- recap (death recap events), cvars (name -> value), lowHealthFrame (false: no LowHealthFrame).
 -- Returns the core namespace and a table of every booted addon's namespace by name.
 function wow.boot(opts)
 	opts = opts or {}

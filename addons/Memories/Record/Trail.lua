@@ -82,6 +82,22 @@ function Trail.LastPoint()
 	return lastPoint and U.Copy(lastPoint) or nil
 end
 
+-- The last point of this session, else the last point of the saved trail: { m, x, y, t }, or nil.
+function Trail.LastKnownPoint()
+	if lastPoint then
+		return Trail.LastPoint()
+	end
+	local chunks = trail().chunks
+	for i = #chunks, 1, -1 do
+		local rec = chunks[i]
+		local points = type(rec) == "table" and type(rec.m) == "number" and ns.TrailCodec.Decode(rec)
+		local p = points and points[#points]
+		if p then
+			return { m = rec.m, x = p.x, y = p.y, t = p.t }
+		end
+	end
+end
+
 local function writeCopy()
 	trail().open = open and open.chunk.n > 0 and open.chunk:Record(true) or nil
 	copyAt = GetTime()
@@ -145,14 +161,6 @@ local function count(module, key, n, level)
 	end
 end
 
-local function world()
-	local y, x, _, inst, secret = ns.RN(UnitPosition("player"))
-	if secret or type(x) ~= "number" or type(y) ~= "number" then
-		return nil
-	end
-	return { x = x, y = y, inst = inst }
-end
-
 local function activityOf(s, moving)
 	if ns.Sessions.Away() then
 		return "afk"
@@ -191,7 +199,7 @@ function Trail.Tick()
 	local elapsed = lastTick and now - lastTick or 0
 	local sec = round(elapsed)
 	lastTick = now
-	local here = world()
+	local here = ns.World()
 	local dist = 0
 	if here and lastWorld and here.inst == lastWorld.inst and elapsed > 0 then
 		dist = sqrt((here.x - lastWorld.x) ^ 2 + (here.y - lastWorld.y) ^ 2)

@@ -25,10 +25,12 @@ Api\Registry.lua
 Record\Sessions.lua
 Record\Trail.lua
 Record\Progress.lua
+Record\Deaths.lua
 UI\Slash.lua
 UI\Save.lua
 UI\Minimap.lua
 UI\Guard.lua
 UI\Options.lua
+UI\LowHealth.lua
 UI\Status.lua
 Init.lua

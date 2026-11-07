@@ -484,7 +484,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 7. Core recorders: Deaths and the low-health popup
+### [x] 7. Core recorders: Deaths and the low-health popup
 - **Outcome:** The core records deaths, ghost runs, revivals, close calls, low-health warnings and hardcore deaths. The low-health popup keeps the game's low-health flash on.
 - **Depends on:** 6 (trail last point, current level, `LEVEL_UP`).
 - **Covers:** AC3 for `de`, `gh`, `al`, `cc`, `lh`, `hc`; AC4 for these kinds; AC13 (low-health popup).
@@ -498,13 +498,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** the test cases of Appendix B for Deaths and the low-health popup; one kind-off test for each kind; a test that `LOW_HEALTH` fires with `lh` off.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). Manual: add the death and popup items to `docs/manual-checklist.md`.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 8. Screenshot service and the public API (`ex`, `sn`)
 - **Outcome:** Every saved screenshot gets an `ss` line. Other addons record events and screenshot notes through the `Memories` global.

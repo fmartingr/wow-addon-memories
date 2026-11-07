@@ -49,3 +49,23 @@ build and pass or fail for each item.
 | 6 | Level up | Gain a level. | Lines `lv|<level>`, then `pl|<played>`; `MemoriesCharDB.snap[<level>]` has `t`, `zone`, `rested` and `played`. | not run |
 | 6 | Quest and XP | Turn in a quest that gives XP. | One `xp|<n>|quest|<title>` and one `qt|<id>|<xp>|<money>|<title>` line, in Spanish on the esES client. | not run |
 | 6 | Discovery | Enter an area not explored yet. | `di|<area>|<xp>` and `xp|<xp>|discover|<area>`; with no XP, one `di|<area>` line. | not run |
+| 7 | GlobalStrings | Deaths and the low-health popup read no `GlobalStrings` name: the killer, spell and environment come from `C_DeathRecap`. | Nothing to `/dump`. | not run |
+| 7 | Recap fields | Die to a creature, then type `/dump C_DeathRecap.GetRecapEvents()` while dead. | Each entry has `timestamp`, `sourceGUID`, `sourceName`, `amount` and, for a spell, `spellName`; a fall has `environmentalType`. | not run |
+| 7 | Death to a creature | Target a creature, let it kill you, wait 2 s. | One `de|<name>|<npc id>|<spell>||world||<level>|<classification>|<amount>` line at the death spot; `counts.deaths` has `total` and `world` 1 more and `hardest` at least the amount. | not run |
+| 7 | Release and spirit healer | Release, accept the spirit healer's resurrection. | `gh`, then `al|spirit`; `counts.deaths["revive.spirit"]` 1 more. | not run |
+| 7 | Corpse run | Release, run back to the body and click "Resurrect". | `gh`, then `al|corpse`. | not run |
+| 7 | Resurrection by a player | Die in a group, accept a resurrection from a priest or a paladin. | `al|res|<their name>`. | not run |
+| 7 | Death across a reload | Die, wait 2 s, `/reload` while dead, then release and `/reload` again. | One `de` and one `gh` only. | not run |
+| 7 | Death at login | Die, type `/run MemoriesCharDB.state.deaths.open = false`, `/reload`. | One new bare `de` line at the last trail point (no killer when the recap is gone). | not run |
+| 7 | Dungeon death | Die inside a dungeon. | The `de` line has no position and the dungeon name as `place`; `counts.deaths.dungeon` 1 more. | not run |
+| 7 | Fall | Jump from a high place and die. | `de||||falling|world|...`; `counts.deaths["env.falling"]` 1 more. | not run |
+| 7 | Hardcore death | On a Hardcore character, die. | `de`, then `hc|<killer>`. | not run |
+| 7 | Low health and close call | Out of combat, lose health below 35 % (for example a fall), then heal up and wait 3 s. | `lh|0`, then `cc|<seconds>|0`; `counts.deaths` has `lowHealth` and `closeCalls` 1 more. | not run |
+| 7 | Close call in combat | Drop below 35 % in a fight, survive, end the fight, wait 3 s. | `lh|1` at once; `cc|<seconds>|1` only 3 s after the fight ends. | not run |
+| 7 | No close call on death | Drop below 35 % and die. | `lh`, `de`, no `cc`. | not run |
+| 7 | Popup at login | Type `/console doNotFlashLowHealthWarning 1`, `/reload`. | A popup "Memories needs this setting on" with "Keep it on" and "Turn it off"; the "Low-health flash" option is unchecked. | not run |
+| 7 | Keep it on | Click "Keep it on". | `/dump C_CVar.GetCVar("doNotFlashLowHealthWarning")` prints `"0"`; the option is checked; no second popup. | not run |
+| 7 | Turn it off | Repeat the popup and click "Turn it off". | The CVar is `"1"`, the option is unchecked, no second popup until the next login. | not run |
+| 7 | Popup in combat | Turn the flash off, start a fight, `/reload` in combat. | The popup shows only after the fight ends. | not run |
+| 7 | Option untick | Uncheck "Low-health flash" on the Settings page. | The popup shows; the option and the CVar stay on until a button is clicked. | not run |
+| 7 | Game turns it off | With the flash on, untick the game's own low-health flash option (Interface options). | The Memories popup shows. Turning it on again in the game shows no popup and checks the Memories option. | not run |
