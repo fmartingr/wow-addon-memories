@@ -86,6 +86,8 @@ Registration works at any time:
 - Before `PLAYER_LOGIN`: the core keeps the def and opens the journal at login.
 - After `PLAYER_LOGIN`: the core opens the journal at once and calls `OnLogin(h)`, then `OnEnterWorld(h, false, false)`
   when the world has already loaded. Before that, the first `PLAYER_ENTERING_WORLD` calls `OnEnterWorld`.
+  These calls run before `RegisterModule` returns, so `OnLogin` and `OnEnterWorld` use their `h` argument, never the
+  return value.
 
 Refusals (the sub-addon must stop):
 

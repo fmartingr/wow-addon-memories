@@ -605,6 +605,10 @@ local function install_units()
 	_G.UnitExists = function(u)
 		return unit(u) ~= nil
 	end
+	_G.UnitIsUnit = function(a, b)
+		local data = unit(a)
+		return data ~= nil and data == unit(b)
+	end
 	-- A unit of opts.units attacks and can be attacked when it has hostile = true.
 	_G.UnitCanAttack = function(_, u)
 		local data = unit(u)
@@ -690,6 +694,17 @@ local function install_units()
 	-- wow.flags.combat stands for UnitAffectingCombat; wow.combat for InCombatLockdown.
 	_G.UnitAffectingCombat = flag("combat")
 	_G.UnitClassification = unit_value("classification")
+	_G.UnitPlayerControlled = flag("controlled")
+	_G.UnitIsTapDenied = flag("tapDenied")
+	-- creatureType is { name, id }.
+	_G.UnitCreatureType = unit_values("creatureType")
+	-- threat and petThreat are the threat states of the player and of the pet on the unit.
+	_G.UnitThreatSituation = function(who, u)
+		local data = unit(u)
+		if data then
+			return who == "pet" and data.petThreat or who == "player" and data.threat or nil
+		end
+	end
 	_G.C_Map = {
 		GetBestMapForUnit = function(u)
 			if u == "player" then

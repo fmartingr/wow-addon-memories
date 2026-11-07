@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: Memories - Combat
+## Notes: Records kills, rare kills and long fights.
+## Author: Felipe M.
+## Version: 0.1.0
+## Dependencies: Memories
+## Group: Memories
+## SavedVariablesPerCharacter: MemoriesCombatCharDB
+## LoadSavedVariablesFirst: 1
+## X-Memories-API: 1
+
+Combat.lua

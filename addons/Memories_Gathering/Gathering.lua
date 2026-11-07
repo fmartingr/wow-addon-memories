@@ -288,7 +288,9 @@ local function onError(_, _, message)
 	end
 end
 
-local function onLogin()
+-- A registration after login calls OnLogin before RegisterModule returns, so the handle comes from the argument.
+local function onLogin(handle)
+	h = handle
 	h:On("LOOT_OPENED", onLoot)
 	h:On("UI_ERROR_MESSAGE", onError)
 	if type(C_Container) == "table" then
@@ -303,7 +305,7 @@ local function onLogin()
 	end)
 end
 
-h = Memories.RegisterModule({
+Memories.RegisterModule({
 	addon = ADDON,
 	api = 1,
 	saved = "MemoriesGatheringCharDB",

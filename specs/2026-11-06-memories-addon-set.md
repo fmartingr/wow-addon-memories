@@ -619,7 +619,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 12. Sub-addon `Memories_Combat`
+### [x] 12. Sub-addon `Memories_Combat`
 - **Outcome:** Kills, rare kills and long fights are recorded in their own saved file, in instances too.
 - **Depends on:** 3 (registry, `InFight`), 5 (kind gate, `newOnly`), 7 (`LOW_HEALTH`, `DIED`).
 - **Covers:** AC3 for `ki`, `ra`, `fi`; AC6 and AC7 for `ki`.
@@ -634,13 +634,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** the test cases of Appendix C for Combat; kind-off tests; new-only tests (first kill per NPC id, elite, rare).
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). Manual: kill in the open world and in a dungeon.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
   - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 13. Sub-addon `Memories_Economy`
 - **Outcome:** Loot, group rolls, gear, money, trainers, auction house, mail and trade are recorded in their own saved file.
