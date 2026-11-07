@@ -44,3 +44,43 @@ function ns.Position()
 	end
 	return mapID, floor(x * 10000 + 0.5), floor(y * 10000 + 0.5)
 end
+
+local mapTypes = {}
+
+-- Types 0-2 are the cosmic, world and continent maps, which the client reports for a while after a loading screen.
+function ns.IsSkippedMap(m)
+	if mapTypes[m] == nil then
+		local info = C_Map.GetMapInfo(m)
+		local mapType = type(info) == "table" and ns.R(info.mapType) or nil
+		-- A map without info yet is asked again on the next point.
+		if type(mapType) ~= "number" then
+			return false
+		end
+		mapTypes[m] = mapType <= 2
+	end
+	return mapTypes[m]
+end
+
+-- A secret answer counts as outside.
+function ns.InInstance()
+	return ns.R(IsInInstance()) == true
+end
+
+-- The map position outside an instance and off a skipped map, else nil. inside is the caller's ns.InInstance().
+function ns.OutdoorPosition(inside)
+	if inside then
+		return nil
+	end
+	local m, x, y = ns.Position()
+	if not m or ns.IsSkippedMap(m) then
+		return nil
+	end
+	return m, x, y
+end
+
+-- Where and when the player is now, as { t, p, m, x, y }; no place inside an instance or on a skipped map.
+function ns.Here()
+	local at = { t = ns.Journal.Now(), p = ns.Store.PlayedNow() }
+	at.m, at.x, at.y = ns.OutdoorPosition(ns.InInstance())
+	return at
+end

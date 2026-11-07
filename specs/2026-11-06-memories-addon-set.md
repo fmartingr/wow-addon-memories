@@ -459,7 +459,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 6. Core recorders: Sessions, Trail, Progress
+### [x] 6. Core recorders: Sessions, Trail, Progress
 - **Outcome:** The core records sessions, /played, away state, the position trail, levels, experience, quests, discoveries and rested state.
 - **Depends on:** 3 (handle services and messages), 5 (kind gate, `recordRate`).
 - **Covers:** AC3 for `in`, `out`, `pl`, `gp`, `pc`, `af`, `lv`, `xp`, `qt`, `di`, `rs`; AC4 for these kinds; risk "Localized clients" (Progress chat patterns).
@@ -476,13 +476,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** the test cases of Appendix A for Sessions, Trail and Progress, as unit tests with the harness; plus one kind-off test for each kind; plus a `wow.reload()` round trip of a trail with 3 chunks.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). In the game: `/dump LOOT_ITEM_SELF`-style checks for each `GlobalStrings` name that Progress uses (record each result in `docs/manual-checklist.md`).
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 7. Core recorders: Deaths and the low-health popup
 - **Outcome:** The core records deaths, ghost runs, revivals, close calls, low-health warnings and hardcore deaths. The low-health popup keeps the game's low-health flash on.

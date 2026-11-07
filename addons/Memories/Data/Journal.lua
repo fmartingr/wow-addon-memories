@@ -96,17 +96,9 @@ function Journal:WriteAt(at, kind, ...)
 	return line
 end
 
--- The time, played time and place of a line written now. Inside an instance the place stays empty.
-function Journal.At()
-	local at = { t = Journal.Now(), p = ns.Store.PlayedNow() }
-	if not IsInInstance() then
-		at.m, at.x, at.y = ns.Position()
-	end
-	return at
-end
-
+-- ns.Here (Core/Secret.lua) gives the time, played time and place of a line written now.
 function Journal:Write(kind, ...)
-	return self:WriteAt(Journal.At(), kind, ...)
+	return self:WriteAt(ns.Here(), kind, ...)
 end
 
 -- Splits one chunk at a time, so a long journal never sits in memory as one list of lines. It yields the lines that

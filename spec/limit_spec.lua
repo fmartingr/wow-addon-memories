@@ -20,7 +20,9 @@ describe("journal size limit", function()
 	end)
 
 	it("saves and loads 300,000 packed lines", function()
-		local ns = wow.boot()
+		-- Before the world loads the core recorders have written nothing yet.
+		local ns = wow.boot({ login = false })
+		wow.fire("PLAYER_LOGIN")
 		local core = ns.Store.Core()
 		for i = 1, N do
 			core:WriteAt({ t = 1793560500 + i, p = i, m = 1453, x = i % 10000, y = 9999 - i % 10000 }, "lv", i)

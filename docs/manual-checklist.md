@@ -35,3 +35,17 @@ build and pass or fail for each item.
 | 5 | Settings survive | Change a few settings, `/reload`, open the page. | The same choices are shown. | not run |
 | 5 | Status | Type `/mem status` with only the core installed. | "Memories: status:", then `Memories: on, <n> lines, 0 kinds off, ...` and one `missing` line for each of the 5 sub-addons, then `login time: init <n> ms, login <n> ms, world <n> ms`. | not run |
 | 5 | Status of a disabled sub-addon | Disable a sub-addon for this character (from Task 11 on), log in, `/mem status`. | Its line says `off`. | not run |
+| 6 | `COMBATLOG_XPGAIN_FIRSTPERSON` | Type `/dump COMBATLOG_XPGAIN_FIRSTPERSON`. | A text with one `%s` (the creature) and one `%d` (the XP), for example "%s muere, ganas %d p. de experiencia.". | not run |
+| 6 | `COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED` | Type `/dump COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED`. | A text with one `%d` (the XP). | not run |
+| 6 | `ERR_ZONE_EXPLORED_XP` | Type `/dump ERR_ZONE_EXPLORED_XP`. | A text with one `%s` (the area) and one `%d` (the XP). | not run |
+| 6 | `ERR_ZONE_EXPLORED` | Type `/dump ERR_ZONE_EXPLORED`. | A text with one `%s` (the area). | not run |
+| 6 | `COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED_GROUP` | Type `/dump COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED_GROUP`. | A text with two `%d`; the group bonus words come after the second one, for example "(+%d group bonus)". | not run |
+| 6 | Group bonus | Kill a creature in a group while rested and read the XP chat line. | The `xp` line ends with the group bonus `N`, never the rested bonus. | not run |
+| 6 | Session lines | Log in, wait 5 s, `/reload`, wait 5 s, `/reload`. Read `MemoriesCharDB` in the saved file. | The journal starts with `in|login`, `pc|<id>`, `rs|<n>`, then `pl|<played>`; each reload adds `out`, `in|reload`, `rs`, `pl`. `MemoriesCharDB.sessions` has 3 entries with `start`, `last`, `how`, `computer`, `tz`, `played0`, `played1`. No "Total time played" text shows in the chat at login. | not run |
+| 6 | Away | Type `/afk`, then move. | One `af|1` line, then one `af|0` line. | not run |
+| 6 | Trail | Walk, mount and ride for a minute, take a flight, then `/reload`. | `MemoriesCharDB.trail.chunks` has chunks with `s`, `t`, `m`, `n` and `d` text such as `0,4512,6120,-;...`, with `m` and `t` flags while mounted and on the flight. | not run |
+| 6 | Jumps | Jump 3 times on land and once while swimming, `/reload`. | `MemoriesCharDB.counts.travel` has `jumps` 3 more and `ascend` 1 more. | not run |
+| 6 | Recording rate | Set "Recording rate" to 10 s, walk for a minute, `/reload`. | The new chunk's points are about 10 s apart. | not run |
+| 6 | Level up | Gain a level. | Lines `lv|<level>`, then `pl|<played>`; `MemoriesCharDB.snap[<level>]` has `t`, `zone`, `rested` and `played`. | not run |
+| 6 | Quest and XP | Turn in a quest that gives XP. | One `xp|<n>|quest|<title>` and one `qt|<id>|<xp>|<money>|<title>` line, in Spanish on the esES client. | not run |
+| 6 | Discovery | Enter an area not explored yet. | `di|<area>|<xp>` and `xp|<xp>|discover|<area>`; with no XP, one `di|<area>` line. | not run |

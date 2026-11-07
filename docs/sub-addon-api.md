@@ -125,7 +125,7 @@ apply:
 | `h:IsFirst(module, key)` | true when the count is 0 or missing |
 | `h:Snap(level, key, value)` | sets a snapshot value, or returns it without `value` |
 | `h:NewOnly(key)` | true when the player turned on the "New findings only" box `key` (`MemoriesDB.settings.newOnly[key]`) |
-| `h:Here()` | `{ t, p, m, x, y }` of now; `m`, `x`, `y` stay empty inside an instance |
+| `h:Here()` | `{ t, p, m, x, y }` of now; `p` stays empty until the first /played answer of the load; `m`, `x`, `y` stay empty inside an instance and on a world or continent map |
 | `h:Level()` | the player's level, the new one already during `PLAYER_LEVEL_UP` |
 | `h:InFight()` | true from `PLAYER_REGEN_DISABLED` to `PLAYER_REGEN_ENABLED` |
 | `h:InInstance()` | `inside, instanceType` |
@@ -166,9 +166,9 @@ A `/reload` in combat starts a new fight at login.
 | `LINE_WRITTEN` | `addon, kind, line, ev` | every journal line; `ev` is the decoded line, shared by all listeners: do not change it |
 | `FIGHT_START` | — | `PLAYER_REGEN_DISABLED` |
 | `FIGHT_END` | `fight` | `PLAYER_REGEN_ENABLED` |
-| `LEVEL_UP` | `level` | Sessions/Progress (Task 6) |
-| `AWAY_CHANGED` | `isAway` | Task 6 |
-| `TRAIL_LIVE` | `m, x, y` | Task 6 |
+| `LEVEL_UP` | `level` | `PLAYER_LEVEL_UP`, also when the kind `lv` is off |
+| `AWAY_CHANGED` | `isAway, state` | the away state changed; `state` is `"afk"`, `"idle"` (120 s without activity) or nil |
+| `TRAIL_LIVE` | `m, x, y` | the trail kept a new point (map, x and y 0..10000) |
 | `DIED` | `info` | Task 7 |
 | `ALIVE` | `how` | Task 7 |
 | `LOW_HEALTH` | `inCombat` | Task 7 |

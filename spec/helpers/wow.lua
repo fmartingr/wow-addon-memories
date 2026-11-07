@@ -23,6 +23,15 @@ local DEFAULT_PLAYER = {
 	faction = { "Alliance", "Alliance" },
 }
 
+-- Spanish client values: the recorders must build their chat patterns from these, never from English text.
+local DEFAULT_STRINGS = {
+	COMBATLOG_XPGAIN_FIRSTPERSON = "%s muere, ganas %d p. de experiencia.",
+	COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED = "Ganas %d p. de experiencia.",
+	COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED_GROUP = "Ganas %d p. de experiencia. (+%d bonif. grupo)",
+	ERR_ZONE_EXPLORED = "Descubierto: %s.",
+	ERR_ZONE_EXPLORED_XP = "Has descubierto %s: %d p. de experiencia ganados",
+}
+
 local function pack(...)
 	return { n = select("#", ...), ... }
 end
@@ -603,6 +612,62 @@ local function install_units()
 	_G.IsInInstance = function()
 		return wow.instance ~= nil, wow.instance and wow.instance.type or "none"
 	end
+	_G.GetInstanceInfo = function()
+		local i = wow.instance
+		if not i then
+			return GetRealZoneText(), "none", 0, "", 0, 0, false, 0, 0
+		end
+		return i.name, i.type, i.difficulty or 1, "", i.size or 5, 0, false, i.id or 0, 0
+	end
+	_G.GetRealZoneText = function()
+		return wow.zone
+	end
+	-- wow.world holds the world yards and the instance id that UnitPosition reports.
+	_G.UnitPosition = function(u)
+		if u == "player" and wow.world then
+			return wow.world.y, wow.world.x, 0, wow.world.inst
+		end
+	end
+	local function flag(name)
+		return function(u)
+			if u == nil or u == "player" then
+				return wow.flags[name] or false
+			end
+			return false
+		end
+	end
+	_G.UnitOnTaxi = flag("taxi")
+	_G.IsFlying = flag("flying")
+	_G.IsMounted = flag("mounted")
+	_G.UnitIsGhost = flag("ghost")
+	_G.UnitIsDead = flag("dead")
+	_G.IsSwimming = flag("swimming")
+	_G.IsPlayerMoving = flag("moving")
+	_G.UnitIsAFK = flag("afk")
+	_G.GetXPExhaustion = function()
+		return wow.rested
+	end
+	_G.RequestTimePlayed = function()
+		wow.played_asks = wow.played_asks + 1
+	end
+	_G.JumpOrAscendStart = function()
+		wow.jumps = wow.jumps + 1
+	end
+	_G.C_QuestLog = {
+		GetTitleForQuestID = function(id)
+			return wow.quests[id]
+		end,
+	}
+	if wow.rules then
+		_G.C_GameRules = {
+			IsHardcoreActive = function()
+				return wow.rules.hardcore
+			end,
+			IsSelfFoundAllowed = function()
+				return wow.rules.selfFound
+			end,
+		}
+	end
 	_G.InCombatLockdown = function()
 		return wow.combat
 	end
@@ -720,9 +785,21 @@ function wow.reset(opts)
 	wow.maps = opts.maps or {}
 	wow.spells = opts.spells or {}
 	wow.addon_state = merge({}, opts.installed)
+	wow.flags = merge({}, opts.flags)
+	wow.world = merge({ x = 0, y = 0, inst = 0 }, opts.world)
+	wow.zone = opts.zone or "Bosque de Elwynn"
+	wow.rested = opts.rested
+	wow.quests = opts.quests or {}
+	wow.rules = opts.rules
+	wow.played_asks = 0
+	wow.jumps = 0
 	wow.tocs = {}
 	wow.tocs_by_name = {}
 	wow.ns = {}
+
+	for name, value in pairs(merge(DEFAULT_STRINGS, opts.strings)) do
+		_G[name] = value
+	end
 
 	install_timers()
 	install_encoding()
@@ -925,7 +1002,9 @@ end
 
 -- opts: addons (names, default { "Memories" }), saved (global name -> table), player, order ("deps" or "reverse"),
 -- login (false stops before PLAYER_LOGIN), installed (addon name -> "enabled" or "disabled" for addons not booted),
--- reloading (enter the world as a /reload), spells, map, maps, units, unknownEvents, noSecrets, clock, wall.
+-- reloading (enter the world as a /reload), spells, map, maps, units, unknownEvents, noSecrets, clock, wall,
+-- flags (taxi, flying, mounted, ghost, dead, swimming, moving, afk), world ({ x, y, inst } yards), zone, rested,
+-- quests (id -> title), rules ({ hardcore, selfFound } for C_GameRules), strings (GlobalStrings over Spanish ones).
 -- Returns the core namespace and a table of every booted addon's namespace by name.
 function wow.boot(opts)
 	opts = opts or {}

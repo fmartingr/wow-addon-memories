@@ -26,9 +26,12 @@ describe("data guard", function()
 		return out
 	end
 
+	-- The session lines are off, so the core journal holds only the lines that a test writes.
+	local QUIET = { ["in"] = false, pc = false, out = false, rs = false }
+
 	-- Boots once, writes n lines into the core (and m into the test addon), backs them up and returns MemoriesDB.
 	local function withBackup(n, m)
-		local ns, all = wow.boot({ addons = ADDONS })
+		local ns, all = wow.boot({ addons = ADDONS, saved = { MemoriesDB = { settings = { kinds = QUIET } } } })
 		for i = 1, n do
 			ns.Store.Core():Write("ex", "test", "line", i)
 		end

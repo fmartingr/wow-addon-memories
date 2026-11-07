@@ -14,6 +14,16 @@ describe("sub-addon registry", function()
 		return out
 	end
 
+	local function matching(list, pattern)
+		local n = 0
+		for _, line in ipairs(list) do
+			if line:find(pattern) then
+				n = n + 1
+			end
+		end
+		return n
+	end
+
 	local function has(list, text)
 		for _, v in ipairs(list) do
 			if v == text then
@@ -66,6 +76,7 @@ describe("sub-addon registry", function()
 
 	it("gives a sub-addon its own journal in its own saved global", function()
 		local ns, test = boot()
+		local coreLines = ns.Store.Core():LineCount()
 		local h = test.handle
 		assert.is_table(h)
 		assert.is_nil(test.reason)
@@ -77,8 +88,7 @@ describe("sub-addon registry", function()
 		assert.equal("Player-1234-0ABCDEF0", MemoriesTestCharDB.char.guid)
 		local at = wow.wall .. "||1453|5000|2500|"
 		assert.same({ at .. "zz|first|3", at .. "zy|a note" }, lines(MemoriesTestCharDB))
-		assert.equal(0, ns.Store.Core():LineCount())
-		assert.same({}, lines(MemoriesCharDB))
+		assert.equal(coreLines, ns.Store.Core():LineCount())
 	end)
 
 	it("writes a line at a given time and place", function()
@@ -116,13 +126,14 @@ describe("sub-addon registry", function()
 		test.handle:Write("zz", "kept", 1)
 		ns.Store.Core():Write("lv", 11)
 		wow.advance(10)
-		ns, test = wow.reload()
-		test = test.Memories_Test
+		local _, all = wow.reload()
+		test = all.Memories_Test
 		assert.is_table(test.handle)
 		assert.equal(1, #lines(MemoriesTestCharDB))
 		assert.truthy(lines(MemoriesTestCharDB)[1]:find("|zz|kept|1$"))
-		assert.equal(1, ns.Store.Core():LineCount())
-		assert.truthy(lines(MemoriesCharDB)[1]:find("|lv|11$"))
+		local core = lines(MemoriesCharDB)
+		assert.equal(1, matching(core, "|lv|11$"))
+		assert.equal(0, matching(core, "|zz|"))
 		assert.same({ { false, true } }, test.worlds)
 	end)
 
@@ -209,6 +220,7 @@ describe("sub-addon registry", function()
 
 		it("refuses a def that names a core saved table or another addon's saved table", function()
 			boot()
+			local before = lines(MemoriesCharDB)
 			assert.same({ nil, "bad def" }, { Memories.RegisterModule(def({ saved = "MemoriesCharDB" })) })
 			assert.same({ nil, "bad def" }, { Memories.RegisterModule(def({ saved = "MemoriesDB" })) })
 			assert.same({ nil, "bad def" }, { Memories.RegisterModule(def({ saved = "MemoriesTestCharDB" })) })
@@ -218,7 +230,7 @@ describe("sub-addon registry", function()
 			assert.same({ nil, "bad def" }, { Memories.RegisterModule(def({ saved = "UIParent" })) })
 			assert.is_function(UnitName)
 			assert.is_nil(Memories.log)
-			assert.same({}, lines(MemoriesCharDB))
+			assert.same(before, lines(MemoriesCharDB))
 		end)
 
 		it("refuses bad kinds, new-only boxes and hooks without registering any kind", function()
@@ -301,6 +313,7 @@ describe("sub-addon registry", function()
 
 	it("opens a late registration at once and calls OnLogin and OnEnterWorld", function()
 		local ns = boot()
+		local coreLines = ns.Store.Core():LineCount()
 		local calls = {}
 		local h = Memories.RegisterModule(def({
 			kinds = { { kind = "zq", group = "Other", name = "Other", fields = { "#v" } } },
@@ -316,7 +329,7 @@ describe("sub-addon registry", function()
 		assert.equal("Memories_Other;Other;#v", MemoriesDB.kinds.zq)
 		assert.truthy(h:Write("zq", 4):find("|zq|4$"))
 		assert.equal(1, MemoriesOtherCharDB.lines)
-		assert.equal(0, ns.Store.Core():LineCount())
+		assert.equal(coreLines, ns.Store.Core():LineCount())
 	end)
 
 	it("calls OnEnterWorld once for a registration between login and entering the world", function()
@@ -444,7 +457,7 @@ describe("sub-addon registry", function()
 		local got = lines(MemoriesTestCharDB)
 		assert.equal(1, #got)
 		assert.truthy(got[1]:find("|nt|new character|Player%-1234%-OLD$"))
-		assert.same({}, lines(MemoriesCharDB))
+		assert.equal(0, matching(lines(MemoriesCharDB), "|nt|"))
 	end)
 
 	it("makes only the sub-addon read-only for newer-schema data", function()
@@ -469,10 +482,11 @@ describe("sub-addon registry", function()
 			installed = { Memories_Gathering = "disabled", Memories_Economy = "enabled" },
 		})
 		test.handle:Write("zz", "a")
+		local coreLines = ns.Store.Core():LineCount()
 		ns.Store.Core():Write("lv", 2)
 		ns.Store.Core():Write("lv", 3)
 		local list = Memories.Addons()
-		assert.same({ addon = "Memories", state = "on", lines = 2, readOnly = false }, list[1])
+		assert.same({ addon = "Memories", state = "on", lines = coreLines + 2, readOnly = false }, list[1])
 		assert.same({ addon = "Memories_Test", state = "on", lines = 1, readOnly = false }, list[2])
 		local states = byAddon(list)
 		assert.equal("missing", states.Memories_Combat.state)

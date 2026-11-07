@@ -2,11 +2,6 @@ local _, ns = ...
 
 local U = ns.U
 
--- Where and when the player is now, as { t, p, m, x, y }. The trail replaces it with its current point.
-function ns.Here()
-	return ns.Journal.At()
-end
-
 local levelUp
 
 -- PLAYER_LEVEL_UP carries the new level before UnitLevel reports it.
@@ -18,8 +13,10 @@ function ns.Level()
 	return level
 end
 
+-- A secret level means one level more than the client reports; with both secret the level stays unknown.
 ns.On("PLAYER_LEVEL_UP", function(_, level)
-	levelUp = ns.R(level)
+	local current = ns.R(UnitLevel("player"))
+	levelUp = ns.R(level) or (type(current) == "number" and current + 1 or nil)
 end, "level")
 
 -- The core owns the fight state, so every sub-addon sees the same fight.
@@ -137,7 +134,7 @@ function Handle:Hook(target, method, fn)
 end
 
 function Handle:Write(kind, ...)
-	return self:WriteAt(ns.Journal.At(), kind, ...)
+	return self:WriteAt(ns.Here(), kind, ...)
 end
 
 function Handle:WriteAt(at, kind, ...)
@@ -182,7 +179,7 @@ function Handle:InFight()
 end
 
 function Handle:InInstance()
-	local inside, kind = IsInInstance()
+	local inside, kind = ns.RN(IsInInstance())
 	return inside == true, kind
 end
 

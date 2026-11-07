@@ -8,16 +8,32 @@ local floor = math.floor
 local core
 local playedBase, playedAt
 local warned = {}
--- The first-login record made this session, with the GetTime() of its creation, until /played fills its played.
-local firstPending, firstAt
+-- True when char.first was made in this load: a login before the /played answer cannot date it any more, a reload can.
+local firstMadeNow = false
 
+local function firstRecord()
+	local char = type(MemoriesCharDB) == "table" and MemoriesCharDB.char
+	return type(char) == "table" and type(char.first) == "table" and char.first or nil
+end
+
+-- char.first.wait stays in the saved file until an answer dates the first login, so a reload before the answer keeps
+-- it. The wall clock dates it across that reload.
 function Store.SetPlayed(seconds)
 	playedBase, playedAt = seconds, GetTime()
-	if firstPending then
-		if firstPending.played == nil then
-			firstPending.played = math.max(0, floor(seconds - (playedAt - firstAt)))
+	local first = firstRecord()
+	if first and first.wait and core and core:CanWrite() then
+		if first.played == nil and type(first.t) == "number" then
+			first.played = math.max(0, floor(seconds - (time() - first.t)))
 		end
-		firstPending, firstAt = nil, nil
+		first.wait = nil
+	end
+end
+
+-- A login after the one that made char.first adds offline time between first.t and the answer, so it stops the wait.
+function Store.EndFirstWait()
+	local first = firstRecord()
+	if first and not firstMadeNow and core and core:CanWrite() then
+		first.wait = nil
 	end
 end
 
@@ -101,11 +117,11 @@ local function coreChar(data)
 		end
 	end
 	if type(char.first) ~= "table" then
-		local m, x, y = ns.Position()
-		char.first = { t = time(), level = char.level, played = Store.PlayedNow(), m = m, x = x, y = y }
-		if char.first.played == nil then
-			firstPending, firstAt = char.first, GetTime()
-		end
+		local m, x, y = ns.OutdoorPosition(ns.InInstance())
+		local played = Store.PlayedNow()
+		char.first =
+			{ t = time(), level = char.level, played = played, m = m, x = x, y = y, wait = played == nil or nil }
+		firstMadeNow = true
 	end
 	ns.U.TableAt(data, "sessions")
 	ns.U.TableAt(data, "flags")
