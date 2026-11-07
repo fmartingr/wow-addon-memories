@@ -148,8 +148,9 @@ Rules:
 - `h:Count`, `h:Counts`, `h:IsFirst`, `h:Snap` and `h:State` raise an error before login, when no journal is open.
 - A recorder keeps what it must remember over a reload (the last value it wrote, the names it already saw) in
   `h:State(module)`, never in its journal lines: a kind that is off writes no line, and the state must still be right.
-- Every listener, hook and timer runs through the core's error guard. An error is logged with
-  `where = "<addon>:<event or message>"` and never stops the other recorders.
+- Every listener, hook and timer runs through the core's error guard. An error never stops the other recorders. It is
+  logged with `where = "<addon>:<event or message>"` for a listener, `"<addon>:hook:<method>"` for a hook, and
+  `"coalesce:<addon>:<key>"` or `"after combat:<addon>:<key>"` for a timer.
 - A kind that is off writes no line (`h:Write` returns `nil, "off"`). Count anyway: counts never stop.
 
 ## Fights
@@ -182,7 +183,8 @@ A `/reload` in combat starts a new fight at login.
 | `RESTORED` | `addon` | a backup replaced the journal of `addon` (data guard); its counts, snapshots and `data.state` are the backup's now |
 
 A recorder that reacts to another recorder listens to these messages, never to `LINE_WRITTEN`: a message fires even when
-its kind is off.
+its kind is off. The core also emits `JOURNAL_OPENED`, `REGISTERED` and `SAVE_REMINDER` for its own UI; a sub-addon
+does not use them.
 
 ## Settings page
 

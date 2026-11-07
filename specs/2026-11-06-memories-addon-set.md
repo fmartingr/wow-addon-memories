@@ -723,11 +723,11 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Verify:** `make lint test coverage build`; the filled checklist.
 - **Definition of done:**
   - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
+  - [x] Tests listed above exist and follow the Tests guidelines.
   - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
   - [ ] E2E tests pass, or the accepted alternative from Risks is done.
   - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
+  - [x] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
 ## Validation

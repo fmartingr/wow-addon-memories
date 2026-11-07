@@ -1,39 +1,65 @@
 # Memories
 
-Memories is a set of World of Warcraft addons for WoW Forever (Interface 16001) that records each character's journey:
-sessions, travel, deaths, progress and more. A Go converter (`memories-export`) turns the saved files into JSONL files.
+Memories is a set of World of Warcraft addons for WoW Forever (Interface 16001) that records each character's journey
+into the saved files: sessions, travel, deaths, progress, kills, gathering, loot, money, skills, groups, PvP and more.
+A Go converter (`memories-export`) turns the saved files into JSONL files for a website.
 
-The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-06-memories-addon-set.md).
+The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-06-memories-addon-set.md). Every kind
+of journal line and its fields are in [`docs/kinds.md`](docs/kinds.md).
 
-## Layout
+> Memories takes no screenshots of its own by default.
 
-- `addons/Memories/` — the core addon.
-- `addons/Memories_Character/` — skills, spells, recipes, talents, consumables, tamed pets, reputation, accepted
-  quests, homes, flight paths and books (`MemoriesCharacterCharDB`).
-- `addons/Memories_Combat/` — kills, rare kills and long fights (`MemoriesCombatCharDB`).
-- `addons/Memories_Economy/` — loot, group rolls, gear, money, trainers, the auction house, mail and trade
-  (`MemoriesEconomyCharDB`).
-- `addons/Memories_Gathering/` — gathering, fishing, opening and pick pocket (`MemoriesGatheringCharDB`).
-- `addons/Memories_Social/` — group members, your guild, enemy players, PvP kills and deaths, honor, duels,
-  battlegrounds and PvP rank (`MemoriesSocialCharDB`).
-- `cmd/memories-export/` — the converter.
-- `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`).
-- `docs/manual-checklist.md` — the checks to run in the game.
+## The addons
 
-## In the game
+Each addon has its own per-character saved file. A sub-addon loads only when `Memories` loads
+(`## Dependencies: Memories`), and the AddOn list shows all 6 as the group "Memories". Turn a sub-addon off in the
+AddOn list to stop its recording.
+
+| Addon | Records | Saved table |
+|---|---|---|
+| `Memories` (core, always on) | sessions, the position trail, progress (levels, XP, quests, discoveries, rest), deaths, close calls, travel (zones, flights, boats, hearthstone, summons, portals, mounts), dungeons and bosses, screenshots, and lines from other addons | `MemoriesCharDB`, plus the account table `MemoriesDB` (settings, backups, orphans, errors, kind metadata) |
+| `Memories_Combat` | kills, rare kills and long fights | `MemoriesCombatCharDB` |
+| `Memories_Gathering` | gathering, fishing, opening containers and chests, pick pocket | `MemoriesGatheringCharDB` |
+| `Memories_Character` | skills, spells, recipes, talents, consumables, tamed pets, reputation, accepted quests, homes, flight paths and books | `MemoriesCharacterCharDB` |
+| `Memories_Economy` | loot, group rolls, gear, equipped items, money, trainers, the auction house, mail and trade | `MemoriesEconomyCharDB` |
+| `Memories_Social` | group members, your guild, enemy players, PvP kills and deaths, honor, duels, battlegrounds and PvP rank | `MemoriesSocialCharDB` |
+
+## Install
+
+`WOW_DIR` is the flavor folder, the one that holds `Interface/AddOns`:
+
+```sh
+make install WOW_DIR=".../World of Warcraft/_forever_"   # copy the 6 addon folders
+make link WOW_DIR=".../World of Warcraft/_forever_"      # or link them, for development
+```
+
+Both replace the 6 `Memories*` folders in `Interface/AddOns`. Then start the game and enable the addons you want in the
+AddOn list.
+
+## Settings and commands
 
 - `/memories` (or `/mem`) lists the commands.
-- `/mem options` (or `/mem settings`) opens the Settings page: the recording rate, the screenshot, save reminder,
-  minimap and low-health settings, one checkbox per kind with "Enable all" and "Disable all" for each group, and the
-  "New findings only" boxes. Settings are account-wide, in `MemoriesDB.settings`.
-- `/mem status` shows each addon of the set (on, off, missing, failed or newer api), its lines, its kinds that are off
-  and the age of its backup, then the login time.
+- `/mem options` (or `/mem settings`) opens the Settings page (Options > AddOns > Memories). Settings are
+  account-wide, in `MemoriesDB.settings`:
+  - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Screenshot at level-up" and
+    "Screenshot at a dungeon's last boss" (both off), "Save reminder", "Minimap button" and "Low-health flash" (all
+    on).
+  - **Kinds:** one checkbox per kind under `<addon> — <group>`, with "Enable all" and "Disable all" for each group.
+    Every kind is on by default. A kind that is off writes no line, but its counts go on.
+  - **New findings only:** Gathering (`ga`, `fs`), Kills (`ki`), Loot (`lo`) and Consumables (`cu`), all off. When a
+    box is on, its kinds write a line only for a first finding or a rare one.
+- `/mem status` shows each addon of the set (on, off, missing, failed or newer api), its lines, the number of its kinds
+  that are off and the age of its backup, then the login time.
 - `/mem errors` shows the saved errors, ready to copy.
 - The minimap button and the addon compartment entry save (reload) with a left click and open the Settings page with a
   right click.
+- After 1 hour with no save, a chat line and the pulsing minimap button remind you to save (save reminder).
+- Each journal has a rolling backup in `MemoriesDB.backups`. When a journal loads empty and its backup has lines, a
+  popup asks you to restore the backup or start fresh (data guard).
+- Memories keeps the game's low-health flash on to record close calls. When the flash is off, a popup asks to keep it
+  on or turn it off.
 - Every screenshot the game saves gets an `ss` line with its predicted file name, unless the `ss` kind is off or the
-  shot is a silent one. Memories takes screenshots of its own only when "Screenshot at level-up" is on (off by
-  default).
+  shot is a silent one. Memories takes screenshots of its own only when a screenshot setting is on.
 
 ## Other addons
 
@@ -80,15 +106,28 @@ a character this run did not write.
 
 ## Make targets
 
+`WOW_DIR` is the flavor folder, for example `.../World of Warcraft/_forever_`.
+
 | Target | What it does |
 |---|---|
-| `make check-tools` | Report each missing tool. |
+| `make help` | List the targets. |
+| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `go`). |
 | `make deps` | Install busted, luacov and luacheck with luarocks (Lua 5.1). |
-| `make lint` | luacheck, gofmt, go vet and the stylua format check. |
+| `make lint` | `lint-lua` (luacheck), `lint-go` (gofmt and go vet) and `fmt-check` (stylua). |
 | `make fmt` | Format the Lua and Go code. |
-| `make test` | Run the busted and Go tests. |
-| `make coverage` | Run the tests with coverage. The core files need 80 %; the total Lua coverage is printed. |
-| `make build` | Build the converter into `build/`. |
-| `make install WOW_DIR=.../_forever_` | Copy each addon folder into the game. |
-| `make link WOW_DIR=.../_forever_` | Link each addon folder into the game. |
-| `make export WOW_DIR=.../_forever_` | Run the converter. |
+| `make test` | `test-lua` (busted) and `test-go` (Go tests with the race detector). |
+| `make coverage` | `coverage-lua` and `coverage-go`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`) and Go `internal/` need 80 %; the total Lua coverage is printed. |
+| `make build` | Build the converter into `build/memories-export`. |
+| `make install WOW_DIR=...` | Copy each addon folder into the game. |
+| `make link WOW_DIR=...` | Link each addon folder into the game. |
+| `make export WOW_DIR=...` | Run the converter. |
+| `make clean` | Remove `build/` and the coverage files. |
+
+## Layout
+
+- `addons/` — the 6 addons.
+- `cmd/memories-export/` and `internal/` — the converter.
+- `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`); `testdata/` — converter fixtures.
+- `docs/` — [`kinds.md`](docs/kinds.md), [`public-api.md`](docs/public-api.md),
+  [`sub-addon-api.md`](docs/sub-addon-api.md) and [`manual-checklist.md`](docs/manual-checklist.md) (the checks to run
+  in the game).
