@@ -16,6 +16,22 @@ globals = {
 }
 
 read_globals = {
+	"C_MountJournal",
+	"C_SkillInfo",
+	"C_SummonInfo",
+	"C_TaxiMap",
+	"ERR_SKILL_GAINED_S",
+	"GetBindLocation",
+	"GetCurrentRegion",
+	"GetLocale",
+	"GetSubZoneText",
+	"GetZoneText",
+	"NumTaxiNodes",
+	"TakeTaxiNode",
+	"TaxiNodeCost",
+	"TaxiNodeGetType",
+	"TaxiNodeName",
+	"UnitIsPlayer",
 	"UnitIsDeadOrGhost",
 	"UnitClassification",
 	"UnitAffectingCombat",

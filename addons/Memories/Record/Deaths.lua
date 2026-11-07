@@ -45,9 +45,7 @@ local function count(key, n)
 	core():Count("deaths", key, n)
 end
 
-local function flag(fn, unit)
-	return ns.R(fn(unit)) == true
-end
+local flag = U.Flag
 
 local function deadNow()
 	return flag(UnitIsDeadOrGhost, "player")
@@ -84,23 +82,7 @@ local function deathAt(inside)
 	return at
 end
 
-local function text(v)
-	v = ns.R(v)
-	return type(v) == "string" and v ~= "" and v or nil
-end
-
-local function number(v)
-	v = ns.R(v)
-	return type(v) == "number" and v or nil
-end
-
--- A pattern instead of a split: nameplates call it for every unit of a crowded place.
-local function npcOf(guid)
-	local kind, id = guid:match("^(%a+)%-[^-]*%-[^-]*%-[^-]*%-[^-]*%-([^-]*)")
-	if kind == "Creature" or kind == "Vehicle" then
-		return tonumber(id)
-	end
-end
+local text, number = U.Text, U.Number
 
 local selfGuid
 
@@ -139,8 +121,7 @@ end
 
 -- The killer of a recap entry. Forever adds a surname to a stranger in the recap, so a learned name wins.
 local function killer(e, info)
-	local name, secret = ns.R(e.sourceName)
-	info.killer = secret and "?" or text(name)
+	info.killer = U.Name(e.sourceName)
 	info.spell = text(e.spellName)
 	local env = text(e.environmentalType)
 	info.env = env and env:lower()
@@ -149,7 +130,7 @@ local function killer(e, info)
 	if not guid then
 		return
 	end
-	local npc = npcOf(guid)
+	local npc = U.NpcID(guid)
 	if npc then
 		info.npc = npc
 		local known = creatures[npc]
@@ -399,7 +380,7 @@ local function learn(unit)
 		return
 	end
 	local level = number(UnitLevel(unit))
-	local npc = npcOf(guid)
+	local npc = U.NpcID(guid)
 	if npc then
 		local known = creatures[npc]
 		if not known then

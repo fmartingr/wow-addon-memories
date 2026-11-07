@@ -16,6 +16,7 @@ Core\Util.lua
 Data\Kinds.lua
 Data\Codec.lua
 Data\TrailCodec.lua
+Data\Bosses.lua
 Data\Journal.lua
 Data\Store.lua
 Data\Settings.lua
@@ -28,6 +29,8 @@ Record\Trail.lua
 Record\Progress.lua
 Record\Deaths.lua
 Record\Screenshots.lua
+Record\Travel.lua
+Record\Dungeons.lua
 UI\Slash.lua
 UI\Save.lua
 UI\Minimap.lua

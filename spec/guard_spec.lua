@@ -26,8 +26,8 @@ describe("data guard", function()
 		return out
 	end
 
-	-- The session lines are off, so the core journal holds only the lines that a test writes.
-	local QUIET = { ["in"] = false, pc = false, out = false, rs = false }
+	-- The session and zone lines are off, so the core journal holds only the lines that a test writes.
+	local QUIET = { ["in"] = false, pc = false, out = false, rs = false, zo = false }
 
 	-- Boots once, writes n lines into the core (and m into the test addon), backs them up and returns MemoriesDB.
 	local function withBackup(n, m)

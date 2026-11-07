@@ -187,6 +187,10 @@ function Handle:Fight()
 	return ns.Fight()
 end
 
+function Handle:Flight()
+	return ns.Travel.Flight()
+end
+
 function Handle:Safe(name, fn, ...)
 	return ns.Safe(where(self, name), fn, ...)
 end
@@ -213,10 +217,7 @@ function Handle:AfterCombat(key, fn)
 end
 
 function Handle:SpellName(id)
-	if id == nil or not (C_Spell and C_Spell.GetSpellName) then
-		return nil
-	end
-	return (ns.R(C_Spell.GetSpellName(id)))
+	return (ns.R(U.SpellName(id)))
 end
 
 function Handle:Utf8Cut(s, n)

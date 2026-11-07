@@ -21,6 +21,8 @@ local DEFAULTS = {
 	saveReminder = true,
 	minimapButton = true,
 	lowHealthFlash = true,
+	-- "yards" or "meters"; any other value lets the region and the client language decide.
+	distanceUnit = "auto",
 }
 
 -- Keys of these tables are kind names and box keys, never paths. Each maps to the default of one entry.

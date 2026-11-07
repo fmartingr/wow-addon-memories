@@ -130,6 +130,7 @@ apply:
 | `h:InFight()` | true from `PLAYER_REGEN_DISABLED` to `PLAYER_REGEN_ENABLED` |
 | `h:InInstance()` | `inside, instanceType` |
 | `h:Fight()` | a copy of the current or last fight, else nil (see below) |
+| `h:Flight()` | the open flight `{ from, to, cost, t }` (node names, copper, `time()` of take-off), else nil; after a reload in the air only `t` is known |
 | `h:Safe(where, fn, ...)` | `ns.Safe` with `where = "<addon>:<where>"` |
 | `h:Print(...)` | a chat line with the "Memories:" prefix |
 | `h:R(v)`, `h:RN(...)` | the secret filter |

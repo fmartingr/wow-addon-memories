@@ -76,3 +76,28 @@ build and pass or fail for each item.
 | 8 | Screenshot format | Type `/dump C_CVar.GetCVar("screenshotFormat")`, press PrintScreen, `/reload`. | The `ss` file name ends with the matching extension (`jpeg` → `.jpg`, `png` → `.png`, `tga` → `.tga`). | not run |
 | 8 | Level-up shot off | With "Screenshot at level-up" off (the default), gain a level. | No screenshot and no new `ss` line. | not run |
 | 8 | Level-up shot on | Turn "Screenshot at level-up" on and gain a level. | About 1.5 s later a screenshot is saved and the journal has `ss|level <N>|ok|<file>`. | not run |
+| 9 | `ERR_SKILL_GAINED_S` | Type `/dump ERR_SKILL_GAINED_S`. | A text with one `%s` (the skill), for example "Has aprendido la habilidad %s.". | not run |
+| 9 | Riding names | Type `/dump C_SkillInfo.GetSkillLineInfoByID(762)`, then `/dump C_Spell.GetSpellName(824)` (and 825, 826, 828, 10861, 10906, 10908, 18995). | The skill line 762 has `name` "Equitación" (Riding); each spell is a racial riding skill, for example "Equitación de caballos". Any other name means the id list in `Record/Travel.lua` is wrong. | not run |
+| 9 | Tram map id | In the Deeprun Tram, type `/dump select(4, UnitPosition("player"))`. | It prints `369`. | not run |
+| 9 | Zone | Walk from one zone into another, then into a new subzone. | One `zo|<zone>` line, then one `sz|<subzone>` line, in Spanish. A `/reload` adds no second `zo`. | not run |
+| 9 | Inn at login | Log out inside an inn, log in, walk out. | `zo|<inn>` only when the zone text names the inn, then `zo|<zone>` once the map confirms it; no other zone line. | not run |
+| 9 | Flight | Talk to a flight master, fly to another node, land. | `tx|<from node>|<to node>|<copper>` at take-off; `tl|<to node>` at landing; `counts.travel.flights` 1 more. | not run |
+| 9 | Flight across a reload | Take a flight and `/reload` in the air, then land. | No new `tx`; `tl` with an empty node at landing. | not run |
+| 9 | Hearthstone | Use the Hearthstone in another zone. | `ld|8690`, `le`, then `hs|<from map>|<to map>|<bind location>|<yards>`; `counts.travel.hearths` 1 more and `counts.distance.hearth` grows by the yards. | not run |
+| 9 | Boat or zeppelin | Take a boat or a zeppelin to another continent. | `ld`, `le`, then `bt|<from map>|<to map>|<from place>|<to place>` within 30 s; `counts.travel.boats` 1 more. | not run |
+| 9 | Portal or teleport | On a mage, cast Teleport: Stormwind (3561). | `ld|3561`, `le`, `po|<zone after>|<from map>|<to map>|3561|<yards or empty>`. | not run |
+| 9 | Summon | Accept a warlock summon. | `so|<warlock>|<area>` at the offer, `su|<warlock>|<area>|<from map>|<to map>|<yards>` after the arrival. A declined summon writes only `so`. | not run |
+| 9 | Spirit release | Die outdoors and release. | `jp|<from map>|<to map>|<yards>|death`, or no travel line when a loading screen came right after a revive. | not run |
+| 9 | Deeprun Tram | Ride the Deeprun Tram from Stormwind to Ironforge. | `ld`, `le`, then `jp|...|tram` on each loading screen into or out of the tram. | not run |
+| 9 | Mount | Mount the same mount twice, with a dismount in between. | One `mo|1|<spell>|<name>`; `counts.travel.mountUps` 2 more and `counts.travel["mount:<spell>"]` 2 more. | not run |
+| 9 | Learned mount or riding | Learn riding at a trainer, or learn a new mount. | One `ml|<name>|<spell>` (riding: `ml|<skill name>` or with the racial riding spell). | not run |
+| 9 | Distance unit | Type `/dump GetCurrentRegion(), GetLocale()`. | Region 1 counts in yards, 2 to 5 in meters; any other region falls back to the client language. | not run |
+| 9 | Dungeon visit | Enter the Deadmines (or any dungeon), die once inside, leave. | `dn|<name>|<instance id>|party|<difficulty>|<size>` at the entrance, then `dx|<name>|<instance id>|<seconds>|1`; `counts.dungeons.visits` 1 more. | not run |
+| 9 | Reload inside | `/reload` inside a dungeon. | No new `dn` or `dx`. | not run |
+| 9 | Logout inside | Log out inside a dungeon, wait, log in outside after the instance reset. | `dx` with the time of the logout. | not run |
+| 9 | Boss fight | Kill a dungeon boss, then wipe on another. | `bo|<boss>|<encounter id>|1||<dungeon>|<seconds>` for the kill (`1` in the 4th field for the last boss), `bo|<boss>|<id>|0||<dungeon>|<seconds>` for the wipe. | not run |
+| 9 | Last-boss shot off | With "Screenshot at a dungeon's last boss" off (the default), kill the last boss of a dungeon. | No screenshot and no `ss` line. The list of last bosses holds English names, so on the esES client a boss with a translated name is not a last boss (`last` stays empty). | not run |
+| 9 | Last-boss shot on | Turn the setting on and kill Edwin VanCleef (the name is the same in Spanish). | About 1 s later a screenshot and `ss|last boss Edwin VanCleef|ok|<file>`. | not run |
+| 9 | World boss | Kill a world boss (for example Azuregos) or be there when it dies, with it targeted. | One `wb|<name>|<npc id>`; a second kill within 10 minutes writes nothing. | not run |
+| 9 | Click on the current node | Open the flight map and click the node where you stand. | No `tx` line and no flight count. | not run |
+| 9 | Ghost run in a dungeon | Die inside a dungeon, release, run back as a ghost and enter again. | No `dx` and no second `dn`; the visit goes on. | not run |

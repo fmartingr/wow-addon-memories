@@ -33,6 +33,8 @@ local broken = false
 local open
 local copyAt
 local lastPoint
+-- GetTime() of the last feed and of the one before it.
+local fedLast, fedBefore
 
 local function round(v)
 	return floor(v + 0.5)
@@ -76,6 +78,11 @@ function Trail.Open()
 	if open and open.chunk.n > 0 then
 		return open.chunk:Record()
 	end
+end
+
+-- GetTime() of the feed before the latest one, else nil.
+function Trail.FedBefore()
+	return fedBefore
 end
 
 function Trail.LastPoint()
@@ -128,6 +135,7 @@ end
 -- p = { m, x, y, wx, wy, flags }; wx, wy are world yards or nil. teleport starts a new chunk.
 function Trail.Feed(p, teleport)
 	local now = GetTime()
+	fedBefore, fedLast = fedLast, now
 	if
 		not open
 		or teleport

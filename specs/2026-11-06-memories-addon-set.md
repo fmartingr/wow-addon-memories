@@ -542,7 +542,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 9. Core recorders: Travel and Dungeons
+### [x] 9. Core recorders: Travel and Dungeons
 - **Outcome:** The core records zones, loading screens, flights, boats, hearthstones, summons, portals, other teleports, mounts, dungeon and raid visits, boss fights and world bosses.
 - **Depends on:** 6 (`TRAIL_LIVE`, trail last point), 7 (`ALIVE` for death teleports, the death count of a visit), 8 (`ns.Screenshots.Take(why, "shots.lastBoss")` for the last-boss shot).
 - **Covers:** AC3 for `zo`, `sz`, `ld`, `le`, `tx`, `tl`, `bt`, `hs`, `so`, `su`, `po`, `jp`, `mo`, `ml`, `dn`, `dx`, `bo`, `wb`; AC4 for these kinds.
@@ -557,13 +557,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** the test cases of Appendix B for Travel and Dungeons; one kind-off test for each kind; a Spanish zone name test.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). Manual: add flight, hearthstone, boat and dungeon items to `docs/manual-checklist.md`.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
   - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 10. Go converter `memories-export`
 - **Outcome:** One command turns the saved files of every character into the `dist-characters/` folder layout, with screenshots and notes joined.

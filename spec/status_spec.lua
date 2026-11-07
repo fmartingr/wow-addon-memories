@@ -29,7 +29,7 @@ describe("/memories status", function()
 		local lines = status()
 		assert.same({
 			"Memories: status:",
-			"  Memories: on, 3 lines, 2 kinds off, backup 10 min ago",
+			"  Memories: on, 4 lines, 2 kinds off, backup 10 min ago",
 			"  Memories_Test: on, 1 lines, 1 kinds off, no backup",
 			"  Memories_Social: newer api, 0 lines, 0 kinds off, no backup",
 			"  Memories_Combat: failed, 0 lines, 1 kinds off, no backup",
@@ -77,7 +77,7 @@ describe("/memories status", function()
 				},
 			},
 		})
-		assert.equal("  Memories: on, 3 lines, 0 kinds off, no backup", status()[2])
+		assert.equal("  Memories: on, 4 lines, 0 kinds off, no backup", status()[2])
 	end)
 
 	it("formats an age in seconds, minutes, hours and days", function()

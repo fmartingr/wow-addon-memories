@@ -56,6 +56,45 @@ function U.Utf8Cut(s, maxBytes)
 	return string.sub(s, 1, cut)
 end
 
+-- A non-empty string, else nil; a secret value is nil.
+function U.Text(v)
+	v = ns.R(v)
+	return type(v) == "string" and v ~= "" and v or nil
+end
+
+-- A number, else nil; a secret value is nil.
+function U.Number(v)
+	v = ns.R(v)
+	return type(v) == "number" and v or nil
+end
+
+-- A name to write: a secret value is "?", an empty or missing one nil.
+function U.Name(v)
+	local s, secret = ns.R(v)
+	return secret and "?" or U.Text(s)
+end
+
+-- True only for a unit flag that reads true; a secret answer counts as off.
+function U.Flag(fn, unit)
+	return ns.R(fn(unit)) == true
+end
+
+-- The raw, possibly secret, name of a spell; nil on a client without C_Spell.GetSpellName.
+function U.SpellName(id)
+	if id ~= nil and type(C_Spell) == "table" and type(C_Spell.GetSpellName) == "function" then
+		return C_Spell.GetSpellName(id)
+	end
+end
+
+-- The creature id of a creature or vehicle GUID, else nil. A pattern instead of a split: nameplates call it for every
+-- unit of a crowded place.
+function U.NpcID(guid)
+	local kind, id = guid:match("^(%a+)%-[^-]*%-[^-]*%-[^-]*%-[^-]*%-([^-]*)")
+	if kind == "Creature" or kind == "Vehicle" then
+		return tonumber(id)
+	end
+end
+
 -- Clients without C_CVar keep the global GetCVar and SetCVar.
 function U.CVarApi(name)
 	if type(C_CVar) == "table" and type(C_CVar[name]) == "function" then

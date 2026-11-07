@@ -30,6 +30,7 @@ local DEFAULT_STRINGS = {
 	COMBATLOG_XPGAIN_FIRSTPERSON_UNNAMED_GROUP = "Ganas %d p. de experiencia. (+%d bonif. grupo)",
 	ERR_ZONE_EXPLORED = "Descubierto: %s.",
 	ERR_ZONE_EXPLORED_XP = "Has descubierto %s: %d p. de experiencia ganados",
+	ERR_SKILL_GAINED_S = "Has aprendido la habilidad %s.",
 }
 
 local function pack(...)
@@ -356,6 +357,7 @@ local function install_encoding()
 	_G.Enum = {
 		CompressionMethod = { Deflate = 0, Zlib = 1 },
 		CompressionLevel = { Default = 0, OptimizeForSpeed = 1, OptimizeForSize = 2 },
+		FlightPathState = { Current = 0, Reachable = 1, Unreachable = 2 },
 	}
 	-- A reversible stand-in: CBOR becomes Lua table text and compression only adds a marker.
 	_G.C_EncodingUtil = {
@@ -622,18 +624,27 @@ local function install_units()
 	_G.GetRealZoneText = function()
 		return wow.zone
 	end
+	_G.GetZoneText = function()
+		return wow.zone
+	end
+	_G.GetSubZoneText = function()
+		return wow.subzone
+	end
+	_G.UnitIsPlayer = unit_value("isPlayer")
 	-- wow.world holds the world yards and the instance id that UnitPosition reports.
 	_G.UnitPosition = function(u)
 		if u == "player" and wow.world then
 			return wow.world.y, wow.world.x, 0, wow.world.inst
 		end
 	end
+	-- Another unit has the flag when its entry of opts.units has the field set to true.
 	local function flag(name)
 		return function(u)
 			if u == nil or u == "player" then
 				return wow.flags[name] or false
 			end
-			return false
+			local data = wow.units[u]
+			return data ~= nil and data[name] == true
 		end
 	end
 	_G.UnitOnTaxi = flag("taxi")
@@ -792,6 +803,101 @@ local function install_deaths()
 	_G.GetCVar, _G.SetCVar = get, set
 end
 
+-- Travel ---------------------------------------------------------------------
+
+-- wow.taxi is the flight master's node list: { name, type ("CURRENT", "REACHABLE", ...), cost }; wow.taxi_map holds
+-- the C_TaxiMap.GetAllTaxiNodes entries and wow.taken the slots of TakeTaxiNode. wow.summon = { who, area } is the
+-- open summon; wow.mounts maps a mount id to { name, spell, active }; wow.skill_lines maps a skill line id to its name.
+local function install_travel()
+	wow.taxi = wow.opts.taxi or {}
+	wow.taxi_map = {}
+	wow.taken = {}
+	wow.summon = {}
+	wow.summons = 0
+	wow.mounts = wow.opts.mounts or {}
+	wow.skill_lines = wow.opts.skillLines or {}
+	wow.bind = wow.opts.bind
+	wow.region = wow.opts.region
+	wow.locale = wow.opts.locale or "esES"
+	_G.NumTaxiNodes = function()
+		return #wow.taxi
+	end
+	local function node(field)
+		return function(i)
+			return wow.taxi[i] and wow.taxi[i][field]
+		end
+	end
+	_G.TaxiNodeGetType = function(i)
+		return wow.taxi[i] and wow.taxi[i].type or "NONE"
+	end
+	_G.TaxiNodeName = node("name")
+	_G.TaxiNodeCost = node("cost")
+	_G.TakeTaxiNode = function(slot)
+		wow.taken[#wow.taken + 1] = slot
+	end
+	_G.C_TaxiMap = {
+		GetAllTaxiNodes = function()
+			return wow.taxi_map
+		end,
+	}
+	_G.C_SummonInfo = {
+		GetSummonConfirmSummoner = function()
+			return wow.summon.who
+		end,
+		GetSummonConfirmAreaName = function()
+			return wow.summon.area
+		end,
+		ConfirmSummon = function()
+			wow.summons = wow.summons + 1
+		end,
+	}
+	_G.C_MountJournal = {
+		GetMountFromSpell = function(spell)
+			for id, m in pairs(wow.mounts) do
+				if m.spell == spell then
+					return id
+				end
+			end
+		end,
+		GetMountInfoByID = function(id)
+			local m = wow.mounts[id]
+			if m then
+				return m.name, m.spell, 0, m.active == true, true, 0, false, false, nil, false, true, id, false
+			end
+		end,
+		GetMountIDs = function()
+			local ids = {}
+			for id in pairs(wow.mounts) do
+				ids[#ids + 1] = id
+			end
+			table.sort(ids)
+			return ids
+		end,
+	}
+	_G.C_SkillInfo = {
+		GetSkillLineInfoByID = function(id)
+			local name = wow.skill_lines[id]
+			if name then
+				return { skillID = id, name = name }
+			end
+		end,
+	}
+	_G.GetBindLocation = function()
+		return wow.bind
+	end
+	_G.GetCurrentRegion = function()
+		return wow.region
+	end
+	_G.GetLocale = function()
+		return wow.locale
+	end
+end
+
+-- Fires the player's UNIT_SPELLCAST_SUCCEEDED for spell.
+function wow.cast(spell)
+	wow.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-3-0-0-0-" .. tostring(spell) .. "-0", spell)
+end
+
 -- Screenshots ----------------------------------------------------------------
 
 -- wow.shots counts the Screenshot() calls; wow.shot_fail makes the call raise. wow.screenshot(ok) answers the way the
@@ -854,7 +960,7 @@ function wow.reset(opts)
 	wow.popups = {}
 	wow.reloads = 0
 	wow.combat = false
-	wow.instance = nil
+	wow.instance = opts.instance
 	wow.secrets = setmetatable({}, { __mode = "k" })
 	wow.unknown_events = opts.unknownEvents or {}
 	wow.player = merge(DEFAULT_PLAYER, opts.player)
@@ -866,6 +972,7 @@ function wow.reset(opts)
 	wow.flags = merge({}, opts.flags)
 	wow.world = merge({ x = 0, y = 0, inst = 0 }, opts.world)
 	wow.zone = opts.zone or "Bosque de Elwynn"
+	wow.subzone = opts.subzone
 	wow.rested = opts.rested
 	wow.quests = opts.quests or {}
 	wow.rules = opts.rules
@@ -886,6 +993,7 @@ function wow.reset(opts)
 	install_addons()
 	install_deaths()
 	install_screenshots()
+	install_travel()
 
 	_G.CreateFrame = function(kind, name, parent, template)
 		return new_frame(kind, name, parent, template)
@@ -1088,7 +1196,9 @@ end
 -- reloading (enter the world as a /reload), spells, map, maps, units, unknownEvents, noSecrets, clock, wall,
 -- flags (taxi, flying, mounted, ghost, dead, swimming, moving, afk), world ({ x, y, inst } yards), zone, rested,
 -- quests (id -> title), rules ({ hardcore, selfFound } for C_GameRules), strings (GlobalStrings over Spanish ones),
--- recap (death recap events), cvars (name -> value), lowHealthFrame (false: no LowHealthFrame).
+-- recap (death recap events), cvars (name -> value), lowHealthFrame (false: no LowHealthFrame), subzone, taxi
+-- (flight master nodes), mounts (id -> { name, spell, active }), skillLines (id -> name), bind, region, locale,
+-- instance ({ name, type, id, difficulty, size } for IsInInstance and GetInstanceInfo).
 -- Returns the core namespace and a table of every booted addon's namespace by name.
 function wow.boot(opts)
 	opts = opts or {}
