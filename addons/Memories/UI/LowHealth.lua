@@ -20,23 +20,6 @@ local expect
 local saving = false
 local entered = false
 
-local function api(name)
-	if type(C_CVar) == "table" and type(C_CVar[name]) == "function" then
-		return C_CVar[name]
-	end
-	return _G[name]
-end
-
-local function read()
-	local get = api("GetCVar")
-	if type(get) ~= "function" then
-		return nil
-	end
-	local ok, v = pcall(get, CVAR)
-	v = ok and ns.R(v) or nil
-	return type(v) == "string" and v or nil
-end
-
 local function save(on)
 	saving = true
 	ns.Settings.Set("lowHealthFlash", on)
@@ -45,7 +28,7 @@ end
 
 -- A CVar that cannot be read leaves the answer to the setting.
 function LowHealth.IsOn()
-	local v = read()
+	local v = ns.U.GetCVar(CVAR)
 	if v == nil then
 		return ns.Settings.Get("lowHealthFlash") == true
 	end
@@ -54,7 +37,7 @@ end
 
 function LowHealth.Set(on)
 	local value = on and "0" or "1"
-	local set = api("SetCVar")
+	local set = ns.U.CVarApi("SetCVar")
 	expect = value
 	-- C_CVar.SetCVar answers false for a refused write instead of raising.
 	local ok, res = pcall(set, CVAR, value)

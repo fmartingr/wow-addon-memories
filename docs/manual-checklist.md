@@ -69,3 +69,10 @@ build and pass or fail for each item.
 | 7 | Popup in combat | Turn the flash off, start a fight, `/reload` in combat. | The popup shows only after the fight ends. | not run |
 | 7 | Option untick | Uncheck "Low-health flash" on the Settings page. | The popup shows; the option and the CVar stay on until a button is clicked. | not run |
 | 7 | Game turns it off | With the flash on, untick the game's own low-health flash option (Interface options). | The Memories popup shows. Turning it on again in the game shows no popup and checks the Memories option. | not run |
+| 8 | Public event | Type `/run print(Memories.RecordEvent("Test", "hello", "world"))`. | It prints `true`. After a `/reload`, the journal in `MemoriesCharDB` ends with an `ex|Test|hello|world` line. | not run |
+| 8 | Public refusal | Type `/run print(Memories.RecordEvent("Test"))`. | It prints `false bad what`. | not run |
+| 8 | Rate limit | Type `/run for i = 1, 31 do print(i, Memories.RecordEvent("Spam", "x")) end`. | Lines 1 to 30 print `true`, line 31 prints `false rate limit`. A loop that crosses a minute of `GetTime()` starts the count again: wait a minute and run it once more. | not run |
+| 8 | By-hand screenshot | Note the line count in `/mem status`, press PrintScreen, then `/mem status` again. | The count is at least 1 more (other recorders can write lines meanwhile). After a `/reload`, the journal ends with `ss|by hand|ok|WoWScrnShot_<MMDDYY_HHMMSS>.<ext>`, and that file (or the one a second earlier) is in `Screenshots/`. `counts.screenshots.shots` is 1 more. | not run |
+| 8 | Screenshot format | Type `/dump C_CVar.GetCVar("screenshotFormat")`, press PrintScreen, `/reload`. | The `ss` file name ends with the matching extension (`jpeg` → `.jpg`, `png` → `.png`, `tga` → `.tga`). | not run |
+| 8 | Level-up shot off | With "Screenshot at level-up" off (the default), gain a level. | No screenshot and no new `ss` line. | not run |
+| 8 | Level-up shot on | Turn "Screenshot at level-up" on and gain a level. | About 1.5 s later a screenshot is saved and the journal has `ss|level <N>|ok|<file>`. | not run |

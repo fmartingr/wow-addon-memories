@@ -22,10 +22,12 @@ Data\Settings.lua
 Data\Backup.lua
 Api\Services.lua
 Api\Registry.lua
+Api\Public.lua
 Record\Sessions.lua
 Record\Trail.lua
 Record\Progress.lua
 Record\Deaths.lua
+Record\Screenshots.lua
 UI\Slash.lua
 UI\Save.lua
 UI\Minimap.lua

@@ -21,6 +21,7 @@ read_globals = {
 	"UnitAffectingCombat",
 	"StaticPopup_Hide",
 	"RetrieveCorpse",
+	"Screenshot",
 	"LowHealthFrame",
 	"GetUIPanel",
 	"C_DeathRecap",

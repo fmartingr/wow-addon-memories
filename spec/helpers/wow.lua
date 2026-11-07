@@ -792,6 +792,25 @@ local function install_deaths()
 	_G.GetCVar, _G.SetCVar = get, set
 end
 
+-- Screenshots ----------------------------------------------------------------
+
+-- wow.shots counts the Screenshot() calls; wow.shot_fail makes the call raise. wow.screenshot(ok) answers the way the
+-- client does, with SCREENSHOT_SUCCEEDED or SCREENSHOT_FAILED and no payload.
+local function install_screenshots()
+	wow.shots = 0
+	wow.shot_fail = nil
+	_G.Screenshot = function()
+		if wow.shot_fail then
+			error(wow.shot_fail, 2)
+		end
+		wow.shots = wow.shots + 1
+	end
+end
+
+function wow.screenshot(ok)
+	wow.fire(ok == false and "SCREENSHOT_FAILED" or "SCREENSHOT_SUCCEEDED")
+end
+
 -- Reset ----------------------------------------------------------------------
 
 -- A wrapped value stands in for a secret value of the client.
@@ -866,6 +885,7 @@ function wow.reset(opts)
 	install_units()
 	install_addons()
 	install_deaths()
+	install_screenshots()
 
 	_G.CreateFrame = function(kind, name, parent, template)
 		return new_frame(kind, name, parent, template)

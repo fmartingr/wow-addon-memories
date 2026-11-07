@@ -23,6 +23,15 @@ The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-0
 - `/mem errors` shows the saved errors, ready to copy.
 - The minimap button and the addon compartment entry save (reload) with a left click and open the Settings page with a
   right click.
+- Every screenshot the game saves gets an `ss` line with its predicted file name, unless the `ss` kind is off or the
+  shot is a silent one. Memories takes screenshots of its own only when "Screenshot at level-up" is on (off by
+  default).
+
+## Other addons
+
+Other addons write events and screenshot notes into the journal with `Memories.RecordEvent` and
+`Memories.RecordScreenshot`. See [`docs/public-api.md`](docs/public-api.md). Memories sub-addons use
+[`docs/sub-addon-api.md`](docs/sub-addon-api.md).
 
 ## Make targets
 

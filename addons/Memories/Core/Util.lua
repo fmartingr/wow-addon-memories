@@ -56,6 +56,25 @@ function U.Utf8Cut(s, maxBytes)
 	return string.sub(s, 1, cut)
 end
 
+-- Clients without C_CVar keep the global GetCVar and SetCVar.
+function U.CVarApi(name)
+	if type(C_CVar) == "table" and type(C_CVar[name]) == "function" then
+		return C_CVar[name]
+	end
+	return _G[name]
+end
+
+-- The CVar's text, else nil when it is missing, secret or cannot be read.
+function U.GetCVar(name)
+	local get = U.CVarApi("GetCVar")
+	if type(get) ~= "function" then
+		return nil
+	end
+	local ok, v = pcall(get, name)
+	v = ok and ns.R(v) or nil
+	return type(v) == "string" and v or nil
+end
+
 -- A nil target hooks the global function named by method. where names the hook in the error log.
 function U.Hook(target, method, fn, where)
 	local tbl = target or _G

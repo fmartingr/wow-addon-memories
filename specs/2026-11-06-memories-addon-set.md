@@ -506,13 +506,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 8. Screenshot service and the public API (`ex`, `sn`)
+### [x] 8. Screenshot service and the public API (`ex`, `sn`)
 - **Outcome:** Every saved screenshot gets an `ss` line. Other addons record events and screenshot notes through the `Memories` global.
 - **Depends on:** 5 (settings `shots.*`, kind gate), 6 (`LEVEL_UP`).
 - **Covers:** AC9, AC10; risks "API text with | or line breaks" (API part), "Another addon floods the API".
 - **Files:** `addons/Memories/Record/Screenshots.lua`, `addons/Memories/Api/Public.lua`; `spec/screenshots_spec.lua`, `spec/api_spec.lua`; `docs/public-api.md`.
 - **Implementation:**
-  - **Screenshots:** follow Appendix D, section "Screenshots (core)". The settings `shots.level` and `shots.lastBoss` are **off** by default (D10). The service offers `ns.Screenshots.Take(why)` for Task 9 (last boss) and the level-up shot. Ignore the appendix's rules about a simulated journal: Memories has no simulation mode.
+  - **Screenshots:** follow Appendix D, section "Screenshots (core)". The settings `shots.level` and `shots.lastBoss` are **off** by default (D10). The service offers `ns.Screenshots.Take(why, setting)` for Task 9 (last boss, `"shots.lastBoss"`) and the level-up shot; it takes no shot unless that setting is on. Ignore the appendix's rules about a simulated journal: Memories has no simulation mode.
   - **`Memories.RecordEvent(source, what, detail)`** → kind `ex` with fields `source, what, detail`.
   - **`Memories.RecordScreenshot(source, note, file)`** → kind `sn` with fields `source, note, file`. Call it after `SCREENSHOT_SUCCEEDED`. `file` is the caller's predicted file name.
   - **Input rules** (both calls):
@@ -534,17 +534,17 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** `spec/api_spec.lua` (unit and integration): each reason; each limit; UTF-8 cut; escaping in the stored line; the rate limit and its reset; the bucket cleanup; `"off"` when `ex` or `sn` is off. `spec/screenshots_spec.lua`: the test cases of Appendix D "Screenshots (core)" with the settings off by default; the level-up shot only when `shots.level` is on.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). In the game: `/run print(Memories.RecordEvent("Test", "hello", "world"))` prints `true`; a PrintScreen key press makes an `ss` line (see `/memories status` line count).
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 9. Core recorders: Travel and Dungeons
 - **Outcome:** The core records zones, loading screens, flights, boats, hearthstones, summons, portals, other teleports, mounts, dungeon and raid visits, boss fights and world bosses.
-- **Depends on:** 6 (`TRAIL_LIVE`, trail last point), 7 (`ALIVE` for death teleports, the death count of a visit), 8 (`ns.Screenshots.Take` for the last-boss shot).
+- **Depends on:** 6 (`TRAIL_LIVE`, trail last point), 7 (`ALIVE` for death teleports, the death count of a visit), 8 (`ns.Screenshots.Take(why, "shots.lastBoss")` for the last-boss shot).
 - **Covers:** AC3 for `zo`, `sz`, `ld`, `le`, `tx`, `tl`, `bt`, `hs`, `so`, `su`, `po`, `jp`, `mo`, `ml`, `dn`, `dx`, `bo`, `wb`; AC4 for these kinds.
 - **Files:** `addons/Memories/Record/Travel.lua`, `addons/Memories/Record/Dungeons.lua`, `addons/Memories/Data/Bosses.lua`; `spec/travel_spec.lua`, `spec/dungeons_spec.lua`.
 - **Implementation:**
