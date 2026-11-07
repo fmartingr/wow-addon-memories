@@ -596,7 +596,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 11. Sub-addon `Memories_Gathering`
+### [x] 11. Sub-addon `Memories_Gathering`
 - **Outcome:** Gathering, fishing, opening and pick pocket are recorded in their own saved file.
 - **Depends on:** 3 (registry), 5 (kind gate, `newOnly`).
 - **Covers:** AC3 for `ga`, `fs`, `op`, `pp`; AC6 and AC7 for `ga` and `fs`; risk "Localized clients".
@@ -611,13 +611,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** the test cases of Appendix D for Gathering, with Spanish spell names in at least one; kind-off tests; new-only on and off tests.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). Manual: mine a vein, fish, pick a pocket on the esES client.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
-  - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] All three reviews pass with no valid open findings.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 12. Sub-addon `Memories_Combat`
 - **Outcome:** Kills, rare kills and long fights are recorded in their own saved file, in instances too.

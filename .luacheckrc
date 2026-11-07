@@ -16,6 +16,16 @@ globals = {
 }
 
 read_globals = {
+	"C_Container",
+	"C_Item",
+	"ERR_FISH_ESCAPED",
+	"ERR_FISH_NOT_HOOKED",
+	"GetLootSlotInfo",
+	"GetLootSlotLink",
+	"GetLootSlotType",
+	"GetLootSourceInfo",
+	"GetNumLootItems",
+	"IsFishingLoot",
 	"C_MountJournal",
 	"C_SkillInfo",
 	"C_SummonInfo",

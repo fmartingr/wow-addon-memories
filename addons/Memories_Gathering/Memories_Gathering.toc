@@ -1,0 +1,12 @@
+## Interface: 16001
+## Title: Memories - Gathering
+## Notes: Records gathering, fishing, opening and pick pocket.
+## Author: Felipe M.
+## Version: 0.1.0
+## Dependencies: Memories
+## Group: Memories
+## SavedVariablesPerCharacter: MemoriesGatheringCharDB
+## LoadSavedVariablesFirst: 1
+## X-Memories-API: 1
+
+Gathering.lua

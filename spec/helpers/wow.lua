@@ -31,6 +31,8 @@ local DEFAULT_STRINGS = {
 	ERR_ZONE_EXPLORED = "Descubierto: %s.",
 	ERR_ZONE_EXPLORED_XP = "Has descubierto %s: %d p. de experiencia ganados",
 	ERR_SKILL_GAINED_S = "Has aprendido la habilidad %s.",
+	ERR_FISH_ESCAPED = "¡El pez se ha escapado!",
+	ERR_FISH_NOT_HOOKED = "No has pescado nada.",
 }
 
 local function pack(...)
@@ -898,6 +900,71 @@ function wow.cast(spell)
 	wow.fire("UNIT_SPELLCAST_SUCCEEDED", "player", "Cast-3-0-0-0-" .. tostring(spell) .. "-0", spell)
 end
 
+-- Loot -----------------------------------------------------------------------
+
+-- wow.loot is the open loot window: { fishing, slots = { { money = true } or { item, name, count, quality, quest } } };
+-- a slot's source is the GUID that GetLootSourceInfo answers. wow.bags[bag][slot] is the C_Container item info
+-- ({ itemID, hasLoot, itemName }) and wow.items the C_Item names by id.
+local function install_loot()
+	wow.loot = { slots = {} }
+	wow.bags = {}
+	wow.items = {}
+	local function slot(i)
+		return wow.loot.slots[i]
+	end
+	_G.GetNumLootItems = function()
+		return #wow.loot.slots
+	end
+	_G.GetLootSlotType = function(i)
+		local s = slot(i)
+		return s and (s.money and 2 or 1) or 0
+	end
+	_G.GetLootSlotInfo = function(i)
+		local s = slot(i)
+		if not s then
+			return nil
+		end
+		return 134400, s.name, s.count or 1, nil, s.quality, false, s.quest == true, nil, false, s.money == true
+	end
+	_G.GetLootSlotLink = function(i)
+		local s = slot(i)
+		if s and s.item then
+			return "|cffffffff|Hitem:" .. s.item .. "::::::::10:::::|h[" .. tostring(s.name) .. "]|h|r"
+		end
+	end
+	_G.GetLootSourceInfo = function(i)
+		local s = slot(i)
+		if s and s.source then
+			return s.source, s.count or 1
+		end
+	end
+	_G.IsFishingLoot = function()
+		return wow.loot.fishing == true
+	end
+	_G.C_Container = {
+		GetContainerItemInfo = function(bag, i)
+			return (wow.bags[bag] or {})[i]
+		end,
+		UseContainerItem = noop,
+	}
+	_G.C_Item = {
+		GetItemNameByID = function(id)
+			return wow.items[id]
+		end,
+	}
+end
+
+-- Opens a loot window: LOOT_OPENED with autoLoot false.
+function wow.open_loot(window, isFromItem)
+	wow.loot = window
+	wow.fire("LOOT_OPENED", false, isFromItem == true)
+end
+
+-- Fires the player's UNIT_SPELLCAST_SENT for spell on a target, with the castGUID that wow.cast uses.
+function wow.send(spell, target)
+	wow.fire("UNIT_SPELLCAST_SENT", "player", target or "", "Cast-3-0-0-0-" .. tostring(spell) .. "-0", spell)
+end
+
 -- Screenshots ----------------------------------------------------------------
 
 -- wow.shots counts the Screenshot() calls; wow.shot_fail makes the call raise. wow.screenshot(ok) answers the way the
@@ -994,6 +1061,7 @@ function wow.reset(opts)
 	install_deaths()
 	install_screenshots()
 	install_travel()
+	install_loot()
 
 	_G.CreateFrame = function(kind, name, parent, template)
 		return new_frame(kind, name, parent, template)

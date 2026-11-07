@@ -8,6 +8,7 @@ The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-0
 ## Layout
 
 - `addons/Memories/` — the core addon.
+- `addons/Memories_Gathering/` — gathering, fishing, opening and pick pocket (`MemoriesGatheringCharDB`).
 - `cmd/memories-export/` — the converter.
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`).
 - `docs/manual-checklist.md` — the checks to run in the game.
