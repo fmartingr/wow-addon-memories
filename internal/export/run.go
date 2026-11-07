@@ -260,7 +260,8 @@ accounts:
 					}
 					continue
 				}
-				c := r.load(sv, realm, name, kinds)
+				cname, crealm := charFolder(realm, name)
+				c := r.load(sv, crealm, cname, kinds)
 				if c == nil {
 					continue
 				}
@@ -279,6 +280,16 @@ accounts:
 		chars = append(chars, c)
 	}
 	return chars, nil
+}
+
+// charFolder gives the name and realm of a character folder. The Forever client names it "<Name>-<Realm>" inside a
+// realm id folder such as "93"; other clients name it "<Name>" inside a "<Realm>" folder. A name never holds a "-",
+// so the realm is all the text after the first one.
+func charFolder(parent, folder string) (name, realm string) {
+	if n, r, ok := strings.Cut(folder, "-"); ok && n != "" && r != "" {
+		return n, r
+	}
+	return folder, parent
 }
 
 func (r *runner) load(sv, realm, folder string, kinds journal.Kinds) *character {

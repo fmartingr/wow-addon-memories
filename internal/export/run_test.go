@@ -383,3 +383,37 @@ func TestByLevel(t *testing.T) {
 		t.Fatal("a map value changed")
 	}
 }
+
+func TestCharFolder(t *testing.T) {
+	cases := []struct{ parent, folder, name, realm string }{
+		{"93", "Neral-Brumamar", "Neral", "Brumamar"},
+		{"93", "Ñandú-Azjol-Nerub", "Ñandú", "Azjol-Nerub"},
+		{"Brumamar", "Neral", "Neral", "Brumamar"},
+		{"Brumamar", "-Neral", "-Neral", "Brumamar"},
+	}
+	for _, c := range cases {
+		if name, realm := charFolder(c.parent, c.folder); name != c.name || realm != c.realm {
+			t.Errorf("charFolder(%q, %q) = %q, %q; want %q, %q", c.parent, c.folder, name, realm, c.name, c.realm)
+		}
+	}
+}
+
+func TestRunForeverFolderLayout(t *testing.T) {
+	wow, dist := fixture(t)
+	acc := filepath.Join(wow, "WTF", "Account", "TESTACCOUNT")
+	if err := os.MkdirAll(filepath.Join(acc, "93"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Rename(filepath.Join(acc, "Brumamar", "Ñandú"), filepath.Join(acc, "93", "Ñandú-Brumamar")); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Remove(filepath.Join(acc, "Brumamar")); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := runOn(t, wow, dist, ""); err != nil {
+		t.Fatal(err)
+	}
+	if len(journey(t, dist, mainID)) == 0 {
+		t.Fatalf("no journey under %s for a <realm id>/<Name>-<Realm> folder", mainID)
+	}
+}

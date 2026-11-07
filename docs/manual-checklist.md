@@ -16,7 +16,7 @@ order: run them from top to bottom. Run A has all 6 addons on. Run B (section T)
   before Task 16 closes.
 - **Source:** the spec task number, or `V<n>` for step `n` of the spec's Validation.
 - **Lua errors:** type `/console scriptErrors 1` once, so an error shows a window.
-- **Saved files:** per character `WTF/Account/<account>/<realm>/<character>/SavedVariables/<addon>.lua`, and the
+- **Saved files:** per character `WTF/Account/<account>/<realm id>/<Name>-<Realm>/SavedVariables/<addon>.lua`, and the
   account file `WTF/Account/<account>/SavedVariables/Memories.lua`. The client writes them at `/reload` and logout
   only, so `/reload` before you read a file.
 - **Journal lines:** 200 lines are packed into one string. Search the file for `|<kind>|`, or run the converter (row
@@ -307,7 +307,7 @@ Check every kind again with "Enable all" after its row.
 | R2 | 4 | Backup written | Type `/dump MemoriesDB.backups`. | The character's GUID has an entry for each of the 6 addons with `t`, `level`, `lines` and a `blob` (or `data` when the client cannot encode). | not run |
 | R3 | V5 | Own files | Log out. Run `grep -c '\|ki\|' .../SavedVariables/Memories_Combat.lua` and `grep -c '\|ki\|' .../SavedVariables/Memories.lua`. | The first is above 0, the second is 0. | not run |
 | R4 | 6 | Gap | Log in, `/reload`, play 3 minutes, then kill the game process (task manager or `kill -9`) so nothing is saved. Start the game and log in. | After the first /played answer, `gp\|<seconds, 180 or more>\|<time of the last save>`. | not run |
-| R5 | 4 | Data guard, restore | With a backup in place, close the game. In `WTF/Account/<account>/<realm>/<character>/SavedVariables/Memories.lua`, delete the `MemoriesCharDB` table. Start the game and log in. | A popup "Memories: Memories came back empty. A backup from <date> has <n> lines." with "Restore" and "Start fresh". "Restore" asks to reload; after the reload the old lines are back, followed by `nt\|restored backup\|<n>`, then `out` and the reload lines. | not run |
+| R5 | 4 | Data guard, restore | With a backup in place, close the game. In `WTF/Account/<account>/<realm id>/<Name>-<Realm>/SavedVariables/Memories.lua`, delete the `MemoriesCharDB` table. Start the game and log in. | A popup "Memories: Memories came back empty. A backup from <date> has <n> lines." with "Restore" and "Start fresh". "Restore" asks to reload; after the reload the old lines are back, followed by `nt\|restored backup\|<n>`, then `out` and the reload lines. | not run |
 | R6 | 4 | Data guard, start fresh | Repeat R5 and click "Start fresh". | The new journal holds `nt\|started fresh\|<n>` right after the login lines (`in\|login`, `pc`, `rs`). The next backup run (at most 15 minutes later) replaces the old one. | not run |
 | R7 | 4 | Data guard, no answer | Repeat R5, but log out without an answer (the popup stays open). Log in again. | The popup shows again and `MemoriesDB.backups` still has the old backup. Click "Restore". | not run |
 | R8 | 4 | Data guard, sub-addon | Close the game. In `SavedVariables/Memories_Combat.lua`, delete the `MemoriesCombatCharDB` table. Start the game and log in. Click "Restore". | A popup "Memories: Memories_Combat came back empty. A backup from <date> has <n> lines."; after the reload the `ki` lines are back and the Combat journal ends with `nt\|restored backup\|<n>`. | not run |

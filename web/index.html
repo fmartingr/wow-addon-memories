@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Memories Viewer</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="bar">
+  <h1>Memories</h1>
+  <label class="sub" for="character">Character</label>
+  <select id="character" disabled><option>Loading…</option></select>
+  <span id="status" class="sub" role="status"></span>
+</header>
+
+<section id="card" class="card" hidden>
+  <div>
+    <h2 id="cName"></h2>
+    <p id="cLine" class="sub"></p>
+  </div>
+  <dl id="cStats" class="stats"></dl>
+</section>
+
+<nav class="tabs" id="tabs" hidden>
+  <button data-tab="journey" class="on">Journey</button>
+  <button data-tab="map">Trail</button>
+  <button data-tab="sessions">Sessions</button>
+  <button data-tab="counts">Counts</button>
+</nav>
+
+<main>
+  <section id="tab-journey">
+    <div class="filters">
+      <input id="search" type="search" placeholder="Search the journey" aria-label="Search the journey">
+      <div id="chips" class="chips"></div>
+    </div>
+    <p id="feedInfo" class="sub"></p>
+    <ol id="feed" class="feed"></ol>
+  </section>
+
+  <section id="tab-map" hidden>
+    <div class="filters">
+      <label class="sub" for="mapSel">Map</label>
+      <select id="mapSel"></select>
+      <span id="mapInfo" class="sub"></span>
+    </div>
+    <canvas id="map" width="900" height="900" aria-label="Trail on the selected map"></canvas>
+  </section>
+
+  <section id="tab-sessions" hidden>
+    <table id="sessions"></table>
+  </section>
+
+  <section id="tab-counts" hidden>
+    <div id="counts"></div>
+  </section>
+</main>
+
+<div id="shot" class="shot" hidden><img alt=""></div>
+<script src="kinds.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

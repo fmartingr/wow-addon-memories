@@ -5,3 +5,4 @@ luacov.*.out
 .lua/
 .luarocks/
 coverage.out
+web/characters

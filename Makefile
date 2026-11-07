@@ -13,7 +13,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-go fmt-check fmt test test-lua test-go coverage coverage-lua coverage-go build export link install clean
+.PHONY: help check-tools deps lint lint-lua lint-go fmt-check fmt test test-lua test-go coverage coverage-lua coverage-go build export link install clean web-data web web-demo
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -90,3 +90,19 @@ install: ## Copy each addon folder into WOW_DIR (a flavor folder)
 
 clean: ## Remove build output
 	rm -rf build luacov.*.out coverage.out
+
+WEB_PORT ?= 8765
+
+web-data: ## Run the converter into dist-characters/ for the viewer (needs WOW_DIR)
+	@$(MAKE) --no-print-directory export
+
+web: ## Serve the viewer in web/ with dist-characters/ at http://localhost:$(WEB_PORT)
+	@if [ ! -f dist-characters/index.json ]; then echo "web: run 'make web-data WOW_DIR=...' first, or 'make web-demo'" >&2; exit 1; fi
+	ln -sfn "$(CURDIR)/dist-characters" web/characters
+	@echo "Serving at http://localhost:$(WEB_PORT)"
+	python3 -m http.server $(WEB_PORT) --directory web
+
+web-demo: ## Serve the viewer with the converter test data
+	ln -sfn "$(CURDIR)/cmd/memories-export/testdata/expected" web/characters
+	@echo "Serving at http://localhost:$(WEB_PORT)"
+	python3 -m http.server $(WEB_PORT) --directory web
