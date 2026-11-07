@@ -49,6 +49,19 @@ local DEFAULT_STRINGS = {
 	ERR_TRADE_COMPLETE = "Comercio completado.",
 	AUCTION_EXPIRED_MAIL_SUBJECT = "Subasta caducada: %s",
 	AUCTION_OUTBID_MAIL_SUBJECT = "Puja superada: %s",
+	ERR_LEARN_SPELL_S = "Has aprendido un nuevo hechizo: %s.",
+	ERR_LEARN_ABILITY_S = "Has aprendido una nueva facultad: %s.",
+	ERR_LEARN_RECIPE_S = "Has aprendido a crear un nuevo objeto: %s.",
+	ERR_DEATHBIND_SUCCESS_S = "%s es ahora tu hogar.",
+	ERR_NEWTAXIPATH = "Has descubierto una nueva ruta de vuelo.",
+	FACTION_STANDING_LABEL1 = "Odiado",
+	FACTION_STANDING_LABEL2 = "Hostil",
+	FACTION_STANDING_LABEL3 = "Antipático",
+	FACTION_STANDING_LABEL4 = "Neutral",
+	FACTION_STANDING_LABEL5 = "Amistoso",
+	FACTION_STANDING_LABEL6 = "Honorable",
+	FACTION_STANDING_LABEL7 = "Reverenciado",
+	FACTION_STANDING_LABEL8 = "Exaltado",
 }
 
 local function pack(...)
@@ -988,7 +1001,7 @@ end
 -- Economy ------------------------------------------------------------------
 
 -- wow.money is the gold (wow.set_money fires PLAYER_MONEY); wow.gear[slot] = { id, quality } the worn items;
--- wow.item_info[id] = { quality, class, equipLoc }; wow.merchant[index] = { name, id }; wow.trainer = { services =
+-- wow.item_info[id] = { quality, class, sub, equipLoc }; wow.merchant[index] = { name, id }; wow.trainer = { services =
 -- { { name, type, sub, skill, cost } }, tradeskill }; wow.auctions[id] the C_AuctionHouse auction info and
 -- wow.legacy_auctions[index] = { name, buyout }, wow.sell_item the legacy sell slot name; wow.inbox is a list of
 -- mails { sender, subject, money, days, canReply, isGM, items = { [slot] = { id, name, count, quality } }, invoice =
@@ -1021,7 +1034,7 @@ local function install_economy()
 	_G.C_Item.GetItemInfoInstant = function(id)
 		local info = wow.item_info[id]
 		if info then
-			return id, nil, nil, info.equipLoc, 134400, info.class, 0
+			return id, nil, nil, info.equipLoc, 134400, info.class, info.sub or 0
 		end
 	end
 	_G.C_Item.GetItemName = function(location)
@@ -1155,6 +1168,188 @@ local function install_economy()
 	end
 end
 
+-- Character --------------------------------------------------------------------
+
+-- wow.skills is the skill pane: rows { name, header, collapsed, rank, max, id }; wow.trade_skills maps a skill line id
+-- to its display name and wow.trade_open is the open trade window's profession name. wow.talents = { config, spec,
+-- specs = { spec ids }, trees = { [spec id] = { tree, nodes = { ranks per node } } }, unspent }. wow.auras is the
+-- player's helpful auras { name, spellId, sourceUnit }; wow.auras_secret answers C_Secrets.ShouldAurasBeSecret and
+-- wow.aura_error makes each aura read raise. wow.form is the shapeshift index and wow.forms[index] its spell id;
+-- wow.totems[slot] a totem name. wow.factions[id] = { name, reaction, currentStanding }; wow.item_text the open book's
+-- title; wow.stats = { { category, { { id, value } } } } the Statistics pane; wow.channel = { spell, start, stop } the
+-- player's channel in GetTime() seconds.
+local function install_character()
+	wow.skills = wow.opts.skills or {}
+	wow.trade_skills = wow.opts.tradeSkills or {}
+	wow.trade_open = nil
+	wow.talents = wow.opts.talents
+	wow.auras = {}
+	wow.auras_secret = false
+	wow.aura_error = nil
+	wow.form = 0
+	wow.forms = {}
+	wow.totems = {}
+	wow.factions = {}
+	wow.item_text = nil
+	wow.stats = wow.opts.stats
+	wow.channel = nil
+	_G.UnitChannelInfo = function(u)
+		local c = wow.channel
+		if u == "player" and c then
+			return "Channel", "Channel", 134400, c.start * 1000, c.stop * 1000, false, false, c.spell
+		end
+	end
+	_G.C_SkillInfo.GetNumSkillLines = function()
+		return #wow.skills
+	end
+	_G.C_SkillInfo.GetSkillLineInfo = function(i)
+		local row = wow.skills[i]
+		if row then
+			return {
+				skillID = row.id or 0,
+				name = row.name,
+				isHeader = row.header == true,
+				isCollapsed = row.collapsed == true,
+				rank = row.rank or 0,
+				maxRank = row.max or 0,
+			}
+		end
+	end
+	_G.C_TradeSkillUI = {
+		GetTradeSkillDisplayName = function(id)
+			return wow.trade_skills[id] or ""
+		end,
+		GetBaseProfessionInfo = function()
+			return { professionName = wow.trade_open }
+		end,
+	}
+	_G.C_Container.GetContainerNumSlots = function(bag)
+		local n = 0
+		for slot in pairs(wow.bags[bag] or {}) do
+			n = math.max(n, slot)
+		end
+		return n
+	end
+	_G.C_UnitAuras = {
+		GetAuraDataByIndex = function(u, i)
+			if wow.aura_error then
+				error(wow.aura_error, 0)
+			end
+			return u == "player" and wow.auras[i] or nil
+		end,
+	}
+	_G.C_Secrets = {
+		ShouldAurasBeSecret = function()
+			return wow.auras_secret
+		end,
+	}
+	_G.GetShapeshiftForm = function()
+		return wow.form
+	end
+	_G.GetShapeshiftFormInfo = function(i)
+		return 134400, i == wow.form, true, wow.forms[i]
+	end
+	_G.GetTotemInfo = function(slot)
+		local name = wow.totems[slot]
+		return name ~= nil, name or "", 0, 0, 134400
+	end
+	_G.UnitCreatureFamily = unit_value("family")
+	_G.C_Reputation = {
+		GetFactionDataByID = function(id)
+			return wow.factions[id]
+		end,
+	}
+	_G.ItemTextGetItem = function()
+		return wow.item_text
+	end
+	local function talents()
+		return wow.talents or {}
+	end
+	local function tree(spec)
+		return (talents().trees or {})[spec]
+	end
+	_G.C_ClassTalents = {
+		GetActiveConfigID = function()
+			return talents().config
+		end,
+		GetTraitTreeForSpec = function(spec)
+			return tree(spec) and tree(spec).tree
+		end,
+	}
+	_G.C_SpecializationInfo = {
+		GetSpecialization = function()
+			return talents().spec or 1
+		end,
+		GetSpecializationInfo = function(i)
+			return (talents().specs or {})[i]
+		end,
+		GetNumSpecializationsForClassID = function()
+			return #(talents().specs or {})
+		end,
+	}
+	_G.GetSpecializationInfoForClassID = function(_, i)
+		return (talents().specs or {})[i]
+	end
+	local function treeByID(id)
+		for _, t in pairs(talents().trees or {}) do
+			if t.tree == id then
+				return t
+			end
+		end
+	end
+	_G.C_Traits = {
+		GetTreeNodes = function(id)
+			local out = {}
+			for node in ipairs((treeByID(id) or {}).nodes or {}) do
+				out[#out + 1] = id * 100 + node
+			end
+			return out
+		end,
+		GetNodeInfo = function(_, node)
+			local t = treeByID(math.floor(node / 100))
+			return { ID = node, ranksPurchased = t and t.nodes[node % 100] or 0 }
+		end,
+		GetTreeCurrencyInfo = function()
+			return { { quantity = talents().unspent or 0 } }
+		end,
+	}
+	_G.GetStatisticsCategoryList, _G.GetCategoryNumAchievements, _G.GetAchievementInfo, _G.GetStatistic =
+		nil, nil, nil, nil
+	if wow.stats then
+		_G.GetStatisticsCategoryList = function()
+			local out = {}
+			for i, cat in ipairs(wow.stats) do
+				out[i] = cat[1]
+			end
+			return out
+		end
+		local function category(id)
+			for _, cat in ipairs(wow.stats) do
+				if cat[1] == id then
+					return cat[2]
+				end
+			end
+			return {}
+		end
+		_G.GetCategoryNumAchievements = function(cat)
+			return #category(cat)
+		end
+		_G.GetAchievementInfo = function(cat, i)
+			local stat = category(cat)[i]
+			return stat and stat[1]
+		end
+		_G.GetStatistic = function(id)
+			for _, cat in ipairs(wow.stats) do
+				for _, stat in ipairs(cat[2]) do
+					if stat[1] == id then
+						return stat[2]
+					end
+				end
+			end
+		end
+	end
+end
+
 function wow.set_money(copper)
 	wow.money = copper
 	wow.fire("PLAYER_MONEY")
@@ -1269,6 +1464,7 @@ function wow.reset(opts)
 	install_travel()
 	install_loot()
 	install_economy()
+	install_character()
 
 	_G.CreateFrame = function(kind, name, parent, template)
 		return new_frame(kind, name, parent, template)
@@ -1473,7 +1669,8 @@ end
 -- quests (id -> title), rules ({ hardcore, selfFound } for C_GameRules), strings (GlobalStrings over Spanish ones),
 -- recap (death recap events), cvars (name -> value), lowHealthFrame (false: no LowHealthFrame), subzone, taxi
 -- (flight master nodes), mounts (id -> { name, spell, active }), skillLines (id -> name), bind, region, locale,
--- instance ({ name, type, id, difficulty, size } for IsInInstance and GetInstanceInfo), money (the gold).
+-- instance ({ name, type, id, difficulty, size } for IsInInstance and GetInstanceInfo), money (the gold), skills,
+-- tradeSkills, talents and stats (see install_character).
 -- Returns the core namespace and a table of every booted addon's namespace by name.
 function wow.boot(opts)
 	opts = opts or {}

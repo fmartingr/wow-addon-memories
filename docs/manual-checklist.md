@@ -159,3 +159,30 @@ build and pass or fail for each item.
 | 13 | Mail send | Send 1 gold and an item to another character. | `mn|-10000|mail|<name>` and `mn|-30|postage|<name>`, then `ma|send|<name>|10000|<item>`. | not run |
 | 13 | Mail take | Take an item and gold from a player's mail, then take all from another. | `ma|take|<sender>|<copper or empty>|<item>`, `mn|<copper>|mail|<sender>`, and one `lo|...|mail|...` per item, never two for one item. | not run |
 | 13 | Trade | Trade with another player: receive 2 items and 50 silver, give 10 silver. | One `tr|<name>|4000`, `mn|4000|trade|<name>` and one `lo|...|trade|...` per item received. | not run |
+| 14 | Character loads | Install the set, enable "Memories - Character", log in, `/mem status`. | `Memories_Character` is `on`; the Settings page has "Memories_Character — Character" with `sk`, `lr`, `rc`, `ta`, `cu`, `pt` and the "Consumables: new findings only" box, and "Memories_Character — Milestones" with `rp`, `qa`, `hb`, `fp`, `bk`. | not run |
+| 14 | `ERR_LEARN_SPELL_S` | Type `/dump ERR_LEARN_SPELL_S`. | A text with one `%s` (the spell link), for example "Has aprendido un nuevo hechizo: %s.". | not run |
+| 14 | `ERR_LEARN_ABILITY_S` | Type `/dump ERR_LEARN_ABILITY_S`. | A text with one `%s` (the ability link). | not run |
+| 14 | `ERR_LEARN_RECIPE_S` | Type `/dump ERR_LEARN_RECIPE_S`. | A text with one `%s` (the recipe link). | not run |
+| 14 | `ERR_DEATHBIND_SUCCESS_S` | Type `/dump ERR_DEATHBIND_SUCCESS_S`. | A text with one `%s` (the inn's place), for example "%s es ahora tu hogar.". | not run |
+| 14 | `ERR_NEWTAXIPATH` | Type `/dump ERR_NEWTAXIPATH`. | The text that the game shows for a new flight path, with no `%`. | not run |
+| 14 | `FACTION_STANDING_LABEL1` to `8` | Type `/dump FACTION_STANDING_LABEL1, FACTION_STANDING_LABEL5, FACTION_STANDING_LABEL8, GetText("FACTION_STANDING_LABEL5", 3)`. | "Odiado", "Amistoso", "Exaltado" and the female form of Friendly (or the same text). | not run |
+| 14 | Profession names | Type `/dump C_TradeSkillUI.GetTradeSkillDisplayName(186), C_TradeSkillUI.GetTradeSkillDisplayName(129), C_Spell.GetSpellName(3273)`. | "Minería", "Primeros auxilios" and the First Aid spell name. | not run |
+| 14 | Skill functions | Open the skills pane and type `/dump C_SkillInfo.GetNumSkillLines(), C_SkillInfo.GetSkillLineInfo(2)`. | A count and a table with `name`, `isHeader`, `isCollapsed`, `rank`, `maxRank` and `skillID`. | not run |
+| 14 | Drink spell id | Type `/dump C_Spell.GetSpellName(430)`, then drink a water and check the cast bar. | The same name ("Beber") for the id and the cast. | not run |
+| 14 | Special buff ids | On a Self-Found or Hardcore character, type `/dump C_UnitAuras.GetAuraDataByIndex("player", 1, "HELPFUL")` for each buff until you find Self-Found Adventurer, Soul of Iron and String of Ears. | The `spellId` of Self-Found is 431567 and of Soul of Iron 364001; note the id of String of Ears (not matched yet). | not run |
+| 14 | Talent functions | Type `/dump C_ClassTalents.GetActiveConfigID(), C_SpecializationInfo.GetSpecialization()`. | A config id and a spec index (or nil before level 10). | not run |
+| 14 | Statistics functions | Type `/dump GetStatisticsCategoryList()`. | A list of category ids, or an error when the client has no Statistics pane (then `stats` stays empty). | not run |
+| 14 | Learn a spell | Learn a spell at a class trainer, `/reload`. | `MemoriesCharacterCharDB` has one `lr|<Spanish name>|<spell id>` for it, although the event and the chat line both fire; `counts.character.learned` 1 more. | not run |
+| 14 | Learn a recipe | Learn a First Aid recipe at the trainer. | `lr|<name>|<id>` and `rc|<name>|<id>`, one each. | not run |
+| 14 | Raise a profession | Mine until Minería rises one rank, wait 3 s, `/reload`. | `sk|Minería|<rank>|<max>`; `snap[<level>].skills` lists every skill as `<header>:<name>=<rank>/<max>`. A weapon skill rank-up writes nothing. | not run |
+| 14 | Talents | At level 10 or more, spend a talent point, wait 1 s. | `ta|<spent>|<unspent>`; `snap[<level>].talents` is the spent points. | not run |
+| 14 | Consumable | Drink a water out of combat, then use a bandage in combat. | `cu|<id>|drink|<name>` and `cu|<id>|bandage|<name>|1`; `counts.items` has `k:drink`, `k:bandage`, `o:<id>` and `c:<id>`. | not run |
+| 14 | Consumables: new findings only | Turn on "Consumables: new findings only" and drink the same water again. | No new `cu` line; `counts.items["o:<id>"]` grows. | not run |
+| 14 | Channel functions | On a hunter, start Tame Beast and type `/dump UnitChannelInfo("player")` during the channel, then cancel a second try by moving. | The channel name, its start and end in ms; the cancelled try writes no `pt` when you call a pet within 30 s. | not run |
+| 14 | Tame | On a hunter, tame a beast. | `pt|<family>|<pet name>|<level>`; `counts.character` has `tames`, `pet:<family>` and `petn:<family>|<name>`; dismissing and calling the pet adds nothing. | not run |
+| 14 | Crafting | Open Cooking and cook 2 items at once. | `counts.prof["cooked|<item>|Cooking"]` 2 more. | not run |
+| 14 | Gain reputation | Turn in a quest that gives Stormwind reputation. | `rp|Ventormenta|<value>|<standing>|<Spanish label>`; the same value again in the session writes nothing. | not run |
+| 14 | Accept a quest | Accept a quest. | `qa|<quest id>|<Spanish title>` at the place where you accepted it; `counts.milestones.questsAccepted` 1 more. | not run |
+| 14 | Bind the hearthstone | Bind at a new inn, then at the same inn again. | One `hb|<place>`; the second bind writes nothing. | not run |
+| 14 | Learn a flight path | Talk to a new flight master. | One `fp|<node name>`; `counts.milestones.flightPaths` 1 more. | not run |
+| 14 | Read a book | Read a plaque or book twice. | One `bk|<title>`; `counts.milestones.booksRead` 2 more. | not run |

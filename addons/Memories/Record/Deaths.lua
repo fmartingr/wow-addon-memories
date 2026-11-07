@@ -38,7 +38,7 @@ end
 
 -- The saved state lives in the core journal's data.state, so a kind that is off still keeps it right.
 local function state()
-	return U.TableAt(U.TableAt(core().data, "state"), "deaths")
+	return core():State("deaths")
 end
 
 local function count(key, n)

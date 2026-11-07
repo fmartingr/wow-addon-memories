@@ -162,6 +162,10 @@ function Handle:Snap(level, key, value)
 	return journal(self):Snap(level, key, value)
 end
 
+function Handle:State(module)
+	return journal(self):State(module)
+end
+
 function Handle:NewOnly(key)
 	return ns.Settings.NewOnly(key)
 end

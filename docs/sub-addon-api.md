@@ -126,6 +126,7 @@ apply:
 | `h:Counts(module)` | the counts table of a module |
 | `h:IsFirst(module, key)` | true when the count is 0 or missing |
 | `h:Snap(level, key, value)` | sets a snapshot value, or returns it without `value` |
+| `h:State(module)` | the saved state table of a module (`data.state[module]`), created when missing; a read-only journal gives a copy |
 | `h:NewOnly(key)` | true when the player turned on the "New findings only" box `key` (`MemoriesDB.settings.newOnly[key]`) |
 | `h:Here()` | `{ t, p, m, x, y }` of now; `p` stays empty until the first /played answer of the load; `m`, `x`, `y` stay empty inside an instance and on a world or continent map |
 | `h:Level()` | the player's level, the new one already during `PLAYER_LEVEL_UP` |
@@ -144,7 +145,9 @@ apply:
 Rules:
 
 - `h:Write` and `h:WriteAt` accept only kinds that this addon registered. Another kind raises an error.
-- `h:Count`, `h:Counts`, `h:IsFirst` and `h:Snap` raise an error before login, when no journal is open.
+- `h:Count`, `h:Counts`, `h:IsFirst`, `h:Snap` and `h:State` raise an error before login, when no journal is open.
+- A recorder keeps what it must remember over a reload (the last value it wrote, the names it already saw) in
+  `h:State(module)`, never in its journal lines: a kind that is off writes no line, and the state must still be right.
 - Every listener, hook and timer runs through the core's error guard. An error is logged with
   `where = "<addon>:<event or message>"` and never stops the other recorders.
 - A kind that is off writes no line (`h:Write` returns `nil, "off"`). Count anyway: counts never stop.

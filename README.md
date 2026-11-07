@@ -8,6 +8,8 @@ The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-0
 ## Layout
 
 - `addons/Memories/` — the core addon.
+- `addons/Memories_Character/` — skills, spells, recipes, talents, consumables, tamed pets, reputation, accepted
+  quests, homes, flight paths and books (`MemoriesCharacterCharDB`).
 - `addons/Memories_Combat/` — kills, rare kills and long fights (`MemoriesCombatCharDB`).
 - `addons/Memories_Economy/` — loot, group rolls, gear, money, trainers, the auction house, mail and trade
   (`MemoriesEconomyCharDB`).

@@ -32,7 +32,7 @@ end
 
 -- The saved state lives in the core journal's data.state, so a kind that is off still keeps it right.
 local function state()
-	return U.TableAt(U.TableAt(core().data, "state"), "dungeons")
+	return core():State("dungeons")
 end
 
 local text, number, flag = U.Text, U.Number, U.Flag

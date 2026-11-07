@@ -145,6 +145,12 @@ describe("journal", function()
 		assert.same({ [10] = { money = 1234 } }, data.snap)
 	end)
 
+	it("keeps a saved state table per module", function()
+		j:State("skills").Mining = { 50, 75 }
+		assert.same({ 50, 75 }, j:State("skills").Mining)
+		assert.same({ skills = { Mining = { 50, 75 } } }, data.state)
+	end)
+
 	it("emits LINE_WRITTEN with the addon, kind, line and one decoded event for every listener", function()
 		local got, other
 		ns.Listen("LINE_WRITTEN", function(_, ...)
@@ -219,6 +225,15 @@ describe("journal", function()
 			ro:Counts("kills").a = 99
 			assert.equal(1, frozen.counts.kills.a)
 			assert.is_false(ro:IsFirst("kills", "a"))
+		end)
+
+		it("gives a copy of the state, so a caller cannot change it", function()
+			frozen.state = { skills = { known = 1 } }
+			local state = ro:State("skills")
+			assert.same({ known = 1 }, state)
+			state.known = 2
+			ro:State("other").x = 1
+			assert.same({ skills = { known = 1 } }, frozen.state)
 		end)
 
 		it("reads a data table with no log", function()

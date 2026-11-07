@@ -128,13 +128,18 @@ function Journal:Lines()
 	end
 end
 
--- The counts of a module for reading. A read-only journal gives its saved table or an empty one, and never creates it.
-local function countsOf(self, module)
-	local counts = self.data.counts
+-- The table of a module in a section ("counts" or "state"). A read-only journal gives its saved table or an empty one,
+-- and never creates it.
+local function sectionOf(self, section, module)
+	local t = self.data[section]
 	if self.readOnly then
-		return type(counts) == "table" and type(counts[module]) == "table" and counts[module] or EMPTY
+		return type(t) == "table" and type(t[module]) == "table" and t[module] or EMPTY
 	end
-	return tableAt(counts, module)
+	return tableAt(tableAt(self.data, section), module)
+end
+
+local function countsOf(self, module)
+	return sectionOf(self, "counts", module)
 end
 
 -- Returns the value before the add. A read-only journal counts nothing.
@@ -167,4 +172,10 @@ function Journal:Snap(level, key, value)
 	if not self.readOnly then
 		tableAt(snap, level)[key] = value
 	end
+end
+
+-- The saved state of a module. A read-only journal gives a copy, so a write to it never reaches the saved data.
+function Journal:State(module)
+	local state = sectionOf(self, "state", module)
+	return self.readOnly and ns.U.Copy(state) or state
 end
