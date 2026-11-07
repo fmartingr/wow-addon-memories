@@ -1,0 +1,13 @@
+## Interface: 16001
+## Title: Memories - Economy
+## Notes: Records loot, group rolls, gear, money, trainers, the auction house, mail and trade.
+## Author: Felipe M.
+## Version: 0.1.0
+## Dependencies: Memories
+## Group: Memories
+## SavedVariablesPerCharacter: MemoriesEconomyCharDB
+## LoadSavedVariablesFirst: 1
+## X-Memories-API: 1
+
+Loot.lua
+Money.lua

@@ -642,7 +642,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 13. Sub-addon `Memories_Economy`
+### [x] 13. Sub-addon `Memories_Economy`
 - **Outcome:** Loot, group rolls, gear, money, trainers, auction house, mail and trade are recorded in their own saved file.
 - **Depends on:** 3 (registry, `Hook`), 5 (kind gate, `newOnly`).
 - **Covers:** AC3 for `lo`, `rl`, `ge`, `eq`, `mn`, `tb`, `ah`, `ma`, `tr`; AC6 and AC7 for `lo`; risk "Localized clients".
@@ -656,13 +656,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** the test cases of Appendix C for Loot and Money; Spanish `GlobalStrings` loot lines; kind-off tests; new-only tests for `lo`.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). In the game: `/dump` each `GlobalStrings` name that Loot and Money use, and record the result in `docs/manual-checklist.md`.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
   - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 14. Sub-addon `Memories_Character`
 - **Outcome:** Skills, spells, recipes, talents, consumables, tamed pets, reputation, accepted quests, home changes, flight paths and books are recorded in their own saved file.

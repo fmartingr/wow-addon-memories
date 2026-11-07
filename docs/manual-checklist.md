@@ -123,3 +123,39 @@ build and pass or fail for each item.
 | 12 | New findings only | Turn on "Kills: new findings only" and kill the same normal creature twice. | No new `ki` line; `counts.kills["npc:<id>"]` grows. | not run |
 | 12 | Long fight | Fight one creature for more than 20 s. | `fi|<seconds>|<target>|<classification>|<level>||<casts>`; `counts.fights` has `n`, `sec` and `longest`. | not run |
 | 12 | Reload in combat | `/reload` during a fight longer than 20 s. | No `fi` for that fight. | not run |
+| 13 | Economy loads | Install the set, enable "Memories - Economy", log in, `/mem status`. | `Memories_Economy` is `on`; the Settings page has "Memories_Economy — Loot" with `lo`, `rl`, `ge`, `eq` and the "Loot: new findings only" box, and "Memories_Economy — Money" with `mn`, `tb`, `ah`, `ma`, `tr`. | not run |
+| 13 | `LOOT_ITEM_SELF` | Type `/dump LOOT_ITEM_SELF`. | A text with one `%s` (the item link), for example "Recibes botín: %s.". | not run |
+| 13 | `LOOT_ITEM_SELF_MULTIPLE` | Type `/dump LOOT_ITEM_SELF_MULTIPLE`. | A text with one `%s` (the item link) and one `%d` (the count) after it. | not run |
+| 13 | `LOOT_ITEM_PUSHED_SELF` | Type `/dump LOOT_ITEM_PUSHED_SELF`. | A text with one `%s` (the item link). | not run |
+| 13 | `LOOT_ITEM_PUSHED_SELF_MULTIPLE` | Type `/dump LOOT_ITEM_PUSHED_SELF_MULTIPLE`. | A text with one `%s` (the item link) and one `%d` (the count). | not run |
+| 13 | `LOOT_ITEM_CREATED_SELF` | Type `/dump LOOT_ITEM_CREATED_SELF`. | A text with one `%s` (the item link). | not run |
+| 13 | `LOOT_ITEM_CREATED_SELF_MULTIPLE` | Type `/dump LOOT_ITEM_CREATED_SELF_MULTIPLE`. | A text with one `%s` (the item link) and one `%d` (the count). | not run |
+| 13 | `LOOT_ROLL_NEED_SELF` | Type `/dump LOOT_ROLL_NEED_SELF`. | A text with an optional `|HlootHistory:%d|h[...]|h:` link in front, then one `%s` (the item link). | not run |
+| 13 | `LOOT_ROLL_GREED_SELF` | Type `/dump LOOT_ROLL_GREED_SELF`. | A text with an optional loot history link in front, then one `%s` (the item link). | not run |
+| 13 | `LOOT_ROLL_ROLLED_NEED` | Type `/dump LOOT_ROLL_ROLLED_NEED`. | A text with an optional loot history link in front, then the roll `%d`, the item `%s` and the player `%s`, in that argument order. | not run |
+| 13 | `LOOT_ROLL_ROLLED_GREED` | Type `/dump LOOT_ROLL_ROLLED_GREED`. | A text with the same arguments as `LOOT_ROLL_ROLLED_NEED`. | not run |
+| 13 | `LOOT_ROLL_YOU_WON` | Type `/dump LOOT_ROLL_YOU_WON`. | A text with an optional loot history link in front, then one `%s` (the item link). | not run |
+| 13 | `LOOT_ROLL_WON` | Type `/dump LOOT_ROLL_WON`. | A text with an optional loot history link in front, then the player `%s` and the item `%s`. | not run |
+| 13 | `LOOT_ROLL_ALL_PASSED` | Type `/dump LOOT_ROLL_ALL_PASSED`. | A text with an optional loot history link in front, then one `%s` (the item link). | not run |
+| 13 | `ERR_TRADE_COMPLETE` | Type `/dump ERR_TRADE_COMPLETE`. | A text with the text that the game shows when a trade completes, with no `%`. | not run |
+| 13 | `AUCTION_EXPIRED_MAIL_SUBJECT` | Type `/dump AUCTION_EXPIRED_MAIL_SUBJECT`. | A text with the subject of an expired auction's mail with one `%s` (the item name). | not run |
+| 13 | `AUCTION_OUTBID_MAIL_SUBJECT` | Type `/dump AUCTION_OUTBID_MAIL_SUBJECT`. | A text with the subject of an outbid mail with one `%s` (the item name). | not run |
+| 13 | Item functions | Type `/dump C_Item.GetItemQualityByID(2589), C_Item.GetItemInfoInstant(2589), GetInventoryItemID("player", 5)`. | `1`; `2589`, the type texts, `""`, an icon, `7` and a subclass; the chest item id or nil. | not run |
+| 13 | Loot | Loot a stack of Linen Cloth from a creature, `/reload`. | `MemoriesEconomyCharDB` has `lo|2589|1|<count or empty>|loot|<Spanish name>||<1 or empty>`; `counts.loot` has `items`, `q1` and `item:2589`. | not run |
+| 13 | New findings only | Turn on "Loot: new findings only", loot Linen Cloth again, then a blue item. | No new `lo` for the cloth (`counts.loot["item:2589"]` grows); a `lo` for the blue item. | not run |
+| 13 | Made item | Craft an item (for example a bandage). | `lo|<id>|<quality>|<count or empty>|made|<name>|...`. | not run |
+| 13 | Group roll | In a group, roll Need on a green item, win it, then roll Greed on another and lose. | One `rl|<id>|need|<roll>|1|<name>|2` and one `lo|...|roll|...` for the win (no second `lo` from the loot line); one `rl|<id>|greed|<roll>|0|<name>|<quality>` for the loss, although the chat shows each roll line several times. | not run |
+| 13 | Gear at login | Log in, wait 5 s, `/reload`, wait 5 s. | One `ge|<level>|<19 ids>|login` only; `snap[<level>].gear` holds the same ids. | not run |
+| 13 | Gear at level up | Gain a level, wait 3 s. | `ge|<new level>|<19 ids>|ding`; `snap[<level>].gear` and `snap[<level>].money` are set. | not run |
+| 13 | Equip | Take off the chest item, then put it on again. | `eq|5|0`, then `eq|5|<item id>|<quality>`. | not run |
+| 13 | Vendor | Sell a stack of 20 Wool Cloth, buy a Refreshing Spring Water, repair all. | `mn|<copper>|vendor|20 <name>`, `mn|-<copper>|vendor|<water name>`, `mn|-<copper>|repair`; a bought item writes `lo|...|bought|...`. | not run |
+| 13 | Trainer functions | At a trainer, type `/dump GetTrainerServiceInfo(2), GetTrainerServiceCost(2), GetTrainerServiceSkillLine(2), IsTradeskillTrainer()`. | The service name, an availability word (`available`, `unavailable` or `used`), a texture, a level and the rank text; the cost; the skill line name; a boolean. | not run |
+| 13 | Trainer | Learn two spells at a class trainer, then a profession rank. | `tb|class|<spell> (<rank>)|<cost>` per spell and one `mn|-<sum>|trainer|<names>`; `tb|profession|...` for the profession; `counts.trainers` grows. | not run |
+| 13 | Quest money | Turn in a quest that gives gold. | `mn|<copper>|quest|<title>`. | not run |
+| 13 | Flight fare | Take a flight. | `mn|-<cost>|flight|<destination>`. | not run |
+| 13 | Auction house | Post an item, buy one with buyout, let one expire and take its mail. | `ah|post|<deposit>|<item>` with `mn|-<deposit>|auction|<item>`; `ah|buyout|<copper>|<item>` with `mn|-<copper>|auction|<item>`; `ah|expired||<item>` and `ma|take|...` when the mail is taken. | not run |
+| 13 | Auction sold | Sell an item in the auction house, take the money from the invoice mail. | `ah|sold|<copper>|<item>`, `ma|invoice|<buyer>|<copper>|<item>`, `mn|<copper>|auction|<item>`. | not run |
+| 13 | Mail functions | Open a mail with an attachment and type `/dump GetInboxHeaderInfo(1)`, then `/dump GetInboxItem(1, 1), GetInboxInvoiceInfo(1)`. | Sender, subject, money, COD, days left, item count, ... `canReply`, `isGM`; the item name, id, texture, count and quality; nil for a player mail. | not run |
+| 13 | Mail send | Send 1 gold and an item to another character. | `mn|-10000|mail|<name>` and `mn|-30|postage|<name>`, then `ma|send|<name>|10000|<item>`. | not run |
+| 13 | Mail take | Take an item and gold from a player's mail, then take all from another. | `ma|take|<sender>|<copper or empty>|<item>`, `mn|<copper>|mail|<sender>`, and one `lo|...|mail|...` per item, never two for one item. | not run |
+| 13 | Trade | Trade with another player: receive 2 items and 50 silver, give 10 silver. | One `tr|<name>|4000`, `mn|4000|trade|<name>` and one `lo|...|trade|...` per item received. | not run |

@@ -33,6 +33,22 @@ local DEFAULT_STRINGS = {
 	ERR_SKILL_GAINED_S = "Has aprendido la habilidad %s.",
 	ERR_FISH_ESCAPED = "¡El pez se ha escapado!",
 	ERR_FISH_NOT_HOOKED = "No has pescado nada.",
+	LOOT_ITEM_SELF = "Recibes botín: %s.",
+	LOOT_ITEM_SELF_MULTIPLE = "Recibes botín: %sx%d.",
+	LOOT_ITEM_PUSHED_SELF = "Recibes objeto: %s.",
+	LOOT_ITEM_PUSHED_SELF_MULTIPLE = "Recibes objeto: %sx%d.",
+	LOOT_ITEM_CREATED_SELF = "Creas: %s.",
+	LOOT_ITEM_CREATED_SELF_MULTIPLE = "Creas: %sx%d.",
+	LOOT_ROLL_NEED_SELF = "|HlootHistory:%d|h[Botín]|h: Has seleccionado Necesidad para: %s",
+	LOOT_ROLL_GREED_SELF = "|HlootHistory:%d|h[Botín]|h: Has seleccionado Codicia para: %s",
+	LOOT_ROLL_ROLLED_NEED = "|HlootHistory:%d|h[Botín]|h: Necesidad - %d para %s por %s",
+	LOOT_ROLL_ROLLED_GREED = "|HlootHistory:%d|h[Botín]|h: Codicia - %d para %s por %s",
+	LOOT_ROLL_YOU_WON = "|HlootHistory:%d|h[Botín]|h: Has ganado: %s",
+	LOOT_ROLL_WON = "|HlootHistory:%d|h[Botín]|h: %s ha ganado: %s",
+	LOOT_ROLL_ALL_PASSED = "|HlootHistory:%d|h[Botín]|h: Todos han pasado de: %s",
+	ERR_TRADE_COMPLETE = "Comercio completado.",
+	AUCTION_EXPIRED_MAIL_SUBJECT = "Subasta caducada: %s",
+	AUCTION_OUTBID_MAIL_SUBJECT = "Puja superada: %s",
 }
 
 local function pack(...)
@@ -969,6 +985,181 @@ local function install_loot()
 	}
 end
 
+-- Economy ------------------------------------------------------------------
+
+-- wow.money is the gold (wow.set_money fires PLAYER_MONEY); wow.gear[slot] = { id, quality } the worn items;
+-- wow.item_info[id] = { quality, class, equipLoc }; wow.merchant[index] = { name, id }; wow.trainer = { services =
+-- { { name, type, sub, skill, cost } }, tradeskill }; wow.auctions[id] the C_AuctionHouse auction info and
+-- wow.legacy_auctions[index] = { name, buyout }, wow.sell_item the legacy sell slot name; wow.inbox is a list of
+-- mails { sender, subject, money, days, canReply, isGM, items = { [slot] = { id, name, count, quality } }, invoice =
+-- { type, item, player } } and wow.inbox_fail makes GetInboxNumItems answer nil; wow.send_mail = { money, item };
+-- wow.trade = { items = { [slot] = { id, name, count, quality } }, money, given }. The game actions are no-ops that
+-- the recorders hook.
+local function install_economy()
+	wow.money = wow.opts.money or 0
+	wow.gear = {}
+	wow.item_info = {}
+	wow.merchant = {}
+	wow.trainer = { services = {} }
+	wow.auctions = {}
+	wow.legacy_auctions = {}
+	wow.inbox = {}
+	wow.send_mail = { money = 0 }
+	wow.trade = { items = {}, money = 0, given = 0 }
+	_G.GetMoney = function()
+		return wow.money
+	end
+	_G.GetInventoryItemID = function(u, slot)
+		return u == "player" and wow.gear[slot] and wow.gear[slot].id or nil
+	end
+	_G.GetInventoryItemQuality = function(u, slot)
+		return u == "player" and wow.gear[slot] and wow.gear[slot].quality or nil
+	end
+	_G.C_Item.GetItemQualityByID = function(id)
+		return wow.item_info[id] and wow.item_info[id].quality
+	end
+	_G.C_Item.GetItemInfoInstant = function(id)
+		local info = wow.item_info[id]
+		if info then
+			return id, nil, nil, info.equipLoc, 134400, info.class, 0
+		end
+	end
+	_G.C_Item.GetItemName = function(location)
+		return location and location.name
+	end
+	for _, name in ipairs({
+		"RepairAllItems",
+		"ConfirmTalentWipe",
+		"BuyMerchantItem",
+		"UseContainerItem",
+		"BuyTrainerService",
+		"PlaceAuctionBid",
+		"PostAuction",
+		"StartAuction",
+		"SendMail",
+		"TakeInboxMoney",
+		"TakeInboxItem",
+		"AutoLootMailItem",
+	}) do
+		_G[name] = noop
+	end
+	_G.GetMerchantItemInfo = function(i)
+		return wow.merchant[i] and wow.merchant[i].name
+	end
+	_G.GetMerchantItemID = function(i)
+		return wow.merchant[i] and wow.merchant[i].id
+	end
+	_G.GetNumTrainerServices = function()
+		return #wow.trainer.services
+	end
+	_G.GetTrainerServiceInfo = function(i)
+		local s = wow.trainer.services[i]
+		if s then
+			return s.name, s.type or "available", 134400, 1, s.sub
+		end
+	end
+	_G.GetTrainerServiceCost = function(i)
+		local s = wow.trainer.services[i]
+		return s and s.cost, wow.trainer.tradeskill == true
+	end
+	_G.GetTrainerServiceSkillLine = function(i)
+		return wow.trainer.services[i] and wow.trainer.services[i].skill
+	end
+	_G.IsTradeskillTrainer = function()
+		return wow.trainer.tradeskill == true
+	end
+	_G.C_AuctionHouse = {
+		PlaceBid = noop,
+		PostItem = noop,
+		PostCommodity = noop,
+		ConfirmCommoditiesPurchase = noop,
+		GetAuctionInfoByID = function(id)
+			return wow.auctions[id]
+		end,
+	}
+	_G.GetAuctionItemInfo = function(_, i)
+		local a = wow.legacy_auctions[i]
+		if a then
+			return a.name, 134400, 1, 2, true, 10, "", 100, 10, a.buyout
+		end
+	end
+	_G.GetAuctionSellItemInfo = function()
+		return wow.sell_item
+	end
+	_G.GetInboxNumItems = function()
+		if wow.inbox_fail then
+			return nil
+		end
+		return #wow.inbox, #wow.inbox
+	end
+	_G.GetInboxHeaderInfo = function(i)
+		local m = wow.inbox[i]
+		if m then
+			local items = 0
+			for _ in pairs(m.items or {}) do
+				items = items + 1
+			end
+			return nil,
+				nil,
+				m.sender,
+				m.subject,
+				m.money or 0,
+				0,
+				m.days or 30,
+				items,
+				false,
+				false,
+				false,
+				m.canReply,
+				m.isGM
+		end
+	end
+	_G.GetInboxItem = function(i, slot)
+		local item = wow.inbox[i] and (wow.inbox[i].items or {})[slot]
+		if item then
+			return item.name, item.id, 134400, item.count or 1, item.quality, true
+		end
+	end
+	_G.GetInboxInvoiceInfo = function(i)
+		local inv = wow.inbox[i] and wow.inbox[i].invoice
+		if inv then
+			return inv.type, inv.item, inv.player
+		end
+	end
+	_G.GetSendMailMoney = function()
+		return wow.send_mail.money
+	end
+	_G.GetSendMailItem = function(i)
+		local item = i == 1 and wow.send_mail.item
+		if item then
+			return item, 0, 134400, 1, 1
+		end
+	end
+	_G.GetTradeTargetItemLink = function(slot)
+		local item = wow.trade.items[slot]
+		if item and item.id then
+			return "|cffffffff|Hitem:" .. item.id .. "::::::::10:::::|h[" .. tostring(item.name) .. "]|h|r"
+		end
+	end
+	_G.GetTradeTargetItemInfo = function(slot)
+		local item = wow.trade.items[slot]
+		if item then
+			return item.name, 134400, item.count or 1, item.quality, true, nil
+		end
+	end
+	_G.GetTargetTradeMoney = function()
+		return wow.trade.money
+	end
+	_G.GetPlayerTradeMoney = function()
+		return wow.trade.given
+	end
+end
+
+function wow.set_money(copper)
+	wow.money = copper
+	wow.fire("PLAYER_MONEY")
+end
+
 -- Opens a loot window: LOOT_OPENED with autoLoot false.
 function wow.open_loot(window, isFromItem)
 	wow.loot = window
@@ -1077,6 +1268,7 @@ function wow.reset(opts)
 	install_screenshots()
 	install_travel()
 	install_loot()
+	install_economy()
 
 	_G.CreateFrame = function(kind, name, parent, template)
 		return new_frame(kind, name, parent, template)
@@ -1281,7 +1473,7 @@ end
 -- quests (id -> title), rules ({ hardcore, selfFound } for C_GameRules), strings (GlobalStrings over Spanish ones),
 -- recap (death recap events), cvars (name -> value), lowHealthFrame (false: no LowHealthFrame), subzone, taxi
 -- (flight master nodes), mounts (id -> { name, spell, active }), skillLines (id -> name), bind, region, locale,
--- instance ({ name, type, id, difficulty, size } for IsInInstance and GetInstanceInfo).
+-- instance ({ name, type, id, difficulty, size } for IsInInstance and GetInstanceInfo), money (the gold).
 -- Returns the core namespace and a table of every booted addon's namespace by name.
 function wow.boot(opts)
 	opts = opts or {}
