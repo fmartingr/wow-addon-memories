@@ -1,7 +1,7 @@
 std = "lua51"
 max_line_length = 120
 codes = true
-exclude_files = { ".lua/", ".luarocks/", "build/" }
+exclude_files = { ".lua/", ".luarocks/", "build/", "testdata/", "dist-characters/", "backups/" }
 ignore = { "212/self", "211/_.*", "212/_.*" }
 
 globals = {

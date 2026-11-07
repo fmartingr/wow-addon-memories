@@ -1,0 +1,59 @@
+{
+ "characters": [
+  {
+   "id": "eu-brumamar-nandu",
+   "guid": "Player-1234-0ABCDEF0",
+   "name": "Ñandú",
+   "region": "EU",
+   "realm": "Brumamar",
+   "flavor": "wow",
+   "class": "HUNTER",
+   "race": "NightElf",
+   "sex": 3,
+   "faction": "Alliance",
+   "level": 10,
+   "path": "eu-brumamar-nandu",
+   "journey": "eu-brumamar-nandu/journey.jsonl",
+   "trail": "eu-brumamar-nandu/trail.jsonl",
+   "character": "eu-brumamar-nandu/character.json",
+   "steps": 15,
+   "sessions": 1,
+   "trailPoints": 3,
+   "screenshots": 2,
+   "addons": [
+    "Memories",
+    "Memories_Combat",
+    "Memories_Gathering"
+   ],
+   "start": 1793530000,
+   "end": 1793530600
+  },
+  {
+   "id": "eu-los-errantes-nandu",
+   "guid": "Player-5678-0FEDCBA0",
+   "name": "Ñandú",
+   "region": "EU",
+   "realm": "Los Errantes",
+   "flavor": "wow",
+   "class": "MAGE",
+   "race": "Human",
+   "sex": 2,
+   "faction": "Alliance",
+   "level": 2,
+   "path": "eu-los-errantes-nandu",
+   "journey": "eu-los-errantes-nandu/journey.jsonl",
+   "trail": "eu-los-errantes-nandu/trail.jsonl",
+   "character": "eu-los-errantes-nandu/character.json",
+   "steps": 1,
+   "sessions": 1,
+   "trailPoints": 0,
+   "screenshots": 0,
+   "addons": [
+    "Memories"
+   ],
+   "start": 1793443600,
+   "end": 1793443600
+  }
+ ],
+ "default_character": "eu-brumamar-nandu"
+}

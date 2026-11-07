@@ -1,0 +1,31 @@
+{
+ "addons": {
+  "Memories": {
+   "counts": {},
+   "snap": {},
+   "schema": 1,
+   "writtenBy": "0.1.0"
+  }
+ },
+ "class": "MAGE",
+ "faction": "Alliance",
+ "flags": {},
+ "flavor": "wow",
+ "guid": "Player-5678-0FEDCBA0",
+ "level": 2,
+ "name": "Ñandú",
+ "race": "Human",
+ "realm": "Los Errantes",
+ "realmLabel": "Los Errantes",
+ "region": "EU",
+ "sessions": [
+  {
+   "computer": "a1b2c3",
+   "how": "login",
+   "last": 1793443660,
+   "start": 1793443600,
+   "tz": 3600
+  }
+ ],
+ "sex": 2
+}

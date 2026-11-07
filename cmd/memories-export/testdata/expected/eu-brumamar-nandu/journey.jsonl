@@ -1,0 +1,15 @@
+{"addon":"Memories","how":"login","k":"in","m":1429,"p":null,"session":1,"t":1793530000,"x":4512,"y":6120}
+{"addon":"Memories","computer":"a1b2c3","k":"pc","m":1429,"p":null,"session":1,"t":1793530000,"x":4512,"y":6120}
+{"addon":"Memories","k":"pl","m":1429,"p":5000,"played":5000,"session":1,"t":1793530003,"x":4512,"y":6120}
+{"addon":"Memories","k":"zo","m":1429,"p":5057,"session":1,"t":1793530060,"x":4600,"y":6000,"zone":"Bosque de Elwynn"}
+{"addon":"Memories","file":"WoWScrnShot_110126_114820.jpg","k":"ss","m":1429,"notes":[{"source":"Paparazzi","note":"Level up, Boss kill"}],"p":5097,"result":"ok","screenshot":"screenshots/WoWScrnShot_110126_114820.jpg","session":1,"t":1793530100,"why":"by hand","x":4700,"y":5900}
+{"addon":"Memories_Gathering","count":2,"item":2770,"k":"ga","m":1429,"name":"Mena de cobre","node":"Filón de cobre","object":1731,"p":5097,"prof":"Minería","quality":1,"session":1,"t":1793530100,"x":4700,"y":5900}
+{"addon":"Memories_Combat","ctype":"Bestia","first":1,"k":"ki","level":5,"m":1429,"name":"Lobo joven","npc":299,"p":5147,"session":1,"t":1793530150,"x":4650,"xp":45,"y":5950}
+{"addon":"Memories_Combat","extra":{"1":"a","2":"b"},"k":"zz","m":1429,"p":5147,"session":1,"t":1793530150,"x":4650,"y":5950}
+{"addon":"Memories","k":"lv","level":10,"m":1429,"p":5197,"session":1,"t":1793530200,"x":4700,"y":5900}
+{"addon":"Memories","file":"WoWScrnShot_110126_115002.jpg","k":"ss","m":1429,"notes":[{"source":"OtherAddon","note":"Second note"}],"p":5199,"result":"ok","screenshot":"screenshots/WoWScrnShot_110126_115001.jpg","session":1,"t":1793530202,"why":"level 10","x":4700,"y":5900}
+{"addon":"Memories","k":"ss","m":null,"p":5297,"result":"failed","session":1,"t":1793530300,"why":"last boss Van Cleef","x":null,"y":null}
+{"addon":"Memories","file":"WoWScrnShot_110126_115320.jpg","k":"sn","m":1429,"note":"Lonely note","p":5397,"session":1,"source":"Paparazzi","t":1793530400,"x":4700,"y":5900}
+{"addon":"Memories","detail":"ok","k":"ex","m":1429,"p":5497,"session":1,"source":"Test","t":1793530500,"what":"validation","x":4700,"y":5900}
+{"addon":"Memories","extra":{"1":"ten"},"k":"lv","m":1429,"p":5507,"session":1,"t":1793530510,"x":4700,"y":5900}
+{"addon":"Memories","k":"out","m":1429,"p":5597,"session":1,"t":1793530600,"x":4700,"y":5900}

@@ -565,7 +565,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 10. Go converter `memories-export`
+### [x] 10. Go converter `memories-export`
 - **Outcome:** One command turns the saved files of every character into the `dist-characters/` folder layout, with screenshots and notes joined.
 - **Depends on:** 2 (packed log format, `MemoriesDB.kinds`), 3 (one saved file for each addon), 6 (session `tz`), 8 (`ss` and `sn`).
 - **Covers:** AC14; risks "Predicted screenshot file names are wrong by 1 s", "A disabled sub-addon records nothing" (converter part).
@@ -588,13 +588,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** Go unit tests for each package (≥ 80 % for `internal/...`): the parser (copied tests); chunk unpack; decode with kinds; the `sn`/`ss` join cases; file matching with time zones and ties; the union merge; the id rule with accents ("Neral-Brumamar", "Ñandú"). `cmd/memories-export/main_test.go`: run on `testdata/wow` (a fixture with a core file, two sub-addon files, an account file and 3 screenshot files); compare the output with expected files; check that the SHA-256 of every input file is the same after the run.
 - **Verify:** `make lint-go`, `make test-go`, `make coverage-go`, `make build`, `make export WOW_DIR=testdata/wow` (unverified).
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
   - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 11. Sub-addon `Memories_Gathering`
 - **Outcome:** Gathering, fishing, opening and pick pocket are recorded in their own saved file.
