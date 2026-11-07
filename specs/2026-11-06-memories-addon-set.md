@@ -687,7 +687,7 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
   - [x] Docs and config that describe the changed behavior are updated.
   - [x] Task heading checkbox ticked; changes committed.
 
-### [ ] 15. Sub-addon `Memories_Social`
+### [x] 15. Sub-addon `Memories_Social`
 - **Outcome:** Group members, the own guild, enemy players, PvP kills and deaths, honor, duels, battlegrounds and PvP rank are recorded in their own saved file.
 - **Depends on:** 3 (registry), 5 (kind gate), 7 (`DIED` message).
 - **Covers:** AC3 for `gj`, `gl`, `gu`, `ep`, `pk`, `hk`, `du`, `bg`, `rk`; risk "Localized clients".
@@ -701,13 +701,13 @@ Commit each task on its own with Conventional Commits (`feat:`, `fix:`, `test:`,
 - **Tests:** the test cases of Appendix E; kind-off tests; a Spanish duel line.
 - **Verify:** `make test-lua`, `make coverage-lua`, `make lint` (unverified). Manual: join a group, duel a player.
 - **Definition of done:**
-  - [ ] Each Covers item is observably met, including one observation that failed before the task.
-  - [ ] Tests listed above exist and follow the Tests guidelines.
-  - [ ] Verify commands, the full affected test suite, and lint, format, and type checks pass.
-  - [ ] E2E tests pass, or the accepted alternative from Risks is done.
+  - [x] Each Covers item is observably met, including one observation that failed before the task.
+  - [x] Tests listed above exist and follow the Tests guidelines.
+  - [x] Verify commands, the full affected test suite, and lint, format, and type checks pass.
+  - [x] E2E tests pass, or the accepted alternative from Risks is done.
   - [ ] All three reviews pass with no valid open findings.
-  - [ ] Docs and config that describe the changed behavior are updated.
-  - [ ] Task heading checkbox ticked; changes committed.
+  - [x] Docs and config that describe the changed behavior are updated.
+  - [x] Task heading checkbox ticked; changes committed.
 
 ### [ ] 16. Documentation and the manual checklist in the game
 - **Outcome:** The README explains install, settings, the API and the converter. The full manual checklist passes in the game.

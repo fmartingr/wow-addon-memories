@@ -14,6 +14,8 @@ The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-0
 - `addons/Memories_Economy/` — loot, group rolls, gear, money, trainers, the auction house, mail and trade
   (`MemoriesEconomyCharDB`).
 - `addons/Memories_Gathering/` — gathering, fishing, opening and pick pocket (`MemoriesGatheringCharDB`).
+- `addons/Memories_Social/` — group members, your guild, enemy players, PvP kills and deaths, honor, duels,
+  battlegrounds and PvP rank (`MemoriesSocialCharDB`).
 - `cmd/memories-export/` — the converter.
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`).
 - `docs/manual-checklist.md` — the checks to run in the game.

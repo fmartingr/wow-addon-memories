@@ -186,3 +186,17 @@ build and pass or fail for each item.
 | 14 | Bind the hearthstone | Bind at a new inn, then at the same inn again. | One `hb|<place>`; the second bind writes nothing. | not run |
 | 14 | Learn a flight path | Talk to a new flight master. | One `fp|<node name>`; `counts.milestones.flightPaths` 1 more. | not run |
 | 14 | Read a book | Read a plaque or book twice. | One `bk|<title>`; `counts.milestones.booksRead` 2 more. | not run |
+| 15 | `DUEL_WINNER_KNOCKOUT` | Type `/dump DUEL_WINNER_KNOCKOUT`. | A text with the winner as `%1$s` and the loser as `%2$s`, for example "%1$s ha derrotado a %2$s en un duelo.". Plain `%s` in the order winner, loser also works. | not run |
+| 15 | `DUEL_WINNER_RETREAT` | Type `/dump DUEL_WINNER_RETREAT`. | A text with the winner as `%1$s` and the one who fled as `%2$s`. | not run |
+| 15 | `COMBATLOG_HONORGAIN` | Type `/dump COMBATLOG_HONORGAIN`. | A text with `%s` (the victim), `%s` (the rank name) and `%d` (the honor), in that order. | not run |
+| 15 | `COMBATLOG_HONORGAIN_NO_RANK` | Type `/dump COMBATLOG_HONORGAIN_NO_RANK`. | A text with `%s` (the victim) and `%d` (the honor), in that order, or nil. | not run |
+| 15 | `COMBATLOG_HONORAWARD` | Type `/dump COMBATLOG_HONORAWARD`. | A text with one `%d` (the honor). | not run |
+| 15 | `PVP_RANK_0_NAME` | Type `/dump PVP_RANK_0_NAME`, then `/dump GetText("PVP_RANK_6_1", UnitSex("player"))`. | The Spanish name of "no rank", then a Spanish rank title. | not run |
+| 15 | Surname | Target another player with a surname, type `/dump UnitName("target")`. | The first name, then the surname as the second value. | not run |
+| 15 | Join a group | Invite a player and let them join, wait 2 s, `/reload`. | One `gj|<First Surname>|<guild>|<CLASS>|<level>` in `MemoriesSocialCharDB`; `counts.social.joins` 1 more. The reload adds no second `gj`. | not run |
+| 15 | Leave a group | Leave the group, wait 2 s. | One `gl|<name>` for each member. | not run |
+| 15 | Own guild | Join a guild, or get a new rank, wait 3 s. | `gu|<guild>|<rank>`; `snap[<level>].guild` has the name, rank and tabard; `state.tabards[<guild>]` has the tabard. Leaving writes `gu` with an empty guild. | not run |
+| 15 | Duel | Accept a duel from a player and lose it, then win one. | `du|lost|<First Surname>|<CLASS>`, then `du|won|...`; `counts.pvp` has `duel_lost` and `duel_won`. | not run |
+| 15 | Declined duel to the death | Decline a duel to the death from a player, then challenge the same player to a normal duel and win it. | `du|won|...`; `counts.pvp.duelDeath` does not grow (`DUEL_FINISHED` fires on the decline). | not run |
+| 15 | Enemy player | On a PvP realm or in a contested zone, target a player of the other faction. | One `ep|<name>|<CLASS>|<Race>|<level>|<guild>`; targeting again within 30 minutes writes nothing. | not run |
+| 15 | PvP rank | Log in and wait 6 s. | One `rk|<rank>|<Spanish title>` on the first login; `snap[<level>].pvp` has `rank`, `points` and `threshold`. | not run |

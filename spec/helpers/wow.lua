@@ -62,6 +62,15 @@ local DEFAULT_STRINGS = {
 	FACTION_STANDING_LABEL6 = "Honorable",
 	FACTION_STANDING_LABEL7 = "Reverenciado",
 	FACTION_STANDING_LABEL8 = "Exaltado",
+	DUEL_WINNER_KNOCKOUT = "%1$s ha derrotado a %2$s en un duelo.",
+	DUEL_WINNER_RETREAT = "%2$s ha huido de %1$s en un duelo.",
+	COMBATLOG_HONORGAIN = "%s muere, muerte con honor. Rango: %s (Puntos de honor estimados: %d)",
+	COMBATLOG_HONORGAIN_NO_RANK = "%s muere, muerte con honor (Puntos de honor estimados: %d)",
+	COMBATLOG_HONORAWARD = "Se te han concedido %d puntos de honor.",
+	PVP_RANK_0_NAME = "Civil",
+	UNKNOWNOBJECT = "Desconocido",
+	PVP_RANK_6_1 = "Cabo",
+	PVP_RANK_7_1 = "Sargento",
 }
 
 local function pack(...)
@@ -625,7 +634,13 @@ end
 
 local function install_units()
 	_G.UnitGUID = unit_value("guid")
-	_G.UnitName = unit_value("name")
+	-- Forever gives a stranger's surname as the second value.
+	_G.UnitName = function(u)
+		local data = unit(u)
+		if data then
+			return data.name, data.surname
+		end
+	end
 	_G.UnitLevel = unit_value("level")
 	_G.UnitSex = unit_value("sex")
 	_G.UnitClass = unit_values("class")
@@ -1398,6 +1413,112 @@ function wow.set_wall(unix)
 	wow.wall = unix
 end
 
+-- Social and PvP -------------------------------------------------------------
+
+-- wow.group = { raid, n } with the members in wow.units (party1-4, raid1-40). wow.guild = { name, rank, index } is the
+-- player's guild, or true for a guild whose name the client has not sent yet; a unit's guild is its guild field, and
+-- guildError makes GetGuildInfo on it raise. wow.tabard is the C_GuildInfo tabard (wow.tabard_error makes it raise)
+-- and wow.logo the GetGuildLogoInfo values. wow.pvp holds kills and maxRank (GetPVPLifetimeStats), renown, points
+-- and threshold (rank faction 2800), currency (id -> quantity), winner (GetBattlefieldWinner), matchWinner and
+-- complete (C_PvP), score (the player's PVPScoreInfo; scoreError makes it raise) and queues (status by index).
+local function install_social()
+	wow.group = { raid = false, n = 0 }
+	wow.guild = wow.opts.guild
+	wow.tabard, wow.tabard_error, wow.logo = nil, nil, nil
+	wow.roster_asks, wow.score_asks = 0, 0
+	wow.pvp = merge({ kills = 0, maxRank = 0, queues = {}, currency = {} }, wow.opts.pvp)
+	_G.GetNumGroupMembers = function()
+		return wow.group.n
+	end
+	_G.IsInRaid = function()
+		return wow.group.raid
+	end
+	_G.IsInGuild = function()
+		return wow.guild ~= nil
+	end
+	_G.GetGuildInfo = function(u)
+		if u == "player" then
+			local g = wow.guild
+			if type(g) == "table" then
+				return g.name, g.rank, g.index
+			end
+			return nil
+		end
+		local data = unit(u)
+		if data and data.guildError then
+			error(data.guildError)
+		end
+		if data and data.guild then
+			return data.guild, "Miembro", 1
+		end
+	end
+	_G.C_GuildInfo = {
+		GuildRoster = function()
+			wow.roster_asks = wow.roster_asks + 1
+		end,
+		GetGuildTabardInfo = function(u)
+			assert(u == "player")
+			if wow.tabard_error then
+				error(wow.tabard_error)
+			end
+			return wow.tabard
+		end,
+	}
+	_G.GetGuildLogoInfo = function()
+		if wow.logo then
+			return unpack(wow.logo)
+		end
+	end
+	_G.GetPVPLifetimeStats = function()
+		return wow.pvp.kills, wow.pvp.maxRank
+	end
+	_G.C_MajorFactions = {
+		GetMajorFactionProgressionInfo = function(id)
+			if id == 2800 and wow.pvp.renown then
+				return {
+					renownLevel = wow.pvp.renown,
+					renownReputationEarned = wow.pvp.points,
+					renownLevelThreshold = wow.pvp.threshold,
+				}
+			end
+		end,
+	}
+	_G.C_CurrencyInfo = {
+		GetCurrencyInfo = function(id)
+			local quantity = wow.pvp.currency[id]
+			if quantity then
+				return { quantity = quantity }
+			end
+		end,
+	}
+	_G.GetBattlefieldWinner = function()
+		return wow.pvp.winner
+	end
+	_G.C_PvP = {
+		IsMatchComplete = function()
+			return wow.pvp.complete == true
+		end,
+		GetActiveMatchWinner = function()
+			return wow.pvp.matchWinner
+		end,
+		GetScoreInfoByPlayerGuid = function(guid)
+			if wow.pvp.scoreError then
+				error(wow.pvp.scoreError)
+			end
+			return guid == wow.player.guid and wow.pvp.score or nil
+		end,
+	}
+	_G.GetMaxBattlefieldID = function()
+		return #wow.pvp.queues
+	end
+	_G.GetBattlefieldStatus = function(i)
+		return wow.pvp.queues[i] or "none"
+	end
+	_G.RequestBattlefieldScoreData = function()
+		wow.score_asks = wow.score_asks + 1
+	end
+end
+
 local function strip(msg)
 	return (msg:gsub("|c%x%x%x%x%x%x%x%x", ""):gsub("|r", ""))
 end
@@ -1465,6 +1586,7 @@ function wow.reset(opts)
 	install_loot()
 	install_economy()
 	install_character()
+	install_social()
 
 	_G.CreateFrame = function(kind, name, parent, template)
 		return new_frame(kind, name, parent, template)
@@ -1670,7 +1792,7 @@ end
 -- recap (death recap events), cvars (name -> value), lowHealthFrame (false: no LowHealthFrame), subzone, taxi
 -- (flight master nodes), mounts (id -> { name, spell, active }), skillLines (id -> name), bind, region, locale,
 -- instance ({ name, type, id, difficulty, size } for IsInInstance and GetInstanceInfo), money (the gold), skills,
--- tradeSkills, talents and stats (see install_character).
+-- tradeSkills, talents and stats (see install_character), guild and pvp (see install_social).
 -- Returns the core namespace and a table of every booted addon's namespace by name.
 function wow.boot(opts)
 	opts = opts or {}

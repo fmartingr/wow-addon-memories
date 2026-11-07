@@ -1,0 +1,13 @@
+## Interface: 16001
+## Title: Memories - Social
+## Notes: Records group members, your guild, enemy players, PvP kills and deaths, honor, duels, battlegrounds and PvP rank.
+## Author: Felipe M.
+## Version: 0.1.0
+## Dependencies: Memories
+## Group: Memories
+## SavedVariablesPerCharacter: MemoriesSocialCharDB
+## LoadSavedVariablesFirst: 1
+## X-Memories-API: 1
+
+Social.lua
+PvP.lua
