@@ -117,7 +117,6 @@ for _, name in ipairs({
 	"SetScrollChild",
 	"SetSize",
 	"SetTexCoord",
-	"SetTexture",
 	"SetVertexColor",
 	"SetWidth",
 	"StartMoving",
@@ -257,7 +256,14 @@ function Frame:SetPoint(...)
 end
 
 function Frame:CreateTexture(name)
-	return new_frame("Texture", name, self)
+	local texture = new_frame("Texture", name, self)
+	self.textures = self.textures or {}
+	self.textures[#self.textures + 1] = texture
+	return texture
+end
+
+function Frame:SetTexture(path)
+	self.texture = path
 end
 
 function Frame:CreateFontString(name)

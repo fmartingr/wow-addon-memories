@@ -7,7 +7,7 @@
 ## SavedVariablesPerCharacter: MemoriesCharDB
 ## LoadSavedVariablesFirst: 1
 ## AddonCompartmentFunc: Memories_OnAddonCompartmentClick
-## IconTexture: Interface\Icons\INV_Misc_Book_09
+## IconTexture: Interface\AddOns\Memories\Media\icon
 ## Category: Map
 
 Core\Core.lua

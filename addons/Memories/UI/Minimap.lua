@@ -4,7 +4,7 @@ local MinimapButton = {}
 ns.MinimapButton = MinimapButton
 
 MinimapButton.DEFAULT_ANGLE = 225
-local ICON = "Interface\\Icons\\INV_Misc_Book_09"
+local ICON = "Interface\\AddOns\\Memories\\Media\\icon"
 
 local button
 -- A MemoriesDB from a newer Memories is never written, so the angle lives in memory for the session, starting from
