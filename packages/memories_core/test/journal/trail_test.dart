@@ -86,7 +86,7 @@ void main() {
       final db = character['MemoriesCharDB']! as Map<String, Object?>;
       final r = trail(db['trail']);
       final golden = File(
-        '../../cmd/memories-export/testdata/expected/eu-brumamar-nandu/trail.jsonl',
+        '../../testdata/expected/eu-brumamar-nandu/trail.jsonl',
       ).readAsLinesSync();
       expect(r.bad, 0);
       expect([for (final c in r.chunks) jsonEncode(c.toJson())], golden);

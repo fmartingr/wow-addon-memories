@@ -292,7 +292,7 @@ void main() {
     final golden = <String, Map<String, Object?>>{};
     const addedByExport = {'addon', 'session', 'screenshot', 'notes'};
     final journey = File(
-      '../../cmd/memories-export/testdata/expected/eu-brumamar-nandu/journey.jsonl',
+      '../../testdata/expected/eu-brumamar-nandu/journey.jsonl',
     );
     for (final l in journey.readAsLinesSync()) {
       final r = jsonDecode(l) as Map<String, Object?>;

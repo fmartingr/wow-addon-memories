@@ -85,7 +85,7 @@ func TestExportFixture(t *testing.T) {
 	}
 
 	got := readTree(t, dist)
-	expectedDir := filepath.Join("testdata", "expected")
+	expectedDir := filepath.Join("..", "..", "testdata", "expected")
 	if *update {
 		if err := os.RemoveAll(expectedDir); err != nil {
 			t.Fatal(err)

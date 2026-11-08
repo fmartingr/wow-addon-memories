@@ -92,9 +92,11 @@ dart-coverage: ## Run the Dart core tests with the coverage threshold
 build: ## Build the converter into build/
 	CGO_ENABLED=0 go build -o build/memories-export ./cmd/memories-export
 
-export: ## Run the converter on WOW_DIR (a flavor folder)
+export: ## Run the converter on WOW_DIR (a flavor folder); DIST, BACKUP and DEFAULT are optional
 	@if [ -z "$${WOW_DIR:-}" ]; then echo "WOW_DIR is required, for example .../World of Warcraft/_forever_" >&2; exit 2; fi
-	go run ./cmd/memories-export --wow-dir "$(WOW_DIR)"
+	@fvm dart pub get --directory=$(CORE) >/dev/null
+	fvm dart run $(CORE)/bin/memories_export.dart --wow-dir "$(WOW_DIR)" \
+		$(if $(DIST),--dist "$(DIST)") $(if $(BACKUP),--backup "$(BACKUP)") $(if $(DEFAULT),--default "$(DEFAULT)")
 
 link: ## Link each addon folder into WOW_DIR (a flavor folder)
 	@if [ -z "$${WOW_DIR:-}" ]; then echo "WOW_DIR is required, for example .../World of Warcraft/_forever_" >&2; exit 2; fi
@@ -124,7 +126,7 @@ web: ## Serve the viewer in web/ with dist-characters/ at http://localhost:$(WEB
 	@echo "Serving at http://localhost:$(WEB_PORT)"
 	python3 -m http.server $(WEB_PORT) --directory web
 
-web-demo: ## Serve the viewer with the converter test data
-	ln -sfn "$(CURDIR)/cmd/memories-export/testdata/expected" web/characters
+web-demo: ## Serve the viewer with the converter golden files in testdata/expected
+	ln -sfn "$(CURDIR)/testdata/expected" web/characters
 	@echo "Serving at http://localhost:$(WEB_PORT)"
 	python3 -m http.server $(WEB_PORT) --directory web

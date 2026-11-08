@@ -243,7 +243,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 4. Dart gather library, folder layout and CLI
+### [x] 4. Dart gather library, folder layout and CLI
 
 - **Outcome:** `gather(GatherOptions)` writes `latest/` and `backups/<stamp>/` and its output equals the Go golden files. The Dart CLI replaces `memories-export` for the Make targets. Go still builds and its tests still pass.
 - **Depends on:** Tasks 2 and 3.

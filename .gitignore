@@ -10,3 +10,4 @@ web/characters
 .fvm/
 .dart_tool/
 coverage/
+.gather.lock
