@@ -4,18 +4,70 @@ import (
 	"bytes"
 	"context"
 	"net"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
 
 func noEnv(string) string { return "" }
 
 func TestRunRejectsAnUnknownCommand(t *testing.T) {
 	var out, errOut bytes.Buffer
-	if code := run(context.Background(), []string{"backup"}, noEnv, &out, &errOut); code != exitUsage {
+	if code := run(context.Background(), []string{"restore"}, noEnv, &out, &errOut); code != exitUsage {
 		t.Errorf("exit code = %d, want %d", code, exitUsage)
 	}
 	if !strings.Contains(errOut.String(), "usage: memories-server") {
+		t.Errorf("stderr = %q", errOut.String())
+	}
+}
+
+func TestRunBackupNeedsOneFolder(t *testing.T) {
+	for _, args := range [][]string{{"backup"}, {"backup", "a", "b"}} {
+		var out, errOut bytes.Buffer
+		if code := run(context.Background(), args, noEnv, &out, &errOut); code != exitUsage {
+			t.Errorf("%v: exit code = %d, want %d", args, code, exitUsage)
+		}
+		if !strings.Contains(errOut.String(), "memories-server backup <new folder>") {
+			t.Errorf("%v: stderr = %q", args, errOut.String())
+		}
+	}
+}
+
+func TestRunBackupWritesTheFolderAndRefusesAnExistingOne(t *testing.T) {
+	data := t.TempDir()
+	st, err := store.Open(filepath.Join(data, "memories.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	st.Close()
+	env := func(k string) string {
+		if k == "MEMORIES_DATA_DIR" {
+			return data
+		}
+		return ""
+	}
+	dest := filepath.Join(t.TempDir(), "backup")
+
+	var out, errOut bytes.Buffer
+	if code := run(context.Background(), []string{"backup", dest}, env, &out, &errOut); code != exitOK {
+		t.Fatalf("exit code = %d, stderr %q", code, errOut.String())
+	}
+	if !strings.Contains(out.String(), "Backup written to "+dest) {
+		t.Errorf("stdout = %q", out.String())
+	}
+	if _, err := os.Stat(filepath.Join(dest, "memories.db")); err != nil {
+		t.Error(err)
+	}
+
+	out.Reset()
+	errOut.Reset()
+	if code := run(context.Background(), []string{"backup", dest}, env, &out, &errOut); code != exitError {
+		t.Errorf("second backup: exit code = %d, want %d", code, exitError)
+	}
+	if !strings.Contains(errOut.String(), "already exists") {
 		t.Errorf("stderr = %q", errOut.String())
 	}
 }

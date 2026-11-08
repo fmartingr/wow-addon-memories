@@ -43,10 +43,12 @@ var (
 )
 
 const (
-	shotDir = "screenshots"
-	// tmpPrefix marks the temporary file of a Write. Size skips it, so a write in progress or one cut short by a
-	// crash does not count toward a quota.
-	tmpPrefix = ".tmp-"
+	// CharactersDir is the folder below the data folder that holds the blobs.
+	CharactersDir = "characters"
+	shotDir       = "screenshots"
+	// TmpPrefix marks the temporary file of a Write. Size skips it, so a write in progress or one cut short by a
+	// crash does not count toward a quota, and the backup skips it, so it never copies a partial file.
+	TmpPrefix = ".tmp-"
 )
 
 // DiskBlobs stores blobs below one folder of a local disk.
@@ -54,7 +56,7 @@ type DiskBlobs struct{ root string }
 
 // NewDiskBlobs roots the blobs at <dataDir>/characters and creates that folder.
 func NewDiskBlobs(dataDir string) (*DiskBlobs, error) {
-	root := filepath.Join(dataDir, "characters")
+	root := filepath.Join(dataDir, CharactersDir)
 	if err := os.MkdirAll(root, 0o700); err != nil {
 		return nil, fmt.Errorf("could not create the folder %s: %w", root, err)
 	}
@@ -107,7 +109,7 @@ func (d *DiskBlobs) Write(ctx context.Context, p string, r io.Reader) (err error
 	if err := os.MkdirAll(filepath.Dir(dst), 0o700); err != nil {
 		return err
 	}
-	tmp, err := os.CreateTemp(filepath.Dir(dst), tmpPrefix+"*")
+	tmp, err := os.CreateTemp(filepath.Dir(dst), TmpPrefix+"*")
 	if err != nil {
 		return err
 	}
@@ -169,7 +171,7 @@ func (d *DiskBlobs) Size(_ context.Context, prefix string) (int64, error) {
 		if err != nil {
 			return err
 		}
-		if e.Type().IsRegular() && !strings.HasPrefix(e.Name(), tmpPrefix) {
+		if e.Type().IsRegular() && !strings.HasPrefix(e.Name(), TmpPrefix) {
 			info, err := e.Info()
 			if err != nil {
 				return err

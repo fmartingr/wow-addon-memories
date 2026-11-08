@@ -68,6 +68,7 @@ jobs:
           go-version-file: server/go.mod
           cache-dependency-path: server/go.sum
       - run: make server-lint server-test server-coverage
+      - run: docker build -f server/Dockerfile .
 
   dart-core:
     runs-on: ubuntu-latest

@@ -711,7 +711,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 12. Docker image, deployment example, backup and self-host docs
+### [x] 12. Docker image, deployment example, backup and self-host docs
 
 - **Outcome:** one Docker image runs the server. A compose file with Caddy runs `wowjourney.xyz` or any self-hosted site. The docs explain the setup, the admin tunnel and the backups.
 - **Depends on:** 7 (pages need `web/` in the image), 8 (admin port).

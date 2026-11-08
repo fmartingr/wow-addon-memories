@@ -107,7 +107,7 @@ func TestBlobsScreenshotsRemoveAndSize(t *testing.T) {
 	b.Write(ctx, "3/character.json", strings.NewReader("12345"))
 	b.Write(ctx, shot, strings.NewReader("1234567"))
 	b.Write(ctx, "4/character.json", strings.NewReader("zz"))
-	if err := os.WriteFile(filepath.Join(b.root, "3", tmpPrefix+"left-by-a-crash"), []byte("123456789"), 0o600); err != nil {
+	if err := os.WriteFile(filepath.Join(b.root, "3", TmpPrefix+"left-by-a-crash"), []byte("123456789"), 0o600); err != nil {
 		t.Fatal(err)
 	}
 

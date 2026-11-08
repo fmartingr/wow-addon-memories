@@ -1,0 +1,55 @@
+# Run from this folder: cp .env.example .env, edit it, then docker compose up -d.
+services:
+  server:
+    # Build it here, or replace `build` with the image of your registry.
+    build:
+      context: ..
+      dockerfile: server/Dockerfile
+    image: memories-server
+    restart: unless-stopped
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      # The compose network below. Only Caddy can reach the server on it, so its X-Forwarded-For is the one to trust.
+      MEMORIES_TRUSTED_PROXIES: 172.30.60.0/24,fd00:30:60::/64
+    volumes:
+      - data:/data
+    ports:
+      # The admin page has no login. Keep 127.0.0.1 here and reach it with an SSH tunnel.
+      - "127.0.0.1:8081:8081"
+    expose:
+      - "8080"
+
+  caddy:
+    image: caddy:2.11@sha256:ce773ec7a742ce15ee6bf2bb5f65882b9e2a4487b10733e6f1484f86e6b5d8bc
+    restart: unless-stopped
+    depends_on:
+      - server
+    environment:
+      MEMORIES_DOMAIN: ${MEMORIES_DOMAIN:-localhost}
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+volumes:
+  data:
+  caddy_data:
+  caddy_config:
+
+networks:
+  default:
+    # With IPv6 on the network, Docker forwards an IPv6 visitor to Caddy with its own address. Without it, every IPv6
+    # visitor reaches Caddy from the network gateway and all of them share one rate limit. On a host whose kernel has
+    # IPv6 turned off, the network cannot start: remove enable_ipv6, the fd00 subnet and its entry in
+    # MEMORIES_TRUSTED_PROXIES.
+    enable_ipv6: true
+    ipam:
+      config:
+        - subnet: 172.30.60.0/24
+        - subnet: fd00:30:60::/64

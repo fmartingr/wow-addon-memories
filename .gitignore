@@ -13,3 +13,5 @@ web/characters
 .dart_tool/
 coverage/
 .gather.lock
+upload-key.json
+upload-state.json

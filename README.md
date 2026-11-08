@@ -240,6 +240,11 @@ exit code 2. The size limits and quotas other than the rate limits apply to the 
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |
 | `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public listener (pages and API). |
 
+To run your own site, build the Docker image (`docker build -f server/Dockerfile -t memories-server .`) or use the
+compose file in `deploy/` (the server behind Caddy). `memories-server backup <new folder>` copies the database and the
+character files while the server runs. [`docs/self-host.md`](docs/self-host.md) has the setup, the admin tunnel, the
+backup and the restore.
+
 The design is in [`specs/2026-11-08-upload-backend.md`](specs/2026-11-08-upload-backend.md).
 
 ## License
@@ -274,9 +279,11 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 - `packages/memories_core/` — the Dart core (no Flutter) with the `memories-export` and `memories-upload` commands
   (`bin/memories_export.dart`, `bin/memories_upload.dart`); `app/` — the WoW Journey desktop app. Both use the Flutter version in `.fvmrc` through [FVM](https://fvm.app).
 - `server/` — the Go web server (its own `go.mod`; the only Go code in the repository).
+- `deploy/` — the compose file, Caddyfile and `.env.example` to run the server.
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`); `testdata/` — converter fixtures (`testdata/wow`)
   and their golden output (`testdata/expected`).
 - `docs/` — [`kinds.md`](docs/kinds.md), [`public-api.md`](docs/public-api.md),
   [`sub-addon-api.md`](docs/sub-addon-api.md), [`manual-checklist.md`](docs/manual-checklist.md) (the checks to run
   in the game), [`app-manual-checklist.md`](docs/app-manual-checklist.md) (the checks of the app) and
-  [`releasing.md`](docs/releasing.md) (how to cut a release).
+  [`releasing.md`](docs/releasing.md) (how to cut a release) and [`self-host.md`](docs/self-host.md) (run your own
+  server).
