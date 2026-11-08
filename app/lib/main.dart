@@ -15,6 +15,7 @@ import 'src/platform/tray_service.dart';
 import 'src/platform/window_service.dart';
 import 'src/settings/settings_store.dart';
 import 'src/shell/launch.dart';
+import 'src/upload/upload_service.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -30,6 +31,7 @@ Future<void> main(List<String> args) async {
     tray: SystemTrayService(),
     window: window,
     startup: SystemStartupService(),
+    uploader: CoreUploadService(directories.support),
   );
   final app = await launch(
     args: args,

@@ -27,6 +27,7 @@ void main() {
   testWidgets('shows the folders, the switches and the version', (
     tester,
   ) async {
+    useWindow(tester, height: 1600);
     await _openSettings(tester);
     expect(find.text(retailDir), findsOneWidget);
     expect(find.text(readySettings.backupRoot!), findsOneWidget);

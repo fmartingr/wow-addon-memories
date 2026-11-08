@@ -13,8 +13,10 @@ class SiteState {
     this.screenshotsApproved = false,
     Map<String, String>? sent,
     Map<String, Map<String, String>>? shots,
+    Set<String>? removed,
   }) : sent = sent ?? {},
-       shots = shots ?? {};
+       shots = shots ?? {},
+       removed = removed ?? {};
 
   /// Reads one site record, and falls back to the default of each field that
   /// is missing or of another type.
@@ -32,6 +34,11 @@ class SiteState {
       screenshotsApproved: json['screenshotsApproved'] == true,
       sent: _stringMap(json['sent']),
       shots: shots,
+      removed: {
+        if (json['removed'] case final List<Object?> list)
+          for (final v in list)
+            if (v is String) v,
+      },
     );
   }
 
@@ -50,10 +57,20 @@ class SiteState {
   /// The SHA-256 of each screenshot file sent, by character path and file.
   final Map<String, Map<String, String>> shots;
 
+  /// The character paths that the player removed from the site. An
+  /// automatic upload never sends them again; only an explicit one does.
+  final Set<String> removed;
+
   /// Forgets what was sent for the character at [path].
   void forget(String path) {
     sent.remove(path);
     shots.remove(path);
+  }
+
+  /// Records that the player removed the character at [path] from the site.
+  void markRemoved(String path) {
+    forget(path);
+    removed.add(path);
   }
 
   Map<String, Object?> toJson() => {
@@ -61,6 +78,7 @@ class SiteState {
     'screenshotsApproved': screenshotsApproved,
     'sent': sent,
     'shots': shots,
+    if (removed.isNotEmpty) 'removed': [...removed]..sort(),
   };
 }
 

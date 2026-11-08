@@ -32,6 +32,13 @@ void main() {
     expect(s.backupRoot, isNull);
   });
 
+  test('the defaults have the default website and Upload off', () {
+    const s = Settings();
+    expect(s.site, defaultSite);
+    expect(s.site, startsWith('https://'));
+    expect(s.upload, isFalse);
+  });
+
   test('a missing file gives the defaults and no notice', () async {
     final loaded = await store.load();
     expect(loaded.settings, const Settings());
@@ -46,6 +53,8 @@ void main() {
       startAtLogin: false,
       wizardDone: true,
       lastSignature: 'abc',
+      site: 'http://localhost:8080',
+      upload: true,
     );
     await store.save(s);
     final loaded = await store.load();
@@ -105,6 +114,36 @@ void main() {
     file().writeAsStringSync('{"wizardDone": true}');
     final loaded = await store.load();
     expect(loaded.settings, const Settings(wizardDone: true));
+  });
+
+  test(
+    'a file with no website keys keeps its values and the defaults',
+    () async {
+      file().writeAsStringSync('{"wizardDone": true, "watch": false}');
+      final loaded = await store.load();
+      expect(loaded.settings.watch, isFalse);
+      expect(loaded.settings.site, defaultSite);
+      expect(loaded.settings.upload, isFalse);
+    },
+  );
+
+  test('a site or upload value of the wrong type is a damaged file', () async {
+    for (final text in ['{"site": 3}', '{"upload": "yes"}']) {
+      file().writeAsStringSync(text);
+      final loaded = await store.load();
+      expect(loaded.settings, const Settings());
+      expect(loaded.notice, damagedSettingsNotice);
+    }
+  });
+
+  test('copyWith changes the site and the Upload switch', () {
+    final s = const Settings().copyWith(
+      site: 'https://example.com',
+      upload: true,
+    );
+    expect(s.site, 'https://example.com');
+    expect(s.upload, isTrue);
+    expect(s.copyWith(upload: false).site, 'https://example.com');
   });
 
   group('SettingsController', () {

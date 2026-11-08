@@ -664,7 +664,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 11. App: Website settings, registration and upload
+### [x] 11. App: Website settings, registration and upload
 
 - **Outcome:** a player chooses the website, registers with an invite code, turns on Upload, and the app uploads after each gather. The player copies each character link, removes a character and requests screenshots.
 - **Depends on:** 9 (client, state, key).

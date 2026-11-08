@@ -7,6 +7,7 @@ import 'platform/services.dart';
 import 'settings/settings_controller.dart';
 import 'shell/shell_controller.dart';
 import 'ui/home_page.dart';
+import 'upload/upload_controller.dart';
 import 'ui/wizard_page.dart';
 import 'watch/watch_controller.dart';
 
@@ -38,6 +39,12 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
   late final GatherController _gather = GatherController(
     widget.services.gather,
   );
+  late final UploadController _upload = UploadController(
+    service: widget.services.uploader,
+    settings: _settings,
+    gather: _gather,
+    clock: widget.services.clock,
+  );
   late final WatchController _watch = WatchController(
     settings: _settings,
     gather: _gather,
@@ -59,6 +66,8 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
   @override
   void initState() {
     super.initState();
+    // Made now, not on first use, so it sees every gather and settings load.
+    _upload;
     _settings.addListener(_syncWatch);
     _settings.load();
     _shell.start();
@@ -86,6 +95,7 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
     _shell.dispose();
     _settings.removeListener(_syncWatch);
     _watch.dispose();
+    _upload.dispose();
     _settings.dispose();
     _gather.dispose();
     super.dispose();
@@ -129,6 +139,7 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
             settings: _settings,
             gather: _gather,
             watch: _watch,
+            upload: _upload,
           );
         },
       ),

@@ -4,6 +4,7 @@ library;
 
 import '../gather/gather_controller.dart';
 import '../settings/settings_store.dart';
+import '../upload/upload_service.dart';
 import '../watch/watch_controller.dart';
 import 'discovery.dart';
 import 'documents_dir.dart';
@@ -24,6 +25,7 @@ class AppServices {
     required this.tray,
     required this.window,
     required this.startup,
+    required this.uploader,
     this.signature = flavorSignature,
     this.clock = DateTime.now,
   });
@@ -37,6 +39,7 @@ class AppServices {
   final TrayService tray;
   final WindowService window;
   final StartupService startup;
+  final UploadService uploader;
 
   /// The signature of the Memories files that Watch polls.
   final SignatureFunction signature;

@@ -52,6 +52,7 @@ Acceptance criteria:
   - Delete the Go code before the golden test passes in Dart (Task 4), or before the CLI works (Task 4).
   - Prune or delete any backup. This version has no pruning.
   - Add the upload to a website, user accounts, analytics, an auto-update, or a network call of any kind.
+    This rule is lifted for the upload client by `specs/2026-11-08-upload-backend.md`.
   - Hard-code one flavor folder name.
 - **Out of Scope:**
   - Upload and sharing.

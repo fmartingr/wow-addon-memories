@@ -231,7 +231,8 @@ class _Run {
   }
 
   Future<void> _sync(Directory latest) async {
-    final report = await syncLatest(latest, client, state);
+    // A CLI run is an explicit upload, so it also sends removed characters.
+    final report = await syncLatest(latest, client, state, resendRemoved: true);
     var uploaded = 0;
     var unchanged = 0;
     var failures = 0;
@@ -248,6 +249,8 @@ class _Run {
         case SyncStatus.unchanged:
           unchanged++;
           out.writeln('unchanged $name');
+        case SyncStatus.removed:
+          out.writeln('removed, skipped $name');
         case SyncStatus.failed:
           failures++;
           final e = c.error!;

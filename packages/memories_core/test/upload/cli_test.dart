@@ -180,6 +180,18 @@ void main() {
     expect(again.out, contains('unchanged wow/eu/los-errantes/nandu'));
   });
 
+  test('--latest also sends a character that the app removed', () async {
+    await run(['--latest', latest]);
+    final state = UploadState.load(File(statePath));
+    state.site(site.uri).markRemoved(_path);
+    state.save(File(statePath));
+    site.characters.remove(_path);
+    final r = await run(['--latest', latest]);
+    expect(r.code, 0, reason: r.err);
+    expect(r.out, contains('uploaded $_path'));
+    expect(UploadState.load(File(statePath)).site(site.uri).removed, isEmpty);
+  });
+
   test('actions run in the order register, latest, delete, request', () async {
     final r = await run([
       '--request-screenshots',

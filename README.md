@@ -97,8 +97,18 @@ Releases are cut as described in [`docs/releasing.md`](docs/releasing.md).
 - **Main screen:** the last gather time, a Gather now button, the counts (characters, journal lines, screenshots),
   the characters, each problem in plain words with a fix button, the size of the backup folder, and Open backup
   folder and Open latest data.
-- **Settings:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two switches and
-  the version.
+- **Settings:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two switches,
+  the Website section and the version.
+- **Website:** the Website section of the settings has the website address (default `https://wowjourney.xyz`; only
+  `https://`, or `http://` for `localhost`, `127.0.0.1` and `[::1]`), a Check button, the registration (an invite code,
+  or one click on a website with open registration), the Upload switch (off by default, and it stays off until the key
+  is registered), Request screenshots and the key fingerprint. With Upload on, the app sends the journey after each
+  gather. The main screen has a Website card with Upload now, the last result, and for each uploaded character its
+  link with Copy link and Remove from website. A removed character is not uploaded again after a gather; Upload now
+  sends every removed character again. Character pages are unlisted: anybody with the link can open them. The
+  key is `upload-key.json` and the state `upload-state.json`, in the app support folder; after a reinstall the website
+  admin moves your characters to the new key. A build can set another default address with
+  `--dart-define=WOWJOURNEY_SITE=http://localhost:8080`.
 - **Tray:** the tray icon has the menu Gather now, Open window, Open backup folder and Quit. Closing the window hides
   it to the tray; Quit stops Watch and ends the app. A gather from the tray leaves a hidden window hidden. When there
   is no tray, closing the window quits the app. On Linux the icon needs a panel with status notifier icons: KDE Plasma

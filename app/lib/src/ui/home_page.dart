@@ -9,10 +9,12 @@ import 'package:path/path.dart' as p;
 import '../gather/gather_controller.dart';
 import '../platform/services.dart';
 import '../settings/settings_controller.dart';
+import '../upload/upload_controller.dart';
 import '../watch/watch_controller.dart';
 import 'folder_flow.dart';
 import 'messages.dart';
 import 'settings_page.dart';
+import 'website_card.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -21,6 +23,7 @@ class HomePage extends StatefulWidget {
     required this.settings,
     required this.gather,
     required this.watch,
+    required this.upload,
     this.clock = DateTime.now,
   });
 
@@ -28,6 +31,7 @@ class HomePage extends StatefulWidget {
   final SettingsController settings;
   final GatherController gather;
   final WatchController watch;
+  final UploadController upload;
   final DateTime Function() clock;
 
   @override
@@ -139,8 +143,11 @@ class _HomePageState extends State<HomePage> {
   void _openSettings() {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
-        builder: (_) =>
-            SettingsPage(services: widget.services, settings: _settings),
+        builder: (_) => SettingsPage(
+          services: widget.services,
+          settings: _settings,
+          upload: widget.upload,
+        ),
       ),
     );
   }
@@ -180,6 +187,13 @@ class _HomePageState extends State<HomePage> {
                     _characters(context),
                     const SizedBox(height: 12),
                     _backupCard(context),
+                    const SizedBox(height: 12),
+                    WebsiteCard(
+                      upload: widget.upload,
+                      settings: _settings,
+                      onOpenSettings: _openSettings,
+                      clock: widget.clock,
+                    ),
                   ],
                 ),
               ),

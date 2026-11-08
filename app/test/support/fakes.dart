@@ -16,6 +16,7 @@ import 'package:wow_journey/src/platform/tray_service.dart';
 import 'package:wow_journey/src/platform/window_service.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_store.dart';
+import 'package:wow_journey/src/upload/upload_service.dart';
 
 const String install = '/games/World of Warcraft';
 const String retailDir = '$install/_retail_';
@@ -260,6 +261,113 @@ class FakeFirstInstance extends FirstInstance {
   Future<void> release() async => released = true;
 }
 
+/// A website that answers from fields the test sets, and records each call.
+/// A field holding an error makes that method throw it.
+class FakeUploadService implements UploadService {
+  /// The sites where the key is registered.
+  final Set<String> registeredSites = {};
+  String? fingerprint;
+  SiteInfo siteInfo = const SiteInfo(
+    api: 1,
+    name: 'Journey Site',
+    registration: 'invite',
+  );
+  MeInfo meInfo = const MeInfo(screenshots: 'none', characters: []);
+  SyncReport? report;
+
+  Object? statusError;
+  Object? infoError;
+  Object? registerError;
+  Object? meError;
+  Object? syncError;
+  Object? deleteError;
+  Object? requestError;
+
+  /// A sync that ends when the test completes it.
+  Completer<SyncReport>? pendingSync;
+
+  /// The state that [requestScreenshots] gives back.
+  String requested = 'pending';
+
+  final List<String> calls = [];
+  final List<(String, String)> syncs = [];
+
+  /// The `resendRemoved` argument of each sync.
+  final List<bool> resends = [];
+  final List<(String, String?)> registrations = [];
+  final List<(String, String)> deletions = [];
+
+  @override
+  Future<SiteStatus> status(String site) async {
+    if (statusError != null) throw statusError!;
+    return (
+      registered: registeredSites.contains(site),
+      fingerprint: fingerprint,
+    );
+  }
+
+  @override
+  Future<SiteInfo> info(String site) async {
+    calls.add('info $site');
+    if (infoError != null) throw infoError!;
+    return siteInfo;
+  }
+
+  @override
+  Future<void> register(String site, String? invite) async {
+    calls.add('register $site');
+    registrations.add((site, invite));
+    if (registerError != null) throw registerError!;
+    registeredSites.add(site);
+    fingerprint ??= '0123456789abcdef';
+  }
+
+  @override
+  Future<MeInfo> me(String site) async {
+    calls.add('me $site');
+    if (meError != null) throw meError!;
+    return meInfo;
+  }
+
+  @override
+  Future<SyncReport> sync(
+    String site,
+    String latestDir, {
+    bool resendRemoved = false,
+  }) {
+    calls.add('sync $site');
+    syncs.add((site, latestDir));
+    resends.add(resendRemoved);
+    if (syncError != null) return Future.error(syncError!);
+    if (pendingSync != null) return pendingSync!.future;
+    return Future.value(
+      report ?? SyncReport(screenshots: meInfo.screenshots, characters: []),
+    );
+  }
+
+  @override
+  Future<void> delete(String site, String path) async {
+    calls.add('delete $site $path');
+    deletions.add((site, path));
+    if (deleteError != null) throw deleteError!;
+    meInfo = MeInfo(
+      screenshots: meInfo.screenshots,
+      characters: [
+        for (final c in meInfo.characters)
+          if (c.path != path) c,
+      ],
+    );
+  }
+
+  @override
+  Future<String> requestScreenshots(String site) async {
+    calls.add('requestScreenshots $site');
+    if (requestError != null) throw requestError!;
+    meInfo = MeInfo(screenshots: requested, characters: meInfo.characters);
+    return requested;
+  }
+}
+
 class Fakes {
   Fakes({
     FakeSettingsStore? store,
@@ -267,7 +375,9 @@ class Fakes {
     FakeFolderPicker? picker,
     FakeGatherService? gather,
     FakeSignature? signature,
-  }) : signature = signature ?? FakeSignature(),
+    FakeUploadService? upload,
+  }) : upload = upload ?? FakeUploadService(),
+       signature = signature ?? FakeSignature(),
        store = store ?? FakeSettingsStore(),
        discovery = discovery ?? FakeDiscovery(),
        picker = picker ?? FakeFolderPicker(),
@@ -282,6 +392,7 @@ class Fakes {
   final FakeTray tray = FakeTray();
   final FakeWindow window = FakeWindow();
   final FakeStartup startup = FakeStartup();
+  final FakeUploadService upload;
 
   /// The time of Watch; a widget test sets it to the fake time of the test.
   DateTime Function() clock = DateTime.now;
@@ -296,6 +407,7 @@ class Fakes {
     tray: tray,
     window: window,
     startup: startup,
+    uploader: upload,
     signature: signature.call,
     clock: () => clock(),
   );

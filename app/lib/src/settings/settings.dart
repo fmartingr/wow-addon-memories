@@ -1,6 +1,13 @@
 /// The choices of the user, kept in `settings.json`.
 library;
 
+/// The website that gets the uploads, unless the user chose another. A build
+/// can set it with `--dart-define=WOWJOURNEY_SITE=...`.
+const String defaultSite = String.fromEnvironment(
+  'WOWJOURNEY_SITE',
+  defaultValue: 'https://wowjourney.xyz',
+);
+
 /// The settings of the app. A new value replaces the old one as a whole.
 class Settings {
   const Settings({
@@ -10,6 +17,8 @@ class Settings {
     this.startAtLogin = true,
     this.wizardDone = false,
     this.lastSignature,
+    this.site = defaultSite,
+    this.upload = false,
   });
 
   /// The flavor folder that a gather reads, such as `.../_retail_`.
@@ -30,6 +39,13 @@ class Settings {
   /// The signature of the Memories files at the last gather of Watch.
   final String? lastSignature;
 
+  /// The address of the website that gets the uploads.
+  final String site;
+
+  /// Whether the app uploads after each gather. It stays off until the key
+  /// is registered on [site].
+  final bool upload;
+
   Settings copyWith({
     String? flavorDir,
     String? backupRoot,
@@ -38,6 +54,8 @@ class Settings {
     bool? wizardDone,
     String? lastSignature,
     bool clearLastSignature = false,
+    String? site,
+    bool? upload,
   }) => Settings(
     flavorDir: flavorDir ?? this.flavorDir,
     backupRoot: backupRoot ?? this.backupRoot,
@@ -47,6 +65,8 @@ class Settings {
     lastSignature: clearLastSignature
         ? null
         : lastSignature ?? this.lastSignature,
+    site: site ?? this.site,
+    upload: upload ?? this.upload,
   );
 
   Map<String, Object?> toJson() => {
@@ -56,6 +76,8 @@ class Settings {
     'startAtLogin': startAtLogin,
     'wizardDone': wizardDone,
     'lastSignature': lastSignature,
+    'site': site,
+    'upload': upload,
   };
 
   /// Reads [json] as [toJson] writes it. A missing key takes its default.
@@ -78,6 +100,8 @@ class Settings {
       startAtLogin: read<bool>('startAtLogin') ?? d.startAtLogin,
       wizardDone: read<bool>('wizardDone') ?? d.wizardDone,
       lastSignature: read<String>('lastSignature'),
+      site: read<String>('site') ?? d.site,
+      upload: read<bool>('upload') ?? d.upload,
     );
   }
 
@@ -89,7 +113,9 @@ class Settings {
       other.watch == watch &&
       other.startAtLogin == startAtLogin &&
       other.wizardDone == wizardDone &&
-      other.lastSignature == lastSignature;
+      other.lastSignature == lastSignature &&
+      other.site == site &&
+      other.upload == upload;
 
   @override
   int get hashCode => Object.hash(
@@ -99,6 +125,8 @@ class Settings {
     startAtLogin,
     wizardDone,
     lastSignature,
+    site,
+    upload,
   );
 
   @override

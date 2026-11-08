@@ -297,4 +297,59 @@ void main() {
     });
     expect(site.callsTo('POST /api/v1/characters'), hasLength(3));
   });
+
+  test(
+    'a removed character is skipped, even when the website lost it',
+    () async {
+      await syncLatest(latest, client, state);
+      site.characters.remove(_errantes);
+      state.site(site.uri).markRemoved(_errantes);
+      final r = await syncLatest(latest, client, state);
+      expect(statuses(r), {
+        _brumamar: SyncStatus.unchanged,
+        _errantes: SyncStatus.removed,
+      });
+      expect(r.failed, isFalse);
+      expect(site.characters.containsKey(_errantes), isFalse);
+      expect(site.callsTo('POST /api/v1/characters'), hasLength(2));
+      expect(state.site(site.uri).removed, {_errantes});
+    },
+  );
+
+  test('a removed character skips its screenshots too', () async {
+    site.screenshots = 'approved';
+    state.site(site.uri).markRemoved(_brumamar);
+    final r = await syncLatest(latest, client, state);
+    expect(statuses(r)[_brumamar], SyncStatus.removed);
+    expect(r.characters.first.shots.uploaded, 0);
+    expect(site.calls.where((c) => c.method == 'PUT'), isEmpty);
+  });
+
+  test('resendRemoved sends removed characters and clears the set', () async {
+    state.site(site.uri).markRemoved(_errantes);
+    final r = await syncLatest(latest, client, state, resendRemoved: true);
+    expect(statuses(r), {
+      _brumamar: SyncStatus.uploaded,
+      _errantes: SyncStatus.uploaded,
+    });
+    expect(state.site(site.uri).removed, isEmpty);
+    final again = await syncLatest(latest, client, state);
+    expect(statuses(again)[_errantes], SyncStatus.unchanged);
+  });
+
+  test('a failed me() keeps the removed set', () async {
+    state.site(site.uri).markRemoved(_errantes);
+    site.overrides['GET /api/v1/me'] = Reply.error(503, 'busy', 'Busy.');
+    await expectLater(
+      syncLatest(latest, client, state, resendRemoved: true),
+      throwsA(isA<UploadException>()),
+    );
+    expect(state.site(site.uri).removed, {_errantes});
+  });
+
+  test('the removed set of one site never skips on another', () async {
+    state.site(Uri.parse('https://other.example')).markRemoved(_errantes);
+    final r = await syncLatest(latest, client, state);
+    expect(statuses(r)[_errantes], SyncStatus.uploaded);
+  });
 }

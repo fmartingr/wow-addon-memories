@@ -6,19 +6,23 @@ import 'package:memories_core/memories_core.dart';
 
 import '../platform/services.dart';
 import '../settings/settings_controller.dart';
+import '../upload/upload_controller.dart';
 import '../version.dart';
 import 'folder_flow.dart';
 import 'switch_tiles.dart';
+import 'website_section.dart';
 
 class SettingsPage extends StatelessWidget {
   const SettingsPage({
     super.key,
     required this.services,
     required this.settings,
+    required this.upload,
   });
 
   final AppServices services;
   final SettingsController settings;
+  final UploadController upload;
 
   @override
   Widget build(BuildContext context) {
@@ -76,6 +80,8 @@ class SettingsPage extends StatelessWidget {
                           settings.settings.copyWith(startAtLogin: v),
                         ),
                       ),
+                      const Divider(),
+                      WebsiteSection(upload: upload, settings: settings),
                       const Divider(),
                       ListTile(
                         title: const Text('Version'),

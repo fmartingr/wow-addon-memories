@@ -40,11 +40,19 @@ unless the row names one system.
 | 14 | 10 | Linux only: unpack the tar.gz and run the binary on a clean machine. | — | — | not run |
 | 15 | 4, 6 | Reinstall case: delete the saved files from a copy of the WoW folder, add a new session, gather. Old lines stay in `latest/`. | not run | not run | not run |
 | 16 | 6 | Open `latest/` with `make web` and see the map and the tables. | not run | not run | not run |
+| 17 | 11 | Website, check and register: in the settings, Check on the default address shows the site name, or a plain message with no network. An address with `http://example.com` shows "must start with https://". With an invite code from the admin page, Register shows "Registered on ..." and the key fingerprint, and the Upload switch can be turned on. A wrong code shows a plain message. | not run | not run | not run |
+| 18 | 11 | Website, upload: with Upload on, Gather now uploads. The Website card shows the last upload time and the character link, and the link opens the page with the journey, the trail, the sessions and the counts. Screenshots show "Screenshot not uploaded". With Upload off, a gather uploads nothing and Upload now is gone. | not run | not run | not run |
+| 19 | 11 | Website, screenshots: Request screenshots shows "Waiting for the website admin". After the admin approves the key, a gather (or Upload now) sends them and they show on the page. | not run | not run | not run |
+| 20 | 11 | Website, links and removal: Copy link puts the link on the clipboard. Remove from website asks "Remove <name> from <site>? The page and its data are deleted." Cancel keeps it; Remove makes the link give 404. With Upload on, the next gather does not upload it again (the card says "skipped 1 removed character"); Upload now sends it again. | not run | not run | not run |
+| 21 | 11 | Website, blocked key: after "Revoke key" on the admin page, Upload now shows "The website admin blocked this app's key", the Upload switch is off, and turning Upload on again, the next Upload now gives the same message and turns it off. | not run | not run | not run |
+| 22 | 11 | macOS debug build (`make companion`, app sandbox on): Check and Register reach the site, so the network client entitlement works. | — | not run | — |
 
 ## Also look at
 
 These go with checks 1 to 6.
 
+- The Website section and card (checks 17 to 21) at 480 px and with large text (1.5×): no text is cut off, and a
+  long address and a long error message wrap.
 - The main screen at its narrowest width (480 px) and with large text (1.5×): no text is cut off.
 - With the WoW folder renamed after the wizard, the main screen shows "We cannot find your WoW folder any more" with
   a Choose folder button.

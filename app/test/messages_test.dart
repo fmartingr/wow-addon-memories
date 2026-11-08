@@ -74,4 +74,104 @@ void main() {
     ).firstMatch(pubspec)![1];
     expect(appVersion, version);
   });
+
+  group('website text', () {
+    test('siteLabel drops the scheme and keeps a port', () {
+      expect(siteLabel('https://wowjourney.xyz'), 'wowjourney.xyz');
+      expect(siteLabel('http://localhost:8080'), 'localhost:8080');
+      expect(siteLabel('nonsense'), 'nonsense');
+    });
+
+    test('the revoked and claimed texts say what happened', () {
+      expect(
+        keyRevokedText('https://wowjourney.xyz'),
+        "The website admin blocked this app's key. Uploads to wowjourney.xyz "
+        'are off.',
+      );
+      expect(
+        claimedText('Nandu', 'Brumamar'),
+        'Another player already uploaded Nandu on Brumamar. Ask the website '
+        'admin.',
+      );
+    });
+
+    test(
+      'a rejected upload names the first 3 problems and counts the rest',
+      () {
+        final problems = [
+          for (var i = 1; i <= 4; i++)
+            UploadProblem(file: 'journey', line: i, field: '', reason: 'bad'),
+        ];
+        final text = rejectedText('Nandu', problems);
+        expect(text, contains('journey, line 3: bad'));
+        expect(text, isNot(contains('line 4')));
+        expect(text, contains('And 1 more problem.'));
+      },
+    );
+
+    test('every screenshot state has a sentence', () {
+      for (final state in ['none', 'pending', 'approved', 'denied']) {
+        expect(screenshotsText(state), endsWith('.'));
+      }
+    });
+
+    test('the sync summary counts characters and screenshots', () {
+      const ok = CharacterResult(
+        id: 'a',
+        path: 'p',
+        status: SyncStatus.uploaded,
+        shots: ShotsResult(uploaded: 2),
+      );
+      expect(
+        syncSummaryText(
+          const SyncReport(screenshots: 'approved', characters: [ok, ok]),
+        ),
+        'Uploaded 2 characters, sent 4 screenshots.',
+      );
+      expect(
+        syncSummaryText(const SyncReport(screenshots: 'none', characters: [])),
+        'Everything is up to date.',
+      );
+      const shotsOnly = CharacterResult(
+        id: 'a',
+        path: 'p',
+        status: SyncStatus.unchanged,
+        shots: ShotsResult(uploaded: 1, errors: ['x']),
+      );
+      expect(
+        syncSummaryText(
+          const SyncReport(screenshots: 'approved', characters: [shotsOnly]),
+        ),
+        'Sent 1 screenshot, 1 screenshot failed.',
+      );
+      const removed = CharacterResult(
+        id: 'a',
+        path: 'p',
+        status: SyncStatus.removed,
+      );
+      expect(
+        syncSummaryText(
+          const SyncReport(screenshots: 'none', characters: [removed]),
+        ),
+        'Everything is up to date, skipped 1 removed character (Upload now '
+        'sends it again).',
+      );
+      expect(
+        syncSummaryText(
+          const SyncReport(
+            screenshots: 'none',
+            characters: [ok, removed, removed],
+          ),
+        ),
+        'Uploaded 1 character, sent 2 screenshots, skipped 2 removed characters '
+        '(Upload now sends them again).',
+      );
+    });
+
+    test('the removal message says the rule', () {
+      expect(removedText('Nandu'), startsWith('Nandu was removed'));
+      expect(removedText('Nandu'), contains('Gathers do not upload it again'));
+      expect(removedText('Nandu'), contains('Upload now does'));
+    });
+  });
 }

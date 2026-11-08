@@ -11,8 +11,9 @@ import '../gather/ids.dart' show idPattern;
 import 'client.dart';
 import 'state.dart';
 
-/// What happened to one character.
-enum SyncStatus { uploaded, unchanged, failed }
+/// What happened to one character. [removed]: the player removed it from the
+/// site, so it was skipped.
+enum SyncStatus { uploaded, unchanged, failed, removed }
 
 /// The screenshot step of one character.
 class ShotsResult {
@@ -87,6 +88,11 @@ const Set<String> _perFileCodes = {
 /// records name.
 /// [state] is changed in place; the caller saves it.
 ///
+/// A character that the player removed from the site (see
+/// [SiteState.removed]) is skipped with [SyncStatus.removed], unless
+/// [resendRemoved] is true: an explicit upload then sends it again and clears
+/// the removed set of the site.
+///
 /// A failure of one character does not stop the others, except a failure that
 /// every next request would get too (a rate limit, a busy website, the network,
 /// the key or the clock): the characters after it are then reported as failed
@@ -95,11 +101,13 @@ const Set<String> _perFileCodes = {
 Future<SyncReport> syncLatest(
   Directory latest,
   UploadClient client,
-  UploadState state,
-) async {
+  UploadState state, {
+  bool resendRemoved = false,
+}) async {
   final entries = _readIndex(latest);
   final site = state.site(client.site);
   final me = await client.me();
+  if (resendRemoved) site.removed.clear();
   final approved = me.screenshotsApproved;
   if (approved != site.screenshotsApproved) {
     // The website keeps the screenshot field of a record only for an approved
@@ -137,7 +145,7 @@ Future<SyncReport> syncLatest(
     );
     results.add(result);
     final error = result.error;
-    if (error != null && _stopsRun(error)) stop = error;
+    if (error != null && stopsRun(error)) stop = error;
     stop ??= result.shots.stop;
   }
   return SyncReport(screenshots: me.screenshots, characters: results);
@@ -145,7 +153,7 @@ Future<SyncReport> syncLatest(
 
 /// Whether [e] fails every next request of the run too (rate limit, busy
 /// server, network, key or clock), so the rest of the characters are not sent.
-bool _stopsRun(UploadException e) =>
+bool stopsRun(UploadException e) =>
     e.status == 429 ||
     e.status == 503 ||
     const {
@@ -197,6 +205,13 @@ Future<CharacterResult> _syncCharacter(
       path: '',
       status: SyncStatus.failed,
       error: e,
+    );
+  }
+  if (site.removed.contains(prepared.path)) {
+    return CharacterResult(
+      id: id,
+      path: prepared.path,
+      status: SyncStatus.removed,
     );
   }
   // A character removed on the website (another computer, the admin, a reset)
@@ -270,7 +285,7 @@ Future<ShotsResult> _syncShots(
       }
     } on UploadException catch (e) {
       errors.add('$name: ${e.message}');
-      if (_stopsRun(e)) stop = e;
+      if (stopsRun(e)) stop = e;
       if (!_perFileCodes.contains(e.code)) break;
     } on FileSystemException {
       errors.add('$name: the file cannot be read.');
