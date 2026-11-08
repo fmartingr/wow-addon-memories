@@ -105,7 +105,7 @@ play starts. Deaths and the low-health popup read no `GlobalStrings` name: the k
 | ID | Source | Check | Steps | Expected | Result |
 |---|---|---|---|---|---|
 | D1 | 5 | Settings page | Type `/mem options`, then `/mem settings`. | Each opens Options > AddOns > Memories with no Lua error. | not run |
-| D2 | 5 | General section | Open the Settings page. | "General" shows "Recording rate" (1, 2, 5, 10 s; 2 s chosen), "Screenshot at level-up" and "Screenshot at a dungeon's last boss" (both off), "Save reminder", "Minimap button" and "Low-health flash" (all on). | not run |
+| D2 | 5 | General section | Open the Settings page. | "General" shows "Recording rate" (1, 2, 5, 10 s; 2 s chosen), "Save reminder", "Minimap button" and "Low-health flash" (all on). | not run |
 | D3 | 5, 11–15 | Kind sections | Scroll the Settings page. | One header `<Addon> — <Group>` per group, each with "Enable all", "Disable all" and one checkbox per kind, all checked: `Memories` — Sessions, Progress, Deaths, Travel, Dungeons, Screenshots, Other addons; `Memories_Combat — Combat` (`ki`, `ra`, `fi`); `Memories_Gathering — Gathering` (`ga`, `fs`, `op`, `pp`); `Memories_Character — Character` (`sk`, `lr`, `rc`, `ta`, `cu`, `pt`) and `— Milestones` (`rp`, `qa`, `hb`, `fp`, `bk`); `Memories_Economy — Loot` (`lo`, `rl`, `ge`, `eq`) and `— Money` (`mn`, `tb`, `ah`, `ma`, `tr`); `Memories_Social — Social` (`gj`, `gl`, `gu`) and `— PvP` (`ep`, `pk`, `hk`, `du`, `bg`, `rk`). No checkbox for `nt`. | not run |
 | D4 | 5 | New findings only boxes | Look under each group. | "Gathering: new findings only" under Gathering, "Kills: new findings only" under Combat, "Loot: new findings only" under Loot and "Consumables: new findings only" under Character, all off. | not run |
 | D5 | 5 | Group buttons | Click "Disable all" under "Memories — Travel", then "Enable all". Repeat under "Memories_Economy — Money". | Every checkbox of that group clears at once, then checks again. No other group changes. | not run |
@@ -247,8 +247,7 @@ Check every kind again with "Enable all" after its row.
 | M3 | 9 | Reload inside | `/reload` inside a dungeon. | No new `dn` or `dx`. | not run |
 | M4 | 12 | Kill in a dungeon | Kill a creature in the dungeon, `/reload`. | `ki\|<name>\|\|\|\|<xp>\|\|party\|<1 or empty>`; `counts.kills` has `total` and `inst` 1 more. | not run |
 | M5 | 9 | Boss fight | Kill a dungeon boss, then wipe on another. | `bo\|<boss>\|<encounter id>\|1\|\|<dungeon>\|<seconds>` for the kill (`1` in the 4th field for the last boss), `bo\|<boss>\|<id>\|0\|\|<dungeon>\|<seconds>` for the wipe. | not run |
-| M6 | 9 | Last-boss shot off | With "Screenshot at a dungeon's last boss" off (the default), kill the last boss of a dungeon. | No screenshot and no `ss` line. The list of last bosses holds English names, so on the esES client a boss with a translated name is not a last boss (`last` stays empty). | not run |
-| M7 | 9 | Last-boss shot on | Turn the setting on and kill Edwin VanCleef (the name is the same in Spanish). Turn it off again. | About 1 s later a screenshot and `ss\|last boss Edwin VanCleef\|ok\|<file>`. | not run |
+| M6 | 9 | Last boss, no shot | Kill the last boss of a dungeon. | No screenshot and no `ss` line. The list of last bosses holds English names, so on the esES client a boss with a translated name is not a last boss (`last` stays empty). | not run |
 | M8 | 9 | Logout inside | Log out inside a dungeon, wait, log in outside after the instance reset. | `dx` with the time of the logout. | not run |
 
 ## N. Groups, guild and PvP
@@ -286,8 +285,7 @@ Check every kind again with "Enable all" after its row.
 
 | ID | Source | Check | Steps | Expected | Result |
 |---|---|---|---|---|---|
-| P1 | 6, 13 | Level up | Gain a level with "Screenshot at level-up" off (the default), wait 3 s. | `lv\|<level>`, then `pl\|<played>`; `MemoriesCharDB.snap[<level>]` has `t`, `zone`, `rested` and `played`. `ge\|<new level>\|<19 ids>\|ding`; the Economy `snap[<level>]` has `gear` and `money`. No screenshot and no new `ss` line. | not run |
-| P2 | 8 | Level-up shot on | Turn "Screenshot at level-up" on and gain a level. Turn it off again. | About 1.5 s later a screenshot is saved and the journal has `ss\|level <N>\|ok\|<file>`. | not run |
+| P1 | 6, 13 | Level up | Gain a level, wait 3 s. | `lv\|<level>`, then `pl\|<played>`; `MemoriesCharDB.snap[<level>]` has `t`, `zone`, `rested` and `played`. `ge\|<new level>\|<19 ids>\|ding`; the Economy `snap[<level>]` has `gear` and `money`. No screenshot and no new `ss` line. | not run |
 | P3 | 14 | Talents | At level 10 or more, spend a talent point, wait 1 s. | `ta\|<spent>\|<unspent>`; `snap[<level>].talents` is the spent points. | not run |
 | P4 | 12 | Rare | Kill a rare creature. | `ki` with `rare` or `rareelite` and one `ra\|<name>\|<npc id>\|<level>`. | not run |
 | P5 | 9 | World boss | Kill a world boss (for example Azuregos) or be there when it dies, with it targeted. | One `wb\|<name>\|<npc id>`; a second kill within 10 minutes writes nothing. | not run |
@@ -380,7 +378,7 @@ Each kind of [`kinds.md`](kinds.md) and the rows whose action writes it. Tick "S
 | `dn`, `dx` | M1 | |
 | `bo` | M5 | |
 | `wb` | P5 | |
-| `ss` | O1, O2, O3, P2, M7 | |
+| `ss` | O1, O2, O3 | |
 | `sn` | O3 | |
 | `ex` | O4 | |
 | `nt` | R5, R6, R8 | |

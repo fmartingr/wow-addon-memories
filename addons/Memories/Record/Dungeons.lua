@@ -7,7 +7,6 @@ local floor = math.floor
 local U = ns.U
 
 Dungeons.CHECK_DELAY = 1
-Dungeons.SHOT_DELAY = 1
 Dungeons.WORLD_BOSS_SAME = 600
 Dungeons.WORLD_BOSS_KEEP = 6
 
@@ -147,17 +146,6 @@ local function longest(k, seconds)
 	end
 end
 
-local function shotLater(boss)
-	local j = core()
-	C_Timer.After(Dungeons.SHOT_DELAY, function()
-		ns.Safe("dungeons:shot", function()
-			if core() == j then
-				ns.Screenshots.Take("last boss " .. boss, "shots.lastBoss")
-			end
-		end)
-	end)
-end
-
 local function onEncounterStart(_, id)
 	id = number(id)
 	if id then
@@ -199,9 +187,6 @@ local function onEncounterEnd(_, id, encounterName, _, _, success)
 		count(key(inst.itype, "wipes"))
 	end
 	core():Write("bo", boss, id, won, last or nil, inst.name, seconds)
-	if last then
-		shotLater(boss)
-	end
 end
 
 local function onFightEnd()

@@ -1383,15 +1383,11 @@ end
 
 -- Screenshots ----------------------------------------------------------------
 
--- wow.shots counts the Screenshot() calls; wow.shot_fail makes the call raise. wow.screenshot(ok) answers the way the
--- client does, with SCREENSHOT_SUCCEEDED or SCREENSHOT_FAILED and no payload.
+-- wow.shots counts the Screenshot() calls, so a test can prove that Memories takes none. wow.screenshot(ok) answers the
+-- way the client does, with SCREENSHOT_SUCCEEDED or SCREENSHOT_FAILED and no payload.
 local function install_screenshots()
 	wow.shots = 0
-	wow.shot_fail = nil
 	_G.Screenshot = function()
-		if wow.shot_fail then
-			error(wow.shot_fail, 2)
-		end
 		wow.shots = wow.shots + 1
 	end
 end

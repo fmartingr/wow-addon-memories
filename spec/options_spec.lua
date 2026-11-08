@@ -95,8 +95,6 @@ describe("settings page", function()
 		wow.boot()
 		assert.same({
 			"dropdown recordRate",
-			"checkbox shots.level",
-			"checkbox shots.lastBoss",
 			"checkbox saveReminder",
 			"checkbox minimapButton",
 			"checkbox lowHealthFlash",
@@ -104,8 +102,6 @@ describe("settings page", function()
 		assert.equal("# General", outline()[1])
 		assert.equal(2, setting("recordRate"):GetDefaultValue())
 		assert.equal("number", setting("recordRate"):GetVariableType())
-		assert.is_false(setting("shots.level"):GetValue())
-		assert.is_false(setting("shots.lastBoss"):GetValue())
 		assert.is_true(setting("saveReminder"):GetValue())
 		assert.is_true(setting("minimapButton"):GetValue())
 		assert.is_true(setting("lowHealthFlash"):GetValue())
@@ -249,9 +245,9 @@ describe("settings page", function()
 
 	it("shows a change made in code in the checkbox", function()
 		local ns = wow.boot()
-		ns.Settings.Set("shots.level", true)
-		assert.equal(1, setting("shots.level").notified)
-		assert.is_true(setting("shots.level"):GetValue())
+		ns.Settings.Set("saveReminder", false)
+		assert.equal(1, setting("saveReminder").notified)
+		assert.is_false(setting("saveReminder"):GetValue())
 		ns.Settings.Set("recordRate", 10)
 		assert.equal(10, setting("recordRate"):GetValue())
 	end)

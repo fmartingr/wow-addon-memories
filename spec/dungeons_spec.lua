@@ -233,9 +233,8 @@ describe("dungeons", function()
 			wow.fire("ENCOUNTER_END", id, name, 1, 5, success, {})
 		end
 
-		it("writes a last boss kill and asks for a screenshot 1 s later (Appendix B, case 6)", function()
+		it("writes a last boss kill and takes no screenshot (Appendix B, case 6)", function()
 			boot()
-			ns.Settings.Set("shots.lastBoss", true)
 			enter(DEADMINES)
 			fight(1, "Edwin VanCleef", 1, 85)
 			assert.equal("bo|Edwin VanCleef|1|1|1|Minas de la Muerte|85", lines()[2])
@@ -245,34 +244,20 @@ describe("dungeons", function()
 				counts()["kills:Edwin VanCleef"],
 				counts()["longest:Edwin VanCleef"],
 			})
+			wow.advance(5)
 			assert.equal(0, wow.shots)
-			wow.advance(1)
-			assert.equal(1, wow.shots)
-			wow.screenshot(true)
-			local ss
-			for line in ns.Store.Core():Lines() do
-				ss = line:match("|ss|(.*)$") or ss
-			end
-			assert.matches("^last boss Edwin VanCleef|ok|", ss)
 		end)
 
-		it("takes no screenshot with shots.lastBoss off, or when the journal changed", function()
+		it("keeps the longest fight of a boss", function()
 			boot()
 			enter(DEADMINES)
 			fight(1, "Edwin VanCleef", 1, 85)
-			wow.advance(1)
-			assert.equal(0, wow.shots)
-			ns.Settings.Set("shots.lastBoss", true)
 			fight(1, "Edwin VanCleef", 1, 60)
-			ns.Store.Reopen()
-			wow.advance(1)
-			assert.equal(0, wow.shots)
 			assert.equal(85, counts()["longest:Edwin VanCleef"])
 		end)
 
 		it("writes a wipe with no last flag and no screenshot (Appendix B, case 7)", function()
 			boot()
-			ns.Settings.Set("shots.lastBoss", true)
 			enter(DEADMINES)
 			fight(1, "Edwin VanCleef", 0, 40)
 			wow.advance(1)

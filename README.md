@@ -7,7 +7,8 @@ A Go converter (`memories-export`) turns the saved files into JSONL files for a 
 The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-06-memories-addon-set.md). Every kind
 of journal line and its fields are in [`docs/kinds.md`](docs/kinds.md).
 
-> Memories takes no screenshots of its own by default.
+> Memories takes no screenshots of its own; use
+> Paparazzi for that.
 
 ## The addons
 
@@ -41,9 +42,8 @@ AddOn list.
 - `/memories` (or `/mem`) lists the commands.
 - `/mem options` (or `/mem settings`) opens the Settings page (Options > AddOns > Memories). Settings are
   account-wide, in `MemoriesDB.settings`:
-  - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Screenshot at level-up" and
-    "Screenshot at a dungeon's last boss" (both off), "Save reminder", "Minimap button" and "Low-health flash" (all
-    on).
+  - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Save reminder", "Minimap button"
+    and "Low-health flash" (all on).
   - **Kinds:** one checkbox per kind under `<addon> — <group>`, with "Enable all" and "Disable all" for each group.
     Every kind is on by default. A kind that is off writes no line, but its counts go on.
   - **New findings only:** Gathering (`ga`, `fs`), Kills (`ki`), Loot (`lo`) and Consumables (`cu`), all off. When a
@@ -58,8 +58,8 @@ AddOn list.
   popup asks you to restore the backup or start fresh (data guard).
 - Memories keeps the game's low-health flash on to record close calls. When the flash is off, a popup asks to keep it
   on or turn it off.
-- Every screenshot the game saves gets an `ss` line with its predicted file name, unless the `ss` kind is off or the
-  shot is a silent one. Memories takes screenshots of its own only when a screenshot setting is on.
+- Every screenshot the game saves gets an `ss` line with its predicted file name, unless the `ss` kind is off.
+  Memories takes no screenshot itself.
 
 ## Other addons
 

@@ -46,12 +46,6 @@ local function general()
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("General"))
 	local rate = register("recordRate", Settings.VarType.Number, "Recording rate")
 	Settings.CreateDropdown(category, rate, rateOptions, "Seconds between two points of the position trail.")
-	checkbox("shots.level", "Screenshot at level-up", "Takes a screenshot when you reach a new level.")
-	checkbox(
-		"shots.lastBoss",
-		"Screenshot at a dungeon's last boss",
-		"Takes a screenshot when the last boss of a dungeon dies."
-	)
 	checkbox("saveReminder", "Save reminder", "Reminds you to save after one hour without a reload.")
 	checkbox("minimapButton", "Minimap button", "Shows the Memories button on the minimap.")
 	checkbox(

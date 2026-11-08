@@ -41,7 +41,7 @@ Acceptance criteria:
 - **AC7 — Record all:** With "New findings only" off, `ga`/`fs` write a line for every gather and catch, `lo` for every looted item of every quality, and `ki` for every kill, in instances too.
 - **AC8 — Packed storage:** The journal stores lines in chunk strings of 200 lines. A test writes 300,000 lines, saves the data with a WoW-like serializer and loads it again under Lua 5.1 with no "constant table overflow" error.
 - **AC9 — Public API:** The global `Memories` has `API_VERSION = 1`, `RecordEvent(source, what, detail)` (kind `ex`) and `RecordScreenshot(source, note, file)` (kind `sn`). Each call returns `true`, or `false` and a reason string. The API refuses bad input, secret values and more than 30 calls a minute from one source.
-- **AC10 — Screenshots:** The core writes an `ss` line for every screenshot that the game saves, with a predicted file name. The level-up and last-boss screenshot settings exist and are off by default.
+- **AC10 — Screenshots:** The core writes an `ss` line for every screenshot that the game saves, with a predicted file name. Memories takes no screenshot itself and has no screenshot setting (D17).
 - **AC11 — Sub-addon API:** A sub-addon registers with `Memories.RegisterModule(def)`. Registration works before and after `PLAYER_LOGIN`. A registration with a newer API version than the core is refused, and the sub-addon does nothing.
 - **AC12 — Safety:** Each addon's journal has a rolling backup in `MemoriesDB.backups`. When a journal loads empty and a backup with lines exists, Memories keeps the backup and asks the player to restore it or start fresh. A character with a new GUID and an old name moves the old data to `MemoriesDB.orphans`. Data with a newer schema is read-only.
 - **AC13 — UI:** The UI is: the Settings page, `/memories` (alias `/mem`) with `status`, `errors` and `options`, the minimap button, the addon compartment entry, the save reminder, the data guard popup and the low-health flash popup. There is no map, replay, stats window, share card, welcome card or toast feed.
@@ -65,7 +65,7 @@ Acceptance criteria:
   - Change a CVar, except `doNotFlashLowHealthWarning` when the player clicks "Keep it on" in the low-health popup.
   - Execute saved-file content in the converter.
   - Change or delete a screenshot or a saved file in the converter.
-  - Take a screenshot unless the player turned on a screenshot setting.
+  - Take a screenshot (D17).
 - **Out of Scope:**
   - The world-map replay, trail drawing, heatmap, stats window, accolades, fun facts, share card, welcome card and toast feed.
   - A journal browser in the game.
@@ -93,6 +93,7 @@ Acceptance criteria:
 - **D14 — Coverage gate.** The user chose: 80 % for the core files (`addons/Memories/Core/`, `addons/Memories/Data/`) and for Go `internal/`. Each recorder has at least one test for each kind it writes, plus its kind-off path and, where it applies, its new-only path. The total Lua coverage is printed and must not drop from one task to the next.
 - **D15 — Conventions from Paparazzi.** The player's own repo `~/Code/wow-addon-paparazzi` sets the tooling: Makefile targets, `.busted`, `.luacheckrc`, `.stylua.toml` (tabs, 120 columns), `.luacov`, CI layout, Conventional Commits (`feat:`, `fix:`, `test:`, `docs:`, `ci:`, `chore:`).
 - **D16 — UI.** The user chose "Options + status": the Settings page, slash commands, minimap button, compartment entry, save reminder, data guard popup and low-health popup. Popups use `StaticPopupDialogs`. The minimap button is a plain `Button` on `Minimap`.
+- **D17 — No own screenshots.** The player uses Paparazzi for screenshots. Memories never calls `Screenshot()` and has no screenshot setting (no `shots.level`, no `shots.lastBoss`, no `ns.Screenshots.Take`). It still writes an `ss` line, with `why` = `by hand`, for every screenshot that the game saves, so the converter can join Paparazzi's `sn` notes.
 
 ## Risks
 
@@ -244,7 +245,7 @@ Rules for every task. Follow them in order.
 
 **Appendices**
 - Appendices A–E describe behavior. Where an appendix and a task or a Decision disagree, the task and the Decision win. Known cases:
-  - Screenshots at level-up and at the last boss are **off** by default (D10), although Appendix D proposes on.
+  - Memories takes **no** screenshot at level-up, at the last boss or at any other time (D17). Ignore the Appendix D rules about a waiting list, silent shots, the level-up shot and the last-boss shot.
   - Memories has **no simulation mode**. Ignore every appendix rule about a simulated journal, a "moment" signal, a toast or a big-moment signal.
   - `kills.total` counts every kill, and `kills.inst` counts instance kills (Task 12), although Appendix C keeps `kills.total` for the open world only.
   - The "Gathering: new findings only" box applies to `ga` and `fs` only. `op` and `pp` ignore it: `op` writes a line for every opening, and `pp` writes a line for every successful pick pocket that gives an item (the best item).

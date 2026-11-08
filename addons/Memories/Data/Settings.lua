@@ -17,7 +17,6 @@ local DEFAULTS = {
 	kinds = {},
 	newOnly = {},
 	recordRate = 2,
-	shots = { level = false, lastBoss = false },
 	saveReminder = true,
 	minimapButton = true,
 	lowHealthFlash = true,
@@ -48,6 +47,11 @@ local function check(t)
 		return t
 	end
 	clean(t, DEFAULTS)
+	for key in pairs(t) do
+		if DEFAULTS[key] == nil then
+			t[key] = nil
+		end
+	end
 	for map in pairs(MAPS) do
 		for key, v in pairs(t[map]) do
 			if type(v) ~= "boolean" then
@@ -103,7 +107,7 @@ function Settings.Default(path)
 	return U.Copy(walk(DEFAULTS, list))
 end
 
--- The value at a dotted path such as "shots.level", else its default.
+-- The value at a dotted path such as "newOnly.kills", else its default.
 function Settings.Get(path)
 	local list = parts(path)
 	local v = walk(Settings.Root(), list)
