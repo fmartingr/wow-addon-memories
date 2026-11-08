@@ -279,9 +279,9 @@ String _characterPath(Map<String, Object?> c, Directory dir) {
 }
 
 /// The default number of requests that a client sends in any 60 seconds. The
-/// server accepts 120 signed requests a minute for a key in a fixed window, so
+/// server accepts 30 signed requests a minute for a key in a fixed window, so
 /// this leaves room for the requests of the app that no run paces.
-const int defaultRequestsPerMinute = 100;
+const int defaultRequestsPerMinute = 25;
 
 /// The default total time that a client waits for a busy or rate limiting
 /// website before it gives up.

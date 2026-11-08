@@ -115,7 +115,7 @@ The image sets `MEMORIES_WEB_DIR`, `MEMORIES_DATA_DIR` and `MEMORIES_ADMIN_ADDR`
 | `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key. |
 | `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |
 | `MEMORIES_MAX_CONCURRENT_UPLOADS` | 2 | Uploads handled at the same time. A full-size upload takes about 800 MB of memory. |
-| `MEMORIES_RATE_SIGNED_PER_MINUTE` | 120 | Signed requests a minute for one key. |
+| `MEMORIES_RATE_SIGNED_PER_MINUTE` | 30 | Signed requests a minute for one key. |
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |
 | `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public listener. |
 

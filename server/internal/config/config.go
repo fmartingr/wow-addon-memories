@@ -126,7 +126,7 @@ func Load(getenv func(string) string) (Config, error) {
 		{"MEMORIES_MAX_DATA_BYTES_PER_KEY", &c.MaxDataBytesPerKey, 512 * miB, "bytes"},
 		{"MEMORIES_MAX_SHOT_BYTES_PER_KEY", &c.MaxShotBytesPerKey, 5 * giB, "bytes"},
 		{"MEMORIES_MAX_CONCURRENT_UPLOADS", &c.MaxConcurrentUploads, 2, "uploads"},
-		{"MEMORIES_RATE_SIGNED_PER_MINUTE", &c.RateSignedPerMinute, 120, "requests"},
+		{"MEMORIES_RATE_SIGNED_PER_MINUTE", &c.RateSignedPerMinute, 30, "requests"},
 		{"MEMORIES_RATE_REGISTER_PER_HOUR", &c.RateRegisterPerHour, 10, "registrations"},
 		{"MEMORIES_RATE_PUBLIC_PER_MINUTE", &c.RatePublicPerMinute, 600, "requests"},
 	} {

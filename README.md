@@ -196,7 +196,7 @@ fvm dart run packages/memories_core/bin/memories_upload.dart --site https://wowj
 - `--latest` uploads each character whose data changed since the last run and reports the others as `unchanged`. When
   the website has approved screenshots for the key, it also uploads each screenshot that a record names. An approval
   that comes after the first upload sends each character once more, so the website stores the screenshot links.
-- The tool keeps to about 100 signed requests a minute (the server allows 120). A `429` or `503` is waited out with its
+- The tool keeps to about 25 signed requests a minute (the server allows 30). A `429` or `503` is waited out with its
   `Retry-After` (5 s without one, at most 70 s) and sent again, and a failed connection is tried 3 times; each wait
   prints `Waiting N s: the website asks to slow down.`. After 10 minutes of waiting the run stops, and the next run
   sends the rest.
@@ -250,7 +250,7 @@ exit code 2. The size limits and quotas other than the rate limits apply to the 
 | `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key. |
 | `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |
 | `MEMORIES_MAX_CONCURRENT_UPLOADS` | 2 | Uploads that the server unpacks and stores at the same time. A full-size upload takes about 800 MB of memory while it is handled; a further upload waits up to 10 s for a free place, then gets `503` with `Retry-After`. |
-| `MEMORIES_RATE_SIGNED_PER_MINUTE` | 120 | Signed requests a minute for one key. |
+| `MEMORIES_RATE_SIGNED_PER_MINUTE` | 30 | Signed requests a minute for one key. |
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |
 | `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public listener (pages and API). |
 

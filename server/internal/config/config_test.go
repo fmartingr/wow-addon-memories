@@ -37,7 +37,7 @@ func TestLoadDefaults(t *testing.T) {
 		MaxDataBytesPerKey:   512 << 20,
 		MaxShotBytesPerKey:   5 << 30,
 		MaxConcurrentUploads: 2,
-		RateSignedPerMinute:  120,
+		RateSignedPerMinute:  30,
 		RateRegisterPerHour:  10,
 		RatePublicPerMinute:  600,
 	}
