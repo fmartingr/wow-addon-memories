@@ -87,6 +87,8 @@ func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 		MaxCharacterBytes: maxCharacterBytes(a.cfg.MaxDecodedBytes),
 	})
 	switch {
+	case errors.Is(err, store.ErrKeyRevoked):
+		apierr.KeyRevoked(w)
 	case errors.Is(err, characters.ErrClaimed):
 		apierr.Write(w, http.StatusConflict, "claimed",
 			"Another key already owns this character's web address. If that was you with an older key, ask the website admin to move it to this key.")

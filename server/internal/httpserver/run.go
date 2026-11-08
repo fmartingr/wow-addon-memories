@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fmartingr/wow-addon-memories/server/internal/admin"
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
@@ -67,7 +68,13 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 	}
 	chars := characters.New(st, blobs, log)
 	public := newServer(cfg.PublicAddr, NewPublic(cfg, static, pages, st, chars, log), log)
-	admin := newServer(cfg.AdminAddr, NewAdmin(static, log), log)
+	adm, err := admin.New(admin.Options{
+		Addr: cfg.AdminAddr, SiteURL: cfg.SiteURL, Store: st, Chars: chars, NotFound: static.NotFound(), Log: log,
+	})
+	if err != nil {
+		return err
+	}
+	adminSrv := newServer(cfg.AdminAddr, NewAdmin(adm.Handler(), log), log)
 
 	// Listen first, so that a busy port is reported before any request is served.
 	var listeners []net.Listener
@@ -76,7 +83,7 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 			l.Close()
 		}
 	}
-	servers := []*http.Server{public, admin}
+	servers := []*http.Server{public, adminSrv}
 	for _, srv := range servers {
 		l, err := net.Listen("tcp", srv.Addr)
 		if err != nil {

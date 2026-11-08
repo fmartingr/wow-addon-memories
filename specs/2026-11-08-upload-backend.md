@@ -546,7 +546,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 8. Admin page on the loopback port
+### [x] 8. Admin page on the loopback port
 
 - **Outcome:** the admin manages invites, screenshot approvals, keys, characters and claims from a browser through an SSH tunnel.
 - **Depends on:** 4 (store), 5 (claims), 6 (screenshots).

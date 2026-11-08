@@ -39,9 +39,9 @@ func NewPublic(cfg config.Config, s *site.Site, pages *site.Pages, st *store.Sto
 	return site.Headers(logRequests(log, limited))
 }
 
-// NewAdmin returns the handler of the admin listener. It answers 404 to every request until the admin page exists.
-func NewAdmin(s *site.Site, log *slog.Logger) http.Handler {
-	return site.Headers(logRequests(log, s.NotFound()))
+// NewAdmin returns the handler of the admin listener: the admin pages behind the security headers and the request log.
+func NewAdmin(pages http.Handler, log *slog.Logger) http.Handler {
+	return site.Headers(logRequests(log, pages))
 }
 
 type statusWriter struct {

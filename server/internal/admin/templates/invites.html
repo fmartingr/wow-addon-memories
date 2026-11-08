@@ -1,0 +1,40 @@
+{{define "title"}}Invites{{end}}
+{{define "content"}}
+<h2>Invites</h2>
+<h3>New invite</h3>
+<form method="post" action="/invites/create" class="inline">
+<input type="hidden" name="csrf" value="{{.CSRF}}">
+<label>Note <input type="text" name="note" maxlength="100" placeholder="Who is it for?"></label>
+<label>Days valid <input type="number" name="days" min="1" max="365" value="{{.DefaultDay}}"></label>
+<button type="submit">Create invite</button>
+</form>
+<h3>All invites</h3>
+{{if .Invites}}
+<table>
+<thead><tr><th>#</th><th>Note</th><th>Created</th><th>Expires</th><th>State</th><th>Action</th></tr></thead>
+<tbody>
+{{range .Invites}}
+<tr>
+<td>{{.ID}}</td>
+<td>{{.Note}}</td>
+<td>{{when .Created}}</td>
+<td>{{when .Expires}}</td>
+<td>{{.State}}</td>
+<td class="actions">
+{{if .Active}}
+<form method="post" action="/invites/revoke">
+<input type="hidden" name="csrf" value="{{$.CSRF}}">
+<input type="hidden" name="invite" value="{{.ID}}">
+<button type="submit" class="danger">Revoke</button>
+</form>
+{{end}}
+</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{if .Truncated}}<p>This list shows the newest {{.Limit}} invites.</p>{{end}}
+{{else}}
+<p>No invite exists yet.</p>
+{{end}}
+{{end}}

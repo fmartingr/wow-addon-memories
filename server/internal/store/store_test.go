@@ -587,6 +587,16 @@ func TestClaimUpdateQuotaAndDelete(t *testing.T) {
 	if _, err := s.CreateClaimWithin(ctx, claim("four", a.ID), 2); err != nil {
 		t.Errorf("a delete did not free a place under the limit: %v", err)
 	}
+
+	if err := s.RevokeKey(ctx, b.ID); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.CreateClaimWithin(ctx, claim("five", b.ID), 2); !errors.Is(err, ErrKeyRevoked) {
+		t.Errorf("a claim of a revoked key gave %v", err)
+	}
+	if _, err := s.ClaimByPath(ctx, "wow", "eu", "zul", "five"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("the refused claim of a revoked key exists: %v", err)
+	}
 }
 
 func TestInviteCodesAreRandom(t *testing.T) {

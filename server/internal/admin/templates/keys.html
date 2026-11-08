@@ -1,0 +1,52 @@
+{{define "title"}}Keys{{end}}
+{{define "content"}}
+<h2>Keys</h2>
+<p>Each key is one app install. The fingerprint is the first 16 hex characters of the SHA-256 of the public key.</p>
+{{if .Keys}}
+<table>
+<thead><tr><th>Key</th><th>Created</th><th>Last seen</th><th>Invite note</th><th>Screenshots</th><th>Characters</th><th>Data</th><th>Screenshot data</th><th>Actions</th></tr></thead>
+<tbody>
+{{range .Keys}}
+<tr>
+<td><code>{{.Fingerprint}}</code>{{if .Revoked}} <strong class="tag">revoked</strong>{{end}}</td>
+<td>{{when .Created}}</td>
+<td>{{when .LastSeen}}</td>
+<td>{{.Note}}</td>
+<td>{{.Screenshots}}</td>
+<td>{{if .Characters}}<a href="/characters?q={{.Fingerprint}}">{{.Characters}}</a>{{else}}0{{end}}</td>
+<td>{{size .DataBytes}}</td>
+<td>{{size .ShotBytes}}</td>
+<td class="actions">
+{{if not .Revoked}}
+<form method="post" action="/keys/revoke">
+<input type="hidden" name="csrf" value="{{$.CSRF}}">
+<input type="hidden" name="key" value="{{.ID}}">
+<button type="submit" class="danger">Revoke key</button>
+</form>
+{{end}}
+<form method="post" action="/keys/revoke-clean">
+<input type="hidden" name="csrf" value="{{$.CSRF}}">
+<input type="hidden" name="key" value="{{.ID}}">
+<button type="submit" class="danger">{{if .Revoked}}Delete its characters{{else}}Revoke key and delete its characters{{end}}</button>
+</form>
+<form method="post" action="/keys/screenshots">
+<input type="hidden" name="csrf" value="{{$.CSRF}}">
+<input type="hidden" name="key" value="{{.ID}}">
+<button type="submit" class="danger">Revoke screenshots</button>
+</form>
+</td>
+</tr>
+{{end}}
+</tbody>
+</table>
+{{if .Truncated}}<p>This list shows the newest {{.Limit}} keys.</p>{{end}}
+{{else}}
+<p>No key is registered yet.</p>
+{{end}}
+<h3>What the actions do</h3>
+<ul>
+<li><strong>Revoke key</strong> stops every signed request of the key. Its characters stay on the site.</li>
+<li><strong>Revoke key and delete its characters</strong> also deletes every character of the key, with its files. Each page then gives a 404.</li>
+<li><strong>Revoke screenshots</strong> denies screenshots for the key, deletes the image files and removes the screenshot links from its characters.</li>
+</ul>
+{{end}}

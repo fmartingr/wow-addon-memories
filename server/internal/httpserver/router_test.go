@@ -80,7 +80,7 @@ func newStack(t *testing.T, cfg config.Config, logs io.Writer) (public, admin ht
 	if err != nil {
 		t.Fatal(err)
 	}
-	return NewPublic(cfg, s, pages, st, characters.New(st, blobs, log), log), NewAdmin(s, log), st
+	return NewPublic(cfg, s, pages, st, characters.New(st, blobs, log), log), NewAdmin(s.NotFound(), log), st
 }
 
 func do(h http.Handler, method, target string) *httptest.ResponseRecorder {

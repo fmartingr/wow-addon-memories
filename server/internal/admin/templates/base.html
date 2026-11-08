@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>{{template "title" .}} - Memories admin</title>
+<link rel="stylesheet" href="/admin.css">
+</head>
+<body>
+<header>
+<h1>Memories admin</h1>
+<nav aria-label="Admin pages">
+<a href="/requests"{{if eq .Page "requests"}} aria-current="page"{{end}}>Requests</a>
+<a href="/keys"{{if eq .Page "keys"}} aria-current="page"{{end}}>Keys</a>
+<a href="/invites"{{if eq .Page "invites"}} aria-current="page"{{end}}>Invites</a>
+<a href="/characters"{{if eq .Page "characters"}} aria-current="page"{{end}}>Characters</a>
+</nav>
+</header>
+<main>
+{{with .Flash}}
+<div class="notice{{if .Error}} error{{end}}" role="status">
+<p>{{.Text}}</p>
+{{if .Code}}<p class="code"><code>{{.Code}}</code></p>{{end}}
+</div>
+{{end}}
+{{template "content" .}}
+</main>
+</body>
+</html>

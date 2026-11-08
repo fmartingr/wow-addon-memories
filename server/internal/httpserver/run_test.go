@@ -55,8 +55,8 @@ func TestRunServesAndStopsOnCancel(t *testing.T) {
 		t.Fatalf("the admin listener did not start: %v", err)
 	}
 	admin.Body.Close()
-	if admin.StatusCode != http.StatusNotFound {
-		t.Errorf("admin status = %d, want 404", admin.StatusCode)
+	if admin.StatusCode != http.StatusOK || admin.Request.URL.Path != "/requests" {
+		t.Errorf("admin / = %d at %s, want the Requests page", admin.StatusCode, admin.Request.URL.Path)
 	}
 
 	cancel()

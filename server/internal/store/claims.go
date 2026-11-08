@@ -99,10 +99,19 @@ func (s *Store) ClaimByPath(ctx context.Context, flavor, region, realm, name str
 
 // CreateClaimWithin inserts the claim like CreateClaim, unless the key owns maxClaims characters already, which
 // gives ErrClaimQuota. The count and the insert share one transaction, so two new paths of one key at the same
-// time cannot both pass the check.
+// time cannot both pass the check. A revoked key gives ErrKeyRevoked, checked in the same transaction: an upload
+// authenticated before the admin revoked the key cannot add a character after "Revoke key and delete its
+// characters" listed the key's claims.
 func (s *Store) CreateClaimWithin(ctx context.Context, c Claim, maxClaims int64) (int64, error) {
 	var id int64
 	err := s.inTx(ctx, func(tx *sql.Tx) error {
+		var revoked int
+		if err := tx.QueryRowContext(ctx, `SELECT revoked FROM keys WHERE id = ?`, c.KeyID).Scan(&revoked); err != nil {
+			return err
+		}
+		if revoked != 0 {
+			return ErrKeyRevoked
+		}
 		var n int64
 		if err := tx.QueryRowContext(ctx, `SELECT COUNT(*) FROM claims WHERE key_id = ?`, c.KeyID).Scan(&n); err != nil {
 			return err

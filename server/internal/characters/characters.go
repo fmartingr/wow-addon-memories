@@ -172,8 +172,15 @@ func (s *Service) write(ctx context.Context, claim store.Claim, key store.Key, p
 	if old != nil {
 		oldSteps = int64(len(old.Records))
 	}
+	// The screenshot state is read again under the path lock: an admin may have revoked screenshots, and stripped this
+	// path, after the request was authenticated. A revoke of the key lets a running upload of an existing character
+	// finish; store.CreateClaimWithin refuses a new character.
+	current, err := s.store.KeyByID(ctx, key.ID)
+	if err != nil {
+		return Result{}, err
+	}
 	// old is not used after the merge, so the decoded stored data can be freed while the files are written.
-	merged := merge.Character(old, up, key.Screenshots == store.ShotsApproved)
+	merged := merge.Character(old, up, current.Screenshots == store.ShotsApproved)
 
 	entry, err := jsonw.Marshal(merge.Entry(path.String(), merged), true)
 	if err != nil {
