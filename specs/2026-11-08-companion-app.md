@@ -195,7 +195,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated (README "Make targets").
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 2. Dart parser for Lua saved files
+### [x] 2. Dart parser for Lua saved files
 
 - **Outcome:** `parseSavedVars(String)` returns the same data as the Go `savedvars.Parse` for every case in `parser_test.go`.
 - **Depends on:** Task 1 (package and CI).
