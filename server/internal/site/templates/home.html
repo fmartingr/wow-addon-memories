@@ -7,39 +7,75 @@
 <link rel="stylesheet" href="{{.CSS}}">
 </head>
 <body>
-<main>
+<svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false"><symbol id="print" viewBox="0 0 40 90"><ellipse cx="20" cy="27" rx="14" ry="25" fill="currentColor"/><ellipse cx="20" cy="71" rx="10" ry="15" fill="currentColor"/></symbol></svg>
+<main class="landing">
+<header class="hero">
+<p class="eyebrow">For World of Warcraft Forever</p>
 <h1>{{.Name}}</h1>
-<p class="lead">Memories records the journey of each of your World of Warcraft characters. WoW Journey turns that record into a page you can share.</p>
+<p class="lead">Every character has a story. Memories writes it down while you play. WoW Journey turns it into a journey you can look at, keep and share.</p>
+{{if .ReleasesURL}}<p class="actions"><a class="button" href="{{.ReleasesURL}}">Download the addons and the app</a> <a class="button secondary" href="{{.GitHubURL}}">The project on GitHub</a></p>
+{{end}}</header>
 
-<h2>What Memories is</h2>
-<p>Memories is a set of World of Warcraft addons for WoW Forever. It writes down what happens to each character: sessions, travel, deaths, progress, kills, gathering, loot, money, skills, groups and PvP. The data stays in the game's saved files on your computer.</p>
+<section>
+<h2>What Memories records</h2>
+<p>Memories is a set of 6 addons. They write down what happens to each character: sessions, travel, deaths, progress, kills, gathering, loot, money, skills, groups and PvP. The data stays in the game's saved files on your computer until you choose to upload it.</p>
+<div class="cards">
+{{range .Addons}}<article class="card">
+<h3><code>{{.Name}}</code></h3>
+<p>{{.Records}}</p>
+</article>
+{{end}}</div>
+<p>The core addon, Memories, is always needed. You can turn each other addon off in the AddOn list to stop its recording.</p>
+</section>
 
-<h2>The 6 addons</h2>
-<p>Each addon has its own saved file. The core addon, Memories, is always needed. You can turn each other addon off in the AddOn list to stop its recording.</p>
-<table>
-<thead><tr><th scope="col">Addon</th><th scope="col">What it records</th></tr></thead>
-<tbody>
-{{range .Addons}}<tr><th scope="row"><code>{{.Name}}</code></th><td>{{.Records}}</td></tr>
-{{end}}</tbody>
-</table>
-
+<section>
 <h2>What WoW Journey does</h2>
-<p>WoW Journey is a desktop app for Windows, macOS and Linux. It reads the saved files, keeps a backup, and builds a journey for each character: a timeline, a map of the trail and your screenshots. It can also upload a character to this website, so that you can send the link to a friend.</p>
+<p>WoW Journey is the companion app for Windows, macOS and Linux. It reads the saved files and keeps a backup. It builds a journey for each character: a timeline, a map of the trail and your screenshots. It can also upload a character to this website, so that you can send the link to a friend.</p>
+</section>
 
-<h2>How to upload</h2>
-<ol>
-<li>Install the addons and the WoW Journey app.</li>
-{{if .OpenRegistration}}<li>Open the app, go to the website settings and register.</li>
-{{else}}<li>Ask the person who runs this website for an invite code.</li>
-<li>Open the app, go to the website settings and register with the invite code.</li>
-{{end}}
-<li>Turn on the upload switch, or press Upload now. The app shows the link of each character.</li>
+<section>
+<h2>How to start</h2>
+<p>Follow these steps in order. The addons come first, the app comes second.</p>
+<ol class="steps">
+<li class="step"><div>
+<h3>Install the addons</h3>
+<p>Download the zip of the addons from the latest release. Unpack it into the <code>Interface/AddOns</code> folder of your game. The zip holds the 6 <code>Memories</code> folders. Start the game and turn on the addons in the AddOn list.</p>
+</div></li>
+<li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
+<li class="step"><div>
+<h3>Play</h3>
+<p>Play your characters as you always do. Memories records the journey in the background. The game writes the saved file when you log out or type <code>/reload</code>.</p>
+</div></li>
+<li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
+<li class="step"><div>
+<h3>Install the WoW Journey app</h3>
+<p>Download the app for your system from the same release. On the first start, a short wizard finds your WoW folder and sets a backup folder.</p>
+</div></li>
+<li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
+<li class="step"><div>
+<h3>Gather your journey</h3>
+<p>The app reads the saved files and builds the journey of each character on your computer. It does this again each time the game saves.</p>
+</div></li>
+<li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
+<li class="step"><div>
+<h3>Connect to this website</h3>
+{{if .OpenRegistration}}<p>Open the settings of the app and find the Website section. Press Register.</p>
+{{else}}<p>Ask the person who runs this website for an invite code. Open the settings of the app and find the Website section. Enter the code and press Register.</p>
+{{end}}</div></li>
+<li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
+<li class="step"><div>
+<h3>Upload and share</h3>
+<p>Turn on the Upload switch, or press Upload now. The app shows a progress bar and then the link of each character. Press Copy link and send it to a friend.</p>
+</div></li>
 </ol>
 <p class="note">A character page is unlisted: anybody with the link can open it, and nobody can find it on this site.</p>
+</section>
 
-{{if .ReleasesURL}}<h2>Downloads</h2>
-<p><a href="{{.ReleasesURL}}">Download the addons and the app</a> from the latest release on GitHub.</p>
+{{if .ReleasesURL}}<section class="closing">
+<h2>Ready to begin?</h2>
+<p><a class="button" href="{{.ReleasesURL}}">Download the addons and the app</a></p>
 <p><a href="{{.GitHubURL}}">The project on GitHub</a> has the source code and the documentation.</p>
+</section>
 {{end}}</main>
 </body>
 </html>
