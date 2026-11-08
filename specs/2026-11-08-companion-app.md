@@ -408,7 +408,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 10. Release workflow with macOS signing
+### [x] 10. Release workflow with macOS signing
 
 - **Outcome:** A tag `vX.Y.Z` makes a GitHub Release with the addon zip and the app for Windows, macOS (signed, notarized) and Linux.
 - **Depends on:** Tasks 1 and 8 (the plugins that affect the macOS entitlements and the Linux packages).

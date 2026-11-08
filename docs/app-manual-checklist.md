@@ -12,11 +12,13 @@ unless the row names one system.
   `testdata/wow`. The app only reads the WoW folder, but a copy keeps the real one out of reach.
 - **Fresh start:** delete `settings.json` in the app support folder to see the wizard again.
   - Linux: `~/.local/share/com.fmartingr.wow_journey/`
-  - macOS: `~/Library/Application Support/com.fmartingr.wowJourney/`, or, while the app sandbox is on (until Task
-    10), `~/Library/Containers/com.fmartingr.wowJourney/Data/Library/Application Support/com.fmartingr.wowJourney/`
+  - macOS: `~/Library/Application Support/com.fmartingr.wowJourney/` for a release build, or, for a debug build
+    (`make companion`, app sandbox on),
+    `~/Library/Containers/com.fmartingr.wowJourney/Data/Library/Application Support/com.fmartingr.wowJourney/`
   - Windows: `%APPDATA%\com.fmartingr\wow_journey\`
-- **macOS checks 10 and 11:** run them once the app sandbox is off (Task 10). While it is on, the launch agent lands
-  in the app container, where the system does not read it, and a second copy may not reach the first one.
+- **macOS checks 10 and 11:** run them on a release build, which has no app sandbox. A debug build keeps the sandbox:
+  there the launch agent lands in the app container, where the system does not read it, and a second copy may not
+  reach the first one.
 
 ## Checks
 
@@ -33,7 +35,7 @@ unless the row names one system.
 | 9 | 8 | Quit from the tray menu: the process ends, and Watch stops (no gather after it). | not run | not run | not run |
 | 10 | 8 | Start at login on: the login entry exists (Windows: `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, value `WoW Journey`; Linux: `~/.config/autostart/WoW Journey.desktop`; macOS: `~/Library/LaunchAgents/com.fmartingr.wowJourney.plist`), with the app path and `--hidden`. Sign out and in: the app starts hidden and the tray shows. Switch it off: the entry is gone. Move the app and start it once: the entry has the new path. | not run | not run | not run |
 | 11 | 8 | Start a second copy, also while the first one is hidden or shows the wizard: the first window shows and the second exits. Linux GNOME with no AppIndicator extension: there is no tray icon, closing the window quits, and a start with `--hidden` shows the window. | not run | not run | not run |
-| 12 | 10 | macOS only: open the downloaded app. No Gatekeeper warning. `spctl --assess --type execute -vv` says "accepted, notarized". | — | not run | — |
+| 12 | 10 | macOS only: open the downloaded app. No Gatekeeper warning. `spctl --assess --type execute -vv` says "accepted" and "source=Notarized Developer ID". | — | not run | — |
 | 13 | 10 | Windows only: open the downloaded zip. Follow the SmartScreen steps in the README. | not run | — | — |
 | 14 | 10 | Linux only: unpack the tar.gz and run the binary on a clean machine. | — | — | not run |
 | 15 | 4, 6 | Reinstall case: delete the saved files from a copy of the WoW folder, add a new session, gather. Old lines stay in `latest/`. | not run | not run | not run |

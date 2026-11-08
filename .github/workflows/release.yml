@@ -1,0 +1,284 @@
+name: Release
+
+# A tag v* builds the 4 release files and publishes them as a GitHub Release. A manual run builds the same files,
+# keeps them as workflow artifacts and publishes nothing. See docs/releasing.md.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      prerelease: ${{ steps.version.outputs.prerelease }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - id: version
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: bash scripts/release-version.sh "$REF_TYPE" "$REF_NAME" "$RUN_NUMBER" | tee -a "$GITHUB_OUTPUT"
+
+  addons:
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - run: bash scripts/test-package-addons.sh
+      - run: bash scripts/package-addons.sh "$VERSION" "dist/Memories-addons-$VERSION.zip"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-addons
+          path: dist/Memories-addons-${{ needs.version.outputs.version }}.zip
+          if-no-files-found: error
+
+  linux:
+    needs: version
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      RUN_NUMBER: ${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-fvm
+      # tray_manager builds its native library from source and needs the GTK 3, X11 and Xi development files.
+      - name: Install the Linux build packages
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev libx11-dev libxi-dev
+      - name: Build
+        working-directory: app
+        run: >-
+          fvm flutter build linux --release
+          "--build-name=$VERSION" "--build-number=$RUN_NUMBER" "--dart-define=APP_VERSION=$VERSION"
+      - name: Package
+        run: |
+          mkdir -p dist/stage
+          cp -R app/build/linux/x64/release/bundle dist/stage/WoW-Journey
+          tar -czf "dist/WoW-Journey-$VERSION-linux-x64.tar.gz" -C dist/stage WoW-Journey
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-linux
+          path: dist/WoW-Journey-${{ needs.version.outputs.version }}-linux-x64.tar.gz
+          if-no-files-found: error
+
+  windows:
+    needs: version
+    runs-on: windows-latest
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      RUN_NUMBER: ${{ github.run_number }}
+    # On Windows pub installs only fvm.bat, which bash cannot run, so these steps use pwsh.
+    defaults:
+      run:
+        shell: pwsh
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-fvm
+      - name: Build
+        working-directory: app
+        run: >-
+          fvm flutter build windows --release
+          "--build-name=$env:VERSION" "--build-number=$env:RUN_NUMBER" "--dart-define=APP_VERSION=$env:VERSION"
+      - name: Package
+        run: |
+          New-Item -ItemType Directory -Force -Path dist/stage | Out-Null
+          Copy-Item -Recurse -Path app/build/windows/x64/runner/Release -Destination dist/stage/WoW-Journey
+          # The Flutter build does not bundle the MSVC runtime, and a Windows with no Visual C++ Redistributable
+          # cannot start the app without these DLLs next to the exe.
+          $runtime = 'msvcp140.dll', 'vcruntime140.dll', 'vcruntime140_1.dll' | ForEach-Object { Join-Path $env:WINDIR "System32\$_" }
+          Copy-Item -Path $runtime -Destination dist/stage/WoW-Journey
+          Compress-Archive -Path dist/stage/WoW-Journey -DestinationPath "dist/WoW-Journey-$env:VERSION-windows-x64.zip"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-windows
+          path: dist/WoW-Journey-${{ needs.version.outputs.version }}-windows-x64.zip
+          if-no-files-found: error
+
+  # Every step after the build must pass before the upload, so an unsigned or not notarized app is never kept.
+  # The secrets reach only the steps that use them, not the build, which runs the build hooks of the dependencies.
+  macos:
+    needs: version
+    runs-on: macos-latest
+    timeout-minutes: 120
+    env:
+      VERSION: ${{ needs.version.outputs.version }}
+      RUN_NUMBER: ${{ github.run_number }}
+      APP_PATH: app/build/macos/Build/Products/Release/wow_journey.app
+      ENTITLEMENTS: app/macos/Runner/Release.entitlements
+    steps:
+      - name: Check the signing secrets
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          missing=0
+          for name in MACOS_CERTIFICATE MACOS_CERTIFICATE_PASSWORD MACOS_KEYCHAIN_PASSWORD MACOS_SIGNING_IDENTITY \
+            APPLE_API_KEY_ID APPLE_API_ISSUER_ID APPLE_API_KEY; do
+            if [ -z "${!name}" ]; then
+              echo "::error::The secret $name is empty or not set. Add it under Settings > Secrets and variables > Actions; see docs/releasing.md."
+              missing=1
+            fi
+          done
+          exit "$missing"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: ./.github/actions/setup-fvm
+      - name: Build
+        working-directory: app
+        run: >-
+          fvm flutter build macos --release
+          "--build-name=$VERSION" "--build-number=$RUN_NUMBER" "--dart-define=APP_VERSION=$VERSION"
+      - name: Check the architectures
+        run: |
+          exe="$(/usr/libexec/PlistBuddy -c 'Print :CFBundleExecutable' "$APP_PATH/Contents/Info.plist")"
+          archs="$(lipo -archs "$APP_PATH/Contents/MacOS/$exe")"
+          echo "lipo -archs: $archs"
+          echo "macOS app architectures: \`$archs\`" >> "$GITHUB_STEP_SUMMARY"
+          for arch in arm64 x86_64; do
+            case " $archs " in
+              *" $arch "*) ;;
+              *) echo "::error::The macOS app is not universal: $arch is missing (lipo -archs: $archs)."; exit 1 ;;
+            esac
+          done
+      - name: Import the certificate into a temporary keychain
+        env:
+          MACOS_CERTIFICATE: ${{ secrets.MACOS_CERTIFICATE }}
+          MACOS_CERTIFICATE_PASSWORD: ${{ secrets.MACOS_CERTIFICATE_PASSWORD }}
+          MACOS_KEYCHAIN_PASSWORD: ${{ secrets.MACOS_KEYCHAIN_PASSWORD }}
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          keychain="$RUNNER_TEMP/release-signing.keychain-db"
+          cert="$RUNNER_TEMP/release-certificate.p12"
+          printf '%s' "$MACOS_CERTIFICATE" | base64 --decode > "$cert"
+          security create-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$keychain"
+          security set-keychain-settings -lut 21600 "$keychain"
+          security unlock-keychain -p "$MACOS_KEYCHAIN_PASSWORD" "$keychain"
+          security import "$cert" -k "$keychain" -P "$MACOS_CERTIFICATE_PASSWORD" -f pkcs12 -x -T /usr/bin/codesign
+          rm -f "$cert"
+          security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$MACOS_KEYCHAIN_PASSWORD" "$keychain" > /dev/null
+          security list-keychains -d user -s "$keychain"
+          if ! security find-identity -v -p codesigning "$keychain" | grep -qF "$MACOS_SIGNING_IDENTITY"; then
+            echo "::error::The certificate in MACOS_CERTIFICATE holds no valid identity named by MACOS_SIGNING_IDENTITY."
+            exit 1
+          fi
+      # Inside-out: find -depth lists the nested code before the bundle that holds it, and the app comes last.
+      # Only the app gets the entitlements; they have no effect on a framework or a library.
+      - name: Sign with the Hardened Runtime
+        env:
+          MACOS_SIGNING_IDENTITY: ${{ secrets.MACOS_SIGNING_IDENTITY }}
+        run: |
+          keychain="$RUNNER_TEMP/release-signing.keychain-db"
+          sign() {
+            codesign --force --options runtime --timestamp --keychain "$keychain" --sign "$MACOS_SIGNING_IDENTITY" "$@"
+          }
+          while IFS= read -r -d '' item; do
+            sign "$item"
+          done < <(find "$APP_PATH/Contents" -depth \( -name '*.framework' -o -name '*.dylib' -o -name '*.app' -o -name '*.xpc' \) -print0)
+          sign --entitlements "$ENTITLEMENTS" "$APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+      - name: Notarize
+        env:
+          APPLE_API_KEY_ID: ${{ secrets.APPLE_API_KEY_ID }}
+          APPLE_API_ISSUER_ID: ${{ secrets.APPLE_API_ISSUER_ID }}
+          APPLE_API_KEY: ${{ secrets.APPLE_API_KEY }}
+        run: |
+          key="$RUNNER_TEMP/notary-key.p8"
+          upload="$RUNNER_TEMP/notarize.zip"
+          printf '%s' "$APPLE_API_KEY" | base64 --decode > "$key"
+          ditto -c -k --keepParent "$APP_PATH" "$upload"
+          auth=(--key "$key" --key-id "$APPLE_API_KEY_ID" --issuer "$APPLE_API_ISSUER_ID")
+          result="$(xcrun notarytool submit "$upload" "${auth[@]}" --wait --timeout 60m --output-format json)" || true
+          status="$(printf '%s' "$result" | jq -r '.status // empty')"
+          id="$(printf '%s' "$result" | jq -r '.id // empty')"
+          echo "Notarization $id: ${status:-no status}"
+          if [ "$status" != Accepted ]; then
+            printf '%s\n' "$result"
+            if [ -n "$id" ]; then xcrun notarytool log "$id" "${auth[@]}" || true; fi
+            echo "::error::Notarization did not accept the app (status: ${status:-none})."
+            exit 1
+          fi
+      - name: Staple and verify
+        run: |
+          xcrun stapler staple "$APP_PATH"
+          xcrun stapler validate "$APP_PATH"
+          codesign --verify --deep --strict --verbose=2 "$APP_PATH"
+          assessment="$(spctl --assess --type execute --verbose=4 "$APP_PATH" 2>&1)" || true
+          printf '%s\n' "$assessment"
+          if ! grep -q 'source=Notarized Developer ID' <<< "$assessment"; then
+            echo "::error::Gatekeeper does not see a notarized Developer ID app."
+            exit 1
+          fi
+      - name: Package
+        run: |
+          mkdir -p dist
+          ditto -c -k --keepParent "$APP_PATH" "dist/WoW-Journey-$VERSION-macos.zip"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-macos
+          path: dist/WoW-Journey-${{ needs.version.outputs.version }}-macos.zip
+          if-no-files-found: error
+      - name: Delete the keychain and the key files
+        if: always()
+        run: |
+          security delete-keychain "$RUNNER_TEMP/release-signing.keychain-db" 2> /dev/null || true
+          rm -f "$RUNNER_TEMP/release-certificate.p12" "$RUNNER_TEMP/notary-key.p8"
+
+  publish:
+    needs: [version, addons, linux, windows, macos]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: release-*
+          merge-multiple: true
+          path: dist
+      # A re-run of a tag whose release exists replaces its files instead of failing.
+      - name: Create or update the release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          TAG: ${{ github.ref_name }}
+          VERSION: ${{ needs.version.outputs.version }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+        run: |
+          files=(
+            "dist/Memories-addons-$VERSION.zip"
+            "dist/WoW-Journey-$VERSION-windows-x64.zip"
+            "dist/WoW-Journey-$VERSION-macos.zip"
+            "dist/WoW-Journey-$VERSION-linux-x64.tar.gz"
+          )
+          for file in "${files[@]}"; do
+            if [ ! -f "$file" ]; then
+              echo "::error::The build artifacts do not hold $file."
+              exit 1
+            fi
+          done
+          if gh release view "$TAG" > /dev/null 2>&1; then
+            gh release upload "$TAG" "${files[@]}" --clobber
+          else
+            flags=(--verify-tag --generate-notes --title "$TAG")
+            if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
+            gh release create "$TAG" "${files[@]}" "${flags[@]}"
+          fi

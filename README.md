@@ -28,7 +28,10 @@ AddOn list to stop its recording.
 
 ## Install
 
-`WOW_DIR` is the flavor folder, the one that holds `Interface/AddOns`:
+From a [GitHub release](../../releases): unpack `Memories-addons-<version>.zip` into `Interface/AddOns` of the flavor
+folder (for example `.../World of Warcraft/_forever_/Interface/AddOns`). The zip holds the 6 `Memories*` folders.
+
+From the repository, `WOW_DIR` is the flavor folder, the one that holds `Interface/AddOns`:
 
 ```sh
 make install WOW_DIR=".../World of Warcraft/_forever_"   # copy the 6 addon folders
@@ -70,9 +73,24 @@ Other addons write events and screenshot notes into the journal with `Memories.R
 
 ## The WoW Journey app
 
-`app/` is a desktop app (Windows, macOS, Linux) that runs the converter for you. Start it with `make companion`.
-A Linux build needs `ninja-build`, `libgtk-3-dev`, `libx11-dev` and `libxi-dev` (Debian and Ubuntu names), and a C++
-compiler: the tray plugin builds its native library with the app.
+`app/` is a desktop app (Windows, macOS, Linux) that runs the converter for you. Download it from a
+[GitHub release](../../releases), or start it from the repository with `make companion`. A Linux build needs
+`ninja-build`, `libgtk-3-dev`, `libx11-dev` and `libxi-dev` (Debian and Ubuntu names), and a C++ compiler: the tray
+plugin builds its native library with the app.
+
+Install from a release:
+
+- **Windows:** unpack `WoW-Journey-<version>-windows-x64.zip` and start `WoW-Journey\wow_journey.exe`. The app is not
+  signed, so on the first start Windows SmartScreen shows "Windows protected your PC". Click **More info**, check that
+  the file is `wow_journey.exe`, then click **Run anyway**.
+- **macOS:** unpack `WoW-Journey-<version>-macos.zip` and move `wow_journey.app` to `Applications`. The app is signed
+  and notarized, so it opens with no warning. It runs on Apple silicon and Intel Macs.
+- **Linux:** unpack `WoW-Journey-<version>-linux-x64.tar.gz` and start `WoW-Journey/wow_journey`. Keep the `lib/`
+  and `data/` folders next to it. It needs the GTK 3, X11 and Xi shared libraries: `libgtk-3-0` (`libgtk-3-0t64` on
+  Ubuntu 24.04 and later), `libx11-6` and `libxi6` on Debian and Ubuntu, `gtk3`, `libX11` and `libXi` on Fedora,
+  `gtk3`, `libx11` and `libxi` on Arch. `ldd WoW-Journey/wow_journey | grep "not found"` lists a missing one.
+
+Releases are cut as described in [`docs/releasing.md`](docs/releasing.md).
 
 - **First start:** a 3-step wizard. Step 1 finds the WoW folder (or opens a folder picker), step 2 sets the backup
   folder (default `<Documents>/WoW Journey`), step 3 has the Watch and Start at login switches (both on).
@@ -153,9 +171,9 @@ a character this run did not write.
 | `make help` | List the targets. |
 | `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `fvm`). |
 | `make deps` | Install busted, luacov and luacheck with luarocks (Lua 5.1). |
-| `make lint` | `lint-lua` (luacheck), `lint-no-go` (`scripts/no-go.sh`: no tracked `*.go`, `go.mod` or `go.sum`), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
+| `make lint` | `lint-lua` (luacheck), `lint-no-go` (`scripts/no-go.sh`: no tracked `*.go`, `go.mod` or `go.sum`), `lint-actions` (actionlint on the workflows, skipped when it is not installed; CI always runs it), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
 | `make fmt` | Format the Lua and Dart code. |
-| `make test` | `test-lua` (busted), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
+| `make test` | `test-lua` (busted), `test-scripts` (the tests of `scripts/package-addons.sh` and `scripts/release-version.sh`), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
 | `make coverage` | `coverage-lua` and `dart-coverage`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`) and the Dart core `lib/` need 80 %; the total Lua coverage is printed. |
 | `make companion` | Run the WoW Journey app on this system. `COMPANION_DEVICE=linux`, `macos` or `windows` picks the device. |
 | `make install WOW_DIR=...` | Copy each addon folder into the game. |
@@ -172,4 +190,5 @@ a character this run did not write.
   and their golden output (`testdata/expected`).
 - `docs/` — [`kinds.md`](docs/kinds.md), [`public-api.md`](docs/public-api.md),
   [`sub-addon-api.md`](docs/sub-addon-api.md), [`manual-checklist.md`](docs/manual-checklist.md) (the checks to run
-  in the game) and [`app-manual-checklist.md`](docs/app-manual-checklist.md) (the checks of the app).
+  in the game), [`app-manual-checklist.md`](docs/app-manual-checklist.md) (the checks of the app) and
+  [`releasing.md`](docs/releasing.md) (how to cut a release).

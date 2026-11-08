@@ -15,7 +15,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go dart-lint app-lint fmt-check fmt test test-lua dart-test app-test companion coverage coverage-lua dart-coverage export link install clean web-data web web-demo
+.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions dart-lint app-lint fmt-check fmt test test-lua test-scripts dart-test app-test companion coverage coverage-lua dart-coverage export link install clean web-data web web-demo
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -30,13 +30,16 @@ deps: ## Install the Lua test and lint tools with luarocks
 	luarocks --lua-version=5.1 --local install luacov 0.17.0-1
 	luarocks --lua-version=5.1 --local install luacheck 1.2.0-1
 
-lint: lint-lua lint-no-go dart-lint app-lint fmt-check ## Run all linters
+lint: lint-lua lint-no-go lint-actions dart-lint app-lint fmt-check ## Run all linters
 
 lint-lua: ## Run luacheck
 	luacheck .
 
 lint-no-go: ## Fail when a Go file, go.mod or go.sum is tracked
 	bash scripts/no-go.sh
+
+lint-actions: ## Check the GitHub workflows with actionlint, when it is installed (CI always runs it)
+	@if command -v actionlint >/dev/null; then actionlint; else echo "lint-actions: actionlint is not installed, skipped"; fi
 
 dart-lint: ## Analyze and check the format of the Dart core
 	cd $(CORE) && fvm dart pub get
@@ -55,10 +58,14 @@ fmt: ## Format the Lua and Dart code
 	cd $(CORE) && fvm dart format .
 	cd app && fvm dart format .
 
-test: test-lua dart-test app-test ## Run all tests
+test: test-lua test-scripts dart-test app-test ## Run all tests
 
 test-lua: ## Run the busted tests
 	busted $(BUSTED_FLAGS)
+
+test-scripts: ## Test the release scripts (addon zip, release version)
+	bash scripts/test-package-addons.sh
+	bash scripts/test-release-version.sh
 
 dart-test: ## Run the Dart core tests
 	cd $(CORE) && fvm dart test
