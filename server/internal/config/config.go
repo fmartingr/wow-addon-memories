@@ -36,6 +36,11 @@ type Config struct {
 	MaxUploadBytes      int64
 	MaxShotBytes        int64
 	MaxPixels           int64
+	MaxDecodedBytes     int64
+	MaxText             int64
+	MaxRecords          int64
+	MaxChunks           int64
+	MaxPoints           int64
 	MaxCharactersPerKey int64
 	MaxDataBytesPerKey  int64
 	MaxShotBytesPerKey  int64
@@ -111,6 +116,11 @@ func Load(getenv func(string) string) (Config, error) {
 		{"MEMORIES_MAX_UPLOAD_BYTES", &c.MaxUploadBytes, 16 * miB, "bytes"},
 		{"MEMORIES_MAX_SHOT_BYTES", &c.MaxShotBytes, 15 * miB, "bytes"},
 		{"MEMORIES_MAX_PIXELS", &c.MaxPixels, 50_000_000, "pixels"},
+		{"MEMORIES_MAX_DECODED_BYTES", &c.MaxDecodedBytes, 64 * miB, "bytes"},
+		{"MEMORIES_MAX_TEXT", &c.MaxText, 512, "bytes"},
+		{"MEMORIES_MAX_RECORDS", &c.MaxRecords, 500_000, "records"},
+		{"MEMORIES_MAX_CHUNKS", &c.MaxChunks, 50_000, "chunks"},
+		{"MEMORIES_MAX_POINTS", &c.MaxPoints, 20_000, "points"},
 		{"MEMORIES_MAX_CHARACTERS_PER_KEY", &c.MaxCharactersPerKey, 50, "characters"},
 		{"MEMORIES_MAX_DATA_BYTES_PER_KEY", &c.MaxDataBytesPerKey, 512 * miB, "bytes"},
 		{"MEMORIES_MAX_SHOT_BYTES_PER_KEY", &c.MaxShotBytesPerKey, 5 * giB, "bytes"},

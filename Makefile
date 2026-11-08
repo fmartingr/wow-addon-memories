@@ -74,8 +74,9 @@ test-scripts: ## Test the release scripts (addon zip, release version)
 	bash scripts/test-package-addons.sh
 	bash scripts/test-release-version.sh
 
-server-test: ## Run the Go server tests with the race detector
+server-test: ## Run the Go server tests with the race detector (FUZZ=1 also fuzzes the upload check for 30 s)
 	cd server && go test -race ./...
+	@if [ "$(FUZZ)" = 1 ]; then cd server && go test -run '^$$' -fuzz '^FuzzUpload$$' -fuzztime 30s ./internal/validate; fi
 
 dart-test: ## Run the Dart core tests
 	cd $(CORE) && fvm dart test

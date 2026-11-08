@@ -187,6 +187,11 @@ URL and the registration mode for now; the folders, the proxies and the limits t
 | `MEMORIES_MAX_UPLOAD_BYTES` | 16 MiB | Largest upload request. |
 | `MEMORIES_MAX_SHOT_BYTES` | 15 MiB | Largest screenshot request. |
 | `MEMORIES_MAX_PIXELS` | 50,000,000 | Largest screenshot, in pixels. |
+| `MEMORIES_MAX_DECODED_BYTES` | 64 MiB | Largest upload after gzip is undone. |
+| `MEMORIES_MAX_TEXT` | 512 | Longest text value in an upload, in bytes. |
+| `MEMORIES_MAX_RECORDS` | 500,000 | Journey records in one upload. |
+| `MEMORIES_MAX_CHUNKS` | 50,000 | Trail chunks in one upload. |
+| `MEMORIES_MAX_POINTS` | 20,000 | Points in one trail chunk. |
 | `MEMORIES_MAX_CHARACTERS_PER_KEY` | 50 | Characters of one key. |
 | `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key. |
 | `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |

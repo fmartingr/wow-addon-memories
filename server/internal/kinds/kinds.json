@@ -1,0 +1,605 @@
+{
+  "af": {
+    "addon": "Memories",
+    "fields": {
+      "on": "text"
+    }
+  },
+  "ah": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "act": "text",
+      "copper": "number",
+      "item": "text"
+    }
+  },
+  "al": {
+    "addon": "Memories",
+    "fields": {
+      "by": "text",
+      "how": "text"
+    }
+  },
+  "bg": {
+    "addon": "Memories_Social",
+    "fields": {
+      "deaths": "number",
+      "honor": "number",
+      "kb": "number",
+      "kills": "number",
+      "name": "text",
+      "result": "text",
+      "seconds": "number"
+    }
+  },
+  "bk": {
+    "addon": "Memories_Character",
+    "fields": {
+      "title": "text"
+    }
+  },
+  "bo": {
+    "addon": "Memories",
+    "fields": {
+      "encounter": "number",
+      "last": "text",
+      "name": "text",
+      "place": "text",
+      "seconds": "number",
+      "success": "number"
+    }
+  },
+  "bt": {
+    "addon": "Memories",
+    "fields": {
+      "from": "text",
+      "fromMap": "number",
+      "to": "text",
+      "toMap": "number"
+    }
+  },
+  "cc": {
+    "addon": "Memories",
+    "fields": {
+      "combat": "text",
+      "seconds": "number"
+    }
+  },
+  "cu": {
+    "addon": "Memories_Character",
+    "fields": {
+      "combat": "text",
+      "item": "number",
+      "kind": "text",
+      "name": "text"
+    }
+  },
+  "de": {
+    "addon": "Memories",
+    "fields": {
+      "amount": "number",
+      "boss": "text",
+      "byPlayer": "number",
+      "env": "text",
+      "inst": "text",
+      "kclass": "text",
+      "killer": "text",
+      "klevel": "number",
+      "npc": "number",
+      "place": "text",
+      "spell": "text"
+    }
+  },
+  "di": {
+    "addon": "Memories",
+    "fields": {
+      "area": "text",
+      "xp": "number"
+    }
+  },
+  "dn": {
+    "addon": "Memories",
+    "fields": {
+      "difficulty": "number",
+      "instance": "number",
+      "itype": "text",
+      "name": "text",
+      "size": "number"
+    }
+  },
+  "du": {
+    "addon": "Memories_Social",
+    "fields": {
+      "class": "text",
+      "opponent": "text",
+      "result": "text"
+    }
+  },
+  "dx": {
+    "addon": "Memories",
+    "fields": {
+      "deaths": "number",
+      "instance": "number",
+      "name": "text",
+      "seconds": "number"
+    }
+  },
+  "ep": {
+    "addon": "Memories_Social",
+    "fields": {
+      "class": "text",
+      "guild": "text",
+      "level": "number",
+      "name": "text",
+      "race": "text"
+    }
+  },
+  "eq": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "item": "number",
+      "quality": "number",
+      "slot": "number"
+    }
+  },
+  "ex": {
+    "addon": "Memories",
+    "fields": {
+      "detail": "text",
+      "source": "text",
+      "what": "text"
+    }
+  },
+  "fi": {
+    "addon": "Memories_Combat",
+    "fields": {
+      "casts": "number",
+      "class": "text",
+      "died": "text",
+      "level": "number",
+      "seconds": "number",
+      "target": "text"
+    }
+  },
+  "fp": {
+    "addon": "Memories_Character",
+    "fields": {
+      "node": "text"
+    }
+  },
+  "fs": {
+    "addon": "Memories_Gathering",
+    "fields": {
+      "count": "number",
+      "item": "number",
+      "name": "text",
+      "object": "number",
+      "quality": "number",
+      "why": "text"
+    }
+  },
+  "ga": {
+    "addon": "Memories_Gathering",
+    "fields": {
+      "count": "number",
+      "item": "number",
+      "name": "text",
+      "node": "text",
+      "object": "number",
+      "prof": "text",
+      "quality": "number",
+      "why": "text"
+    }
+  },
+  "ge": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "ids": "text",
+      "level": "number",
+      "src": "text"
+    }
+  },
+  "gh": {
+    "addon": "Memories",
+    "fields": {}
+  },
+  "gj": {
+    "addon": "Memories_Social",
+    "fields": {
+      "class": "text",
+      "guild": "text",
+      "level": "number",
+      "name": "text"
+    }
+  },
+  "gl": {
+    "addon": "Memories_Social",
+    "fields": {
+      "name": "text"
+    }
+  },
+  "gp": {
+    "addon": "Memories",
+    "fields": {
+      "lastSave": "number",
+      "seconds": "number"
+    }
+  },
+  "gu": {
+    "addon": "Memories_Social",
+    "fields": {
+      "guild": "text",
+      "rank": "text"
+    }
+  },
+  "hb": {
+    "addon": "Memories_Character",
+    "fields": {
+      "home": "text"
+    }
+  },
+  "hc": {
+    "addon": "Memories",
+    "fields": {
+      "killer": "text"
+    }
+  },
+  "hk": {
+    "addon": "Memories_Social",
+    "fields": {
+      "honor": "number",
+      "rank": "text",
+      "victim": "text"
+    }
+  },
+  "hs": {
+    "addon": "Memories",
+    "fields": {
+      "fromMap": "number",
+      "to": "text",
+      "toMap": "number",
+      "yards": "number"
+    }
+  },
+  "in": {
+    "addon": "Memories",
+    "fields": {
+      "how": "text"
+    }
+  },
+  "jp": {
+    "addon": "Memories",
+    "fields": {
+      "fromMap": "number",
+      "toMap": "number",
+      "why": "text",
+      "yards": "number"
+    }
+  },
+  "ki": {
+    "addon": "Memories_Combat",
+    "fields": {
+      "class": "text",
+      "ctype": "text",
+      "first": "number",
+      "inst": "text",
+      "level": "number",
+      "name": "text",
+      "npc": "number",
+      "xp": "number"
+    }
+  },
+  "ld": {
+    "addon": "Memories",
+    "fields": {
+      "spell": "number",
+      "taxi": "text"
+    }
+  },
+  "le": {
+    "addon": "Memories",
+    "fields": {}
+  },
+  "lh": {
+    "addon": "Memories",
+    "fields": {
+      "combat": "text"
+    }
+  },
+  "lo": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "count": "number",
+      "first": "number",
+      "gear": "number",
+      "how": "text",
+      "item": "number",
+      "name": "text",
+      "quality": "number"
+    }
+  },
+  "lr": {
+    "addon": "Memories_Character",
+    "fields": {
+      "name": "text",
+      "spell": "number"
+    }
+  },
+  "lv": {
+    "addon": "Memories",
+    "fields": {
+      "level": "number"
+    }
+  },
+  "ma": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "act": "text",
+      "copper": "number",
+      "item": "text",
+      "who": "text"
+    }
+  },
+  "ml": {
+    "addon": "Memories",
+    "fields": {
+      "name": "text",
+      "spell": "number"
+    }
+  },
+  "mn": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "delta": "number",
+      "src": "text",
+      "what": "text"
+    }
+  },
+  "mo": {
+    "addon": "Memories",
+    "fields": {
+      "name": "text",
+      "on": "text",
+      "spell": "number"
+    }
+  },
+  "nt": {
+    "addon": "Memories",
+    "fields": {
+      "detail": "text",
+      "what": "text"
+    }
+  },
+  "op": {
+    "addon": "Memories_Gathering",
+    "fields": {
+      "how": "text",
+      "item": "number",
+      "name": "text",
+      "object": "number"
+    }
+  },
+  "out": {
+    "addon": "Memories",
+    "fields": {}
+  },
+  "pc": {
+    "addon": "Memories",
+    "fields": {
+      "computer": "text"
+    }
+  },
+  "pk": {
+    "addon": "Memories_Social",
+    "fields": {
+      "class": "text",
+      "guild": "text",
+      "level": "number",
+      "name": "text",
+      "result": "text"
+    }
+  },
+  "pl": {
+    "addon": "Memories",
+    "fields": {
+      "played": "number"
+    }
+  },
+  "po": {
+    "addon": "Memories",
+    "fields": {
+      "dest": "text",
+      "fromMap": "number",
+      "spell": "number",
+      "toMap": "number",
+      "yards": "number"
+    }
+  },
+  "pp": {
+    "addon": "Memories_Gathering",
+    "fields": {
+      "item": "number",
+      "name": "text",
+      "npc": "number",
+      "quality": "number",
+      "who": "text"
+    }
+  },
+  "pt": {
+    "addon": "Memories_Character",
+    "fields": {
+      "family": "text",
+      "level": "number",
+      "name": "text"
+    }
+  },
+  "qa": {
+    "addon": "Memories_Character",
+    "fields": {
+      "quest": "number",
+      "title": "text"
+    }
+  },
+  "qt": {
+    "addon": "Memories",
+    "fields": {
+      "money": "number",
+      "quest": "number",
+      "title": "text",
+      "xp": "number"
+    }
+  },
+  "ra": {
+    "addon": "Memories_Combat",
+    "fields": {
+      "level": "number",
+      "name": "text",
+      "npc": "number"
+    }
+  },
+  "rc": {
+    "addon": "Memories_Character",
+    "fields": {
+      "name": "text",
+      "spell": "number"
+    }
+  },
+  "rk": {
+    "addon": "Memories_Social",
+    "fields": {
+      "rank": "number",
+      "title": "text"
+    }
+  },
+  "rl": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "item": "number",
+      "name": "text",
+      "quality": "number",
+      "roll": "number",
+      "type": "text",
+      "won": "number"
+    }
+  },
+  "rp": {
+    "addon": "Memories_Character",
+    "fields": {
+      "faction": "text",
+      "label": "text",
+      "standing": "number",
+      "value": "number"
+    }
+  },
+  "rs": {
+    "addon": "Memories",
+    "fields": {
+      "rested": "number"
+    }
+  },
+  "sk": {
+    "addon": "Memories_Character",
+    "fields": {
+      "max": "number",
+      "name": "text",
+      "rank": "number"
+    }
+  },
+  "sn": {
+    "addon": "Memories",
+    "fields": {
+      "file": "text",
+      "note": "text",
+      "source": "text"
+    }
+  },
+  "so": {
+    "addon": "Memories",
+    "fields": {
+      "area": "text",
+      "who": "text"
+    }
+  },
+  "ss": {
+    "addon": "Memories",
+    "fields": {
+      "file": "text",
+      "result": "text",
+      "why": "text"
+    }
+  },
+  "su": {
+    "addon": "Memories",
+    "fields": {
+      "area": "text",
+      "fromMap": "number",
+      "toMap": "number",
+      "who": "text",
+      "yards": "number"
+    }
+  },
+  "sz": {
+    "addon": "Memories",
+    "fields": {
+      "sub": "text"
+    }
+  },
+  "ta": {
+    "addon": "Memories_Character",
+    "fields": {
+      "spent": "number",
+      "unspent": "number"
+    }
+  },
+  "tb": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "cost": "number",
+      "kind": "text",
+      "what": "text"
+    }
+  },
+  "tl": {
+    "addon": "Memories",
+    "fields": {
+      "at": "text"
+    }
+  },
+  "tr": {
+    "addon": "Memories_Economy",
+    "fields": {
+      "copper": "number",
+      "name": "text"
+    }
+  },
+  "tx": {
+    "addon": "Memories",
+    "fields": {
+      "cost": "number",
+      "from": "text",
+      "to": "text"
+    }
+  },
+  "wb": {
+    "addon": "Memories",
+    "fields": {
+      "name": "text",
+      "npc": "number"
+    }
+  },
+  "xp": {
+    "addon": "Memories",
+    "fields": {
+      "amount": "number",
+      "bonus": "number",
+      "name": "text",
+      "src": "text"
+    }
+  },
+  "zo": {
+    "addon": "Memories",
+    "fields": {
+      "zone": "text"
+    }
+  }
+}

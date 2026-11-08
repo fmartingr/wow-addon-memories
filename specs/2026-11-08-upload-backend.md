@@ -288,7 +288,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 2. Kinds catalog, slugs, validation and canonical JSON in Go
+### [x] 2. Kinds catalog, slugs, validation and canonical JSON in Go
 
 - **Outcome:** a Go package that takes one decoded upload and returns either the normalized, server-written files or a list of problems. Every character of `testdata/expected` passes, and crafted bad input fails with the right problem.
 - **Depends on:** 1 (module, Make targets, config limits).
