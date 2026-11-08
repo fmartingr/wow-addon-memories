@@ -5,6 +5,7 @@ import 'dart:io';
 
 import 'package:args/args.dart';
 
+import '../cli_flags.dart';
 import 'gather.dart';
 
 /// The usage line of the tool.
@@ -47,10 +48,10 @@ Future<int> runMemoriesExport(
   final parser = _parser();
   final ArgResults opts;
   try {
-    opts = parser.parse(_longFlags(args));
+    opts = parser.parse(longFlags(args, _valued));
   } on ArgParserException catch (e) {
     err
-      ..writeln(_flagError(e))
+      ..writeln(flagError(e))
       ..writeln('Usage of memories-export:')
       ..writeln(parser.usage);
     return 2;
@@ -89,44 +90,3 @@ Future<int> runMemoriesExport(
 }
 
 const Set<String> _valued = {'wow-dir', 'dist', 'backup', 'default'};
-
-/// Turns the single-dash form `-wow-dir` of each flag into `--wow-dir`, so
-/// both forms work. A flag value is left as it is, even when it starts with
-/// "-".
-List<String> _longFlags(List<String> args) {
-  final out = <String>[];
-  var value = false;
-  for (final a in args) {
-    if (value) {
-      out.add(a);
-      value = false;
-      continue;
-    }
-    final name = _flagName(a);
-    final valued = _valued.contains(name) && !a.contains('=');
-    if (a.startsWith('--')) {
-      value = valued;
-    } else if (a.length > 2 && a.startsWith('-')) {
-      out.add('-$a');
-      value = valued;
-      continue;
-    }
-    out.add(a);
-  }
-  return out;
-}
-
-String _flagName(String arg) =>
-    arg.replaceFirst(RegExp('^-+'), '').split('=').first;
-
-/// The fixed error text of a flag mistake, which scripts read.
-String _flagError(ArgParserException e) {
-  final name = (e.argumentName ?? '').replaceFirst(RegExp('^-+'), '');
-  if (e.message.startsWith('Could not find')) {
-    return 'flag provided but not defined: -$name';
-  }
-  if (e.message.startsWith('Missing argument')) {
-    return 'flag needs an argument: -$name';
-  }
-  return e.message;
-}

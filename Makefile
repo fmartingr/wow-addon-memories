@@ -16,7 +16,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build export link install clean web-data web web-demo
+.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build export upload link install clean web-data web web-demo
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -115,6 +115,13 @@ export: ## Run the converter on WOW_DIR (a flavor folder); DIST, BACKUP and DEFA
 	@fvm dart pub get --directory=$(CORE) >/dev/null
 	fvm dart run $(CORE)/bin/memories_export.dart --wow-dir "$(WOW_DIR)" \
 		$(if $(DIST),--dist "$(DIST)") $(if $(BACKUP),--backup "$(BACKUP)") $(if $(DEFAULT),--default "$(DEFAULT)")
+
+upload: ## Run memories-upload for SITE; LATEST, KEY, STATE, INVITE, DELETE and REQUEST_SCREENSHOTS=1 are optional
+	@if [ -z "$${SITE:-}" ]; then echo "SITE is required, for example https://wowjourney.xyz" >&2; exit 2; fi
+	@fvm dart pub get --directory=$(CORE) >/dev/null
+	fvm dart run $(CORE)/bin/memories_upload.dart --site "$(SITE)" \
+		$(if $(LATEST),--latest "$(LATEST)") $(if $(KEY),--key "$(KEY)") $(if $(STATE),--state "$(STATE)") \
+		$(if $(INVITE),--invite "$(INVITE)") $(if $(DELETE),--delete "$(DELETE)") $(if $(filter 1,$(REQUEST_SCREENSHOTS)),--request-screenshots)
 
 link: ## Link each addon folder into WOW_DIR (a flavor folder)
 	@if [ -z "$${WOW_DIR:-}" ]; then echo "WOW_DIR is required, for example .../World of Warcraft/_forever_" >&2; exit 2; fi

@@ -162,12 +162,42 @@ The id is `<region>-<realm>-<name>` in ASCII lower case (`eu-brumamar-nandu` for
 the records, trail chunks and sessions of the runs before it, the id each character had, and the `index.json` entry of
 a character this run did not write.
 
+## Uploader
+
+`memories-upload` sends the characters of a `latest/` folder (the output of the gather) to a website, with the upload
+API of [the server](#the-server). It is pure Dart, so it needs no Flutter.
+
+```sh
+make upload SITE=https://wowjourney.xyz LATEST=dist-characters [INVITE=CODE] [KEY=FILE] [STATE=FILE] [DELETE=PATH] [REQUEST_SCREENSHOTS=1]
+# or
+fvm dart run packages/memories_core/bin/memories_upload.dart --site https://wowjourney.xyz --latest dist-characters [--invite CODE] [--key FILE] [--state FILE] [--delete PATH] [--request-screenshots]
+```
+
+- `--site` (required) is `https://host[:port]`. Plain `http://` works for `localhost`, `127.0.0.1` and `[::1]` only.
+- `--key` (default `./upload-key.json`) holds the Ed25519 key that identifies you. The tool makes it when it is
+  missing, with mode 600 on Linux and macOS. Keep it: without it the characters you uploaded stay with the old key.
+  A damaged key file stops the run and is never overwritten.
+- `--state` (default `./upload-state.json`) remembers, for each website, whether the key is registered and what was
+  sent. A damaged state file gives a warning and a fresh start.
+- The tool runs these steps in this order: register (when the state says the key is not registered, or when
+  `--invite` is given), upload `--latest`, `--delete PATH` (for example `wow/eu/brumamar/nandu`), and
+  `--request-screenshots`. A run with no step but `--site` registers the key when the state says it is not
+  registered, and otherwise does nothing.
+- `--latest` uploads each character whose data changed since the last run and reports the others as `unchanged`. When
+  the website has approved screenshots for the key, it also uploads each screenshot that a record names. An approval
+  that comes after the first upload sends each character once more, so the website stores the screenshot links.
+- Exit code 0 is a pass, 1 a run error (a rejected upload prints its problems, a `429` prints `Retry-After`), 2 a usage
+  error.
+
 ## The server
 
 `server/` is a Go web server for the WoW Journey website. It serves the home page, `robots.txt`, `/api/v1/info`
 and the signed API below, and answers every other path with one 404 page (a JSON error under `/api/`). Every response carries the security
-headers. Run it with `make server-run`, then open <http://localhost:8080/>. The admin listener (default
-`127.0.0.1:8081`) answers 404 only for now.
+headers. Run it with `make server-run`, then open <http://localhost:8080/>. The admin page listens on
+`MEMORIES_ADMIN_ADDR` (default `127.0.0.1:8081`; the log warns when the address is not loopback). It has plain HTML
+forms and no JavaScript, and it accepts only `localhost:<port>` and `127.0.0.1:<port>` as `Host`, so reach it with an
+SSH tunnel. There the admin makes and revokes invite codes, approves, denies and revokes screenshots, revokes keys
+(with or without deleting their characters), deletes characters and moves a claim to another key.
 
 The server keeps its data in `MEMORIES_DATA_DIR`: the SQLite database `memories.db` (keys, invite codes, claims and
 the nonces of signed requests). The upload API keeps the character files in `characters/`. The API accepts only requests that
@@ -235,13 +265,14 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 | `make install WOW_DIR=...` | Copy each addon folder into the game. |
 | `make link WOW_DIR=...` | Link each addon folder into the game. |
 | `make export WOW_DIR=...` | Run `memories-export`; `DIST`, `BACKUP` and `DEFAULT` set `--dist`, `--backup` and `--default`. |
+| `make upload SITE=...` | Run `memories-upload`; `LATEST`, `KEY`, `STATE`, `INVITE`, `DELETE` and `REQUEST_SCREENSHOTS=1` set the matching flags. |
 | `make clean` | Remove the coverage files and `app/build/`. |
 
 ## Layout
 
 - `addons/` — the 6 addons.
-- `packages/memories_core/` — the Dart core (no Flutter) with the `memories-export` command
-  (`bin/memories_export.dart`); `app/` — the WoW Journey desktop app. Both use the Flutter version in `.fvmrc` through [FVM](https://fvm.app).
+- `packages/memories_core/` — the Dart core (no Flutter) with the `memories-export` and `memories-upload` commands
+  (`bin/memories_export.dart`, `bin/memories_upload.dart`); `app/` — the WoW Journey desktop app. Both use the Flutter version in `.fvmrc` through [FVM](https://fvm.app).
 - `server/` — the Go web server (its own `go.mod`; the only Go code in the repository).
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`); `testdata/` — converter fixtures (`testdata/wow`)
   and their golden output (`testdata/expected`).

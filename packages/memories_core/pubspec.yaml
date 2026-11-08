@@ -9,7 +9,9 @@ environment:
 dependencies:
   args: ^2.7.0
   crypto: ^3.0.8
+  http: ^1.6.0
   path: ^1.9.1
+  pinenacl: ^0.6.0
   unorm_dart: ^0.3.3
 
 dev_dependencies:

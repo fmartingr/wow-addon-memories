@@ -579,7 +579,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 9. Dart upload client and the `memories-upload` CLI
+### [x] 9. Dart upload client and the `memories-upload` CLI
 
 - **Outcome:** pure Dart code registers a key, uploads every changed character of a `latest/` folder, uploads approved screenshots, deletes a character and requests screenshots. A CLI runs it.
 - **Depends on:** 5 (upload API), 6 (screenshot API). The signature vector file comes from Task 4.
