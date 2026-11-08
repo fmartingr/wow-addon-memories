@@ -631,7 +631,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 10. End-to-end test: the CLI against the real server
+### [x] 10. End-to-end test: the CLI against the real server
 
 - **Outcome:** `make e2e` proves the whole protocol with the real Go server and the real Dart client, locally and in CI.
 - **Depends on:** 7 (pages), 8 (the admin approve form for step 6), 9 (client and CLI).

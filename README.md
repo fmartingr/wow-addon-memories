@@ -268,7 +268,7 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 | Target | What it does |
 |---|---|
 | `make help` | List the targets. |
-| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `go`, `fvm`). |
+| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `go`, `fvm`, `curl`, `jq`, `python3`). |
 | `make deps` | Install busted, luacov and luacheck with luarocks (Lua 5.1). |
 | `make lint` | `lint-lua` (luacheck), `lint-no-go` (`scripts/no-go.sh`: no tracked `*.go`, `go.mod` or `go.sum` outside `server/`; `scripts/no-go_test.sh` tests it), `lint-actions` (actionlint on the workflows, skipped when it is not installed; CI always runs it), `server-lint` (`gofmt` and `go vet` in `server/`), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
 | `make fmt` | Format the Lua, Dart and Go code. |
@@ -281,6 +281,7 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 | `make link WOW_DIR=...` | Link each addon folder into the game. |
 | `make export WOW_DIR=...` | Run `memories-export`; `DIST`, `BACKUP` and `DEFAULT` set `--dist`, `--backup` and `--default`. |
 | `make upload SITE=...` | Run `memories-upload`; `LATEST`, `KEY`, `STATE`, `INVITE`, `DELETE` and `REQUEST_SCREENSHOTS=1` set the matching flags. |
+| `make e2e` | Build the server, start it on a temporary folder and run `memories-upload` against it: upload, page, merge, screenshot approval and delete (needs `go`, `fvm`, `curl`, `jq` and `python3`; CI runs it). |
 | `make clean` | Remove the coverage files and `app/build/`. |
 
 ## Layout

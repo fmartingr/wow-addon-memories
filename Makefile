@@ -16,13 +16,13 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build export upload link install clean web-data web web-demo
+.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build export upload e2e link install clean web-data web web-demo
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
 
 check-tools: ## Report each missing tool
-	@missing=0; for t in lua5.1 luarocks busted luacheck luacov stylua go fvm; do \
+	@missing=0; for t in lua5.1 luarocks busted luacheck luacov stylua go fvm curl jq python3; do \
 		if ! command -v $$t >/dev/null; then echo "missing: $$t"; missing=1; fi; \
 	done; exit $$missing
 
@@ -122,6 +122,9 @@ upload: ## Run memories-upload for SITE; LATEST, KEY, STATE, INVITE, DELETE and 
 	fvm dart run $(CORE)/bin/memories_upload.dart --site "$(SITE)" \
 		$(if $(LATEST),--latest "$(LATEST)") $(if $(KEY),--key "$(KEY)") $(if $(STATE),--state "$(STATE)") \
 		$(if $(INVITE),--invite "$(INVITE)") $(if $(DELETE),--delete "$(DELETE)") $(if $(filter 1,$(REQUEST_SCREENSHOTS)),--request-screenshots)
+
+e2e: ## Build the server and run memories-upload against it (needs go, fvm, curl, jq, python3)
+	bash scripts/e2e-upload.sh
 
 link: ## Link each addon folder into WOW_DIR (a flavor folder)
 	@if [ -z "$${WOW_DIR:-}" ]; then echo "WOW_DIR is required, for example .../World of Warcraft/_forever_" >&2; exit 2; fi
