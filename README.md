@@ -79,7 +79,11 @@ Other addons write events and screenshot notes into the journal with `Memories.R
   the characters, each problem in plain words with a fix button, the size of the backup folder, and Open backup
   folder and Open latest data.
 - **Settings:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two switches and
-  the version. Watch and Start at login are saved but have no effect yet.
+  the version. Start at login is saved but has no effect yet.
+- **Watch:** while it is on, the main screen says "Watching for changes". Every 10 s the app reads the size and the
+  modification time of each Memories saved file. After a change it waits until the files stay the same for at least
+  5 s, then gathers once. It saves the state of the last gather in the settings, so a restart with no change does not
+  gather. A failed gather runs again at the next change, or once after 5 minutes.
 - The backup folder holds `latest/` (the website data, the `dist-characters/` layout below) and `backups/<UTC stamp>/`.
 - Manual checks: [`docs/app-manual-checklist.md`](docs/app-manual-checklist.md).
 

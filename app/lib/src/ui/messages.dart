@@ -28,6 +28,9 @@ const String wowFolderGoneText =
 const String saveHintText =
     'The game saves your journey when you log out or type /reload.';
 
+/// The status line while Watch is on.
+const String watchingText = 'Watching for changes';
+
 /// What happened and what to do, for [code].
 String issueText(GatherIssueCode code) => switch (code) {
   GatherIssueCode.noWtf =>

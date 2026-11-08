@@ -212,5 +212,12 @@ Future<void> changeBackupFolder(
     );
     if (ok != true || !context.mounted) return;
   }
-  await settings.update(settings.settings.copyWith(backupRoot: path));
+  // The signature of the last gather belongs to the old backup folder; a new
+  // one holds none of that data, so Watch gathers into it at its next polls.
+  await settings.update(
+    settings.settings.copyWith(
+      backupRoot: path,
+      clearLastSignature: current == null || !p.equals(current, path),
+    ),
+  );
 }

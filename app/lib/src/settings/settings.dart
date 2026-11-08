@@ -37,13 +37,16 @@ class Settings {
     bool? startAtLogin,
     bool? wizardDone,
     String? lastSignature,
+    bool clearLastSignature = false,
   }) => Settings(
     flavorDir: flavorDir ?? this.flavorDir,
     backupRoot: backupRoot ?? this.backupRoot,
     watch: watch ?? this.watch,
     startAtLogin: startAtLogin ?? this.startAtLogin,
     wizardDone: wizardDone ?? this.wizardDone,
-    lastSignature: lastSignature ?? this.lastSignature,
+    lastSignature: clearLastSignature
+        ? null
+        : lastSignature ?? this.lastSignature,
   );
 
   Map<String, Object?> toJson() => {

@@ -341,7 +341,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 7. Watch mode
+### [x] 7. Watch mode
 
 - **Outcome:** With Watch on, the app gathers once after the game saves a Memories file, and never reads a half-written file.
 - **Depends on:** Task 6.

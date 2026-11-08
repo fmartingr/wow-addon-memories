@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
+import 'package:wow_journey/src/ui/messages.dart';
 import 'package:wow_journey/src/version.dart';
 
 import 'support/fakes.dart';
@@ -34,7 +35,7 @@ void main() {
     expect(find.textContaining('WoW Journey $appVersion'), findsOneWidget);
   });
 
-  testWidgets('the switches only store their value', (tester) async {
+  testWidgets('the switches save their value', (tester) async {
     final fakes = await _openSettings(tester);
     await tester.tap(find.text('Watch'));
     await tester.pumpAndSettle();
@@ -44,6 +45,32 @@ void main() {
       (false, true),
       (false, false),
     ]);
+  });
+
+  testWidgets('the Watch switch stops and starts Watch', (tester) async {
+    final fakes = await _openSettings(tester);
+    expect(fakes.signature.calls, [retailDir]);
+    await tester.pump(const Duration(seconds: 10));
+    expect(fakes.signature.calls, hasLength(2));
+
+    await tester.tap(find.text('Watch'));
+    await tester.pumpAndSettle();
+    await tester.pump(const Duration(seconds: 60));
+    expect(fakes.signature.calls, hasLength(2));
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text(watchingText), findsNothing);
+
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.text('Watch'));
+    await tester.pumpAndSettle();
+    expect(fakes.signature.calls, hasLength(3));
+    await tester.pump(const Duration(seconds: 10));
+    expect(fakes.signature.calls, hasLength(4));
+    await tester.pageBack();
+    await tester.pumpAndSettle();
+    expect(find.text(watchingText), findsOneWidget);
   });
 
   testWidgets('two toggles before a rebuild keep both changes', (tester) async {
@@ -72,6 +99,31 @@ void main() {
     await tester.pumpAndSettle();
     expect(fakes.store.saved.single.backupRoot, '/new/root');
     expect(find.text('/new/root'), findsOneWidget);
+  });
+
+  testWidgets('a new backup folder forgets the signature of the old one', (
+    tester,
+  ) async {
+    final fakes = Fakes(
+      store: FakeSettingsStore((
+        settings: readySettings.copyWith(lastSignature: 'S0'),
+        notice: null,
+      )),
+      discovery: FakeDiscovery(checks: {retailDir: const Valid(retail)}),
+      picker: FakeFolderPicker([readySettings.backupRoot, '/new/root']),
+    );
+    await pumpApp(tester, fakes);
+    await tester.tap(find.byTooltip('Settings'));
+    await tester.pumpAndSettle();
+    await tester.tap(_change('Change the backup folder'));
+    await tester.pumpAndSettle();
+    expect(fakes.store.saved.last.lastSignature, 'S0');
+    await tester.tap(_change('Change the backup folder'));
+    await tester.pumpAndSettle();
+    await tester.tap(find.widgetWithText(FilledButton, 'Use this folder'));
+    await tester.pumpAndSettle();
+    expect(fakes.store.saved.last.backupRoot, '/new/root');
+    expect(fakes.store.saved.last.lastSignature, isNull);
   });
 
   testWidgets('Cancel in the warning keeps the old backup folder', (

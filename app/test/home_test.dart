@@ -49,6 +49,39 @@ void main() {
     expect(find.text(wowFolderGoneText), findsNothing);
   });
 
+  testWidgets('Watch on: the status line shows and a change gathers once', (
+    tester,
+  ) async {
+    final fakes = _ready();
+    fakes.store.loaded = (
+      settings: readySettings.copyWith(lastSignature: 'S0'),
+      notice: null,
+    );
+    fakes.signature.value = 'S1';
+    fakes.clock = tester.binding.clock.now;
+    await pumpApp(tester, fakes);
+    expect(find.text(watchingText), findsOneWidget);
+    expect(fakes.gather.calls, isEmpty);
+    await tester.pump(const Duration(seconds: 10));
+    await tester.pumpAndSettle();
+    expect(fakes.gather.calls, [(retailDir, root)]);
+    expect(fakes.store.saved.last.lastSignature, 'S1');
+    await tester.pump(const Duration(seconds: 60));
+    expect(fakes.gather.calls, hasLength(1));
+  });
+
+  testWidgets('Watch off: no status line and no poll', (tester) async {
+    final fakes = _ready();
+    fakes.store.loaded = (
+      settings: readySettings.copyWith(watch: false),
+      notice: null,
+    );
+    await pumpApp(tester, fakes);
+    await tester.pump(const Duration(seconds: 30));
+    expect(find.text(watchingText), findsNothing);
+    expect(fakes.signature.calls, isEmpty);
+  });
+
   testWidgets('the earlier data shows the characters, counts and time', (
     tester,
   ) async {

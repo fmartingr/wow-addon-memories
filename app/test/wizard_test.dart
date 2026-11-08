@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_store.dart';
+import 'package:wow_journey/src/ui/messages.dart';
 
 import 'support/fakes.dart';
 
@@ -50,6 +51,15 @@ void main() {
     ]);
     expect(find.text('Gather now'), findsOneWidget);
     expect(find.text('Step 1 of 3'), findsNothing);
+    expect(find.text(watchingText), findsOneWidget);
+    expect(fakes.signature.calls, [retailDir]);
+  });
+
+  testWidgets('the wizard does not start Watch before Finish', (tester) async {
+    final fakes = Fakes(discovery: FakeDiscovery(found: [retail]));
+    await pumpApp(tester, fakes);
+    await tester.pump(const Duration(seconds: 30));
+    expect(fakes.signature.calls, isEmpty);
   });
 
   testWidgets('Back returns to the step before', (tester) async {
@@ -75,6 +85,9 @@ void main() {
     await tester.pumpAndSettle();
     expect(fakes.store.saved.single.watch, isFalse);
     expect(fakes.store.saved.single.startAtLogin, isFalse);
+    expect(find.text(watchingText), findsNothing);
+    await tester.pump(const Duration(seconds: 30));
+    expect(fakes.signature.calls, isEmpty);
   });
 
   testWidgets('no folder found opens the picker; a cancel shows the text and '

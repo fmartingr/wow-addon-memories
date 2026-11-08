@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 import '../gather/gather_controller.dart';
 import '../platform/services.dart';
 import '../settings/settings_controller.dart';
+import '../watch/watch_controller.dart';
 import 'folder_flow.dart';
 import 'messages.dart';
 import 'settings_page.dart';
@@ -19,12 +20,14 @@ class HomePage extends StatefulWidget {
     required this.services,
     required this.settings,
     required this.gather,
+    required this.watch,
     this.clock = DateTime.now,
   });
 
   final AppServices services;
   final SettingsController settings;
   final GatherController gather;
+  final WatchController watch;
   final DateTime Function() clock;
 
   @override
@@ -157,7 +160,7 @@ class _HomePageState extends State<HomePage> {
       ),
       body: SafeArea(
         child: ListenableBuilder(
-          listenable: Listenable.merge([_settings, _gather]),
+          listenable: Listenable.merge([_settings, _gather, widget.watch]),
           builder: (context, _) => Center(
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 720),
@@ -241,6 +244,16 @@ class _HomePageState extends State<HomePage> {
               container: true,
               child: Text(status, style: theme.textTheme.titleMedium),
             ),
+            if (widget.watch.watching) ...[
+              const SizedBox(height: 4),
+              const Row(
+                children: [
+                  Icon(Icons.visibility_outlined, size: 18),
+                  SizedBox(width: 8),
+                  Expanded(child: Text(watchingText)),
+                ],
+              ),
+            ],
             const SizedBox(height: 12),
             if (_gather.running) ...[
               const LinearProgressIndicator(semanticsLabel: 'Gathering'),

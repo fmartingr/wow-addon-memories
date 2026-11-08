@@ -150,13 +150,33 @@ class FakeOpener implements FolderOpener {
   }
 }
 
+/// The signature that Watch reads: [value] for every folder, or [error].
+/// A call while [held] has a completer waits on the first one.
+class FakeSignature {
+  FakeSignature([this.value]);
+
+  String? value;
+  Object? error;
+  final List<String> calls = [];
+  final List<Completer<String?>> held = [];
+
+  Future<String?> call(String flavorDir) async {
+    calls.add(flavorDir);
+    if (held.isNotEmpty) return held.removeAt(0).future;
+    if (error != null) throw error!;
+    return value;
+  }
+}
+
 class Fakes {
   Fakes({
     FakeSettingsStore? store,
     FakeDiscovery? discovery,
     FakeFolderPicker? picker,
     FakeGatherService? gather,
-  }) : store = store ?? FakeSettingsStore(),
+    FakeSignature? signature,
+  }) : signature = signature ?? FakeSignature(),
+       store = store ?? FakeSettingsStore(),
        discovery = discovery ?? FakeDiscovery(),
        picker = picker ?? FakeFolderPicker(),
        gather = gather ?? FakeGatherService();
@@ -165,7 +185,11 @@ class Fakes {
   final FakeDiscovery discovery;
   final FakeFolderPicker picker;
   final FakeGatherService gather;
+  final FakeSignature signature;
   final FakeOpener opener = FakeOpener();
+
+  /// The time of Watch; a widget test sets it to the fake time of the test.
+  DateTime Function() clock = DateTime.now;
 
   AppServices get services => AppServices(
     store: store,
@@ -174,6 +198,8 @@ class Fakes {
     directories: const FakeDirectories(),
     gather: gather,
     opener: opener,
+    signature: signature.call,
+    clock: () => clock(),
   );
 }
 

@@ -9,6 +9,7 @@ export 'src/journal/journal.dart';
 export 'src/journal/trail.dart';
 export 'src/savedvars/parser.dart'
     show SavedVarsException, maxDepth, maxInputSize, maxTables, parseSavedVars;
+export 'src/watch/signature.dart';
 
 /// The version of the gather library.
 const String memoriesCoreVersion = '0.1.0';

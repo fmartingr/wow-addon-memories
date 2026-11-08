@@ -5,6 +5,7 @@ import 'platform/services.dart';
 import 'settings/settings_controller.dart';
 import 'ui/home_page.dart';
 import 'ui/wizard_page.dart';
+import 'watch/watch_controller.dart';
 
 /// The app: the wizard on the first start, else the main screen.
 class WowJourneyApp extends StatefulWidget {
@@ -23,15 +24,39 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
   late final GatherController _gather = GatherController(
     widget.services.gather,
   );
+  late final WatchController _watch = WatchController(
+    settings: _settings,
+    gather: _gather,
+    signature: widget.services.signature,
+    clock: widget.services.clock,
+  );
 
   @override
   void initState() {
     super.initState();
+    _settings.addListener(_syncWatch);
     _settings.load();
+  }
+
+  /// Watch runs while its switch is on and both folders are set: from the
+  /// app start, the wizard Finish, or the switch.
+  void _syncWatch() {
+    final s = _settings.settings;
+    if (_settings.loaded &&
+        s.wizardDone &&
+        s.watch &&
+        s.flavorDir != null &&
+        s.backupRoot != null) {
+      _watch.start();
+    } else {
+      _watch.stop();
+    }
   }
 
   @override
   void dispose() {
+    _settings.removeListener(_syncWatch);
+    _watch.dispose();
     _settings.dispose();
     _gather.dispose();
     super.dispose();
@@ -74,6 +99,7 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
             services: widget.services,
             settings: _settings,
             gather: _gather,
+            watch: _watch,
           );
         },
       ),

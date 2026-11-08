@@ -4,6 +4,7 @@ library;
 
 import '../gather/gather_controller.dart';
 import '../settings/settings_store.dart';
+import '../watch/watch_controller.dart';
 import 'discovery.dart';
 import 'documents_dir.dart';
 import 'folder_opener.dart';
@@ -17,6 +18,8 @@ class AppServices {
     required this.directories,
     required this.gather,
     required this.opener,
+    this.signature = flavorSignature,
+    this.clock = DateTime.now,
   });
 
   final SettingsStore store;
@@ -25,4 +28,10 @@ class AppServices {
   final AppDirectories directories;
   final GatherService gather;
   final FolderOpener opener;
+
+  /// The signature of the Memories files that Watch polls.
+  final SignatureFunction signature;
+
+  /// The time that Watch measures with.
+  final DateTime Function() clock;
 }

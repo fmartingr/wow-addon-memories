@@ -62,7 +62,11 @@ void main() {
       await tester.tap(find.text('Gather now'));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
-      await tester.drag(find.byType(ListView), const Offset(0, -20000));
+      await tester.scrollUntilVisible(
+        find.text('Open latest data'),
+        400,
+        scrollable: find.byType(Scrollable).first,
+      );
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
       expect(find.text('Open latest data'), findsOneWidget);
@@ -78,6 +82,7 @@ void main() {
   });
 
   testWidgets('the controls have Semantics labels', (tester) async {
+    useWindow(tester);
     final fakes = _home();
     fakes.gather.next = null;
     await pumpApp(tester, fakes);
@@ -126,6 +131,7 @@ void main() {
   testWidgets('Tab moves the focus from Gather now down to the open buttons', (
     tester,
   ) async {
+    useWindow(tester);
     final fakes = _home();
     fakes.gather.next = null;
     await pumpApp(tester, fakes);

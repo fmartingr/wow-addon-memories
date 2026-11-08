@@ -8,7 +8,7 @@ unless the row names one system.
 
 - **Result:** `not run`, `pass`, or `fail: <what happened>`, per system.
 - **Task:** the spec task that owns the behavior. Fix a fail in that task.
-- **Safe test data:** for checks 1 to 6 and 15, point the app at a copy of a WoW flavor folder, or at the fixture
+- **Safe test data:** for checks 1 to 7 and 15, point the app at a copy of a WoW flavor folder, or at the fixture
   `testdata/wow`. The app only reads the WoW folder, but a copy keeps the real one out of reach.
 - **Fresh start:** delete `settings.json` in the app support folder to see the wizard again.
   - Linux: `~/.local/share/com.fmartingr.wow_journey/`
@@ -26,7 +26,7 @@ unless the row names one system.
 | 4 | 6 | Finish: the main screen shows. Restart: the wizard does not show. | not run | not run | not run |
 | 5 | 6 | Click Gather now with a real flavor folder: `latest/` and `backups/<stamp>/` exist, and the counts match `/mem status` in the game. | not run | not run | not run |
 | 6 | 6 | Click Gather now again with no new data: no file in `latest/` changes. | not run | not run | not run |
-| 7 | 7 | Watch on: log out of the game. One gather runs within about 15 s of the file change. | not run | not run | not run |
+| 7 | 7 | Watch on: log out of the game, or touch a saved file of the copy. The main screen says "Watching for changes". One gather runs within about 15 s (at most 20 s) of the file change. A restart with no change does not gather. Watch off in the settings: a change does not gather. | not run | not run | not run |
 | 8 | 8 | Close the window: the app hides to the tray. Open it from the tray menu. | not run | not run | not run |
 | 9 | 8 | Quit from the tray menu: the process ends. | not run | not run | not run |
 | 10 | 8 | Start at login: sign out and in. The app starts hidden and the tray shows. | not run | not run | not run |
