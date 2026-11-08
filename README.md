@@ -69,6 +69,20 @@ Other addons write events and screenshot notes into the journal with `Memories.R
 `Memories.RecordScreenshot`. See [`docs/public-api.md`](docs/public-api.md). Memories sub-addons use
 [`docs/sub-addon-api.md`](docs/sub-addon-api.md).
 
+## The WoW Journey app
+
+`app/` is a desktop app (Windows, macOS, Linux) that runs the converter for you. Start it with `make companion`.
+
+- **First start:** a 3-step wizard. Step 1 finds the WoW folder (or opens a folder picker), step 2 sets the backup
+  folder (default `<Documents>/WoW Journey`), step 3 has the Watch and Start at login switches (both on).
+- **Main screen:** the last gather time, a Gather now button, the counts (characters, journal lines, screenshots),
+  the characters, each problem in plain words with a fix button, the size of the backup folder, and Open backup
+  folder and Open latest data.
+- **Settings:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two switches and
+  the version. Watch and Start at login are saved but have no effect yet.
+- The backup folder holds `latest/` (the website data, the `dist-characters/` layout below) and `backups/<UTC stamp>/`.
+- Manual checks: [`docs/app-manual-checklist.md`](docs/app-manual-checklist.md).
+
 ## Converter
 
 `memories-export` reads the saved files of every character in one flavor folder and writes the website data. It never
@@ -141,5 +155,5 @@ a character this run did not write.
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`); `testdata/` — converter fixtures (`testdata/wow`)
   and their golden output (`testdata/expected`).
 - `docs/` — [`kinds.md`](docs/kinds.md), [`public-api.md`](docs/public-api.md),
-  [`sub-addon-api.md`](docs/sub-addon-api.md) and [`manual-checklist.md`](docs/manual-checklist.md) (the checks to run
-  in the game).
+  [`sub-addon-api.md`](docs/sub-addon-api.md), [`manual-checklist.md`](docs/manual-checklist.md) (the checks to run
+  in the game) and [`app-manual-checklist.md`](docs/app-manual-checklist.md) (the checks of the app).

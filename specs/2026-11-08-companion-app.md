@@ -315,7 +315,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 6. Settings, first-run wizard and main screen
+### [x] 6. Settings, first-run wizard and main screen
 
 - **Outcome:** The app runs the wizard on first start, saves the settings, and gathers on the Gather now button, with status, counts and plain-language problems.
 - **Depends on:** Tasks 4 and 5.

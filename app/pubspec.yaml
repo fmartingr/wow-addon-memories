@@ -8,11 +8,14 @@ environment:
   sdk: ^3.13.4
 
 dependencies:
+  file_selector: ^1.1.0
   flutter:
     sdk: flutter
 
   memories_core:
     path: ../packages/memories_core
+  path: ^1.9.1
+  path_provider: ^2.1.6
 
 dev_dependencies:
   flutter_test:
