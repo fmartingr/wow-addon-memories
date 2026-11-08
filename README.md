@@ -221,6 +221,7 @@ single-use invite code in `invite` mode), `GET /api/v1/me` lists the key's chara
 off or a nonce seen in the last 600 s gets `401`; a revoked key gets `403 key_revoked`. A key may send
 `MEMORIES_RATE_SIGNED_PER_MINUTE` signed requests a minute, an address may try `MEMORIES_RATE_REGISTER_PER_HOUR`
 registrations an hour and send `MEMORIES_RATE_PUBLIC_PER_MINUTE` requests a minute (pages and API); more gets `429` with `Retry-After`.
+The viewer files under `/_/` (code, fonts and map art) are not part of that limit.
 The server reads the client address from the connection, and from `X-Forwarded-For` only when the connection comes from
 an address in `MEMORIES_TRUSTED_PROXIES`.
 
@@ -232,7 +233,7 @@ exit code 2. The size limits and quotas other than the rate limits apply to the 
 | `MEMORIES_PUBLIC_ADDR` | `:8080` | Public listener. |
 | `MEMORIES_ADMIN_ADDR` | `127.0.0.1:8081` | Admin listener. |
 | `MEMORIES_DATA_DIR` | `./data` | Data folder. |
-| `MEMORIES_WEB_DIR` | `../web` | Folder with the viewer files. |
+| `MEMORIES_WEB_DIR` | `../web` | Folder with the viewer files. The map art is in its `map/` folder (see `docs/self-host.md`, "Map art"). |
 | `MEMORIES_SITE_URL` | `http://localhost:8080` | Public address of the site: `http` or `https`, no path. A trailing `/` is dropped. |
 | `MEMORIES_SITE_NAME` | `WoW Journey` | Name of the site. |
 | `MEMORIES_GITHUB_URL` | `https://github.com/fmartingr/wow-addon-memories` | Repository; the home page links to it and to its `/releases/latest`. |

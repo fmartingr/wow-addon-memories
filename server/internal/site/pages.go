@@ -15,6 +15,7 @@ import (
 	"log/slog"
 	"net/http"
 	"os"
+	"path"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -52,12 +53,23 @@ var dataTypes = map[string]string{
 	"trail.jsonl":    "application/x-ndjson",
 }
 
-// viewerAssets are the files of MEMORIES_WEB_DIR that the viewer page loads, with their content types.
-var viewerAssets = []struct{ name, contentType string }{
-	{"app.js", "text/javascript; charset=utf-8"},
-	{"kinds.js", "text/javascript; charset=utf-8"},
-	{"style.css", "text/css; charset=utf-8"},
+// viewerTypes are the extensions of the viewer code files that NewPages keeps in memory, with their content types.
+var viewerTypes = map[string]string{
+	".mjs": "text/javascript; charset=utf-8",
+	".js":  "text/javascript; charset=utf-8",
+	".css": "text/css; charset=utf-8",
+	".png": "image/png",
 }
+
+// viewerSkipDirs are the folders of MEMORIES_WEB_DIR that are not code files. map and fonts come from the disk, test
+// is not part of the viewer, and characters is an old link to local data.
+var viewerSkipDirs = map[string]bool{"map": true, "fonts": true, "test": true, "characters": true}
+
+// maxViewerBytes caps the viewer code files in memory, so that a wrong MEMORIES_WEB_DIR cannot load a large tree.
+const maxViewerBytes = 8 << 20
+
+// AssetPrefix is the URL prefix of every viewer file. A flavor never starts with "_", so it cannot match a character.
+const AssetPrefix = "/_/"
 
 type asset struct {
 	body        []byte
@@ -67,6 +79,7 @@ type asset struct {
 
 // Pages serves the viewer assets, the character pages and the data files of the characters.
 type Pages struct {
+	webDir   string
 	assets   map[string]asset
 	index    []byte
 	titleAt  [2]int // the text between <title> and </title> of index
@@ -90,7 +103,7 @@ func NewPages(webDir string, claims ClaimFinder, blobs store.Blobs, notFound htt
 		return b, nil
 	}
 	p := &Pages{
-		assets: map[string]asset{}, claims: claims, blobs: blobs, notFound: notFound, log: log,
+		webDir: webDir, assets: map[string]asset{}, claims: claims, blobs: blobs, notFound: notFound, log: log,
 		etags: etagCache{m: map[etagKey]string{}}, titles: etagCache{m: map[etagKey]string{}},
 	}
 	var err error
@@ -105,22 +118,55 @@ func NewPages(webDir string, claims ClaimFinder, blobs store.Blobs, notFound htt
 	}
 	p.titleAt = [2]int{title[2], title[3]}
 	p.attrAt = body[0] + len("<body")
-	for _, a := range viewerAssets {
-		b, err := read(a.name)
-		if err != nil {
-			return nil, err
-		}
-		p.assets["/"+a.name] = asset{body: b, contentType: a.contentType, etag: etagOf(b)}
-	}
-	return p, nil
+	return p, p.loadAssets(read)
 }
 
-// Routes adds the viewer assets and the catch-all route. The catch-all serves the character pages and gives the
-// generic 404 page for every other path, so that an unknown path and a missing character look the same.
-func (p *Pages) Routes(mux *http.ServeMux) {
+// loadAssets reads each viewer code file of the web folder into memory.
+func (p *Pages) loadAssets(read func(string) ([]byte, error)) error {
+	total := 0
+	return fs.WalkDir(os.DirFS(p.webDir), ".", func(rel string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+		name := d.Name()
+		if rel != "." && (strings.HasPrefix(name, ".") || (d.IsDir() && rel == name && viewerSkipDirs[name])) {
+			if d.IsDir() {
+				return fs.SkipDir
+			}
+			return nil
+		}
+		ct, ok := viewerTypes[strings.ToLower(path.Ext(name))]
+		if d.IsDir() || !ok || !d.Type().IsRegular() {
+			return nil
+		}
+		b, err := read(rel)
+		if err != nil {
+			return err
+		}
+		if total += len(b); total > maxViewerBytes {
+			return fmt.Errorf("the viewer files in %s are larger than %d MiB. Check MEMORIES_WEB_DIR", p.webDir, maxViewerBytes>>20)
+		}
+		p.assets[AssetPrefix+rel] = asset{body: b, contentType: ct, etag: etagOf(b)}
+		return nil
+	})
+}
+
+// Assets returns the handler of every path under /_/: the viewer code files from memory, the map art and the fonts
+// from the disk, and a plain 404 for the rest.
+func (p *Pages) Assets() http.Handler {
+	mux := http.NewServeMux()
+	mux.Handle("GET "+AssetPrefix+"map/", NewStatic(AssetPrefix+"map/", filepath.Join(p.webDir, "map"), MapTypes))
+	mux.Handle("GET "+AssetPrefix+"fonts/", NewStatic(AssetPrefix+"fonts/", filepath.Join(p.webDir, "fonts"), FontTypes))
 	for path, a := range p.assets {
 		mux.Handle("GET "+path, serveBytes(a.contentType, a.etag, a.body))
 	}
+	mux.HandleFunc(AssetPrefix, http.NotFound)
+	return mux
+}
+
+// Routes adds the catch-all route. It serves the character pages and gives the generic 404 page for every other
+// path, so that an unknown path and a missing character look the same.
+func (p *Pages) Routes(mux *http.ServeMux) {
 	mux.Handle("/", p)
 }
 

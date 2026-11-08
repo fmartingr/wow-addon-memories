@@ -18,8 +18,8 @@ import (
 )
 
 const testIndex = `<!doctype html>
-<html><head><title>Memories Viewer</title><link rel="stylesheet" href="/style.css"></head>
-<BODY class="x"><main></main><script src="/app.js"></script></BODY></html>`
+<html><head><title>Memories Viewer</title><link rel="stylesheet" href="/_/style.css"></head>
+<BODY class="x"><main></main><script src="/_/app.js"></script></BODY></html>`
 
 const shot = "WoWScrnShot_110126_114820.jpg"
 
@@ -36,9 +36,15 @@ func writeWeb(t *testing.T, index string) string {
 	t.Helper()
 	dir := t.TempDir()
 	for name, body := range map[string]string{
-		"index.html": index, "app.js": "console.log(1)", "kinds.js": "window.KINDS={}", "style.css": "body{}",
+		"index.html": index, "app.mjs": "export {}", "lib/format.mjs": "export const x = 1", "kinds.js": "window.KINDS={}",
+		"style.css": "body{}", "icon.png": "png", "test/a.test.mjs": "x", "map/world.js": "window.WORLD={}",
+		"fonts/a.woff2": "font", ".hidden.js": "x",
 	} {
-		if err := os.WriteFile(filepath.Join(dir, name), []byte(body), 0o600); err != nil {
+		file := filepath.Join(dir, name)
+		if err := os.MkdirAll(filepath.Dir(file), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.WriteFile(file, []byte(body), 0o600); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -124,11 +130,6 @@ func TestNewPagesNeedsTheViewerFiles(t *testing.T) {
 		"no body":    {func() string { return writeWeb(t, "<html><head><title>x</title></head></html>") }, "<title>"},
 		"no title":   {func() string { return writeWeb(t, "<html><body></body></html>") }, "<title>"},
 		"title last": {func() string { return writeWeb(t, "<body></body><title>x</title>") }, "<title>"},
-		"no app.js": {func() string {
-			d := writeWeb(t, testIndex)
-			os.Remove(filepath.Join(d, "app.js"))
-			return d
-		}, "app.js"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			_, err := NewPages(tc.dir(), nil, nil, site.NotFound(), slog.Default())
@@ -139,14 +140,27 @@ func TestNewPagesNeedsTheViewerFiles(t *testing.T) {
 	}
 }
 
-func TestViewerAssets(t *testing.T) {
+// getAssets serves the /_/ files of the rig through Assets, as the public router does.
+func (r *rig) getAssets(method, target string, hdr ...string) *httptest.ResponseRecorder {
+	req := httptest.NewRequest(method, target, nil)
+	for i := 0; i+1 < len(hdr); i += 2 {
+		req.Header.Set(hdr[i], hdr[i+1])
+	}
+	rec := httptest.NewRecorder()
+	r.pages.Assets().ServeHTTP(rec, req)
+	return rec
+}
+
+func TestViewerFilesAreServedUnderTheUnderscorePrefix(t *testing.T) {
 	r := newRig(t)
 	for path, want := range map[string]struct{ body, ct string }{
-		"/app.js":    {"console.log(1)", "text/javascript"},
-		"/kinds.js":  {"window.KINDS={}", "text/javascript"},
-		"/style.css": {"body{}", "text/css"},
+		"/_/app.mjs":        {"export {}", "text/javascript"},
+		"/_/lib/format.mjs": {"export const x = 1", "text/javascript"},
+		"/_/kinds.js":       {"window.KINDS={}", "text/javascript"},
+		"/_/style.css":      {"body{}", "text/css"},
+		"/_/icon.png":       {"png", "image/png"},
 	} {
-		rec := r.get("GET", path)
+		rec := r.getAssets("GET", path)
 		if rec.Code != 200 || rec.Body.String() != want.body || !strings.HasPrefix(rec.Header().Get("Content-Type"), want.ct) {
 			t.Errorf("%s: %d %q %q", path, rec.Code, rec.Header().Get("Content-Type"), rec.Body)
 		}
@@ -154,12 +168,60 @@ func TestViewerAssets(t *testing.T) {
 		if etag == "" || rec.Header().Get("Cache-Control") != "no-cache" {
 			t.Errorf("%s: ETag %q, Cache-Control %q", path, etag, rec.Header().Get("Cache-Control"))
 		}
-		if again := r.get("GET", path, "If-None-Match", etag); again.Code != http.StatusNotModified {
+		if again := r.getAssets("GET", path, "If-None-Match", etag); again.Code != http.StatusNotModified {
 			t.Errorf("%s with its ETag = %d, want 304", path, again.Code)
 		}
 	}
-	if rec := r.get("GET", "/index.html"); !isNotFound(rec) {
-		t.Errorf("/index.html = %d, want the 404 page: the page of a character is the only one", rec.Code)
+	for _, path := range []string{"/_/test/a.test.mjs", "/_/map/world.js.", "/_/.hidden.js", "/_/index.html", "/_/", "/_/nothing.js"} {
+		if rec := r.getAssets("GET", path); rec.Code != http.StatusNotFound || strings.Contains(rec.Body.String(), "export") {
+			t.Errorf("GET %s = %d, want 404", path, rec.Code)
+		}
+	}
+	for _, path := range []string{"/app.js", "/style.css", "/kinds.js", "/index.html"} {
+		if rec := r.get("GET", path); !isNotFound(rec) {
+			t.Errorf("GET %s = %d, want the 404 page: the viewer files are under /_/ only", path, rec.Code)
+		}
+	}
+	if rec := r.getAssets("POST", "/_/app.mjs"); rec.Code == 200 || rec.Body.String() == "export {}" {
+		t.Errorf("POST /_/app.mjs = %d, want no file", rec.Code)
+	}
+	head := r.getAssets("HEAD", "/_/style.css")
+	if head.Code != 200 || head.Body.Len() != 0 {
+		t.Errorf("HEAD: %d, %d body bytes", head.Code, head.Body.Len())
+	}
+}
+
+func TestViewerFilesComeFromMapAndFontsFolders(t *testing.T) {
+	r := newRig(t)
+	rec := r.getAssets("GET", "/_/map/world.js")
+	if rec.Code != 200 || rec.Body.String() != "window.WORLD={}" || rec.Header().Get("Cache-Control") != "public, max-age=86400" {
+		t.Errorf("map/world.js: %d %q %q", rec.Code, rec.Body, rec.Header())
+	}
+	rec = r.getAssets("GET", "/_/fonts/a.woff2")
+	if rec.Code != 200 || rec.Header().Get("Content-Type") != "font/woff2" {
+		t.Errorf("fonts/a.woff2: %d %q", rec.Code, rec.Header().Get("Content-Type"))
+	}
+}
+
+func TestNewPagesRejectsAViewerTreeAbove8MiB(t *testing.T) {
+	site, _ := New(Options{})
+	dir := writeWeb(t, testIndex)
+	if err := os.WriteFile(filepath.Join(dir, "big.js"), make([]byte, maxViewerBytes+1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	_, err := NewPages(dir, nil, nil, site.NotFound(), slog.Default())
+	if err == nil || !strings.Contains(err.Error(), "8 MiB") || !strings.Contains(err.Error(), "MEMORIES_WEB_DIR") {
+		t.Errorf("err = %v, want a message about 8 MiB and the setting", err)
+	}
+	if err := os.Remove(filepath.Join(dir, "big.js")); err != nil {
+		t.Fatal(err)
+	}
+	// The map and fonts folders are not in memory, so large art does not count.
+	if err := os.WriteFile(filepath.Join(dir, "map", "big.js"), make([]byte, maxViewerBytes+1), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := NewPages(dir, nil, nil, site.NotFound(), slog.Default()); err != nil {
+		t.Errorf("a large file in map/ gave %v, want none", err)
 	}
 }
 
@@ -175,7 +237,7 @@ func TestCharacterPageSetsTheEntryAndTheTitle(t *testing.T) {
 	for _, want := range []string{
 		"<title>Ñandú &lt;b&gt; — Bruma &amp; Mar — Memories</title>",
 		`<BODY data-entry="data/entry.json" class="x">`,
-		`<link rel="stylesheet" href="/style.css">`,
+		`<link rel="stylesheet" href="/_/style.css">`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("page lacks %q:\n%s", want, body)

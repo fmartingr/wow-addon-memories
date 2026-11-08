@@ -10,10 +10,12 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"io"
+	"maps"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -38,9 +40,14 @@ type fixture struct {
 	priv   ed25519.PrivateKey
 }
 
-func newSite(t *testing.T) *fixture {
+func newSite(t *testing.T) *fixture { return newSiteWith(t, nil) }
+
+// newSiteWith is newSite with more settings.
+func newSiteWith(t *testing.T, vars map[string]string) *fixture {
 	t.Helper()
-	public, _, st := newStack(t, loadConfig(t, map[string]string{"MEMORIES_REGISTRATION": "open"}), io.Discard)
+	env := map[string]string{"MEMORIES_REGISTRATION": "open"}
+	maps.Copy(env, vars)
+	public, _, st := newStack(t, loadConfig(t, env), io.Discard)
 	_, priv, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		t.Fatal(err)
@@ -151,7 +158,7 @@ func TestCharacterPageAfterAnUpload(t *testing.T) {
 	for _, want := range []string{
 		`<body data-entry="data/entry.json">`,
 		"<title>Ñandú — Brumamar — Memories</title>",
-		`href="/style.css"`, `src="/kinds.js"`, `src="/app.js"`,
+		`href="/_/style.css"`, `src="/_/kinds.js"`, `src="/_/app.js"`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("page lacks %q", want)
@@ -292,9 +299,9 @@ func TestDeletedCharacterGivesTheNotFoundPage(t *testing.T) {
 
 func TestViewerAssetsAreServedFromTheWebFolder(t *testing.T) {
 	s := newSite(t)
-	for path, ct := range map[string]string{"/app.js": "text/javascript", "/kinds.js": "text/javascript", "/style.css": "text/css"} {
+	for path, ct := range map[string]string{"/_/app.js": "text/javascript", "/_/kinds.js": "text/javascript", "/_/style.css": "text/css"} {
 		rec := s.get(path)
-		want, err := os.ReadFile(filepath.Join(realWebDir, path))
+		want, err := os.ReadFile(filepath.Join(realWebDir, strings.TrimPrefix(path, "/_/")))
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -305,6 +312,39 @@ func TestViewerAssetsAreServedFromTheWebFolder(t *testing.T) {
 		if again := s.get(path, "If-None-Match", rec.Header().Get("ETag")); again.Code != http.StatusNotModified {
 			t.Errorf("GET %s with its ETag = %d, want 304", path, again.Code)
 		}
+	}
+	for _, path := range []string{"/app.js", "/kinds.js", "/style.css"} {
+		if rec := s.get(path); !isNotFoundPage(rec) {
+			t.Errorf("GET %s = %d, want the 404 page", path, rec.Code)
+		}
+	}
+}
+
+func TestViewerAssetsAreOutsideTheRateLimit(t *testing.T) {
+	s := newSiteWith(t, map[string]string{"MEMORIES_RATE_PUBLIC_PER_MINUTE": "4"})
+	s.upload("eu-brumamar-nandu")
+	// The register and the upload used the limit of another address, so the address below starts with a full window.
+	get := func(path string) int {
+		req := httptest.NewRequest("GET", path, nil)
+		req.RemoteAddr = "192.0.2.9:1"
+		rec := httptest.NewRecorder()
+		s.public.ServeHTTP(rec, req)
+		return rec.Code
+	}
+	for i := range 20 {
+		if code := get("/_/style.css"); code != http.StatusOK {
+			t.Fatalf("request %d to /_/style.css = %d, want 200", i, code)
+		}
+	}
+	if code := get("/_/map/tiles/99/0_0.webp"); code != http.StatusNotFound {
+		t.Errorf("a missing tile = %d, want 404 and not 429", code)
+	}
+	var got []int
+	for range 5 {
+		got = append(got, get(brumamar+"/"))
+	}
+	if want := []int{200, 200, 200, 200, 429}; !slices.Equal(got, want) {
+		t.Errorf("character page statuses = %v, want %v", got, want)
 	}
 }
 

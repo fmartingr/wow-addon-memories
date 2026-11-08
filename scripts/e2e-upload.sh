@@ -181,6 +181,20 @@ code="$(curl_ -D "$TMP/page.headers" -o "$TMP/page.html" -w '%{http_code}' "$SIT
 	|| fail "GET /$CHAR_PATH/ did not answer."
 [ "$code" = 200 ] || fail "the page answered $code, not 200."
 grep -q 'data-entry' "$TMP/page.html" || fail "the page has no data-entry attribute."
+assets="$(grep -oE '(src|href)="/_/[^"]+"' "$TMP/page.html" | sed -E 's/^(src|href)="//; s/"$//')"
+[ -n "$assets" ] || fail "the page references no /_/ asset."
+for asset in $assets; do
+	code="$(curl_ -o "$TMP/asset.body" -w '%{http_code}' "$SITE$asset")" || fail "GET $asset did not answer."
+	case "$asset" in
+	/_/map/*)
+		[ "$code" = 200 ] || { [ "$code" = 404 ] && ! grep -qi '<html' "$TMP/asset.body"; } \
+			|| fail "GET $asset answered $code, not 200 or a plain 404."
+		;;
+	*) [ "$code" = 200 ] || fail "GET $asset answered $code, not 200." ;;
+	esac
+done
+curl_ -D "$TMP/css.headers" -o /dev/null "$SITE/_/style.css" || fail "GET /_/style.css failed."
+grep -iq '^content-type: text/css' "$TMP/css.headers" || fail "/_/style.css has no text/css type."
 grep -iq '^x-robots-tag:.*noindex' "$TMP/page.headers" || fail "the page has no X-Robots-Tag noindex header."
 assert_home_has_no_character_link
 

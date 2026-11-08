@@ -16,7 +16,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-data web web-demo
+.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-data web web-demo web-assets
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -185,3 +185,9 @@ web-demo: ## Serve the viewer with the converter golden files in testdata/expect
 	ln -sfn "$(CURDIR)/testdata/expected" web/characters
 	@echo "Serving at http://localhost:$(WEB_PORT)"
 	python3 -m http.server $(WEB_PORT) --directory web
+
+web-assets: ## Copy the map art from MAP_SRC (a map art folder) into web/map/
+	@if [ ! -f "$(MAP_SRC)/assets/world.js" ]; then echo "web-assets: MAP_SRC must be a map-art checkout with assets/world.js, for example MAP_SRC=~/Code/map-art" >&2; exit 2; fi
+	rm -rf web/map
+	mkdir -p web/map
+	cp -R "$(MAP_SRC)/assets/art" "$(MAP_SRC)/assets/mini" "$(MAP_SRC)/assets/tiles" "$(MAP_SRC)/assets/world.js" web/map/

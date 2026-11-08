@@ -8,10 +8,7 @@ dist-characters/
 backups/
 build/
 specs/
-web/tiles/
-web/mini/
-web/art/
-web/characters/
+web/test/
 server/data/
 server/coverage.out
 deploy/.env

@@ -8,6 +8,7 @@ coverage.out
 server/coverage.out
 server/data/
 web/characters
+web/map/
 
 .fvm/
 .dart_tool/
