@@ -66,7 +66,7 @@ func TestOpenMigratesAnEmptyFile(t *testing.T) {
 	if journal != "wal" || fk != 1 {
 		t.Errorf("journal_mode = %q, foreign_keys = %d; want wal and 1", journal, fk)
 	}
-	for _, table := range []string{"keys", "invites", "claims", "nonces"} {
+	for _, table := range []string{"keys", "invites", "claims", "nonces", "shots"} {
 		if _, err := s.db.Exec(`SELECT 1 FROM ` + table); err != nil {
 			t.Errorf("table %s: %v", table, err)
 		}
@@ -597,5 +597,75 @@ func TestInviteCodesAreRandom(t *testing.T) {
 			t.Fatalf("code %q, %v (seen before: %v)", code, err, seen[code])
 		}
 		seen[code] = true
+	}
+}
+
+func TestMigrationV2AddsShotsToAVersion1File(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "memories.db")
+	s, err := Open(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.db.Exec(`DROP TABLE shots; PRAGMA user_version = 1`); err != nil {
+		t.Fatal(err)
+	}
+	s.Close()
+	s, err = Open(path)
+	if err != nil {
+		t.Fatalf("migration from version 1: %v", err)
+	}
+	defer s.Close()
+	if _, err := s.db.Exec(`SELECT claim_id, file, upload_sha256, bytes FROM shots`); err != nil {
+		t.Errorf("shots after the migration: %v", err)
+	}
+}
+
+func TestShots(t *testing.T) {
+	s, _ := openTest(t)
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
+	a := mustKey(t, s, pubKey(1))
+	one, _ := s.CreateClaim(ctx, Claim{Flavor: "wow", Region: "eu", Realm: "zul", Name: "one", GUID: "g1", KeyID: a.ID})
+	two, _ := s.CreateClaim(ctx, Claim{Flavor: "wow", Region: "eu", Realm: "zul", Name: "two", GUID: "g2", KeyID: a.ID})
+
+	if _, err := s.ShotOf(ctx, one, "a.jpg"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("ShotOf before any write = %v", err)
+	}
+	for _, w := range []struct {
+		claim int64
+		file  string
+		sha   byte
+		n     int64
+	}{{one, "a.jpg", 1, 100}, {one, "b.jpg", 2, 50}, {two, "a.jpg", 3, 7}} {
+		if err := s.SetShot(ctx, w.claim, w.file, []byte{w.sha}, w.n); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := s.SetShot(ctx, one, "a.jpg", []byte{9}, 60); err != nil {
+		t.Fatal(err)
+	}
+	sh, err := s.ShotOf(ctx, one, "a.jpg")
+	if err != nil || !bytes.Equal(sh.UploadSHA256, []byte{9}) || sh.Bytes != 60 {
+		t.Errorf("ShotOf = %+v, %v", sh, err)
+	}
+	c1, _ := s.ClaimByPath(ctx, "wow", "eu", "zul", "one")
+	c2, _ := s.ClaimByPath(ctx, "wow", "eu", "zul", "two")
+	if c1.ShotBytes != 110 || c2.ShotBytes != 7 {
+		t.Errorf("shot_bytes = %d and %d; want 110 and 7", c1.ShotBytes, c2.ShotBytes)
+	}
+	if n, err := s.ShotBytesOfKey(ctx, a.ID); err != nil || n != 117 {
+		t.Errorf("ShotBytesOfKey = %d, %v; want 117", n, err)
+	}
+	if err := s.SetShot(ctx, 999, "a.jpg", []byte{1}, 1); !errors.Is(err, ErrNotFound) {
+		t.Errorf("SetShot of a missing claim = %v", err)
+	}
+
+	if err := s.DeleteClaim(ctx, one); err != nil {
+		t.Fatalf("a claim with screenshots must delete: %v", err)
+	}
+	if _, err := s.ShotOf(ctx, one, "a.jpg"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("the shots of a deleted claim stay: %v", err)
+	}
+	if n, _ := s.ShotBytesOfKey(ctx, a.ID); n != 7 {
+		t.Errorf("ShotBytesOfKey after the delete = %d; want 7", n)
 	}
 }

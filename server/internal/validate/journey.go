@@ -12,7 +12,9 @@ var (
 	unknownKindPattern = regexp.MustCompile(`^[a-z][a-z0-9]{0,7}$`)
 	unknownKeyPattern  = regexp.MustCompile(`^[A-Za-z][A-Za-z0-9_]{0,31}$`)
 	extraKeyPattern    = regexp.MustCompile(`^[1-9][0-9]{0,2}$`)
-	screenshotPattern  = regexp.MustCompile(`^screenshots/WoWScrnShot_[0-9]{6}_[0-9]{6}\.(jpg|png|tga)$`)
+
+	// ScreenshotPattern is the form of the screenshot field of a record: a game screenshot in the screenshots folder.
+	ScreenshotPattern = regexp.MustCompile(`^screenshots/WoWScrnShot_[0-9]{6}_[0-9]{6}\.(jpg|png|tga)$`)
 )
 
 // Record is one journal record, as the gather writes it. Its values are json.Number, string, nil, and for extra and
@@ -84,7 +86,7 @@ func (ck *checker) record(v any, st *journalState) Record {
 		case "notes":
 			out[key] = ck.notes(v)
 		case "screenshot":
-			ck.pattern(key, v, screenshotPattern, "a screenshot path like screenshots/WoWScrnShot_110126_114820.jpg")
+			ck.pattern(key, v, ScreenshotPattern, "a screenshot path like screenshots/WoWScrnShot_110126_114820.jpg")
 		default:
 			ck.field(key, v, kind, known)
 		}

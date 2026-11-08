@@ -114,16 +114,25 @@ func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (a *API) handleDelete(w http.ResponseWriter, r *http.Request) {
-	id, _ := auth.FromContext(r.Context())
+// charPath reads the character path of the URL. It returns false when a segment is not a valid one.
+func charPath(r *http.Request) (characters.Path, bool) {
 	p := characters.Path{
 		Flavor: r.PathValue("flavor"), Region: r.PathValue("region"), Realm: r.PathValue("realm"), Name: r.PathValue("name"),
 	}
 	for _, seg := range []string{p.Flavor, p.Region, p.Realm, p.Name} {
 		if !ids.Pattern.MatchString(seg) {
-			notFound(w)
-			return
+			return characters.Path{}, false
 		}
+	}
+	return p, true
+}
+
+func (a *API) handleDelete(w http.ResponseWriter, r *http.Request) {
+	id, _ := auth.FromContext(r.Context())
+	p, ok := charPath(r)
+	if !ok {
+		notFound(w)
+		return
 	}
 	err := a.chars.Delete(r.Context(), p, id.Key.ID)
 	switch {

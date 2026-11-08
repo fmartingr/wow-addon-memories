@@ -486,7 +486,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 6. Screenshot upload
+### [x] 6. Screenshot upload
 
 - **Outcome:** an approved key uploads each screenshot that a stored record names. The server stores a clean copy.
 - **Depends on:** 5 (claims, stored records).

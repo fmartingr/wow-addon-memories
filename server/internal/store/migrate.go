@@ -51,6 +51,15 @@ var migrations = []string{
 	);
 	CREATE INDEX nonces_seen ON nonces(seen);
 	CREATE INDEX claims_key ON claims(key_id);`,
+	// shots holds one row for each stored screenshot. upload_sha256 is the hash of the bytes the client sent, which
+	// is not the hash of the stored file, because the server encodes the image again.
+	`CREATE TABLE shots (
+		claim_id INTEGER NOT NULL REFERENCES claims(id) ON DELETE CASCADE,
+		file TEXT NOT NULL,
+		upload_sha256 BLOB NOT NULL,
+		bytes INTEGER NOT NULL,
+		PRIMARY KEY(claim_id, file)
+	);`,
 }
 
 func (s *Store) migrate(ctx context.Context) error {
