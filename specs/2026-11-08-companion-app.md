@@ -364,7 +364,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 8. Tray icon, start at login and single instance
+### [x] 8. Tray icon, start at login and single instance
 
 - **Outcome:** The app lives in the tray, starts hidden at login when asked, hides on close, and runs once.
 - **Depends on:** Task 6 (and Task 7 for the Watch menu state).

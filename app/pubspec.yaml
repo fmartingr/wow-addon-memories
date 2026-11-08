@@ -12,10 +12,13 @@ dependencies:
   flutter:
     sdk: flutter
 
+  launch_at_startup: ^0.5.1
   memories_core:
     path: ../packages/memories_core
   path: ^1.9.1
   path_provider: ^2.1.6
+  tray_manager: ^0.8.3
+  window_manager: ^0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -25,3 +28,5 @@ dev_dependencies:
 
 flutter:
   uses-material-design: true
+  assets:
+    - assets/tray/

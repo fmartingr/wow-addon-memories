@@ -9,6 +9,9 @@ import 'discovery.dart';
 import 'documents_dir.dart';
 import 'folder_opener.dart';
 import 'folder_picker.dart';
+import 'startup_service.dart';
+import 'tray_service.dart';
+import 'window_service.dart';
 
 class AppServices {
   const AppServices({
@@ -18,6 +21,9 @@ class AppServices {
     required this.directories,
     required this.gather,
     required this.opener,
+    required this.tray,
+    required this.window,
+    required this.startup,
     this.signature = flavorSignature,
     this.clock = DateTime.now,
   });
@@ -28,6 +34,9 @@ class AppServices {
   final AppDirectories directories;
   final GatherService gather;
   final FolderOpener opener;
+  final TrayService tray;
+  final WindowService window;
+  final StartupService startup;
 
   /// The signature of the Memories files that Watch polls.
   final SignatureFunction signature;

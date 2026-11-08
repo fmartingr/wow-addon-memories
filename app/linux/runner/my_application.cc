@@ -14,8 +14,19 @@ struct _MyApplication {
 
 G_DEFINE_TYPE(MyApplication, my_application, GTK_TYPE_APPLICATION)
 
+// Whether the app was started with --hidden, as the login entry does.
+static gboolean started_hidden(MyApplication* self) {
+  for (char** arg = self->dart_entrypoint_arguments; arg && *arg; arg++) {
+    if (g_strcmp0(*arg, "--hidden") == 0) return TRUE;
+  }
+  return FALSE;
+}
+
 // Called when first Flutter frame received.
 static void first_frame_cb(MyApplication* self, FlView* view) {
+  // A hidden start leaves the window to the Dart code, which shows it unless
+  // the tray icon holds the app.
+  if (started_hidden(self)) return;
   gtk_widget_show(gtk_widget_get_toplevel(GTK_WIDGET(view)));
 }
 

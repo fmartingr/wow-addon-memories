@@ -74,9 +74,11 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - uses: ./.github/actions/setup-fvm
+      # tray_manager builds its native library from source and needs the GTK 3,
+      # X11 and Xi development files, also for flutter test.
       - name: Install the Linux build packages
         if: runner.os == 'Linux'
-        run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev
+        run: sudo apt-get update && sudo apt-get install -y ninja-build libgtk-3-dev libx11-dev libxi-dev
       - run: fvm flutter analyze
       - run: fvm dart format --output=none --set-exit-if-changed .
       - run: fvm flutter test

@@ -72,6 +72,8 @@ Other addons write events and screenshot notes into the journal with `Memories.R
 ## The WoW Journey app
 
 `app/` is a desktop app (Windows, macOS, Linux) that runs the converter for you. Start it with `make companion`.
+A Linux build needs `ninja-build`, `libgtk-3-dev`, `libx11-dev` and `libxi-dev` (Debian and Ubuntu names), and a C++
+compiler: the tray plugin builds its native library with the app.
 
 - **First start:** a 3-step wizard. Step 1 finds the WoW folder (or opens a folder picker), step 2 sets the backup
   folder (default `<Documents>/WoW Journey`), step 3 has the Watch and Start at login switches (both on).
@@ -79,7 +81,18 @@ Other addons write events and screenshot notes into the journal with `Memories.R
   the characters, each problem in plain words with a fix button, the size of the backup folder, and Open backup
   folder and Open latest data.
 - **Settings:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two switches and
-  the version. Start at login is saved but has no effect yet.
+  the version.
+- **Tray:** the tray icon has the menu Gather now, Open window, Open backup folder and Quit. Closing the window hides
+  it to the tray; Quit stops Watch and ends the app. A gather from the tray leaves a hidden window hidden. When there
+  is no tray, closing the window quits the app. On Linux the icon needs a panel with status notifier icons: KDE Plasma
+  and most other desktops have one, GNOME only with the AppIndicator extension (Ubuntu has it on).
+- **Start at login:** while it is on, the app starts hidden at login (`--hidden`), with only the tray icon. It writes
+  the login entry on Finish, when the switch changes and again at each start, so a moved app still starts. The entry
+  is the `Run` registry key on Windows, `~/.config/autostart/WoW Journey.desktop` on Linux and
+  `~/Library/LaunchAgents/com.fmartingr.wowJourney.plist` on macOS. A hidden start shows the window anyway when the
+  wizard has not run or there is no tray.
+- **One copy:** a second start shows the window of the first one and ends. The first copy holds a lock on
+  `instance.lock` in the app support folder and listens on a `127.0.0.1` port that it writes in that file.
 - **Watch:** while it is on, the main screen says "Watching for changes". Every 10 s the app reads the size and the
   modification time of each Memories saved file. After a change it waits until the files stay the same for at least
   5 s, then gathers once. It saves the state of the last gather in the settings, so a restart with no change does not

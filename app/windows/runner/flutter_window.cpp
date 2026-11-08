@@ -1,8 +1,10 @@
 #include "flutter_window.h"
 
+#include <algorithm>
 #include <optional>
 
 #include "flutter/generated_plugin_registrant.h"
+#include "utils.h"
 
 FlutterWindow::FlutterWindow(const flutter::DartProject& project)
     : project_(project) {}
@@ -27,9 +29,14 @@ bool FlutterWindow::OnCreate() {
   RegisterPlugins(flutter_controller_->engine());
   SetChildContent(flutter_controller_->view()->GetNativeWindow());
 
-  flutter_controller_->engine()->SetNextFrameCallback([&]() {
-    this->Show();
-  });
+  // A hidden start (--hidden, from the login entry) leaves the window to the
+  // Dart code, which shows it unless the tray icon holds the app.
+  const std::vector<std::string> args = GetCommandLineArguments();
+  if (std::find(args.begin(), args.end(), "--hidden") == args.end()) {
+    flutter_controller_->engine()->SetNextFrameCallback([&]() {
+      this->Show();
+    });
+  }
 
   // Flutter can complete the first frame before the "show window" callback is
   // registered. The following call ensures a frame is pending to ensure the

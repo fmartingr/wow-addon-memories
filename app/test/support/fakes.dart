@@ -10,6 +10,10 @@ import 'package:wow_journey/src/platform/documents_dir.dart';
 import 'package:wow_journey/src/platform/folder_opener.dart';
 import 'package:wow_journey/src/platform/folder_picker.dart';
 import 'package:wow_journey/src/platform/services.dart';
+import 'package:wow_journey/src/platform/single_instance.dart';
+import 'package:wow_journey/src/platform/startup_service.dart';
+import 'package:wow_journey/src/platform/tray_service.dart';
+import 'package:wow_journey/src/platform/window_service.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_store.dart';
 
@@ -168,6 +172,94 @@ class FakeSignature {
   }
 }
 
+/// A tray that shows when [shows] is true and keeps the menu it was given.
+class FakeTray implements TrayService {
+  FakeTray({this.shows = true});
+
+  bool shows;
+  List<TrayItem> items = [];
+  bool disposed = false;
+  bool _available = false;
+
+  @override
+  bool get available => _available;
+
+  @override
+  Future<bool> start(List<TrayItem> items) async {
+    this.items = items;
+    return _available = shows;
+  }
+
+  @override
+  Future<void> dispose() async {
+    disposed = true;
+    _available = false;
+  }
+
+  /// Selects the menu item [label], as a click on it does.
+  void select(String label) =>
+      items.singleWhere((i) => i.label == label).onSelected();
+}
+
+/// Records the calls of the app on its window.
+class FakeWindow implements WindowService {
+  final List<String> calls = [];
+  Future<void> Function()? onCloseRequested;
+
+  @override
+  Future<void> init({required Future<void> Function() onCloseRequested}) async {
+    calls.add('init');
+    this.onCloseRequested = onCloseRequested;
+  }
+
+  @override
+  Future<void> show() async => calls.add('show');
+
+  @override
+  Future<void> hide() async => calls.add('hide');
+
+  @override
+  Future<void> quit() async => calls.add('quit');
+
+  /// Clicks the close button of the window.
+  Future<void> close() => onCloseRequested!();
+}
+
+class FakeStartup implements StartupService {
+  final List<bool> applied = [];
+
+  @override
+  Future<bool> apply(bool enabled) async {
+    applied.add(enabled);
+    return true;
+  }
+}
+
+/// Answers each claim with [claim], or throws [error].
+class FakeSingleInstance implements SingleInstance {
+  FakeSingleInstance(this.claimResult);
+
+  InstanceClaim claimResult;
+  Object? error;
+
+  @override
+  Future<InstanceClaim> claim() async {
+    if (error != null) throw error!;
+    return claimResult;
+  }
+}
+
+class FakeFirstInstance extends FirstInstance {
+  final StreamController<void> requests = StreamController.broadcast();
+  bool released = false;
+
+  @override
+  Stream<void> get showRequests => requests.stream;
+
+  @override
+  Future<void> release() async => released = true;
+}
+
 class Fakes {
   Fakes({
     FakeSettingsStore? store,
@@ -187,6 +279,9 @@ class Fakes {
   final FakeGatherService gather;
   final FakeSignature signature;
   final FakeOpener opener = FakeOpener();
+  final FakeTray tray = FakeTray();
+  final FakeWindow window = FakeWindow();
+  final FakeStartup startup = FakeStartup();
 
   /// The time of Watch; a widget test sets it to the fake time of the test.
   DateTime Function() clock = DateTime.now;
@@ -198,14 +293,28 @@ class Fakes {
     directories: const FakeDirectories(),
     gather: gather,
     opener: opener,
+    tray: tray,
+    window: window,
+    startup: startup,
     signature: signature.call,
     clock: () => clock(),
   );
 }
 
 /// Pumps the whole app with [fakes] and lets the loads end.
-Future<void> pumpApp(WidgetTester tester, Fakes fakes) async {
-  await tester.pumpWidget(WowJourneyApp(services: fakes.services));
+Future<void> pumpApp(
+  WidgetTester tester,
+  Fakes fakes, {
+  bool startHidden = false,
+  Stream<void>? showRequests,
+}) async {
+  await tester.pumpWidget(
+    WowJourneyApp(
+      services: fakes.services,
+      startHidden: startHidden,
+      showRequests: showRequests,
+    ),
+  );
   await tester.pumpAndSettle();
 }
 
