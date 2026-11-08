@@ -286,7 +286,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 5. WoW folder discovery
+### [x] 5. WoW folder discovery
 
 - **Outcome:** `discoverWow()` returns the flavor folders found on this OS, each marked with whether it holds Memories data. `validateFlavorDir(path)` tells whether a folder the user picked is usable.
 - **Depends on:** Task 1.

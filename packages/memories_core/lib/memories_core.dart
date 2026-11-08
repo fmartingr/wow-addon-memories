@@ -1,6 +1,8 @@
 /// Reads Memories saved files and gathers the journey data.
 library;
 
+export 'src/discovery/candidates.dart' show Environment, ProcessOutput;
+export 'src/discovery/discovery.dart';
 export 'src/gather/gather.dart' show GatherOptions, GatherResult, gather;
 export 'src/gather/issues.dart';
 export 'src/journal/journal.dart';
