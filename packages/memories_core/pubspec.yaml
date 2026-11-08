@@ -1,0 +1,12 @@
+name: memories_core
+description: Reads Memories saved files and gathers the journey data. No Flutter code.
+version: 0.1.0
+publish_to: none
+
+environment:
+  sdk: ^3.13.0
+
+dev_dependencies:
+  coverage: ^1.15.0
+  lints: ^6.0.0
+  test: ^1.26.0

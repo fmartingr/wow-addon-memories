@@ -6,3 +6,7 @@ luacov.*.out
 .luarocks/
 coverage.out
 web/characters
+
+.fvm/
+.dart_tool/
+coverage/

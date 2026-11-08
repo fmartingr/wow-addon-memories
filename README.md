@@ -111,12 +111,12 @@ a character this run did not write.
 | Target | What it does |
 |---|---|
 | `make help` | List the targets. |
-| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `go`). |
+| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `go`, `fvm`). |
 | `make deps` | Install busted, luacov and luacheck with luarocks (Lua 5.1). |
-| `make lint` | `lint-lua` (luacheck), `lint-go` (gofmt and go vet) and `fmt-check` (stylua). |
-| `make fmt` | Format the Lua and Go code. |
-| `make test` | `test-lua` (busted) and `test-go` (Go tests with the race detector). |
-| `make coverage` | `coverage-lua` and `coverage-go`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`) and Go `internal/` need 80 %; the total Lua coverage is printed. |
+| `make lint` | `lint-lua` (luacheck), `lint-go` (gofmt and go vet), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
+| `make fmt` | Format the Lua, Go and Dart code. |
+| `make test` | `test-lua` (busted), `test-go` (Go tests with the race detector), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
+| `make coverage` | `coverage-lua`, `coverage-go` and `dart-coverage`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`), Go `internal/` and the Dart core `lib/` need 80 %; the total Lua coverage is printed. |
 | `make build` | Build the converter into `build/memories-export`. |
 | `make install WOW_DIR=...` | Copy each addon folder into the game. |
 | `make link WOW_DIR=...` | Link each addon folder into the game. |
@@ -127,6 +127,7 @@ a character this run did not write.
 
 - `addons/` — the 6 addons.
 - `cmd/memories-export/` and `internal/` — the converter.
+- `packages/memories_core/` — the Dart core (no Flutter); `app/` — the WoW Journey desktop app. Both use the Flutter version in `.fvmrc` through [FVM](https://fvm.app).
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`); `testdata/` — converter fixtures.
 - `docs/` — [`kinds.md`](docs/kinds.md), [`public-api.md`](docs/public-api.md),
   [`sub-addon-api.md`](docs/sub-addon-api.md) and [`manual-checklist.md`](docs/manual-checklist.md) (the checks to run

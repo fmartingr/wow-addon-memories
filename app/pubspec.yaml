@@ -1,0 +1,24 @@
+name: wow_journey
+description: "Gathers the Memories addon data from the WoW folder."
+publish_to: none
+
+version: 0.1.0+1
+
+environment:
+  sdk: ^3.13.4
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  memories_core:
+    path: ../packages/memories_core
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  flutter_lints: ^6.0.0
+
+flutter:
+  uses-material-design: true
