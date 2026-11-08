@@ -45,7 +45,7 @@ func siteOptions(cfg config.Config) site.Options {
 // Run serves the public and admin listeners until ctx ends or a listener fails, then shuts both down.
 // It returns nil after a clean shutdown.
 func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
-	pages, err := site.New(siteOptions(cfg))
+	static, err := site.New(siteOptions(cfg))
 	if err != nil {
 		return err
 	}
@@ -61,9 +61,13 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	pages, err := site.NewPages(cfg.WebDir, st, blobs, static.NotFound(), log)
+	if err != nil {
+		return err
+	}
 	chars := characters.New(st, blobs, log)
-	public := newServer(cfg.PublicAddr, NewPublic(cfg, pages, st, chars, log), log)
-	admin := newServer(cfg.AdminAddr, NewAdmin(pages, log), log)
+	public := newServer(cfg.PublicAddr, NewPublic(cfg, static, pages, st, chars, log), log)
+	admin := newServer(cfg.AdminAddr, NewAdmin(static, log), log)
 
 	// Listen first, so that a busy port is reported before any request is served.
 	var listeners []net.Listener

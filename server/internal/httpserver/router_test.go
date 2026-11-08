@@ -17,6 +17,10 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
 
+// realWebDir is the viewer of the repository, so that the tests also catch a change of web/index.html that the server
+// cannot use.
+const realWebDir = "../../../web"
+
 const unlistedLine = "A character page is unlisted: anybody with the link can open it, and nobody can find it on this site."
 
 var securityHeaders = map[string]string{
@@ -35,8 +39,11 @@ func loadConfig(t *testing.T, env map[string]string) config.Config {
 		if v, ok := env[k]; ok {
 			return v
 		}
-		if k == "MEMORIES_DATA_DIR" {
+		switch k {
+		case "MEMORIES_DATA_DIR":
 			return dir
+		case "MEMORIES_WEB_DIR":
+			return realWebDir
 		}
 		return ""
 	})
@@ -48,26 +55,32 @@ func loadConfig(t *testing.T, env map[string]string) config.Config {
 
 func newHandlers(t *testing.T, cfg config.Config, logs io.Writer) (public, admin http.Handler) {
 	t.Helper()
+	public, admin, _ = newStack(t, cfg, logs)
+	return public, admin
+}
+
+// newStack is newHandlers that also returns the store, for tests that change the state behind the handlers.
+func newStack(t *testing.T, cfg config.Config, logs io.Writer) (public, admin http.Handler, st *store.Store) {
+	t.Helper()
 	s, err := site.New(siteOptions(cfg))
 	if err != nil {
 		t.Fatal(err)
 	}
-	st, err := store.Open(filepath.Join(cfg.DataDir, "memories.db"))
+	st, err = store.Open(filepath.Join(cfg.DataDir, "memories.db"))
 	if err != nil {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { st.Close() })
 	log := slog.New(slog.NewJSONHandler(logs, nil))
-	return NewPublic(cfg, s, st, newChars(t, cfg, st, log), log), NewAdmin(s, log)
-}
-
-func newChars(t *testing.T, cfg config.Config, st *store.Store, log *slog.Logger) *characters.Service {
-	t.Helper()
 	blobs, err := store.NewDiskBlobs(cfg.DataDir)
 	if err != nil {
 		t.Fatal(err)
 	}
-	return characters.New(st, blobs, log)
+	pages, err := site.NewPages(cfg.WebDir, st, blobs, s.NotFound(), log)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return NewPublic(cfg, s, pages, st, characters.New(st, blobs, log), log), NewAdmin(s, log), st
 }
 
 func do(h http.Handler, method, target string) *httptest.ResponseRecorder {
@@ -147,18 +160,10 @@ func TestHomeUsesConfiguredGitHubURL(t *testing.T) {
 }
 
 func TestHomeWithoutGitHubURL(t *testing.T) {
-	s, err := site.New(site.Options{Name: "X"})
-	if err != nil {
-		t.Fatal(err)
-	}
 	cfg := loadConfig(t, nil)
-	st, err := store.Open(filepath.Join(cfg.DataDir, "memories.db"))
-	if err != nil {
-		t.Fatal(err)
-	}
-	defer st.Close()
-	log := slog.New(slog.NewJSONHandler(io.Discard, nil))
-	rec := do(NewPublic(cfg, s, st, newChars(t, cfg, st, log), log), http.MethodGet, "/")
+	cfg.GitHubURL = ""
+	public, _ := newHandlers(t, cfg, io.Discard)
+	rec := do(public, http.MethodGet, "/")
 	body := rec.Body.String()
 	if rec.Code != http.StatusOK || strings.Contains(body, "releases/latest") || strings.Contains(body, `href="">`) {
 		t.Errorf("status %d; an empty GitHub URL must leave out the links", rec.Code)
@@ -252,7 +257,7 @@ func TestInfo(t *testing.T) {
 func TestUnknownPathsGiveTheSameNotFoundPage(t *testing.T) {
 	public, admin := newHandlers(t, loadConfig(t, nil), io.Discard)
 	paths := []string{
-		"/nothing", "/index.html", "/wow/eu/brumamar/nandu/", "/app.js", "/data/memories.db",
+		"/nothing", "/index.html", "/wow/eu/brumamar/nandu/", "/app.jsx", "/data/memories.db",
 		"/robots.txt/", "/assets/", "/%2e%2e/etc/passwd",
 	}
 	var first string

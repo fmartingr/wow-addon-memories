@@ -54,6 +54,8 @@ func TestRunServeStopsOnCancel(t *testing.T) {
 			return "127.0.0.1:0"
 		case "MEMORIES_DATA_DIR":
 			return dir
+		case "MEMORIES_WEB_DIR":
+			return "../../../web"
 		}
 		return ""
 	}
@@ -79,6 +81,8 @@ func TestRunReportsAListenFailureWithExit1(t *testing.T) {
 			return busy.Addr().String()
 		case "MEMORIES_DATA_DIR":
 			return dir
+		case "MEMORIES_WEB_DIR":
+			return "../../../web"
 		}
 		return ""
 	}

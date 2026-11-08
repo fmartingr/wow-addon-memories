@@ -16,7 +16,7 @@ import (
 )
 
 // NewPublic returns the handler of the public listener.
-func NewPublic(cfg config.Config, s *site.Site, st *store.Store, chars *characters.Service, log *slog.Logger) http.Handler {
+func NewPublic(cfg config.Config, s *site.Site, pages *site.Pages, st *store.Store, chars *characters.Service, log *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("GET /{$}", s.Home())
 	mux.Handle("GET /robots.txt", s.Robots())
@@ -32,7 +32,7 @@ func NewPublic(cfg config.Config, s *site.Site, st *store.Store, chars *characte
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		apierr.Write(w, http.StatusNotFound, "not_found", "There is no such API path. Check the address of the request.")
 	})
-	mux.Handle("/", s.NotFound())
+	pages.Routes(mux)
 	// The per-IP limit covers the API too, so that signed requests of unregistered keys and the unsigned API paths
 	// cannot flood the server; the API adds its own tighter limits per key and per registration.
 	limited := ratelimit.PerIP(ratelimit.New(cfg.RatePublicPerMinute, time.Minute), cfg.TrustedProxies, mux)

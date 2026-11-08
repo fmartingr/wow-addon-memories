@@ -516,7 +516,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 7. Character pages and the single-character viewer
+### [x] 7. Character pages and the single-character viewer
 
 - **Outcome:** `/<flavor>/<region>/<realm>/<name>/` shows the viewer with that character's data. `make web` and `make web-demo` still work with `index.json`.
 - **Depends on:** 5 (stored files, `entry.json`).

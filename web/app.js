@@ -11,6 +11,7 @@ const META = new Set(['addon', 'k', 'm', 'p', 'session', 't', 'x', 'y', 'screens
 const TONE = { de: 'death', hc: 'death', cc: 'death', gh: 'death', lv: 'level', qt: 'good', di: 'good', ra: 'rare', bo: 'rare', wb: 'rare', ss: 'info', dn: 'info', dx: 'info' };
 
 let ROOT = 'characters/';
+let SINGLE = false; // the server page of one character: no list, no hash
 let C = null; // { entry, char, steps, trail, mapNames }
 let hidden = new Set();
 
@@ -25,7 +26,20 @@ async function getJsonl(url) {
   return (await r.text()).split('\n').filter(Boolean).map((l) => JSON.parse(l));
 }
 
+async function initSingle(entryPath) {
+  SINGLE = true;
+  $('#character').hidden = true;
+  document.querySelector('label[for="character"]').hidden = true;
+  try {
+    const entryUrl = new URL(entryPath, location.href);
+    const entry = await getJson(entryUrl.href);
+    ROOT = new URL('.', entryUrl).href;
+    load({ characters: [entry], default_character: entry.id }, entry.id);
+  } catch (e) { $('#status').textContent = 'This character could not be loaded. ' + e.message; }
+}
+
 async function init() {
+  if (document.body.dataset.entry) { initSingle(document.body.dataset.entry); return; }
   let index;
   try { index = await getJson(ROOT + 'index.json'); }
   catch (e) { $('#status').textContent = 'No data. Run "make web-data WOW_DIR=..." and open this page through a web server. ' + e.message; return; }
@@ -42,8 +56,10 @@ async function load(index, id) {
   const list = index.characters || [];
   const entry = list.find((c) => c.id === id) || list.find((c) => c.id === index.default_character) || list[0];
   if (!entry) { $('#status').textContent = 'No characters in index.json.'; return; }
-  if (location.hash.slice(1) !== entry.id) { location.hash = entry.id; return; }
-  $('#character').value = entry.id;
+  if (!SINGLE) {
+    if (location.hash.slice(1) !== entry.id) { location.hash = entry.id; return; }
+    $('#character').value = entry.id;
+  }
   $('#status').textContent = 'Loading…';
   try {
     const [char, steps, trail] = await Promise.all([
@@ -104,13 +120,15 @@ function fields(s) {
   return out.join('');
 }
 
+function shotUrl(file) { return ROOT + (C.entry.path === '.' ? '' : C.entry.path + '/') + file; }
+
 function renderFeed() {
   const q = $('#search').value.trim().toLowerCase();
   const rows = C.steps.filter((s) => !hidden.has(s.k) && (!q || (kindLabel(s.k) + ' ' + JSON.stringify(s)).toLowerCase().includes(q)));
   const shown = rows.slice(0, 1000);
   $('#feedInfo').textContent = `${rows.length} of ${C.steps.length} lines` + (rows.length > shown.length ? ' (first 1000 shown)' : '');
   $('#feed').innerHTML = shown.map((s) => {
-    const img = s.screenshot ? `<img loading="lazy" src="${esc(ROOT + C.entry.path + '/' + s.screenshot)}" alt="Screenshot ${esc(s.file || '')}">` : '';
+    const img = s.screenshot ? `<img loading="lazy" src="${esc(shotUrl(s.screenshot))}" alt="Screenshot ${esc(s.file || '')}">` : '';
     return `<li><span class="t">${esc(fmtTime(s.t))}</span>
       <span class="k k-${TONE[s.k] || ''}">${esc(kindLabel(s.k))}<small>${esc(kindGroup(s.k))}</small></span>
       <span class="f">${fields(s)}${img}</span></li>`;
@@ -192,6 +210,14 @@ $('#feed').onclick = (e) => {
   $('#shot img').src = e.target.src;
   $('#shot').hidden = false;
 };
+// An error event does not bubble, so the listener takes it in the capture phase.
+$('#feed').addEventListener('error', (e) => {
+  if (e.target.tagName !== 'IMG') return;
+  const note = document.createElement('span');
+  note.className = 'sub';
+  note.textContent = 'Screenshot not uploaded';
+  e.target.replaceWith(note);
+}, true);
 $('#shot').onclick = () => { $('#shot').hidden = true; };
 
 init();
