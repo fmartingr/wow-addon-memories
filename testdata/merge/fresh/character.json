@@ -1,0 +1,81 @@
+{
+ "addons": {
+  "Memories": {
+   "counts": {
+    "character": {
+     "shots": 2,
+     "shotsFailed": 1
+    }
+   },
+   "snap": {
+    "10": {
+     "played": 5197
+    }
+   },
+   "schema": 1,
+   "writtenBy": "0.2.0"
+  },
+  "Memories_Gathering": {
+   "counts": {
+    "gather": {
+     "item:2770": 2
+    }
+   },
+   "snap": {},
+   "schema": 1,
+   "writtenBy": "0.2.0"
+  }
+ },
+ "class": "HUNTER",
+ "faction": "Alliance",
+ "first": {
+  "level": 1,
+  "m": 1429,
+  "played": 5000,
+  "t": 1793530000,
+  "x": 4512,
+  "y": 6120
+ },
+ "flags": {
+  "hardcore": false,
+  "selfFoundAllowed": true
+ },
+ "flavor": "wow",
+ "guid": "Player-1234-0ABCDEF0",
+ "level": 11,
+ "name": "Ñandú",
+ "race": "NightElf",
+ "realm": "Brumamar",
+ "realmLabel": "Brumamar",
+ "region": "EU",
+ "sessions": [
+  {
+   "computer": "a1b2c3",
+   "how": "login",
+   "last": 1793530200,
+   "played0": 5000,
+   "played1": 5200,
+   "start": 1793530000,
+   "tz": 3600
+  },
+  {
+   "computer": "a1b2c3",
+   "how": "reload",
+   "last": 1793540500,
+   "played0": 5300,
+   "played1": 5800,
+   "start": 1793540000,
+   "tz": 3600
+  },
+  {
+   "computer": "d4e5f6",
+   "how": "login",
+   "last": 1793550200,
+   "played0": 5800,
+   "played1": 6000,
+   "start": 1793550000,
+   "tz": null
+  }
+ ],
+ "sex": 3
+}

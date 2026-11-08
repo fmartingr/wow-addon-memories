@@ -1,0 +1,12 @@
+{"addon":"Memories","k":"zo","m":1429,"p":4900,"session":null,"t":1793529900,"x":4500,"y":6100,"zone":"Dun Morogh"}
+{"addon":"Memories","how":"login","k":"in","m":1429,"p":null,"session":1,"t":1793530000,"x":4512,"y":6120}
+{"addon":"Memories","computer":"a1b2c3","k":"pc","m":1429,"p":null,"session":1,"t":1793530000,"x":4512,"y":6120}
+{"addon":"Memories","k":"zo","m":1429,"p":5057,"session":1,"t":1793530100,"x":4600,"y":6000,"zone":"Bosque de Elwynn"}
+{"addon":"Memories","k":"zo","m":1429,"p":5057,"session":1,"t":1793530100,"x":4600,"y":6000,"zone":"Bosque de Elwynn"}
+{"addon":"Memories","file":"WoWScrnShot_110126_114820.jpg","k":"ss","m":1429,"notes":[{"source":"Paparazzi","note":"Level up"}],"p":5097,"result":"ok","screenshot":"screenshots/WoWScrnShot_110126_114820.jpg","session":1,"t":1793530150,"why":"by hand","x":4700,"y":5900}
+{"addon":"Memories","file":"WoWScrnShot_110126_114920.jpg","k":"ss","m":1429,"notes":[{"source":"Paparazzi","note":"Boss kill"}],"p":5100,"result":"ok","screenshot":"screenshots/WoWScrnShot_110126_114920.jpg","session":1,"t":1793530200,"why":"boss","x":4700,"y":5900}
+{"addon":"Memories","file":"WoWScrnShot_110126_115010.jpg","k":"ss","m":1429,"p":5150,"result":"ok","session":1,"t":1793530250,"why":"by hand","x":4700,"y":5900}
+{"addon":"Memories","k":"lv","level":10,"m":1429,"p":5197,"session":1,"t":1793530280,"x":4700,"y":5900}
+{"addon":"Memories_Gathering","count":2,"item":2770,"k":"ga","m":1429,"name":"Mena de cobre","node":"Filón de cobre","object":1731,"p":5300,"prof":"Minería","quality":1,"session":2,"t":1793540010,"x":4700.5,"y":5900}
+{"addon":"Memories_Combat","ctype":"Bestia","first":1,"k":"ki","level":5,"m":1429,"name":"Lobo joven","npc":299,"p":5300,"session":2,"t":1793540010,"x":4650,"xp":45,"y":5950}
+{"addon":"Memories","k":"out","m":1429,"p":5400,"session":2,"t":1793540100,"x":4700,"y":5900}

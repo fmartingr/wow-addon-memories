@@ -368,7 +368,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 3. Merge port in Go and the shared merge golden
+### [x] 3. Merge port in Go and the shared merge golden
 
 - **Outcome:** Go merges stored and uploaded data with the same result as Dart, byte for byte, proven by one fixture that both test suites read.
 - **Depends on:** 2 (record types, canonical writer).
