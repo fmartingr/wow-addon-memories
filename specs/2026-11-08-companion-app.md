@@ -219,7 +219,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 3. Dart journal and trail decoder
+### [x] 3. Dart journal and trail decoder
 
 - **Outcome:** `decodeLine`, `parseKinds`, `decodeChunk` and `trail` give the same records as the Go `journal` package.
 - **Depends on:** Task 2 (parsed values).
