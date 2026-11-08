@@ -2,6 +2,7 @@
 library;
 
 import 'dart:async';
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:math';
@@ -56,6 +57,7 @@ class UploadException implements Exception {
     this.problems = const [],
     this.status,
     this.retryAfter,
+    this.recoverable = false,
   });
 
   /// The error code of the server (`invalid`, `claimed`, ...), or `network`,
@@ -69,6 +71,20 @@ class UploadException implements Exception {
 
   /// The seconds of the `Retry-After` header of a `429` or `503`.
   final int? retryAfter;
+
+  /// True when the client waited out a `429` or `503` for its whole retry
+  /// budget and gave up. The website was only busy: the next run can send
+  /// the rest, so a caller shows no error for it.
+  final bool recoverable;
+
+  UploadException asRecoverable() => UploadException(
+    code,
+    message,
+    problems: problems,
+    status: status,
+    retryAfter: retryAfter,
+    recoverable: true,
+  );
 
   @override
   String toString() => message;
@@ -262,23 +278,69 @@ String _characterPath(Map<String, Object?> c, Directory dir) {
   return parts.join('/');
 }
 
+/// The default number of requests that a client sends in any 60 seconds. The
+/// server accepts 120 signed requests a minute for a key in a fixed window, so
+/// this leaves room for the requests of the app that no run paces.
+const int defaultRequestsPerMinute = 100;
+
+/// The default total time that a client waits for a busy or rate limiting
+/// website before it gives up.
+const Duration defaultRetryBudget = Duration(minutes: 10);
+
+const Duration _defaultRetryAfter = Duration(seconds: 5);
+const Duration _maxRetryAfter = Duration(seconds: 70);
+const int _networkTries = 3;
+
 /// Talks to the API of one website with the signature of one key.
+///
+/// It keeps a run below the rate limit of the website: no more than
+/// [requestsPerMinute] requests go out in any 60 seconds (the next one waits),
+/// and a `429` or `503` is waited out with the `Retry-After` of the answer and
+/// sent again, until the waits of this client add up to [retryBudget]. A
+/// failed connection is tried [_networkTries] times with a growing pause.
+/// Then the failure is thrown, with [UploadException.recoverable] set for a
+/// `429` or `503`.
 class UploadClient {
+  /// [requestsPerMinute] of 0 or null turns the pacing off; a [retryBudget] of
+  /// zero turns the waits off. [sleep] and [monotonic] let a test replace the
+  /// time. [onWait] is called with the seconds before each wait that the
+  /// website asked for.
   UploadClient(
     this.site,
     this.key, {
     http.Client? client,
     DateTime Function()? clock,
     this.timeout = const Duration(minutes: 2),
+    this.requestsPerMinute = defaultRequestsPerMinute,
+    this.retryBudget = defaultRetryBudget,
+    Future<void> Function(Duration)? sleep,
+    Duration Function()? monotonic,
+    this.onWait,
   }) : _http = client ?? http.Client(),
-       _clock = clock ?? DateTime.now;
+       _clock = clock ?? DateTime.now,
+       _sleep = sleep ?? Future<void>.delayed,
+       _monotonic = monotonic ?? _stopwatch();
 
   final Uri site;
   final UploadKey key;
   final Duration timeout;
+  final int? requestsPerMinute;
+  final Duration retryBudget;
+  final void Function(int seconds)? onWait;
   final http.Client _http;
   final DateTime Function() _clock;
+  final Future<void> Function(Duration) _sleep;
+  final Duration Function() _monotonic;
   final Random _random = Random.secure();
+
+  /// When each of the last [requestsPerMinute] requests went out.
+  final Queue<Duration> _sent = Queue();
+  Duration _waited = Duration.zero;
+
+  static Duration Function() _stopwatch() {
+    final watch = Stopwatch()..start();
+    return () => watch.elapsed;
+  }
 
   /// Closes the HTTP client.
   void close() => _http.close();
@@ -415,35 +477,76 @@ class UploadClient {
     bool signed = true,
   }) async {
     final uri = site.replace(path: path);
-    final request = http.Request(method, uri)
-      ..bodyBytes = body
-      ..headers.addAll(headers);
-    if (signed) {
-      request.headers.addAll(
-        signRequest(
-          key,
-          method,
-          uri.path,
-          body,
-          _clock().toUtc(),
-          List<int>.generate(16, (_) => _random.nextInt(256)),
-        ),
-      );
+    var tries = 0;
+    while (true) {
+      await _pace();
+      // Each try is signed again: the server remembers the nonce of a request
+      // it answered, so a repeated nonce would be refused as a replay.
+      final request = http.Request(method, uri)
+        ..bodyBytes = body
+        ..headers.addAll(headers);
+      if (signed) {
+        request.headers.addAll(
+          signRequest(
+            key,
+            method,
+            uri.path,
+            body,
+            _clock().toUtc(),
+            List<int>.generate(16, (_) => _random.nextInt(256)),
+          ),
+        );
+      }
+      http.Response? got;
+      try {
+        got = await http.Response.fromStream(
+          await _http.send(request).timeout(timeout),
+        ).timeout(timeout);
+      } on http.ClientException catch (_) {
+        // Falls through to the retry below.
+      } on IOException catch (_) {
+        // Falls through to the retry below.
+      } on TimeoutException catch (_) {
+        // Falls through to the retry below.
+      }
+      if (got == null) {
+        if (++tries >= _networkTries) throw _unreachable();
+        await _sleep(Duration(seconds: 1 << (tries - 1)) + _jitter());
+        continue;
+      }
+      final res = got;
+      if (expect.contains(res.statusCode)) return res;
+      final failure = _failure(res);
+      if (res.statusCode != 429 && res.statusCode != 503) throw failure;
+      final wait = _retryWait(failure);
+      if (_waited + wait > retryBudget) throw failure.asRecoverable();
+      _waited += wait;
+      onWait?.call(wait.inSeconds);
+      await _sleep(wait);
     }
-    final http.Response res;
-    try {
-      res = await http.Response.fromStream(
-        await _http.send(request).timeout(timeout),
-      ).timeout(timeout);
-    } on http.ClientException catch (_) {
-      throw _unreachable();
-    } on IOException catch (_) {
-      throw _unreachable();
-    } on TimeoutException catch (_) {
-      throw _unreachable();
+  }
+
+  Duration _retryWait(UploadException e) {
+    final seconds = e.retryAfter;
+    final base = seconds == null || seconds < 1
+        ? _defaultRetryAfter
+        : Duration(seconds: seconds);
+    return (base > _maxRetryAfter ? _maxRetryAfter : base) + _jitter();
+  }
+
+  Duration _jitter() => Duration(milliseconds: _random.nextInt(1000));
+
+  /// Waits until a request fits in the rate limit, and notes it.
+  Future<void> _pace() async {
+    final limit = requestsPerMinute;
+    if (limit == null || limit <= 0) return;
+    const window = Duration(minutes: 1);
+    if (_sent.length >= limit) {
+      final ready = _sent.removeFirst() + window;
+      final wait = ready - _monotonic();
+      if (wait > Duration.zero) await _sleep(wait);
     }
-    if (expect.contains(res.statusCode)) return res;
-    throw _failure(res);
+    _sent.add(_monotonic());
   }
 
   UploadException _unreachable() => UploadException(

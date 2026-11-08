@@ -152,6 +152,8 @@ const String uploadSwitchSubtitle =
     'Send your journey to the website after each gather.';
 const String uploadNowLabel = 'Upload now';
 const String uploadingLabel = 'Uploading…';
+const String uploadPausedText =
+    'Upload paused. It continues after the next gather.';
 const String requestScreenshotsLabel = 'Request screenshots';
 const String copyLinkLabel = 'Copy link';
 const String removeFromWebsiteLabel = 'Remove from website';
@@ -203,6 +205,10 @@ String cardNotRegisteredText(String site) =>
 
 const String cardUploadOffText =
     'Upload is off. Turn it on in the settings to send your journey.';
+
+/// The text under the progress bar of a running upload.
+String uploadProgressText(int done, int total) =>
+    total <= 0 ? uploadingLabel : 'Uploading $done of $total';
 
 /// The line about the last upload of this run.
 String lastUploadText(DateTime? time, DateTime now) => time == null

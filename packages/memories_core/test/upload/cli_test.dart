@@ -45,6 +45,7 @@ void main() {
       ],
       out: out,
       err: err,
+      sleep: (_) async {},
     );
     return (code: code, out: out.toString(), err: err.toString());
   }
@@ -52,7 +53,12 @@ void main() {
   Future<Result> raw(List<String> args) async {
     final out = StringBuffer();
     final err = StringBuffer();
-    final code = await runMemoriesUpload(args, out: out, err: err);
+    final code = await runMemoriesUpload(
+      args,
+      out: out,
+      err: err,
+      sleep: (_) async {},
+    );
     return (code: code, out: out.toString(), err: err.toString());
   }
 
@@ -253,6 +259,38 @@ void main() {
       expect(r.err, contains('Another key already owns'));
     });
 
+    test('a rate limit that lifts is waited out and printed', () async {
+      site.rateLimit('POST /api/v1/register', 2, seconds: 4);
+      final r = await run([]);
+      expect(r.code, 0, reason: r.err);
+      expect(
+        'Waiting 4 s: the website asks to slow down.'.allMatches(r.out),
+        hasLength(2),
+      );
+      expect(r.err, isEmpty);
+    });
+
+    test('a run that the rate limit paused says so and exits 1', () async {
+      await run([]);
+      site.screenshots = 'approved';
+      site.rateLimit('*', 1000, seconds: 30);
+      final r = await run(['--latest', latest]);
+      expect(r.code, 1);
+      expect(r.out, contains('Waiting 30 s'));
+      expect(r.out, contains('Run it again to send the rest'));
+    });
+
+    test(
+      'a run that cannot even ask the website says so and exits 1',
+      () async {
+        await run([]);
+        site.rateLimit('GET /api/v1/me', 1000, seconds: 30);
+        final r = await run(['--latest', latest]);
+        expect(r.code, 1);
+        expect(r.out, contains('Run it again to send the rest'));
+      },
+    );
+
     test('a 429 prints Retry-After', () async {
       site.overrides['POST /api/v1/register'] = const Reply(
         429,
@@ -291,6 +329,7 @@ void main() {
         ['--site', url, '--key', keyPath, '--state', statePath],
         out: out,
         err: err,
+        sleep: (_) async {},
       );
       expect(code, 1);
       expect(err.toString(), contains('Could not reach 127.0.0.1.'));

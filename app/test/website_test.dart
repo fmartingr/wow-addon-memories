@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -288,6 +290,63 @@ void main() {
       expect(find.textContaining('Last upload'), findsOneWidget);
       expect(find.text('Uploaded 1 character.'), findsOneWidget);
       expect(find.text(nandu.url), findsOneWidget);
+    });
+
+    testWidgets('a running upload shows a determinate progress bar', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      fakes.upload.pendingSync = Completer<SyncReport>();
+      useWindow(tester, height: 2400);
+      await pumpApp(tester, fakes);
+      await tester.tap(find.text(uploadNowLabel));
+      await tester.pump();
+
+      LinearProgressIndicator bar() => tester.widget<LinearProgressIndicator>(
+        find.byType(LinearProgressIndicator),
+      );
+      expect(bar().value, isNull);
+      expect(find.text(uploadingLabel), findsWidgets);
+
+      fakes.upload.onProgress!(12, 90);
+      await tester.pump();
+      expect(bar().value, closeTo(12 / 90, 1e-9));
+      expect(find.text('Uploading 12 of 90'), findsOneWidget);
+
+      fakes.upload.pendingSync!.complete(
+        const SyncReport(screenshots: 'none', characters: []),
+      );
+      await tester.pumpAndSettle();
+      expect(find.byType(LinearProgressIndicator), findsNothing);
+    });
+
+    testWidgets('a paused upload says it continues, with no error', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      fakes.upload.syncError = const UploadException(
+        'rate_limited',
+        'Too many requests.',
+        status: 429,
+        recoverable: true,
+      );
+      useWindow(tester, height: 2400);
+      await pumpApp(tester, fakes);
+      await tester.tap(find.text(uploadNowLabel));
+      await tester.pumpAndSettle();
+      expect(find.text(uploadPausedText), findsOneWidget);
+      expect(
+        uploadPausedText,
+        'Upload paused. It continues after the next gather.',
+      );
+      expect(find.textContaining('Too many requests'), findsNothing);
+      expect(find.text(uploadNowLabel), findsOneWidget);
     });
 
     testWidgets('a failed upload shows a plain message', (tester) async {

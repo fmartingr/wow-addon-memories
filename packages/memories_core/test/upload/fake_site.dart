@@ -62,6 +62,7 @@ class FakeSite {
   final HttpServer _server;
   final List<Call> calls = [];
   final Map<String, Reply> overrides = {};
+  final Map<String, ({int left, Reply reply})> _failures = {};
   final Set<String> registered = {};
   final Map<String, Map<String, Object?>> characters = {};
   final Map<String, List<String>> shotFiles = {};
@@ -87,6 +88,23 @@ class FakeSite {
 
   Future<void> close() => _server.close(force: true);
 
+  /// Answers the next [times] requests to `METHOD path` with [reply], then
+  /// goes back to the normal answer. The label `*` matches every request.
+  void failTimes(String label, int times, Reply reply) =>
+      _failures[label] = (left: times, reply: reply);
+
+  /// A `429` with a `Retry-After` of [seconds] for the next [times] requests
+  /// to `METHOD path`.
+  void rateLimit(String label, int times, {int? seconds}) => failTimes(
+    label,
+    times,
+    Reply(
+      429,
+      '{"error":"rate_limited","message":"Too many requests."}',
+      seconds == null ? const {} : {'Retry-After': '$seconds'},
+    ),
+  );
+
   List<Call> callsTo(String label) =>
       calls.where((c) => c.label == label).toList();
 
@@ -99,7 +117,14 @@ class FakeSite {
     final path = req.uri.toString();
     final call = Call(req.method, path, headers, body);
     calls.add(call);
-    final reply = overrides[call.label] ?? _answer(call);
+    final failing = _failures.containsKey(call.label) ? call.label : '*';
+    final failure = _failures[failing];
+    Reply? reply;
+    if (failure != null && failure.left > 0) {
+      reply = failure.reply;
+      _failures[failing] = (left: failure.left - 1, reply: failure.reply);
+    }
+    reply ??= overrides[call.label] ?? _answer(call);
     req.response.statusCode = reply.status;
     reply.headers.forEach(req.response.headers.set);
     req.response.write(reply.body);

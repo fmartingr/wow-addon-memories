@@ -32,6 +32,11 @@ enum UploadState {
 
   /// The last upload had a problem. The next gather tries again.
   failed,
+
+  /// The website stayed busy for a long time, so the upload stopped with part
+  /// of the data unsent. It is no error: the next gather or Upload now sends
+  /// the rest.
+  paused,
 }
 
 /// A character as the screens name it.
@@ -75,6 +80,9 @@ class UploadController extends ChangeNotifier {
   bool _removing = false;
   bool _requesting = false;
   bool? _lastOk;
+  bool _paused = false;
+  int _progressDone = 0;
+  int _progressTotal = 0;
   DateTime? _lastUpload;
   SyncReport? _lastReport;
   List<RemoteCharacter> _characters = const [];
@@ -88,6 +96,7 @@ class UploadController extends ChangeNotifier {
     if (_uploading) return UploadState.uploading;
     if (!_registered) return UploadState.unregistered;
     if (!settings.settings.upload) return UploadState.off;
+    if (_paused) return UploadState.paused;
     return switch (_lastOk) {
       true => UploadState.done,
       false => UploadState.failed,
@@ -113,6 +122,15 @@ class UploadController extends ChangeNotifier {
 
   /// `none`, `pending`, `approved` or `denied`.
   String get screenshots => _screenshots;
+
+  /// How far the running upload is, from 0 to 1, or null when no upload runs
+  /// or the number of requests is not known yet.
+  double? get progress =>
+      _uploading && _progressTotal > 0 ? _progressDone / _progressTotal : null;
+
+  /// The requests of the running upload that are done, and all of them.
+  ({int done, int total}) get progressCounts =>
+      (done: _progressDone, total: _progressTotal);
 
   /// Plain messages about the last upload or action.
   List<String> get issues => _issues;
@@ -179,6 +197,7 @@ class UploadController extends ChangeNotifier {
     _registered = false;
     _fingerprint = null;
     _lastOk = null;
+    _paused = false;
     _lastReport = null;
     _lastUpload = null;
     _characters = const [];
@@ -242,7 +261,7 @@ class UploadController extends ChangeNotifier {
       if (epoch != _epoch || _disposed) return;
       if (e.code == 'key_revoked') {
         _revoked(site);
-      } else {
+      } else if (!e.recoverable) {
         _onKeyError(e.code);
         _addIssue(uploadErrorText(e, site));
       }
@@ -372,41 +391,57 @@ class UploadController extends ChangeNotifier {
     final epoch = _epoch;
     _uploading = true;
     _issues = const [];
+    _progressDone = 0;
+    _progressTotal = 0;
     _notify();
     SyncReport? report;
     var issues = <String>[];
     var ok = false;
+    var paused = false;
     final keyErrors = <String>{};
     try {
       report = await service.sync(
         site,
         p.join(root, 'latest'),
         resendRemoved: resendRemoved,
+        onProgress: (done, total) {
+          if (epoch != _epoch || _disposed) return;
+          if (done == _progressDone && total == _progressTotal) return;
+          _progressDone = done;
+          _progressTotal = total;
+          _notify();
+        },
       );
       issues = _issuesOf(report);
       ok = !report.failed;
+      paused = report.paused;
       for (final c in report.characters) {
         if (c.error case final e?) keyErrors.add(e.code);
         if (c.shots.stop case final e?) keyErrors.add(e.code);
       }
     } on UploadException catch (e) {
-      issues = [uploadErrorText(e, site)];
-      keyErrors.add(e.code);
+      if (e.recoverable) {
+        paused = true;
+      } else {
+        issues = [uploadErrorText(e, site)];
+        keyErrors.add(e.code);
+      }
     } on Object {
       issues = [genericFailureText];
     }
     _uploading = false;
+    _progressDone = 0;
+    _progressTotal = 0;
     if (epoch != _epoch || _disposed) {
       _notify();
       return report;
     }
     _issues = issues;
     _lastOk = ok;
+    _paused = paused;
     _lastReport = report;
-    if (report != null) {
-      _lastUpload = _clock();
-      _screenshots = report.screenshots;
-    }
+    if (report != null && !paused) _lastUpload = _clock();
+    if (report != null) _screenshots = report.screenshots;
     keyErrors.forEach(_onKeyError);
     _notify();
     if (report != null && _registered) await _loadMe(site, epoch);
@@ -437,7 +472,7 @@ class UploadController extends ChangeNotifier {
     for (final c in report.characters) {
       final who = _describeEntry(c.id, c.path);
       final e = c.error;
-      if (e != null) {
+      if (e != null && !e.recoverable) {
         if (stopsRun(e)) {
           add(uploadErrorText(e, site));
         } else if (e.code == 'claimed') {
@@ -452,7 +487,9 @@ class UploadController extends ChangeNotifier {
         add('${who.name}: $m');
       }
       final stop = c.shots.stop;
-      if (stop != null && stopsRun(stop)) add(uploadErrorText(stop, site));
+      if (stop != null && !stop.recoverable && stopsRun(stop)) {
+        add(uploadErrorText(stop, site));
+      }
     }
     return out;
   }

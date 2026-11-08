@@ -31,11 +31,13 @@ abstract interface class UploadService {
 
   /// Uploads the changed characters of the `latest/` folder [latestDir].
   /// A character removed with [delete] is skipped, unless [resendRemoved] is
-  /// true: then every removed character is sent again.
+  /// true: then every removed character is sent again. [onProgress] gets
+  /// `(done, total)` while it runs; a `total` of 0 means nothing to send.
   Future<core.SyncReport> sync(
     String site,
     String latestDir, {
     bool resendRemoved = false,
+    void Function(int done, int total)? onProgress,
   });
 
   /// Removes the character at [path] from [site]. The next [sync] skips it
@@ -49,10 +51,13 @@ abstract interface class UploadService {
 /// The upload of `memories_core`. The key is `<support>/upload-key.json` and
 /// the state is `<support>/upload-state.json`.
 class CoreUploadService implements UploadService {
-  CoreUploadService(this.supportDir);
+  CoreUploadService(this.supportDir, {this.sleep});
 
   /// The folder where the app keeps its own files.
   final Future<String> Function() supportDir;
+
+  /// Replaces the waits of the clients that run in this isolate, for tests.
+  final Future<void> Function(Duration)? sleep;
 
   /// The end of the last write of the state file. A sync loads the state at
   /// its start and saves it at its end, so a register in between would be
@@ -87,7 +92,12 @@ class CoreUploadService implements UploadService {
   @override
   Future<core.SiteInfo> info(String site) async {
     // The request is not signed, so a damaged key file never blocks a check.
-    final client = core.UploadClient(_parse(site), core.UploadKey.generate());
+    final client = core.UploadClient(
+      _parse(site),
+      core.UploadKey.generate(),
+      retryBudget: _interactiveBudget,
+      sleep: sleep,
+    );
     try {
       return await client.info();
     } finally {
@@ -115,11 +125,16 @@ class CoreUploadService implements UploadService {
     String site,
     String latestDir, {
     bool resendRemoved = false,
+    void Function(int done, int total)? onProgress,
   }) async {
     final uri = _parse(site);
     final files = await _files();
     // Fail here, in this isolate, so a missing key never reaches the worker.
     _loadKey(files.key, MissingKey.fail);
+    final port = ReceivePort();
+    port.listen((Object? m) {
+      if (m is List<int> && m.length == 2) onProgress?.call(m[0], m[1]);
+    });
     try {
       return await _serialState(
         () => _syncInIsolate(
@@ -128,6 +143,7 @@ class CoreUploadService implements UploadService {
           files.key,
           files.state,
           resendRemoved,
+          port.sendPort,
         ),
       );
     } on RemoteError {
@@ -136,6 +152,8 @@ class CoreUploadService implements UploadService {
         'The upload stopped because of a problem inside the app. Try again '
             'after the next gather.',
       );
+    } finally {
+      port.close();
     }
   }
 
@@ -186,7 +204,12 @@ class CoreUploadService implements UploadService {
   ) async {
     final uri = _parse(site);
     final files = await _files();
-    final client = core.UploadClient(uri, _loadKey(files.key, missing)!);
+    final client = core.UploadClient(
+      uri,
+      _loadKey(files.key, missing)!,
+      retryBudget: _interactiveBudget,
+      sleep: sleep,
+    );
     try {
       return await run(client, files);
     } finally {
@@ -194,6 +217,10 @@ class CoreUploadService implements UploadService {
     }
   }
 }
+
+/// How long a request that a button started waits for a busy website. A sync
+/// runs in the background and waits much longer.
+const Duration _interactiveBudget = Duration(seconds: 30);
 
 /// What to do when the key file does not exist.
 enum MissingKey {
@@ -264,6 +291,7 @@ Future<core.SyncReport> _syncInIsolate(
   String keyPath,
   String statePath,
   bool resendRemoved,
+  SendPort progress,
 ) => Isolate.run(
   () => syncInto(
     site,
@@ -271,17 +299,19 @@ Future<core.SyncReport> _syncInIsolate(
     keyPath,
     statePath,
     resendRemoved: resendRemoved,
+    progress: progress,
   ),
 );
 
 /// Uploads [latestDir] to [site] and saves the state. It runs on any isolate,
-/// and only strings go in.
+/// and only strings and a port go in. [progress] gets `[done, total]`.
 Future<core.SyncReport> syncInto(
   String site,
   String latestDir,
   String keyPath,
   String statePath, {
   bool resendRemoved = false,
+  SendPort? progress,
 }) async {
   final uri = _parse(site);
   final client = core.UploadClient(uri, _loadKey(keyPath, MissingKey.fail)!);
@@ -292,6 +322,9 @@ Future<core.SyncReport> syncInto(
       client,
       state,
       resendRemoved: resendRemoved,
+      onProgress: progress == null
+          ? null
+          : (done, total) => progress.send(<int>[done, total]),
     );
   } finally {
     client.close();

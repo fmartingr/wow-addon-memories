@@ -190,6 +190,105 @@ void main() {
       expect(rig.upload.syncs, [(site, '/backups/WoW Journey/latest')]);
     });
 
+    test('progress follows the sync, then clears', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.pendingSync = Completer<SyncReport>();
+      final run = rig.controller.uploadNow();
+      expect(rig.controller.progress, isNull);
+
+      rig.upload.onProgress!(0, 90);
+      expect(rig.controller.progress, 0);
+      expect(rig.controller.progressCounts, (done: 0, total: 90));
+      rig.upload.onProgress!(12, 90);
+      expect(rig.controller.progress, closeTo(12 / 90, 1e-9));
+      expect(rig.controller.progressCounts, (done: 12, total: 90));
+
+      rig.upload.pendingSync!.complete(
+        const SyncReport(screenshots: 'none', characters: []),
+      );
+      await run;
+      expect(rig.controller.progress, isNull);
+      expect(rig.controller.progressCounts, (done: 0, total: 0));
+    });
+
+    test('nothing to send leaves the progress unknown', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.pendingSync = Completer<SyncReport>();
+      final run = rig.controller.uploadNow();
+      rig.upload.onProgress!(0, 0);
+      expect(rig.controller.progress, isNull);
+      rig.upload.pendingSync!.complete(
+        const SyncReport(screenshots: 'none', characters: []),
+      );
+      await run;
+    });
+
+    test(
+      'a paused run is neutral: no issue, no failure, and it resumes',
+      () async {
+        final rig = await _rig(settings: _on);
+        const busy = UploadException(
+          'rate_limited',
+          'Too many requests.',
+          status: 429,
+          retryAfter: 30,
+          recoverable: true,
+        );
+        rig.upload.report = SyncReport(
+          screenshots: 'approved',
+          characters: [
+            _result('eu-brumamar-nandu', shots: const ShotsResult(stop: busy)),
+            _result(
+              'eu-brumamar-nandu',
+              status: SyncStatus.failed,
+              error: busy,
+            ),
+          ],
+        );
+        await rig.gatherOnce();
+        expect(rig.controller.state, UploadState.paused);
+        expect(rig.controller.issues, isEmpty);
+        expect(rig.controller.lastReport!.paused, isTrue);
+        expect(rig.controller.lastUpload, isNull);
+
+        rig.upload.report = null;
+        await rig.controller.uploadNow();
+        expect(rig.upload.syncs, hasLength(2));
+        expect(rig.controller.state, UploadState.done);
+        expect(rig.controller.lastUpload, uploadedAt);
+      },
+    );
+
+    test('a recoverable error of the first request is paused too', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.syncError = const UploadException(
+        'rate_limited',
+        'Too many requests.',
+        status: 429,
+        recoverable: true,
+      );
+      await rig.controller.uploadNow();
+      expect(rig.controller.state, UploadState.paused);
+      expect(rig.controller.issues, isEmpty);
+    });
+
+    test('a real error next to a pause still shows', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.report = SyncReport(
+        screenshots: 'none',
+        characters: [
+          _result(
+            'eu-brumamar-nandu',
+            status: SyncStatus.failed,
+            error: const UploadException('claimed', 'Text.', status: 409),
+          ),
+        ],
+      );
+      await rig.controller.uploadNow();
+      expect(rig.controller.state, UploadState.failed);
+      expect(rig.controller.issues, hasLength(1));
+    });
+
     test('returns null while an upload runs', () async {
       final rig = await _rig(settings: _on);
       rig.upload.pendingSync = Completer<SyncReport>();

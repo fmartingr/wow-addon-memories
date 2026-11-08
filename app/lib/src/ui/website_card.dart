@@ -101,11 +101,25 @@ class WebsiteCard extends StatelessWidget {
                     ),
                   ] else ...[
                     Text(lastUploadText(upload.lastUpload, clock())),
-                    if (report != null) Text(syncSummaryText(report)),
+                    if (state == UploadState.paused)
+                      const Text(uploadPausedText)
+                    else if (report != null)
+                      Text(syncSummaryText(report)),
                     const SizedBox(height: 12),
                     if (state == UploadState.uploading) ...[
-                      const LinearProgressIndicator(
-                        semanticsLabel: 'Uploading',
+                      LinearProgressIndicator(
+                        value: upload.progress,
+                        semanticsLabel: uploadProgressText(
+                          upload.progressCounts.done,
+                          upload.progressCounts.total,
+                        ),
+                      ),
+                      const SizedBox(height: 4),
+                      Text(
+                        uploadProgressText(
+                          upload.progressCounts.done,
+                          upload.progressCounts.total,
+                        ),
                       ),
                       const SizedBox(height: 12),
                     ],

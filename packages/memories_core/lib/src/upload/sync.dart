@@ -68,9 +68,36 @@ class SyncReport {
 
   bool get screenshotsApprovedState => screenshots == 'approved';
 
+  /// Whether a character or a screenshot failed for a reason that needs the
+  /// player. A [paused] run is not a failure.
   bool get failed => characters.any(
-    (c) => c.status == SyncStatus.failed || c.shots.errors.isNotEmpty,
+    (c) =>
+        (c.status == SyncStatus.failed && !(c.error?.recoverable ?? false)) ||
+        c.shots.errors.isNotEmpty,
   );
+
+  /// Whether the run stopped because the website stayed busy or rate limiting
+  /// for the whole retry budget. What was not sent goes out in the next run.
+  bool get paused => characters.any(
+    (c) =>
+        (c.error?.recoverable ?? false) || (c.shots.stop?.recoverable ?? false),
+  );
+}
+
+/// Counts the requests of a run for `onProgress`.
+class _Progress {
+  _Progress(this.total, this._callback);
+
+  final int total;
+  final void Function(int done, int total)? _callback;
+  int _done = 0;
+
+  void tick() {
+    // A file that changed since the plan can add a request that the plan did
+    // not count.
+    if (_done < total) _done++;
+    _callback?.call(_done, total);
+  }
 }
 
 /// Codes that belong to one screenshot file. Any other failure stops the
@@ -98,11 +125,16 @@ const Set<String> _perFileCodes = {
 /// the key or the clock): the characters after it are then reported as failed
 /// with the same error, unsent. A failure of the first request to the website,
 /// or a missing `index.json`, throws an [UploadException].
+///
+/// [onProgress] gets `(done, total)` once the plan is known, and after each
+/// character or screenshot that went out or failed. `total` counts the
+/// characters to send and the screenshots that the state does not hold.
 Future<SyncReport> syncLatest(
   Directory latest,
   UploadClient client,
   UploadState state, {
   bool resendRemoved = false,
+  void Function(int done, int total)? onProgress,
 }) async {
   final entries = _readIndex(latest);
   final site = state.site(client.site);
@@ -121,6 +153,11 @@ Future<SyncReport> syncLatest(
   }
 
   final held = {for (final c in me.characters) c.path};
+  final progress = _Progress(
+    _countRequests(latest, entries, site, approved, held),
+    onProgress,
+  );
+  onProgress?.call(0, progress.total);
   final results = <CharacterResult>[];
   UploadException? stop;
   for (final entry in entries) {
@@ -142,6 +179,7 @@ Future<SyncReport> syncLatest(
       site,
       approved,
       held,
+      progress,
     );
     results.add(result);
     final error = result.error;
@@ -187,6 +225,35 @@ List<String> _readIndex(Directory latest) {
   ];
 }
 
+/// The number of requests that a run will send: the characters whose body
+/// changed or that the website lost, and their screenshots that the state does
+/// not hold. It reads the files of each character once more than the run does,
+/// and no screenshot.
+int _countRequests(
+  Directory latest,
+  List<String> entries,
+  SiteState site,
+  bool approved,
+  Set<String> held,
+) {
+  var total = 0;
+  for (final id in entries) {
+    final PreparedCharacter prepared;
+    try {
+      prepared = prepareCharacter(Directory(p.join(latest.path, id)));
+    } on UploadException {
+      continue;
+    }
+    if (site.removed.contains(prepared.path)) continue;
+    final lost = !held.contains(prepared.path);
+    if (lost || site.sent[prepared.path] != prepared.sha256) total++;
+    if (!approved) continue;
+    final sent = lost ? null : site.shots[prepared.path];
+    total += prepared.screenshots.where((n) => sent?[n] == null).length;
+  }
+  return total;
+}
+
 Future<CharacterResult> _syncCharacter(
   Directory latest,
   String id,
@@ -194,6 +261,7 @@ Future<CharacterResult> _syncCharacter(
   SiteState site,
   bool approved,
   Set<String> held,
+  _Progress progress,
 ) async {
   final dir = Directory(p.join(latest.path, id));
   final PreparedCharacter prepared;
@@ -223,6 +291,7 @@ Future<CharacterResult> _syncCharacter(
     try {
       outcome = await client.uploadPrepared(prepared);
     } on UploadException catch (e) {
+      progress.tick();
       return CharacterResult(
         id: id,
         path: prepared.path,
@@ -230,11 +299,12 @@ Future<CharacterResult> _syncCharacter(
         error: e,
       );
     }
+    progress.tick();
     site.sent[prepared.path] = prepared.sha256;
     status = SyncStatus.uploaded;
   }
   final shots = approved
-      ? await _syncShots(dir, prepared, client, site)
+      ? await _syncShots(dir, prepared, client, site, progress)
       : const ShotsResult();
   return CharacterResult(
     id: id,
@@ -250,6 +320,7 @@ Future<ShotsResult> _syncShots(
   PreparedCharacter prepared,
   UploadClient client,
   SiteState site,
+  _Progress progress,
 ) async {
   if (prepared.screenshots.isEmpty) return const ShotsResult();
   final sent = site.shots.putIfAbsent(prepared.path, () => {});
@@ -259,6 +330,7 @@ Future<ShotsResult> _syncShots(
   UploadException? stop;
   for (final name in prepared.screenshots) {
     final file = File(p.join(dir.path, 'screenshots', name));
+    final planned = sent[name] == null;
     try {
       if (!file.existsSync()) {
         throw UploadException(
@@ -284,11 +356,14 @@ Future<ShotsResult> _syncShots(
         unchanged++;
       }
     } on UploadException catch (e) {
-      errors.add('$name: ${e.message}');
+      // A paused run is no failure of this file: it goes out next time.
+      if (!e.recoverable) errors.add('$name: ${e.message}');
       if (stopsRun(e)) stop = e;
       if (!_perFileCodes.contains(e.code)) break;
     } on FileSystemException {
       errors.add('$name: the file cannot be read.');
+    } finally {
+      if (planned) progress.tick();
     }
   }
   return ShotsResult(

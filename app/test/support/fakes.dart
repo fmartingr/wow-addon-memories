@@ -286,6 +286,9 @@ class FakeUploadService implements UploadService {
   /// A sync that ends when the test completes it.
   Completer<SyncReport>? pendingSync;
 
+  /// The progress callback of the running sync, for a test to call.
+  void Function(int done, int total)? onProgress;
+
   /// The state that [requestScreenshots] gives back.
   String requested = 'pending';
 
@@ -334,7 +337,9 @@ class FakeUploadService implements UploadService {
     String site,
     String latestDir, {
     bool resendRemoved = false,
+    void Function(int done, int total)? onProgress,
   }) {
+    this.onProgress = onProgress;
     calls.add('sync $site');
     syncs.add((site, latestDir));
     resends.add(resendRemoved);

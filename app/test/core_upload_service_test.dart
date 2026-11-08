@@ -90,7 +90,7 @@ void main() {
     support = Directory.systemTemp.createTempSync('wow_journey_upload_');
     site = _Site();
     await site.start();
-    service = CoreUploadService(() async => support.path);
+    service = CoreUploadService(() async => support.path, sleep: (_) async {});
   });
 
   tearDown(() async {
@@ -140,6 +140,25 @@ void main() {
       site.requests.where((r) => r == 'POST /api/v1/characters'),
       hasLength(2),
     );
+  });
+
+  test('sync reports its progress from the isolate', () async {
+    await service.register(site.address, null);
+    final seen = <(int, int)>[];
+    await service.sync(
+      site.address,
+      fixtureLatest,
+      onProgress: (done, total) => seen.add((done, total)),
+    );
+    expect(seen, [(0, 2), (1, 2), (2, 2)]);
+
+    seen.clear();
+    await service.sync(
+      site.address,
+      fixtureLatest,
+      onProgress: (done, total) => seen.add((done, total)),
+    );
+    expect(seen, [(0, 0)]);
   });
 
   test('a failure inside the isolate keeps its type and message', () async {

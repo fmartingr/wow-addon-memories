@@ -27,7 +27,12 @@ void main() {
   setUp(() async {
     site = await FakeSite.start();
     key = UploadKey.generate();
-    client = UploadClient(site.uri, key, clock: () => _now);
+    client = UploadClient(
+      site.uri,
+      key,
+      clock: () => _now,
+      retryBudget: Duration.zero,
+    );
   });
   tearDown(() async {
     client.close();
@@ -263,6 +268,7 @@ void main() {
         key,
         client: http.Client(),
         timeout: const Duration(seconds: 2),
+        sleep: (_) async {},
       );
       await site.close();
       await expectLater(
@@ -292,6 +298,7 @@ void main() {
         Uri.parse('http://127.0.0.1:${slow.port}'),
         key,
         timeout: const Duration(milliseconds: 200),
+        sleep: (_) async {},
       );
       await expectLater(c.me(), _fails('network'));
       hold.complete();

@@ -196,8 +196,12 @@ fvm dart run packages/memories_core/bin/memories_upload.dart --site https://wowj
 - `--latest` uploads each character whose data changed since the last run and reports the others as `unchanged`. When
   the website has approved screenshots for the key, it also uploads each screenshot that a record names. An approval
   that comes after the first upload sends each character once more, so the website stores the screenshot links.
-- Exit code 0 is a pass, 1 a run error (a rejected upload prints its problems, a `429` prints `Retry-After`), 2 a usage
-  error.
+- The tool keeps to about 100 signed requests a minute (the server allows 120). A `429` or `503` is waited out with its
+  `Retry-After` (5 s without one, at most 70 s) and sent again, and a failed connection is tried 3 times; each wait
+  prints `Waiting N s: the website asks to slow down.`. After 10 minutes of waiting the run stops, and the next run
+  sends the rest.
+- Exit code 0 is a pass, 1 a run error (a rejected upload prints its problems, a `429` that outlasted the waits prints
+  `Retry-After`), 2 a usage error.
 
 ## The server
 

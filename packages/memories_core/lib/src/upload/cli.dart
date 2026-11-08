@@ -66,14 +66,15 @@ ArgParser _parser() => ArgParser()
   ..addFlag('help', abbr: 'h', negatable: false, help: 'show this help');
 
 /// Runs the tool with [args] and returns its exit code: 0 when it passed, 1
-/// for an error during the run, 2 for an error in the arguments. [httpClient]
-/// and [now] let a test replace the network and the clock.
+/// for an error during the run, 2 for an error in the arguments. [httpClient],
+/// [now] and [sleep] let a test replace the network and the clocks.
 Future<int> runMemoriesUpload(
   List<String> args, {
   required StringSink out,
   required StringSink err,
   http.Client? httpClient,
   DateTime Function()? now,
+  Future<void> Function(Duration)? sleep,
 }) async {
   final parser = _parser();
   final ArgResults opts;
@@ -147,7 +148,15 @@ Future<int> runMemoriesUpload(
   final warning = state.warning;
   if (warning != null) err.writeln('memories-upload: warning: $warning');
 
-  final client = UploadClient(site, key, client: httpClient, clock: now);
+  final client = UploadClient(
+    site,
+    key,
+    client: httpClient,
+    clock: now,
+    sleep: sleep,
+    onWait: (seconds) =>
+        out.writeln('Waiting $seconds s: the website asks to slow down.'),
+  );
   final run = _Run(client, state.site(site), state, out, err);
   try {
     await run.all(
@@ -170,6 +179,10 @@ Future<int> runMemoriesUpload(
   }
   return run.failed ? 1 : 0;
 }
+
+const String _pausedText =
+    'The website stayed busy, so the run stopped. Run it again to send the '
+    'rest.';
 
 class _Run {
   _Run(this.client, this.site, this.state, this.out, this.err);
@@ -205,6 +218,7 @@ class _Run {
       failed = true;
       if (e.code == 'not_registered') site.registered = false;
       _printError(e);
+      if (e.recoverable) out.writeln(_pausedText);
       return false;
     }
   }
@@ -295,7 +309,8 @@ class _Run {
     out.writeln(
       'Done: $uploaded uploaded, $unchanged unchanged, $failures failed.',
     );
-    if (report.failed) failed = true;
+    if (report.paused) out.writeln(_pausedText);
+    if (report.failed || report.paused) failed = true;
   }
 
   Future<void> _delete(String path) async {

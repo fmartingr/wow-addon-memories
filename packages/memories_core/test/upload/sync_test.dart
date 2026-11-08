@@ -19,7 +19,11 @@ void main() {
 
   setUp(() async {
     site = await FakeSite.start();
-    client = UploadClient(site.uri, UploadKey.generate());
+    client = UploadClient(
+      site.uri,
+      UploadKey.generate(),
+      retryBudget: Duration.zero,
+    );
     state = UploadState.empty();
     tmp = Directory.systemTemp.createTempSync('memories-sync-');
     latest = Directory(p.join(tmp.path, 'latest'));
@@ -84,7 +88,8 @@ void main() {
         'Wait 3 seconds.',
       );
       final failed = await syncLatest(latest, client, state);
-      expect(failed.failed, isTrue);
+      expect(failed.paused, isTrue);
+      expect(failed.failed, isFalse);
       expect(failed.characters.map((c) => c.error?.code), [
         'rate_limited',
         'rate_limited',
