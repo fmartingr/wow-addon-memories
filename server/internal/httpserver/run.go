@@ -7,11 +7,14 @@ import (
 	"log/slog"
 	"net"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
+	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
 
 const shutdownTimeout = 10 * time.Second
@@ -45,7 +48,15 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
-	public := newServer(cfg.PublicAddr, NewPublic(cfg, pages, log), log)
+	if err := os.MkdirAll(cfg.DataDir, 0o700); err != nil {
+		return fmt.Errorf("could not create the data folder %s: %w. Check that the folder is writable", cfg.DataDir, err)
+	}
+	st, err := store.Open(filepath.Join(cfg.DataDir, "memories.db"))
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+	public := newServer(cfg.PublicAddr, NewPublic(cfg, pages, st, log), log)
 	admin := newServer(cfg.AdminAddr, NewAdmin(pages, log), log)
 
 	// Listen first, so that a busy port is reported before any request is served.
@@ -64,6 +75,14 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 		}
 		listeners = append(listeners, l)
 	}
+
+	purgeCtx, stopPurge := context.WithCancel(ctx)
+	defer stopPurge()
+	purged := make(chan struct{})
+	go func() {
+		defer close(purged)
+		st.PurgeLoop(purgeCtx, time.Minute, func(err error) { log.Error("nonce purge failed", "err", err.Error()) })
+	}()
 
 	failed := make(chan error, len(servers))
 	for i, srv := range servers {
@@ -90,6 +109,8 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 		})
 	}
 	wg.Wait()
+	stopPurge()
+	<-purged
 	if runErr == nil {
 		runErr = errors.Join(shutdownErrs...)
 	}

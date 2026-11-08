@@ -164,14 +164,24 @@ a character this run did not write.
 
 ## The server
 
-`server/` is a Go web server for the WoW Journey website. It serves the home page, `robots.txt` and `/api/v1/info`,
-and answers every other path with one 404 page (a JSON error under `/api/`). Every response carries the security
+`server/` is a Go web server for the WoW Journey website. It serves the home page, `robots.txt`, `/api/v1/info`
+and the signed API below, and answers every other path with one 404 page (a JSON error under `/api/`). Every response carries the security
 headers. Run it with `make server-run`, then open <http://localhost:8080/>. The admin listener (default
 `127.0.0.1:8081`) answers 404 only for now.
 
+The server keeps its data in `MEMORIES_DATA_DIR`: the SQLite database `memories.db` (keys, invite codes, claims and
+the nonces of signed requests). The upload API keeps the character files in `characters/`. The API accepts only requests that
+carry the 4 `Memories-*` signature headers of an Ed25519 key. `POST /api/v1/register` registers a key (with a
+single-use invite code in `invite` mode), `GET /api/v1/me` lists the key's characters and its screenshot state, and
+`POST /api/v1/screenshots/request` asks for screenshot approval. A request with a bad signature, a time more than 300 s
+off or a nonce seen in the last 600 s gets `401`; a revoked key gets `403 key_revoked`. A key may send
+`MEMORIES_RATE_SIGNED_PER_MINUTE` signed requests a minute, an address may try `MEMORIES_RATE_REGISTER_PER_HOUR`
+registrations an hour and send `MEMORIES_RATE_PUBLIC_PER_MINUTE` requests a minute (pages and API); more gets `429` with `Retry-After`.
+The server reads the client address from the connection, and from `X-Forwarded-For` only when the connection comes from
+an address in `MEMORIES_TRUSTED_PROXIES`.
+
 It reads these environment variables; an unset or empty one takes its default, and a bad value stops the server with
-exit code 2. The server reads every variable at start, but it uses only the addresses, the site name, the GitHub
-URL and the registration mode for now; the folders, the proxies and the limits take effect with the upload API:
+exit code 2. The size limits and quotas other than the rate limits take effect with the upload API:
 
 | Variable | Default | Meaning |
 |---|---|---|
@@ -197,7 +207,7 @@ URL and the registration mode for now; the folders, the proxies and the limits t
 | `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |
 | `MEMORIES_RATE_SIGNED_PER_MINUTE` | 120 | Signed requests a minute for one key. |
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |
-| `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public pages. |
+| `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public listener (pages and API). |
 
 The design is in [`specs/2026-11-08-upload-backend.md`](specs/2026-11-08-upload-backend.md).
 

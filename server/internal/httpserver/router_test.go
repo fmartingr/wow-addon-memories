@@ -7,11 +7,13 @@ import (
 	"log/slog"
 	"net/http"
 	"net/http/httptest"
+	"path/filepath"
 	"strings"
 	"testing"
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
+	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
 
 const unlistedLine = "A character page is unlisted: anybody with the link can open it, and nobody can find it on this site."
@@ -24,9 +26,19 @@ var securityHeaders = map[string]string{
 		"frame-ancestors 'none'; base-uri 'none'; form-action 'self'",
 }
 
+// loadConfig loads env over the defaults, with the data folder in the temporary folder of the test.
 func loadConfig(t *testing.T, env map[string]string) config.Config {
 	t.Helper()
-	cfg, err := config.Load(func(k string) string { return env[k] })
+	dir := t.TempDir()
+	cfg, err := config.Load(func(k string) string {
+		if v, ok := env[k]; ok {
+			return v
+		}
+		if k == "MEMORIES_DATA_DIR" {
+			return dir
+		}
+		return ""
+	})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -39,8 +51,13 @@ func newHandlers(t *testing.T, cfg config.Config, logs io.Writer) (public, admin
 	if err != nil {
 		t.Fatal(err)
 	}
+	st, err := store.Open(filepath.Join(cfg.DataDir, "memories.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(func() { st.Close() })
 	log := slog.New(slog.NewJSONHandler(logs, nil))
-	return NewPublic(cfg, s, log), NewAdmin(s, log)
+	return NewPublic(cfg, s, st, log), NewAdmin(s, log)
 }
 
 func do(h http.Handler, method, target string) *httptest.ResponseRecorder {
@@ -125,7 +142,12 @@ func TestHomeWithoutGitHubURL(t *testing.T) {
 		t.Fatal(err)
 	}
 	cfg := loadConfig(t, nil)
-	rec := do(NewPublic(cfg, s, slog.New(slog.NewJSONHandler(io.Discard, nil))), http.MethodGet, "/")
+	st, err := store.Open(filepath.Join(cfg.DataDir, "memories.db"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer st.Close()
+	rec := do(NewPublic(cfg, s, st, slog.New(slog.NewJSONHandler(io.Discard, nil))), http.MethodGet, "/")
 	body := rec.Body.String()
 	if rec.Code != http.StatusOK || strings.Contains(body, "releases/latest") || strings.Contains(body, `href="">`) {
 		t.Errorf("status %d; an empty GitHub URL must leave out the links", rec.Code)

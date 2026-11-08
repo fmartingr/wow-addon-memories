@@ -47,10 +47,13 @@ func TestRunServeStopsOnCancel(t *testing.T) {
 	var out, errOut bytes.Buffer
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
+	dir := t.TempDir()
 	env := func(k string) string {
 		switch k {
 		case "MEMORIES_PUBLIC_ADDR", "MEMORIES_ADMIN_ADDR":
 			return "127.0.0.1:0"
+		case "MEMORIES_DATA_DIR":
+			return dir
 		}
 		return ""
 	}
@@ -69,10 +72,13 @@ func TestRunReportsAListenFailureWithExit1(t *testing.T) {
 	}
 	defer busy.Close()
 	var out, errOut bytes.Buffer
+	dir := t.TempDir()
 	env := func(k string) string {
 		switch k {
 		case "MEMORIES_PUBLIC_ADDR", "MEMORIES_ADMIN_ADDR":
 			return busy.Addr().String()
+		case "MEMORIES_DATA_DIR":
+			return dir
 		}
 		return ""
 	}

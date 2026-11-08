@@ -410,7 +410,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 4. Store, request signature, registration and rate limits
+### [x] 4. Store, request signature, registration and rate limits
 
 - **Outcome:** a key registers with an invite code (or with no code in open mode). Signed requests are checked. Replays and floods are rejected.
 - **Depends on:** 1 (server, config).

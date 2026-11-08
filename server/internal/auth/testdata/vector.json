@@ -1,0 +1,19 @@
+{
+  "note": "Ed25519 signature of signedString (6 lines joined by \\n, no final newline). seed is the 32-byte private seed, base64url without padding like every other binary value. Written by internal/auth/signature_test.go.",
+  "seed": "AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8",
+  "publicKey": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg",
+  "method": "POST",
+  "path": "/api/v1/characters?v=1",
+  "time": 1794000000,
+  "nonce": "oKGio6SlpqeoqaqrrK2urw",
+  "body": "{\"character\":{\"guid\":\"Player-1234-0ABCDEF1\"},\"journey\":[],\"trail\":[]}",
+  "bodySha256": "13e54af72bb5e8e3c36c816115c4bd3e25afe886be523f3ea05dd37fe6fd7f0b",
+  "signedString": "memories-v1\nPOST\n/api/v1/characters?v=1\n1794000000\noKGio6SlpqeoqaqrrK2urw\n13e54af72bb5e8e3c36c816115c4bd3e25afe886be523f3ea05dd37fe6fd7f0b",
+  "signature": "D0s3sp9aDfNuXcPgGaFEW492lUNfWqQTlhYJCj_QXmLpVc2ZxLQh-U_Jw9_jzeQbklAddknZjcpl5c1_fvZNBg",
+  "headers": {
+    "Memories-Key": "A6EHv_POEL4dcN0Y50vAmWfk1jCbpQ1fHdyGZBJVMbg",
+    "Memories-Nonce": "oKGio6SlpqeoqaqrrK2urw",
+    "Memories-Signature": "D0s3sp9aDfNuXcPgGaFEW492lUNfWqQTlhYJCj_QXmLpVc2ZxLQh-U_Jw9_jzeQbklAddknZjcpl5c1_fvZNBg",
+    "Memories-Time": "1794000000"
+  }
+}
