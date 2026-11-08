@@ -173,7 +173,7 @@ The server keeps its data in `MEMORIES_DATA_DIR`: the SQLite database `memories.
 the nonces of signed requests). The upload API keeps the character files in `characters/`. The API accepts only requests that
 carry the 4 `Memories-*` signature headers of an Ed25519 key. `POST /api/v1/register` registers a key (with a
 single-use invite code in `invite` mode), `GET /api/v1/me` lists the key's characters and its screenshot state, and
-`POST /api/v1/screenshots/request` asks for screenshot approval. A request with a bad signature, a time more than 300 s
+`POST /api/v1/screenshots/request` asks for screenshot approval. `POST /api/v1/characters` uploads one character (gzip, `Content-Encoding: gzip`): the server checks every record, merges it into the stored data of that address and writes the files itself; the first key to upload an address owns it, and only that key can upload it again or delete it with `DELETE /api/v1/characters/<flavor>/<region>/<realm>/<name>`. A key with no screenshot approval gets the `screenshot` field removed from the records it uploads. An upload that is too big, or that would grow the stored files of its character past twice `MEMORIES_MAX_DECODED_BYTES`, gets `413`; one over a quota of the key gets `507`. A request with a bad signature, a time more than 300 s
 off or a nonce seen in the last 600 s gets `401`; a revoked key gets `403 key_revoked`. A key may send
 `MEMORIES_RATE_SIGNED_PER_MINUTE` signed requests a minute, an address may try `MEMORIES_RATE_REGISTER_PER_HOUR`
 registrations an hour and send `MEMORIES_RATE_PUBLIC_PER_MINUTE` requests a minute (pages and API); more gets `429` with `Retry-After`.
@@ -181,7 +181,7 @@ The server reads the client address from the connection, and from `X-Forwarded-F
 an address in `MEMORIES_TRUSTED_PROXIES`.
 
 It reads these environment variables; an unset or empty one takes its default, and a bad value stops the server with
-exit code 2. The size limits and quotas other than the rate limits take effect with the upload API:
+exit code 2. The size limits and quotas other than the rate limits apply to the upload API:
 
 | Variable | Default | Meaning |
 |---|---|---|
@@ -205,6 +205,7 @@ exit code 2. The size limits and quotas other than the rate limits take effect w
 | `MEMORIES_MAX_CHARACTERS_PER_KEY` | 50 | Characters of one key. |
 | `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key. |
 | `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |
+| `MEMORIES_MAX_CONCURRENT_UPLOADS` | 2 | Uploads that the server unpacks and stores at the same time. A full-size upload takes about 800 MB of memory while it is handled; a further upload waits up to 10 s for a free place, then gets `503` with `Retry-After`. |
 | `MEMORIES_RATE_SIGNED_PER_MINUTE` | 120 | Signed requests a minute for one key. |
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |
 | `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public listener (pages and API). |

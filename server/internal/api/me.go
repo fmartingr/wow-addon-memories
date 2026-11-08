@@ -15,6 +15,9 @@ type characterInfo struct {
 	Updated int64  `json:"updated"`
 }
 
+// characterURL is the page of the character at path.
+func (a *API) characterURL(path string) string { return a.cfg.SiteURL + "/" + path + "/" }
+
 func (a *API) handleMe(w http.ResponseWriter, r *http.Request) {
 	id, _ := auth.FromContext(r.Context())
 	claims, err := a.store.ClaimsOfKey(r.Context(), id.Key.ID)
@@ -26,7 +29,7 @@ func (a *API) handleMe(w http.ResponseWriter, r *http.Request) {
 	for _, c := range claims {
 		chars = append(chars, characterInfo{
 			Path:    c.Path(),
-			URL:     a.cfg.SiteURL + "/" + c.Path() + "/",
+			URL:     a.characterURL(c.Path()),
 			GUID:    c.GUID,
 			Steps:   c.Steps,
 			Updated: c.Updated,

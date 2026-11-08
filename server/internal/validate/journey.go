@@ -35,7 +35,7 @@ func (ck *checker) record(v any, st *journalState) Record {
 		ck.fail("", "Must be an object.")
 		return nil
 	}
-	if len(m) > maxRecordKeys {
+	if len(m) > maxRecordKeys && !ck.lim.stored {
 		ck.fail("", "Has %d keys, but at most %d are allowed.", len(m), maxRecordKeys)
 		return nil
 	}
@@ -99,7 +99,9 @@ func (ck *checker) kind(v any) (kind kinds.Kind, known bool) {
 		ck.fail("k", "Must be text.")
 		return kinds.Kind{}, false
 	}
-	if kind, known = kinds.Lookup(s); known {
+	// Stored records passed the catalog of their upload. A later catalog may list their kind with other fields, so
+	// stored records get the generic check, or a catalog change would lock the character out.
+	if kind, known = kinds.Lookup(s); known && !ck.lim.stored {
 		return kind, true
 	}
 	if !unknownKindPattern.MatchString(s) {

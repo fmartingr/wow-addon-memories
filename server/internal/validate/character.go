@@ -3,6 +3,7 @@ package validate
 import (
 	"fmt"
 	"maps"
+	"math"
 	"regexp"
 	"slices"
 
@@ -50,6 +51,9 @@ func (ck *checker) character(v any) map[string]any {
 		}
 	}
 	budget := maxTreeValues
+	if ck.lim.stored {
+		budget = math.MaxInt
+	}
 	for _, k := range sortedKeys(doc) {
 		if ck.col.full() {
 			break
@@ -154,7 +158,7 @@ func (ck *checker) sessions(v any) {
 		ck.fail("sessions", "Must be a list.")
 		return
 	}
-	if len(list) > maxSessions {
+	if len(list) > maxSessions && !ck.lim.stored {
 		ck.fail("sessions", "Has %d sessions, but at most %d are allowed.", len(list), maxSessions)
 		return
 	}
@@ -197,7 +201,7 @@ func (ck *checker) addons(v any, budget *int) any {
 		ck.fail("addons", "Must be an object.")
 		return v
 	}
-	if len(m) > maxAddons {
+	if len(m) > maxAddons && !ck.lim.stored {
 		ck.fail("addons", "Has %d addons, but at most %d are allowed.", len(m), maxAddons)
 		return v
 	}

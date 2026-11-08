@@ -448,7 +448,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 5. Upload, delete and claims
+### [x] 5. Upload, delete and claims
 
 - **Outcome:** a registered key uploads a character; the server validates, claims, merges and stores it, and the owner deletes it.
 - **Depends on:** 2 (validation), 3 (merge), 4 (store, auth).

@@ -33,20 +33,21 @@ type Config struct {
 	Registration   string
 	TrustedProxies []netip.Prefix
 
-	MaxUploadBytes      int64
-	MaxShotBytes        int64
-	MaxPixels           int64
-	MaxDecodedBytes     int64
-	MaxText             int64
-	MaxRecords          int64
-	MaxChunks           int64
-	MaxPoints           int64
-	MaxCharactersPerKey int64
-	MaxDataBytesPerKey  int64
-	MaxShotBytesPerKey  int64
-	RateSignedPerMinute int64
-	RateRegisterPerHour int64
-	RatePublicPerMinute int64
+	MaxUploadBytes       int64
+	MaxShotBytes         int64
+	MaxPixels            int64
+	MaxDecodedBytes      int64
+	MaxText              int64
+	MaxRecords           int64
+	MaxChunks            int64
+	MaxPoints            int64
+	MaxCharactersPerKey  int64
+	MaxDataBytesPerKey   int64
+	MaxShotBytesPerKey   int64
+	MaxConcurrentUploads int64
+	RateSignedPerMinute  int64
+	RateRegisterPerHour  int64
+	RatePublicPerMinute  int64
 }
 
 type intSetting struct {
@@ -124,6 +125,7 @@ func Load(getenv func(string) string) (Config, error) {
 		{"MEMORIES_MAX_CHARACTERS_PER_KEY", &c.MaxCharactersPerKey, 50, "characters"},
 		{"MEMORIES_MAX_DATA_BYTES_PER_KEY", &c.MaxDataBytesPerKey, 512 * miB, "bytes"},
 		{"MEMORIES_MAX_SHOT_BYTES_PER_KEY", &c.MaxShotBytesPerKey, 5 * giB, "bytes"},
+		{"MEMORIES_MAX_CONCURRENT_UPLOADS", &c.MaxConcurrentUploads, 2, "uploads"},
 		{"MEMORIES_RATE_SIGNED_PER_MINUTE", &c.RateSignedPerMinute, 120, "requests"},
 		{"MEMORIES_RATE_REGISTER_PER_HOUR", &c.RateRegisterPerHour, 10, "registrations"},
 		{"MEMORIES_RATE_PUBLIC_PER_MINUTE", &c.RatePublicPerMinute, 600, "requests"},

@@ -8,6 +8,7 @@ import (
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/api"
 	"github.com/fmartingr/wow-addon-memories/server/internal/apierr"
+	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/ratelimit"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
@@ -15,7 +16,7 @@ import (
 )
 
 // NewPublic returns the handler of the public listener.
-func NewPublic(cfg config.Config, s *site.Site, st *store.Store, log *slog.Logger) http.Handler {
+func NewPublic(cfg config.Config, s *site.Site, st *store.Store, chars *characters.Service, log *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("GET /{$}", s.Home())
 	mux.Handle("GET /robots.txt", s.Robots())
@@ -27,7 +28,7 @@ func NewPublic(cfg config.Config, s *site.Site, st *store.Store, log *slog.Logge
 			"registration": cfg.Registration,
 		})
 	})
-	api.New(cfg, st, log).Routes(mux)
+	api.New(cfg, st, chars, log).Routes(mux)
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		apierr.Write(w, http.StatusNotFound, "not_found", "There is no such API path. Check the address of the request.")
 	})

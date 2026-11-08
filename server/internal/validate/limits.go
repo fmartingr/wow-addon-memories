@@ -21,6 +21,11 @@ type Limits struct {
 	MaxChunks int64
 	// MaxPoints is the most points in one trail chunk.
 	MaxPoints int64
+
+	// stored marks the limits of StoredLimits. A merge keeps the sessions and the addons of every upload, and adds
+	// session, screenshot and notes to the records, so the fixed caps on the sessions, the addons and their values,
+	// and the keys of a record hold for one upload only. The fields of a known kind are checked on upload only too.
+	stored bool
 }
 
 const (

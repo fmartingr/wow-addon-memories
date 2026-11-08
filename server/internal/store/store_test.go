@@ -527,6 +527,68 @@ func TestClaims(t *testing.T) {
 	}
 }
 
+func TestClaimUpdateQuotaAndDelete(t *testing.T) {
+	s, clock := openTest(t)
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
+	s.Register(ctx, RegisterInput{Public: pubKey(2), Nonce: nonce(2)})
+	a, b := mustKey(t, s, pubKey(1)), mustKey(t, s, pubKey(2))
+	claim := func(name string, key int64) Claim {
+		return Claim{Flavor: "wow", Region: "eu", Realm: "zul", Name: name, GUID: "Player-1-00000001", KeyID: key}
+	}
+
+	first, err := s.CreateClaimWithin(ctx, claim("one", a.ID), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	second, err := s.CreateClaimWithin(ctx, claim("two", a.ID), 2)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.CreateClaimWithin(ctx, claim("three", a.ID), 2); !errors.Is(err, ErrClaimQuota) {
+		t.Errorf("the third claim of a key with a limit of 2 gave %v", err)
+	}
+	if _, err := s.ClaimByPath(ctx, "wow", "eu", "zul", "three"); !errors.Is(err, ErrNotFound) {
+		t.Errorf("the refused claim exists: %v", err)
+	}
+	if _, err := s.CreateClaimWithin(ctx, claim("three", b.ID), 2); err != nil {
+		t.Errorf("another key hit the limit of this key: %v", err)
+	}
+	if _, err := s.CreateClaimWithin(ctx, claim("one", b.ID), 2); err == nil {
+		t.Error("a claim of a taken path was accepted")
+	}
+
+	clock.Advance(time.Hour)
+	if err := s.SetClaimData(ctx, first, 7, 100); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SetClaimData(ctx, second, 1, 50); err != nil {
+		t.Fatal(err)
+	}
+	got, err := s.ClaimByPath(ctx, "wow", "eu", "zul", "one")
+	if err != nil || got.ID != first || got.Steps != 7 || got.DataBytes != 100 || got.Updated != clock.Now().Unix() || got.Created >= got.Updated {
+		t.Errorf("claim = %+v, %v", got, err)
+	}
+	if n, err := s.DataBytesOfKey(ctx, a.ID, 0); err != nil || n != 150 {
+		t.Errorf("DataBytesOfKey = %d, %v; want 150", n, err)
+	}
+	if n, err := s.DataBytesOfKey(ctx, a.ID, first); err != nil || n != 50 {
+		t.Errorf("DataBytesOfKey except the first = %d, %v; want 50", n, err)
+	}
+	if err := s.SetClaimData(ctx, 999, 1, 1); !errors.Is(err, ErrNotFound) {
+		t.Errorf("SetClaimData of a missing claim = %v", err)
+	}
+
+	if err := s.DeleteClaim(ctx, first); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.DeleteClaim(ctx, first); !errors.Is(err, ErrNotFound) {
+		t.Errorf("second DeleteClaim = %v", err)
+	}
+	if _, err := s.CreateClaimWithin(ctx, claim("four", a.ID), 2); err != nil {
+		t.Errorf("a delete did not free a place under the limit: %v", err)
+	}
+}
+
 func TestInviteCodesAreRandom(t *testing.T) {
 	seen := map[string]bool{}
 	for range 50 {

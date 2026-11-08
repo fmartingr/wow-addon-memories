@@ -11,6 +11,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
@@ -57,7 +58,16 @@ func newHandlers(t *testing.T, cfg config.Config, logs io.Writer) (public, admin
 	}
 	t.Cleanup(func() { st.Close() })
 	log := slog.New(slog.NewJSONHandler(logs, nil))
-	return NewPublic(cfg, s, st, log), NewAdmin(s, log)
+	return NewPublic(cfg, s, st, newChars(t, cfg, st, log), log), NewAdmin(s, log)
+}
+
+func newChars(t *testing.T, cfg config.Config, st *store.Store, log *slog.Logger) *characters.Service {
+	t.Helper()
+	blobs, err := store.NewDiskBlobs(cfg.DataDir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return characters.New(st, blobs, log)
 }
 
 func do(h http.Handler, method, target string) *httptest.ResponseRecorder {
@@ -147,7 +157,8 @@ func TestHomeWithoutGitHubURL(t *testing.T) {
 		t.Fatal(err)
 	}
 	defer st.Close()
-	rec := do(NewPublic(cfg, s, st, slog.New(slog.NewJSONHandler(io.Discard, nil))), http.MethodGet, "/")
+	log := slog.New(slog.NewJSONHandler(io.Discard, nil))
+	rec := do(NewPublic(cfg, s, st, newChars(t, cfg, st, log), log), http.MethodGet, "/")
 	body := rec.Body.String()
 	if rec.Code != http.StatusOK || strings.Contains(body, "releases/latest") || strings.Contains(body, `href="">`) {
 		t.Errorf("status %d; an empty GitHub URL must leave out the links", rec.Code)

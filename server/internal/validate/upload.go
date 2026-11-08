@@ -2,12 +2,15 @@
 package validate
 
 import (
+	"bytes"
 	"compress/gzip"
 	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
+	"math"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/ids"
@@ -94,10 +97,56 @@ func Read(raw io.Reader, lim Limits, now time.Time) (*Upload, []Problem) {
 		return nil, col.list
 	}
 	defer gz.Close()
-	dec := json.NewDecoder(&capReader{r: gz, left: lim.MaxDecodedBytes})
+	return decodeStream(gz, body, lim, now, col)
+}
+
+// StoredLimits are the limits for reading back files that the server wrote itself. They cannot be the limits of
+// one upload, because a merge of many uploads grows past them, and a lowered limit must not lock out old data.
+func StoredLimits() Limits {
+	return Limits{MaxDecodedBytes: math.MaxInt64, MaxText: math.MaxInt32, MaxRecords: math.MaxInt32, MaxChunks: math.MaxInt32, MaxPoints: math.MaxInt32, stored: true}
+}
+
+// ReadStored checks the three stored files of a character, as the server wrote them, and returns them as an
+// upload. An empty journey or trail is an empty list. The files go through the same checks as an upload.
+func ReadStored(character, journey, trail []byte, now time.Time) (*Upload, error) {
+	doc := io.MultiReader(
+		strings.NewReader(`{"character":`), bytes.NewReader(character),
+		strings.NewReader(`,"journey":[`), lineList(journey),
+		strings.NewReader(`],"trail":[`), lineList(trail),
+		strings.NewReader(`]}`))
+	col := &collector{}
+	up, problems := decodeStream(doc, &bodyReader{}, StoredLimits(), now, col)
+	if len(problems) > 0 {
+		p := problems[0]
+		return nil, fmt.Errorf("the stored data is not valid: %s line %d, field %q: %s", p.File, p.Line, p.Field, p.Reason)
+	}
+	return up, nil
+}
+
+// lineList turns JSONL into the inside of a JSON list. The writer escapes newlines inside strings, so each
+// newline between records becomes a comma.
+func lineList(jsonl []byte) io.Reader {
+	return commaReader{bytes.NewReader(bytes.TrimRight(jsonl, "\n"))}
+}
+
+type commaReader struct{ r io.Reader }
+
+func (c commaReader) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	for i := range p[:n] {
+		if p[i] == '\n' {
+			p[i] = ','
+		}
+	}
+	return n, err
+}
+
+// decodeStream decodes and checks the JSON of an upload from src, the unpacked stream.
+func decodeStream(src io.Reader, body *bodyReader, lim Limits, now time.Time, col *collector) (*Upload, []Problem) {
+	dec := json.NewDecoder(&capReader{r: src, left: lim.MaxDecodedBytes})
 	dec.UseNumber()
 	p := &parser{dec: dec, col: col, lim: lim, st: journalState{now: now.Unix()}}
-	err = p.run()
+	err := p.run()
 	if problems, ok := bodyTooLarge(body.err); ok {
 		return nil, problems
 	}
@@ -202,7 +251,11 @@ func (p *parser) run() error {
 		p.section = key
 		switch key {
 		case fileCharacter:
-			p.begin(characterTokens)
+			if p.lim.stored {
+				p.begin(math.MaxInt64)
+			} else {
+				p.begin(characterTokens)
+			}
 			v, err := p.value(2)
 			if err != nil {
 				return err

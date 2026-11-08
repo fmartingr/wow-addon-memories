@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
@@ -56,7 +57,12 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 		return err
 	}
 	defer st.Close()
-	public := newServer(cfg.PublicAddr, NewPublic(cfg, pages, st, log), log)
+	blobs, err := store.NewDiskBlobs(cfg.DataDir)
+	if err != nil {
+		return err
+	}
+	chars := characters.New(st, blobs, log)
+	public := newServer(cfg.PublicAddr, NewPublic(cfg, pages, st, chars, log), log)
 	admin := newServer(cfg.AdminAddr, NewAdmin(pages, log), log)
 
 	// Listen first, so that a busy port is reported before any request is served.

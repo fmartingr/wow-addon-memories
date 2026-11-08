@@ -17,6 +17,7 @@ import (
 	"time"
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/auth"
+	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
@@ -34,16 +35,21 @@ type env struct {
 	h     http.Handler
 	logs  *bytes.Buffer
 	db    string
+	data  string
+	api   *API
+	wrap  func(store.Blobs) store.Blobs
+	chars *characters.Service
 }
 
 func newEnv(t *testing.T, vars map[string]string) *env {
 	t.Helper()
-	e := &env{t: t, logs: &bytes.Buffer{}, db: filepath.Join(t.TempDir(), "memories.db"), clock: &fakeClock{t: time.Unix(1794000000, 0)}}
+	e := &env{t: t, logs: &bytes.Buffer{}, data: t.TempDir(), clock: &fakeClock{t: time.Unix(1794000000, 0)}}
 	cfg, err := config.Load(func(k string) string { return vars[k] })
 	if err != nil {
 		t.Fatal(err)
 	}
 	e.cfg = cfg
+	e.db = filepath.Join(e.data, "memories.db")
 	e.start()
 	return e
 }
@@ -58,8 +64,19 @@ func (e *env) start() {
 	st.SetClock(e.clock.Now)
 	e.t.Cleanup(func() { st.Close() })
 	e.st = st
+	blobs, err := store.NewDiskBlobs(e.data)
+	if err != nil {
+		e.t.Fatal(err)
+	}
+	var b store.Blobs = blobs
+	if e.wrap != nil {
+		b = e.wrap(blobs)
+	}
+	log := slog.New(slog.NewJSONHandler(e.logs, nil))
+	e.chars = characters.New(st, b, log)
 	mux := http.NewServeMux()
-	New(e.cfg, st, slog.New(slog.NewJSONHandler(e.logs, nil))).Routes(mux)
+	e.api = New(e.cfg, st, e.chars, log)
+	e.api.Routes(mux)
 	e.h = mux
 }
 
