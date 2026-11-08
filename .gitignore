@@ -5,6 +5,8 @@ luacov.*.out
 .lua/
 .luarocks/
 coverage.out
+server/coverage.out
+server/data/
 web/characters
 
 .fvm/

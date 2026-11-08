@@ -1,0 +1,45 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{.Name}}</title>
+<link rel="stylesheet" href="{{.CSS}}">
+</head>
+<body>
+<main>
+<h1>{{.Name}}</h1>
+<p class="lead">Memories records the journey of each of your World of Warcraft characters. WoW Journey turns that record into a page you can share.</p>
+
+<h2>What Memories is</h2>
+<p>Memories is a set of World of Warcraft addons for WoW Forever. It writes down what happens to each character: sessions, travel, deaths, progress, kills, gathering, loot, money, skills, groups and PvP. The data stays in the game's saved files on your computer.</p>
+
+<h2>The 6 addons</h2>
+<p>Each addon has its own saved file. The core addon, Memories, is always needed. You can turn each other addon off in the AddOn list to stop its recording.</p>
+<table>
+<thead><tr><th scope="col">Addon</th><th scope="col">What it records</th></tr></thead>
+<tbody>
+{{range .Addons}}<tr><th scope="row"><code>{{.Name}}</code></th><td>{{.Records}}</td></tr>
+{{end}}</tbody>
+</table>
+
+<h2>What WoW Journey does</h2>
+<p>WoW Journey is a desktop app for Windows, macOS and Linux. It reads the saved files, keeps a backup, and builds a journey for each character: a timeline, a map of the trail and your screenshots. It can also upload a character to this website, so that you can send the link to a friend.</p>
+
+<h2>How to upload</h2>
+<ol>
+<li>Install the addons and the WoW Journey app.</li>
+{{if .OpenRegistration}}<li>Open the app, go to the website settings and register.</li>
+{{else}}<li>Ask the person who runs this website for an invite code.</li>
+<li>Open the app, go to the website settings and register with the invite code.</li>
+{{end}}
+<li>Turn on the upload switch, or press Upload now. The app shows the link of each character.</li>
+</ol>
+<p class="note">A character page is unlisted: anybody with the link can open it, and nobody can find it on this site.</p>
+
+{{if .ReleasesURL}}<h2>Downloads</h2>
+<p><a href="{{.ReleasesURL}}">Download the addons and the app</a> from the latest release on GitHub.</p>
+<p><a href="{{.GitHubURL}}">The project on GitHub</a> has the source code and the documentation.</p>
+{{end}}</main>
+</body>
+</html>

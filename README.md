@@ -162,6 +162,44 @@ The id is `<region>-<realm>-<name>` in ASCII lower case (`eu-brumamar-nandu` for
 the records, trail chunks and sessions of the runs before it, the id each character had, and the `index.json` entry of
 a character this run did not write.
 
+## The server
+
+`server/` is a Go web server for the WoW Journey website. It serves the home page, `robots.txt` and `/api/v1/info`,
+and answers every other path with one 404 page (a JSON error under `/api/`). Every response carries the security
+headers. Run it with `make server-run`, then open <http://localhost:8080/>. The admin listener (default
+`127.0.0.1:8081`) answers 404 only for now.
+
+It reads these environment variables; an unset or empty one takes its default, and a bad value stops the server with
+exit code 2. The server reads every variable at start, but it uses only the addresses, the site name, the GitHub
+URL and the registration mode for now; the folders, the proxies and the limits take effect with the upload API:
+
+| Variable | Default | Meaning |
+|---|---|---|
+| `MEMORIES_PUBLIC_ADDR` | `:8080` | Public listener. |
+| `MEMORIES_ADMIN_ADDR` | `127.0.0.1:8081` | Admin listener. |
+| `MEMORIES_DATA_DIR` | `./data` | Data folder. |
+| `MEMORIES_WEB_DIR` | `../web` | Folder with the viewer files. |
+| `MEMORIES_SITE_URL` | `http://localhost:8080` | Public address of the site: `http` or `https`, no path. A trailing `/` is dropped. |
+| `MEMORIES_SITE_NAME` | `WoW Journey` | Name of the site. |
+| `MEMORIES_GITHUB_URL` | `https://github.com/fmartingr/wow-addon-memories` | Repository; the home page links to it and to its `/releases/latest`. |
+| `MEMORIES_REGISTRATION` | `invite` | `invite` or `open`. |
+| `MEMORIES_TRUSTED_PROXIES` | empty | Comma-separated CIDR list of proxies whose `X-Forwarded-For` is trusted. |
+| `MEMORIES_MAX_UPLOAD_BYTES` | 16 MiB | Largest upload request. |
+| `MEMORIES_MAX_SHOT_BYTES` | 15 MiB | Largest screenshot request. |
+| `MEMORIES_MAX_PIXELS` | 50,000,000 | Largest screenshot, in pixels. |
+| `MEMORIES_MAX_CHARACTERS_PER_KEY` | 50 | Characters of one key. |
+| `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key. |
+| `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |
+| `MEMORIES_RATE_SIGNED_PER_MINUTE` | 120 | Signed requests a minute for one key. |
+| `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |
+| `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public pages. |
+
+The design is in [`specs/2026-11-08-upload-backend.md`](specs/2026-11-08-upload-backend.md).
+
+## License
+
+GPL-3.0-or-later. See [`LICENSE`](LICENSE).
+
 ## Make targets
 
 `WOW_DIR` is the flavor folder, for example `.../World of Warcraft/_forever_`.
@@ -169,12 +207,14 @@ a character this run did not write.
 | Target | What it does |
 |---|---|
 | `make help` | List the targets. |
-| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `fvm`). |
+| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `go`, `fvm`). |
 | `make deps` | Install busted, luacov and luacheck with luarocks (Lua 5.1). |
-| `make lint` | `lint-lua` (luacheck), `lint-no-go` (`scripts/no-go.sh`: no tracked `*.go`, `go.mod` or `go.sum`), `lint-actions` (actionlint on the workflows, skipped when it is not installed; CI always runs it), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
-| `make fmt` | Format the Lua and Dart code. |
-| `make test` | `test-lua` (busted), `test-scripts` (the tests of `scripts/package-addons.sh` and `scripts/release-version.sh`), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
-| `make coverage` | `coverage-lua` and `dart-coverage`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`) and the Dart core `lib/` need 80 %; the total Lua coverage is printed. |
+| `make lint` | `lint-lua` (luacheck), `lint-no-go` (`scripts/no-go.sh`: no tracked `*.go`, `go.mod` or `go.sum` outside `server/`; `scripts/no-go_test.sh` tests it), `lint-actions` (actionlint on the workflows, skipped when it is not installed; CI always runs it), `server-lint` (`gofmt` and `go vet` in `server/`), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
+| `make fmt` | Format the Lua, Dart and Go code. |
+| `make test` | `test-lua` (busted), `test-scripts` (the tests of `scripts/package-addons.sh` and `scripts/release-version.sh`), `server-test` (`go test -race` in `server/`), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
+| `make coverage` | `coverage-lua`, `server-coverage` and `dart-coverage`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`), `server/internal/...` and the Dart core `lib/` need 80 %; the total Lua coverage is printed. |
+| `make server-run` | Run the Go server (see The server). |
+| `make server-build` | Build the static server into `build/memories-server`. |
 | `make companion` | Run the WoW Journey app on this system. `COMPANION_DEVICE=linux`, `macos` or `windows` picks the device. |
 | `make install WOW_DIR=...` | Copy each addon folder into the game. |
 | `make link WOW_DIR=...` | Link each addon folder into the game. |
@@ -186,6 +226,7 @@ a character this run did not write.
 - `addons/` — the 6 addons.
 - `packages/memories_core/` — the Dart core (no Flutter) with the `memories-export` command
   (`bin/memories_export.dart`); `app/` — the WoW Journey desktop app. Both use the Flutter version in `.fvmrc` through [FVM](https://fvm.app).
+- `server/` — the Go web server (its own `go.mod`; the only Go code in the repository).
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`); `testdata/` — converter fixtures (`testdata/wow`)
   and their golden output (`testdata/expected`).
 - `docs/` — [`kinds.md`](docs/kinds.md), [`public-api.md`](docs/public-api.md),
