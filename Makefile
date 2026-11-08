@@ -3,7 +3,6 @@ SHELL := bash
 .DEFAULT_GOAL := help
 
 LUA_COVERAGE_MIN ?= 80
-GO_COVERAGE_MIN ?= 80
 DART_COVERAGE_MIN ?= 80
 CORE := packages/memories_core
 COMPANION_DEVICE ?= $(if $(filter Darwin,$(shell uname -s)),macos,$(if $(filter Linux,$(shell uname -s)),linux,windows))
@@ -16,13 +15,13 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-go dart-lint app-lint fmt-check fmt test test-lua test-go dart-test app-test companion coverage coverage-lua coverage-go dart-coverage build export link install clean web-data web web-demo
+.PHONY: help check-tools deps lint lint-lua lint-no-go dart-lint app-lint fmt-check fmt test test-lua dart-test app-test companion coverage coverage-lua dart-coverage export link install clean web-data web web-demo
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
 
 check-tools: ## Report each missing tool
-	@missing=0; for t in lua5.1 luarocks busted luacheck luacov stylua go fvm; do \
+	@missing=0; for t in lua5.1 luarocks busted luacheck luacov stylua fvm; do \
 		if ! command -v $$t >/dev/null; then echo "missing: $$t"; missing=1; fi; \
 	done; exit $$missing
 
@@ -31,14 +30,13 @@ deps: ## Install the Lua test and lint tools with luarocks
 	luarocks --lua-version=5.1 --local install luacov 0.17.0-1
 	luarocks --lua-version=5.1 --local install luacheck 1.2.0-1
 
-lint: lint-lua lint-go dart-lint app-lint fmt-check ## Run all linters
+lint: lint-lua lint-no-go dart-lint app-lint fmt-check ## Run all linters
 
 lint-lua: ## Run luacheck
 	luacheck .
 
-lint-go: ## Run gofmt and go vet
-	test -z "$$(gofmt -l .)"
-	go vet ./...
+lint-no-go: ## Fail when a Go file, go.mod or go.sum is tracked
+	bash scripts/no-go.sh
 
 dart-lint: ## Analyze and check the format of the Dart core
 	cd $(CORE) && fvm dart pub get
@@ -52,19 +50,15 @@ app-lint: ## Analyze and check the format of the Flutter app
 fmt-check: ## Check the Lua format
 	stylua --check .
 
-fmt: ## Format the Lua, Go and Dart code
+fmt: ## Format the Lua and Dart code
 	stylua .
-	gofmt -w .
 	cd $(CORE) && fvm dart format .
 	cd app && fvm dart format .
 
-test: test-lua test-go dart-test app-test ## Run all tests
+test: test-lua dart-test app-test ## Run all tests
 
 test-lua: ## Run the busted tests
 	busted $(BUSTED_FLAGS)
-
-test-go: ## Run the Go tests with the race detector
-	go test -race ./...
 
 dart-test: ## Run the Dart core tests
 	cd $(CORE) && fvm dart test
@@ -75,7 +69,7 @@ app-test: ## Run the Flutter app tests
 companion: ## Run the WoW Journey companion app on this system (COMPANION_DEVICE overrides the device)
 	cd app && fvm flutter run -d $(COMPANION_DEVICE)
 
-coverage: coverage-lua coverage-go dart-coverage ## Run tests with coverage thresholds
+coverage: coverage-lua dart-coverage ## Run tests with coverage thresholds
 
 coverage-lua: ## Run busted with luacov and check the core coverage
 	rm -f luacov.stats.out luacov.report.out
@@ -83,18 +77,8 @@ coverage-lua: ## Run busted with luacov and check the core coverage
 	luacov
 	LUA_COVERAGE_MIN=$(LUA_COVERAGE_MIN) bash scripts/coverage.sh luacov.report.out
 
-coverage-go: ## Run Go tests with the coverage threshold
-	@if [ -z "$$(go list ./internal/... 2>/dev/null)" ]; then echo "Go coverage: no packages in internal/"; exit 0; fi; \
-	go test -coverprofile=coverage.out ./internal/...; \
-	total=$$(go tool cover -func=coverage.out | awk '$$1 == "total:" { gsub("%", "", $$NF); print $$NF }'); \
-	echo "Go coverage: $$total% (min $(GO_COVERAGE_MIN)%)"; \
-	awk -v t="$$total" -v m="$(GO_COVERAGE_MIN)" 'BEGIN { exit (t + 0 < m + 0) }'
-
 dart-coverage: ## Run the Dart core tests with the coverage threshold
 	DART_COVERAGE_MIN=$(DART_COVERAGE_MIN) bash scripts/dart-coverage.sh $(CORE)
-
-build: ## Build the converter into build/
-	CGO_ENABLED=0 go build -o build/memories-export ./cmd/memories-export
 
 export: ## Run the converter on WOW_DIR (a flavor folder); DIST, BACKUP and DEFAULT are optional
 	@if [ -z "$${WOW_DIR:-}" ]; then echo "WOW_DIR is required, for example .../World of Warcraft/_forever_" >&2; exit 2; fi
@@ -117,7 +101,7 @@ install: ## Copy each addon folder into WOW_DIR (a flavor folder)
 	for a in $(ADDONS); do rm -rf "$(WOW_DIR)/Interface/AddOns/$$a"; cp -R "addons/$$a" "$(WOW_DIR)/Interface/AddOns/$$a"; done
 
 clean: ## Remove build output
-	rm -rf build luacov.*.out coverage.out $(CORE)/coverage app/build app/coverage
+	rm -rf luacov.*.out $(CORE)/coverage app/build app/coverage
 
 WEB_PORT ?= 8765
 

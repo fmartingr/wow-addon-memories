@@ -389,7 +389,7 @@ Commit each task on its own with the repository's commit convention. Do not push
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 9. Remove Go
+### [x] 9. Remove Go
 
 - **Outcome:** The repository has no Go code, and `make lint test coverage` and CI cover Lua and Dart only.
 - **Depends on:** Task 4 (golden parity and CLI). Run it after Tasks 6 to 8 are stable, so Go stays as a reference while the app is built.

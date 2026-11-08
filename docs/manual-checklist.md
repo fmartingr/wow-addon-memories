@@ -30,7 +30,7 @@ order: run them from top to bottom. Run A has all 6 addons on. Run B (section T)
 
 | ID | Source | Check | Steps | Expected | Result |
 |---|---|---|---|---|---|
-| A1 | V1 | Repo checks | In the repo, run `make check-tools && make lint && make test && make coverage && make build`. | Each command passes. | not run |
+| A1 | V1 | Repo checks | In the repo, run `make check-tools && make lint && make test && make coverage`. | Each command passes. | not run |
 | A2 | V2 | 300k lines | Run `busted spec/limit_spec.lua`. | It passes (300,000 lines load). | not run |
 | A3 | 1 | Install | Run `make install WOW_DIR=".../_forever_"`. | `Interface/AddOns` holds `Memories`, `Memories_Character`, `Memories_Combat`, `Memories_Economy`, `Memories_Gathering` and `Memories_Social`. | not run |
 
@@ -316,7 +316,7 @@ Check every kind again with "Enable all" after its row.
 
 | ID | Source | Check | Steps | Expected | Result |
 |---|---|---|---|---|---|
-| S1 | 10, V9 | Converter | Log out. Run `build/memories-export --wow-dir ".../_forever_"`, then run it again. | `dist-characters/` has `index.json` and `<id>/` with `journey.jsonl`, `trail.jsonl`, `character.json` and `screenshots/`. `journey.jsonl` has an `ss` record whose `screenshot` names a file in `screenshots/`, and an `ex` record with `source` "Test". The second run changes no output file. The saved files and screenshots in the game folder keep their modification times; `backups/<stamp>/` holds a copy of each saved file. | not run |
+| S1 | 10, V9 | Converter | Log out. Run `make export WOW_DIR=".../_forever_"`, then run it again. | `dist-characters/` has `index.json` and `<id>/` with `journey.jsonl`, `trail.jsonl`, `character.json` and `screenshots/`. `journey.jsonl` has an `ss` record whose `screenshot` names a file in `screenshots/`, and an `ex` record with `source` "Test". The second run changes no output file. The saved files and screenshots in the game folder keep their modification times; `backups/<stamp>/` holds a copy of each saved file. | not run |
 | S2 | 10 | Screenshot note joined | Find the O3 screenshot in `journey.jsonl`. | Its `ss` record has `notes: [{"source": "Test", "note": "manual note"}]`. | not run |
 | S3 | 10 | Addons listed | Read `dist-characters/index.json` and `<id>/character.json`. | The character lists the 6 addons, each with its `counts`. | not run |
 | S4 | 3, 16 | Every kind seen | Run `jq -r .k dist-characters/<id>/journey.jsonl \| sort -u`. Tick each kind in the coverage table below. | Every kind that the session's actions produced is listed. A kind with no row run stays open. | not run |

@@ -2,9 +2,8 @@
 
 Memories is a set of World of Warcraft addons for WoW Forever (Interface 16001) that records each character's journey
 into the saved files: sessions, travel, deaths, progress, kills, gathering, loot, money, skills, groups, PvP and more.
-A converter (`memories-export`, in the Dart core `packages/memories_core`) turns the saved files into JSONL files for
-a website. The Go converter in `cmd/` and `internal/` gives the same output and stays as the reference until the Dart
-app is done.
+The WoW Journey desktop app (`app/`) and the command line converter `memories-export` turn the saved files into
+JSONL files for a website. Both run the same gather of the Dart core `packages/memories_core`.
 
 The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-06-memories-addon-set.md). Every kind
 of journal line and its fields are in [`docs/kinds.md`](docs/kinds.md).
@@ -102,27 +101,28 @@ compiler: the tray plugin builds its native library with the app.
 
 ## Converter
 
-`memories-export` reads the saved files of every character in one flavor folder and writes the website data. It never
-runs Lua, never writes into `WTF/` or `Screenshots/` and never changes a saved file or an image. Log out of the game
-or `/reload` first, so the saved files are current.
+The app gathers into its backup folder (see above). `memories-export` is the same gather on the command line: it reads
+the saved files of every character in one flavor folder and writes the website data. It never runs Lua, never writes
+into `WTF/` or `Screenshots/` and never changes a saved file or an image. Log out of the game or `/reload` first, so
+the saved files are current.
 
 ```sh
 make export WOW_DIR=".../World of Warcraft/_forever_" [DIST=DIR] [BACKUP=DIR] [DEFAULT=ID]
 # or
 fvm dart run packages/memories_core/bin/memories_export.dart --wow-dir ".../World of Warcraft/_forever_" [--dist DIR] [--backup DIR] [--default ID]
-# or, with the Go reference
-make build && build/memories-export --wow-dir ".../World of Warcraft/_forever_" [--dist DIR] [--backup DIR] [--default ID]
 ```
 
+- `--wow-dir` (required) is the flavor folder. Each flag also takes the single-dash form (`-wow-dir`), and
+  `--help` prints the flags.
 - `--dist` (default `./dist-characters`) and `--backup` (default `./backups`) may not be inside `WTF/` or `Screenshots/`,
   nor hold them.
 - `--default` picks the character the website opens first; a later run keeps that choice.
-- The Dart converter holds a lock on `.gather.lock` in the parent folder of `--backup` (after links are resolved). A
+- The converter holds a lock on `.gather.lock` in the parent folder of `--backup` (after links are resolved). A
   second run with the same parent folder stops with exit code 1. Keep `--dist` next to `--backup`, as the defaults do,
   so the lock also covers `--dist`.
 - Exit code 2 is a usage error, 1 a run error. A damaged saved file is reported with its line and skipped.
   A damaged or missing account `Memories.lua` skips the characters of that account, since their fields cannot be named.
-  For a damaged sub-addon file, the Dart converter keeps that addon's entry of the earlier run, so the output does not
+  For a damaged sub-addon file, the converter keeps that addon's entry of the earlier run, so the output does not
   change. A character folder in `--dist` that is a link is left as it was.
 
 Output:
@@ -151,24 +151,23 @@ a character this run did not write.
 | Target | What it does |
 |---|---|
 | `make help` | List the targets. |
-| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `go`, `fvm`). |
+| `make check-tools` | Report each missing tool (`lua5.1`, `luarocks`, `busted`, `luacheck`, `luacov`, `stylua`, `fvm`). |
 | `make deps` | Install busted, luacov and luacheck with luarocks (Lua 5.1). |
-| `make lint` | `lint-lua` (luacheck), `lint-go` (gofmt and go vet), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
-| `make fmt` | Format the Lua, Go and Dart code. |
-| `make test` | `test-lua` (busted), `test-go` (Go tests with the race detector), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
-| `make coverage` | `coverage-lua`, `coverage-go` and `dart-coverage`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`), Go `internal/` and the Dart core `lib/` need 80 %; the total Lua coverage is printed. |
-| `make build` | Build the converter into `build/memories-export`. |
+| `make lint` | `lint-lua` (luacheck), `lint-no-go` (`scripts/no-go.sh`: no tracked `*.go`, `go.mod` or `go.sum`), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
+| `make fmt` | Format the Lua and Dart code. |
+| `make test` | `test-lua` (busted), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
+| `make coverage` | `coverage-lua` and `dart-coverage`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`) and the Dart core `lib/` need 80 %; the total Lua coverage is printed. |
 | `make companion` | Run the WoW Journey app on this system. `COMPANION_DEVICE=linux`, `macos` or `windows` picks the device. |
 | `make install WOW_DIR=...` | Copy each addon folder into the game. |
 | `make link WOW_DIR=...` | Link each addon folder into the game. |
-| `make export WOW_DIR=...` | Run the Dart converter; `DIST`, `BACKUP` and `DEFAULT` set `--dist`, `--backup` and `--default`. |
-| `make clean` | Remove `build/` and the coverage files. |
+| `make export WOW_DIR=...` | Run `memories-export`; `DIST`, `BACKUP` and `DEFAULT` set `--dist`, `--backup` and `--default`. |
+| `make clean` | Remove the coverage files and `app/build/`. |
 
 ## Layout
 
 - `addons/` — the 6 addons.
-- `cmd/memories-export/` and `internal/` — the Go converter, the reference for the Dart one.
-- `packages/memories_core/` — the Dart core (no Flutter); `app/` — the WoW Journey desktop app. Both use the Flutter version in `.fvmrc` through [FVM](https://fvm.app).
+- `packages/memories_core/` — the Dart core (no Flutter) with the `memories-export` command
+  (`bin/memories_export.dart`); `app/` — the WoW Journey desktop app. Both use the Flutter version in `.fvmrc` through [FVM](https://fvm.app).
 - `spec/` — busted tests and the WoW stub harness (`spec/helpers/wow.lua`); `testdata/` — converter fixtures (`testdata/wow`)
   and their golden output (`testdata/expected`).
 - `docs/` — [`kinds.md`](docs/kinds.md), [`public-api.md`](docs/public-api.md),

@@ -90,9 +90,9 @@ Future<int> runMemoriesExport(
 
 const Set<String> _valued = {'wow-dir', 'dist', 'backup', 'default'};
 
-/// Turns the Go form `-wow-dir` of each flag into `--wow-dir`, so the
-/// commands written for the Go tool keep working. A flag value is left as it
-/// is, even when it starts with "-".
+/// Turns the single-dash form `-wow-dir` of each flag into `--wow-dir`, so
+/// both forms work. A flag value is left as it is, even when it starts with
+/// "-".
 List<String> _longFlags(List<String> args) {
   final out = <String>[];
   var value = false;
@@ -119,8 +119,7 @@ List<String> _longFlags(List<String> args) {
 String _flagName(String arg) =>
     arg.replaceFirst(RegExp('^-+'), '').split('=').first;
 
-/// The text of Go's flag package for the same mistake, so scripts that read
-/// it keep working.
+/// The fixed error text of a flag mistake, which scripts read.
 String _flagError(ArgParserException e) {
   final name = (e.argumentName ?? '').replaceFirst(RegExp('^-+'), '');
   if (e.message.startsWith('Could not find')) {
