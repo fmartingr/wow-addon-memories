@@ -16,7 +16,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build export upload e2e link install clean web-data web web-demo
+.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-data web web-demo
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -106,6 +106,33 @@ dart-coverage: ## Run the Dart core tests with the coverage threshold
 
 server-run: ## Run the Go server (settings come from MEMORIES_* environment variables)
 	cd server && go run ./cmd/memories-server
+
+LOCAL_NAME ?= memories-local
+LOCAL_PORT ?= 8080
+LOCAL_ADMIN_PORT ?= 8081
+
+local-up: ## Build the Docker image and run a local test server (open registration, data in a Docker volume)
+	docker build -f server/Dockerfile -t memories-server .
+	-docker rm -f $(LOCAL_NAME) >/dev/null 2>&1
+	docker run -d --name $(LOCAL_NAME) \
+		-p 127.0.0.1:$(LOCAL_PORT):8080 -p 127.0.0.1:$(LOCAL_ADMIN_PORT):8081 \
+		-v $(LOCAL_NAME)-data:/data \
+		-e MEMORIES_SITE_URL=http://localhost:$(LOCAL_PORT) \
+		-e MEMORIES_REGISTRATION=open \
+		memories-server >/dev/null
+	@echo "Site:  http://localhost:$(LOCAL_PORT)/"
+	@echo "Admin: http://localhost:$(LOCAL_ADMIN_PORT)/"
+	@echo "App:   make companion-local"
+
+local-down: ## Stop the local test server and delete its data (volume)
+	-docker rm -f $(LOCAL_NAME)
+	-docker volume rm $(LOCAL_NAME)-data
+
+local-logs: ## Follow the log of the local test server
+	docker logs -f $(LOCAL_NAME)
+
+companion-local: ## Run the companion app with http://localhost:$(LOCAL_PORT) as the default website
+	cd app && fvm flutter run -d $(COMPANION_DEVICE) --dart-define=WOWJOURNEY_SITE=http://localhost:$(LOCAL_PORT)
 
 server-build: ## Build the static Go server into build/memories-server
 	cd server && CGO_ENABLED=0 go build -o ../build/memories-server ./cmd/memories-server

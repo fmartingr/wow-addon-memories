@@ -282,6 +282,8 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 | `make export WOW_DIR=...` | Run `memories-export`; `DIST`, `BACKUP` and `DEFAULT` set `--dist`, `--backup` and `--default`. |
 | `make upload SITE=...` | Run `memories-upload`; `LATEST`, `KEY`, `STATE`, `INVITE`, `DELETE` and `REQUEST_SCREENSHOTS=1` set the matching flags. |
 | `make e2e` | Build the server, start it on a temporary folder and run `memories-upload` against it: upload, page, merge, screenshot approval and delete (needs `go`, `fvm`, `curl`, `jq` and `python3`; CI runs it). |
+| `make local-up` | Build the Docker image and run a test server on `http://localhost:8080` (admin page on `http://localhost:8081`, open registration, data in a Docker volume). `make local-down` deletes it; `make local-logs` follows its log. |
+| `make companion-local` | Run the companion app with `http://localhost:8080` as the default website. |
 | `make clean` | Remove the coverage files and `app/build/`. |
 
 ## Layout
