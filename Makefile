@@ -6,6 +6,7 @@ LUA_COVERAGE_MIN ?= 80
 GO_COVERAGE_MIN ?= 80
 DART_COVERAGE_MIN ?= 80
 CORE := packages/memories_core
+COMPANION_DEVICE ?= $(if $(filter Darwin,$(shell uname -s)),macos,$(if $(filter Linux,$(shell uname -s)),linux,windows))
 BUSTED_FLAGS ?=
 ADDONS := $(notdir $(wildcard addons/*))
 
@@ -15,7 +16,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-go dart-lint app-lint fmt-check fmt test test-lua test-go dart-test app-test coverage coverage-lua coverage-go dart-coverage build export link install clean web-data web web-demo
+.PHONY: help check-tools deps lint lint-lua lint-go dart-lint app-lint fmt-check fmt test test-lua test-go dart-test app-test companion coverage coverage-lua coverage-go dart-coverage build export link install clean web-data web web-demo
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -70,6 +71,9 @@ dart-test: ## Run the Dart core tests
 
 app-test: ## Run the Flutter app tests
 	cd app && fvm flutter test
+
+companion: ## Run the WoW Journey companion app on this system (COMPANION_DEVICE overrides the device)
+	cd app && fvm flutter run -d $(COMPANION_DEVICE)
 
 coverage: coverage-lua coverage-go dart-coverage ## Run tests with coverage thresholds
 

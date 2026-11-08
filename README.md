@@ -127,6 +127,7 @@ a character this run did not write.
 | `make test` | `test-lua` (busted), `test-go` (Go tests with the race detector), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
 | `make coverage` | `coverage-lua`, `coverage-go` and `dart-coverage`. The core files (`addons/Memories/Core/`, `addons/Memories/Data/`), Go `internal/` and the Dart core `lib/` need 80 %; the total Lua coverage is printed. |
 | `make build` | Build the converter into `build/memories-export`. |
+| `make companion` | Run the WoW Journey app on this system. `COMPANION_DEVICE=linux`, `macos` or `windows` picks the device. |
 | `make install WOW_DIR=...` | Copy each addon folder into the game. |
 | `make link WOW_DIR=...` | Link each addon folder into the game. |
 | `make export WOW_DIR=...` | Run the Dart converter; `DIST`, `BACKUP` and `DEFAULT` set `--dist`, `--backup` and `--default`. |
