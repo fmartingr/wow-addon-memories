@@ -1,5 +1,6 @@
 // The Summary tab. summaryHtml makes the markup from the derived numbers; every data value goes through esc().
 import { className, classColour, clamp, coinsHtml, esc, fmtDate, fmtDur, raceName } from '../lib/format.mjs';
+import { mountPaperDoll } from './gear.mjs';
 
 const num = (n) => (Number.isFinite(n) ? Math.round(n).toLocaleString('en-US') : '0');
 
@@ -109,7 +110,19 @@ export function paint(root) {
   for (const el of root.querySelectorAll('[data-p]')) el.style.setProperty('--p', Number(el.dataset.p) * 100 + '%');
 }
 
-export function mountSummary(panel, summary) {
+export const LEGAL = 'World of Warcraft is a trademark of Blizzard Entertainment, Inc. This is an unofficial fan project, not affiliated with or endorsed by Blizzard.';
+
+export function mountSummary(panel, summary, gear, ctx) {
   panel.innerHTML = summaryHtml(summary);
   paint(panel);
+  const doll = mountPaperDoll(panel.querySelector('#paperdoll'), gear, ctx);
+  return {
+    show(route) {
+      ctx.legal.textContent = LEGAL + (gear.some((g) => g.item > 0) ? ' Item tooltips by Wowhead.' : '');
+      doll.show(route.params.slot);
+    },
+    hide() {
+      ctx.legal.textContent = '';
+    },
+  };
 }

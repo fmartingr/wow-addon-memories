@@ -89,6 +89,24 @@ func do(h http.Handler, method, target string) *httptest.ResponseRecorder {
 	return rec
 }
 
+// characterPageCSP is the policy of a character page: the base policy plus the hosts of the Wowhead tooltip script.
+const characterPageCSP = "default-src 'self'; img-src 'self' data: https://wow.zamimg.com; " +
+	"script-src 'self' https://wow.zamimg.com https://nether.wowhead.com; style-src 'self' https://wow.zamimg.com; " +
+	"connect-src 'self' https://nether.wowhead.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+
+// checkPageHeaders is checkSecurityHeaders for a character page, which has its own policy.
+func checkPageHeaders(t *testing.T, rec *httptest.ResponseRecorder, what string) {
+	t.Helper()
+	for name, want := range securityHeaders {
+		if name == "Content-Security-Policy" {
+			want = characterPageCSP
+		}
+		if got := rec.Header().Get(name); got != want {
+			t.Errorf("%s: %s = %q, want %q", what, name, got, want)
+		}
+	}
+}
+
 func checkSecurityHeaders(t *testing.T, rec *httptest.ResponseRecorder, what string) {
 	t.Helper()
 	for name, want := range securityHeaders {

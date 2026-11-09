@@ -2,6 +2,7 @@
 import { loadCharacter } from './lib/data.mjs';
 import { formatHash, parseHash } from './lib/router.mjs';
 import { className, raceName } from './lib/format.mjs';
+import { deriveGear } from './lib/gear.mjs';
 import { deriveSummary } from './lib/summary.mjs';
 import { mountShell } from './ui/shell.mjs';
 import { mountSummary } from './ui/summary.mjs';
@@ -66,7 +67,7 @@ async function main() {
     },
   });
   const tabs = {
-    summary: (mountSummary(shell.panel('summary'), summary), { show() {}, hide() {} }),
+    summary: mountSummary(shell.panel('summary'), summary, deriveGear(data.char, data.steps), ctx),
     journey: stubTab(shell.panel('journey'), ctx),
     heatmaps: stubTab(shell.panel('heatmaps'), ctx),
   };

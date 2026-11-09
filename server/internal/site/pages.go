@@ -277,6 +277,7 @@ func (p *Pages) page(w http.ResponseWriter, r *http.Request, parts []string) {
 	out.Write(p.index[p.attrAt:])
 	h := w.Header()
 	h.Set("Content-Type", "text/html; charset=utf-8")
+	h.Set("Content-Security-Policy", characterPagePolicy)
 	h.Set("X-Robots-Tag", robotsNoIndex)
 	h.Set("Cache-Control", "no-cache")
 	h.Set("ETag", etagOf(out.Bytes()))

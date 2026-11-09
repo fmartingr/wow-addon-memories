@@ -225,6 +225,24 @@ func TestNewPagesRejectsAViewerTreeAbove8MiB(t *testing.T) {
 	}
 }
 
+func TestCharacterPageAllowsOnlyTheWowheadHosts(t *testing.T) {
+	r := newRig(t)
+	id := r.claim()
+	r.write(id, "character.json", `{"name":"Ñandú"}`)
+	want := "default-src 'self'; img-src 'self' data: https://wow.zamimg.com; " +
+		"script-src 'self' https://wow.zamimg.com https://nether.wowhead.com; style-src 'self' https://wow.zamimg.com; " +
+		"connect-src 'self' https://nether.wowhead.com; frame-ancestors 'none'; base-uri 'none'; form-action 'self'"
+	if got := r.get("GET", base+"/").Header().Get("Content-Security-Policy"); got != want {
+		t.Errorf("policy = %q, want %q", got, want)
+	}
+	if strings.Contains(want, "unsafe-inline") || strings.Contains(want, "*") {
+		t.Errorf("the policy is wider than the Wowhead hosts")
+	}
+	if got := r.get("GET", base+"/data/entry.json").Header().Get("Content-Security-Policy"); got != "" {
+		t.Errorf("a data file sets its own policy %q, want the base policy from Headers", got)
+	}
+}
+
 func TestCharacterPageSetsTheEntryAndTheTitle(t *testing.T) {
 	r := newRig(t)
 	id := r.claim()

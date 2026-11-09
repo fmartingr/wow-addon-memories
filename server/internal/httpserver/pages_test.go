@@ -165,7 +165,7 @@ func TestCharacterPageAfterAnUpload(t *testing.T) {
 			t.Errorf("page lacks %q", want)
 		}
 	}
-	checkSecurityHeaders(t, rec, "page")
+	checkPageHeaders(t, rec, "page")
 	if rec.Header().Get("X-Robots-Tag") != "noindex, nofollow" || rec.Header().Get("Cache-Control") != "no-cache" || rec.Header().Get("ETag") == "" {
 		t.Errorf("page headers: %v", rec.Header())
 	}
@@ -394,5 +394,16 @@ func TestRunNeedsTheViewerFolder(t *testing.T) {
 	err := Run(t.Context(), cfg, quietLog())
 	if err == nil || !strings.Contains(err.Error(), "MEMORIES_WEB_DIR") {
 		t.Errorf("Run = %v, want an error that names MEMORIES_WEB_DIR", err)
+	}
+}
+
+func TestOtherPagesKeepTheStrictPolicy(t *testing.T) {
+	s := newSite(t)
+	s.upload("eu-brumamar-nandu")
+	for _, path := range []string{"/", "/nothing", brumamar + "/data/journey.jsonl", brumamar + "/data/entry.json", "/_/app.mjs", "/_/style.css", "/robots.txt", brumamar} {
+		checkSecurityHeaders(t, s.get(path), path)
+	}
+	if rec := s.get(brumamar + "/"); rec.Header().Get("Content-Security-Policy") != characterPageCSP {
+		t.Errorf("character page policy = %q", rec.Header().Get("Content-Security-Policy"))
 	}
 }
