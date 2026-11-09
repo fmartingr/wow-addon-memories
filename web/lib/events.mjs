@@ -1,6 +1,8 @@
 // How an event reads to a person: the tooltip, the toast line and the colours. Every value from the data goes through
 // esc(). The only markup that is not text is built from numbers and fixed strings.
-import { clock, esc, fmtDate, moneyText, qualityColour } from './format.mjs';
+import { className, clock, esc, fmtDate, fmtNum, moneyText, qualityColour } from './format.mjs';
+import { PROFESSIONS } from './heat.mjs';
+import { t, tr } from './i18n.mjs';
 import { lastBefore } from './playback.mjs';
 import { standingName } from './summary.mjs';
 
@@ -11,36 +13,44 @@ export const EVENT_COLOURS = {
 };
 
 const itemColour = (q) => qualityColour(Number.isInteger(q) ? q : 1);
-const itemLabel = (e) => e.name || (e.item ? 'item ' + e.item : 'an item');
+const itemLabel = (e) => e.name || (e.item ? t('fallback.itemId', { id: e.item }) : t('fallback.item'));
 const withCount = (e) => itemLabel(e) + (e.count > 1 ? ' x' + e.count : '');
-const standing = (e) => e.label || standingName(e.standing) || 'standing ' + e.standing;
-const kindOf = (e) => (e.how === 'chest' ? 'Chest' : 'Container');
+const standing = (e) => standingName(e.standing) || e.label || t('standing.unknown', { n: e.standing });
+const kindOf = (e) => (e.how === 'chest' ? t('kind.chest') : t('kind.container'));
+// ga.prof is the English token of the addon; a known one reads as prof.<id> of the catalog.
+const PROF_IDS = new Map(Object.entries(PROFESSIONS).map(([id, token]) => [token, id]));
+const profName = (prof) => (PROF_IDS.has(prof) ? t('prof.' + PROF_IDS.get(prof)) : prof);
+// e.itype is the instance type token of the addon: party or raid.
+const itypeName = (itype) => (itype ? tr('itype.' + itype) ?? itype : t('fallback.dungeon'));
+
+// The catalog key of the toast of a need or greed roll.
+const rollKey = (e) => 'note.rl' + (e.type === 'greed' ? 'Greed' : 'Need') + (e.won === 1 ? 'Won' : e.won === 0 ? 'Lost' : '');
 
 // The toast and log line of each kind: [text, colour].
 export const NOTE = {
-  lv: (e) => ['Level ' + e.level, EVENT_COLOURS.lv],
-  de: (e) => ['You died.' + (e.killer ? ' Killed by ' + e.killer + '.' : ''), EVENT_COLOURS.de],
-  ss: (e) => ['Screenshot: ' + e.why, EVENT_COLOURS.ss],
-  dn: (e) => ['Entered ' + e.name, EVENT_COLOURS.dn],
-  bo: (e) => [e.name + (e.success ? ' defeated' : ': fight lost'), EVENT_COLOURS.bo],
-  hs: (e) => ['Hearthstone to ' + e.to, EVENT_COLOURS.hs],
-  tx: (e) => ['Flight to ' + e.to, EVENT_COLOURS.tx],
-  cc: () => ['Close call!', EVENT_COLOURS.cc],
-  pk: (e) => [(e.result === 'won' ? 'Defeated ' : 'Killed by ') + e.name, EVENT_COLOURS.pk],
-  qt: (e) => ['Quest done: ' + (e.title || 'a quest'), EVENT_COLOURS.qt],
-  di: (e) => ['Discovered ' + e.area, EVENT_COLOURS.di],
-  ga: (e) => ['Gathered ' + withCount(e), itemColour(e.quality)],
-  fs: (e) => ['Caught ' + withCount(e), itemColour(e.quality)],
-  op: (e) => [e.how === 'chest' ? 'Chest opened' : 'Opened ' + (e.name || 'a container'), EVENT_COLOURS.op],
-  pp: (e) => ['Picked a pocket: ' + itemLabel(e), itemColour(e.quality)],
-  rl: (e) => [(e.type === 'greed' ? 'Greed' : 'Need') + (e.won === 1 ? ' won: ' : e.won === 0 ? ' lost: ' : ': ') + itemLabel(e), itemColour(e.quality)],
-  rp: (e) => [standing(e) + ' with ' + e.faction, EVENT_COLOURS.rp],
-  qa: (e) => ['Accepted ' + (e.title || 'a quest'), EVENT_COLOURS.qa],
-  hb: (e) => ['Home is now ' + e.home, EVENT_COLOURS.hb],
-  fp: (e) => ['Flight path: ' + e.node, EVENT_COLOURS.fp],
-  bk: (e) => ['Read ' + e.title, EVENT_COLOURS.bk],
-  pt: (e) => ['Tamed ' + (e.name || 'a beast'), EVENT_COLOURS.pt],
-  rc: (e) => ['Recipe: ' + e.name, EVENT_COLOURS.rc],
+  lv: (e) => [t('note.lv', { level: e.level }), EVENT_COLOURS.lv],
+  de: (e) => [e.killer ? t('note.deBy', { killer: e.killer }) : t('note.de'), EVENT_COLOURS.de],
+  ss: (e) => [t('note.ss', { why: e.why }), EVENT_COLOURS.ss],
+  dn: (e) => [t('note.dn', { name: e.name }), EVENT_COLOURS.dn],
+  bo: (e) => [t(e.success ? 'note.boWin' : 'note.boLose', { name: e.name }), EVENT_COLOURS.bo],
+  hs: (e) => [t('note.hs', { to: e.to }), EVENT_COLOURS.hs],
+  tx: (e) => [t('note.tx', { to: e.to }), EVENT_COLOURS.tx],
+  cc: () => [t('note.cc'), EVENT_COLOURS.cc],
+  pk: (e) => [t(e.result === 'won' ? 'note.pkWon' : 'note.pkLost', { name: e.name }), EVENT_COLOURS.pk],
+  qt: (e) => [t('note.qt', { title: e.title || t('fallback.quest') }), EVENT_COLOURS.qt],
+  di: (e) => [t('note.di', { area: e.area }), EVENT_COLOURS.di],
+  ga: (e) => [t('note.ga', { item: withCount(e) }), itemColour(e.quality)],
+  fs: (e) => [t('note.fs', { item: withCount(e) }), itemColour(e.quality)],
+  op: (e) => [e.how === 'chest' ? t('note.opChest') : t('note.op', { name: e.name || t('fallback.container') }), EVENT_COLOURS.op],
+  pp: (e) => [t('note.pp', { item: itemLabel(e) }), itemColour(e.quality)],
+  rl: (e) => [t(rollKey(e), { item: itemLabel(e) }), itemColour(e.quality)],
+  rp: (e) => [t('note.rp', { standing: standing(e), faction: e.faction }), EVENT_COLOURS.rp],
+  qa: (e) => [t('note.qa', { title: e.title || t('fallback.quest') }), EVENT_COLOURS.qa],
+  hb: (e) => [t('note.hb', { home: e.home }), EVENT_COLOURS.hb],
+  fp: (e) => [t('note.fp', { node: e.node }), EVENT_COLOURS.fp],
+  bk: (e) => [t('note.bk', { title: e.title }), EVENT_COLOURS.bk],
+  pt: (e) => [t('note.pt', { name: e.name || t('fallback.beast') }), EVENT_COLOURS.pt],
+  rc: (e) => [t('note.rc', { name: e.name }), EVENT_COLOURS.rc],
 };
 
 export function noteOf(e) {
@@ -53,37 +63,49 @@ export function noteOf(e) {
 export function tipHtml(model, e, shotUrl = null) {
   const z = lastBefore(model.zo, e.c);
   const where = z ? `<div class="dim">${esc(z.zone)}</div>` : '';
-  const when = `<div class="dim">${esc(fmtDate(e.t))}, ${clock(e.c)} played</div>`;
+  const when = `<div class="dim">${esc(t('tip.when', { date: fmtDate(e.t), clock: clock(e.c) }))}</div>`;
+  // line() is one sentence of the body. t() gives plain text, so esc() also escapes the values that fill the placeholders.
+  const line = (key, vars, cls = '') => `<div${cls ? ` class="${cls}"` : ''}>${esc(t(key, vars))}</div>`;
   let title = e.k, body = '', col = EVENT_COLOURS[e.k] ?? '#ffd100';
   switch (e.k) {
-    case 'lv': title = 'Level ' + e.level; body = '<div>You reached a new level.</div>'; break;
-    case 'de': title = 'You died'; body = `<div>Killed by ${esc(e.killer || 'something')}${e.klevel ? ` (level ${esc(e.klevel)})` : ''}.</div>` + (e.place && e.place !== 'world' ? `<div>In ${esc(e.place)}.</div>` : ''); break;
-    case 'cc': title = 'Close call'; body = `<div>Low health for ${esc(e.seconds || '?')} s. You lived.</div>`; break;
-    case 'pk': title = e.result === 'won' ? 'Enemy player defeated' : 'Killed by enemy player'; body = `<div>${esc(e.name)}, level ${esc(e.level || '?')} ${esc(e.class || '')}</div>`; break;
-    case 'dn': title = e.name; body = `<div>${esc(e.itype || 'dungeon')} entered (${esc(e.size || '?')} players).</div>`; break;
-    case 'bo': title = e.name; body = `<div>Boss ${e.success ? 'defeated' : 'fight lost'} in ${e.seconds ? esc(clock(e.seconds).replace(/^0:/, '')) : '?'}.</div><div class="dim">${esc(e.place)}</div>`; break;
-    case 'qt': title = e.title || 'Quest'; body = `<div>Quest completed.</div><div>${esc(e.xp || 0)} XP, ${esc(moneyText(e.money))}</div>`; break;
-    case 'di': title = e.area; body = `<div>New area discovered (${esc(e.xp || 0)} XP).</div>`; break;
-    case 'hs': title = 'Hearthstone'; body = `<div>Returned to ${esc(e.to)}.</div>`; break;
-    case 'tx': title = 'Flight'; body = `<div>${esc(e.from)} to ${esc(e.to)} (${esc(moneyText(e.cost))}).</div>`; break;
-    case 'ss': title = 'Screenshot'; body = `<div>${esc(e.why)} (${esc(e.result)})</div>` + (shotUrl ? `<img class="shot" src="${esc(shotUrl)}" alt="">` : ''); break;
-    case 'ga': title = withCount(e); col = itemColour(e.quality); body = `<div>${esc(e.prof || 'Gathering')}${e.node && e.node !== '?' ? ' from ' + esc(e.node) : ''}.</div><div class="dim">${e.why === 'rare' ? 'A rare find.' : 'The first of this item.'}</div>`; break;
-    case 'fs': title = withCount(e); col = itemColour(e.quality); body = `<div>Caught while fishing.</div><div class="dim">${e.why === 'rare' ? 'A rare catch.' : 'The first of this catch.'}</div>`; break;
-    case 'op': title = e.name && e.name !== '?' ? e.name : kindOf(e); body = `<div>${kindOf(e)} opened.</div>`; break;
-    case 'pp': title = 'Pocket picked'; col = itemColour(e.quality); body = `<div>${esc(itemLabel(e))} from ${esc(e.who && e.who !== '?' ? e.who : 'a target')}.</div>`; break;
-    case 'rl': {
-      const res = e.won === 1 ? 'won' : e.won === 0 ? 'lost' : 'result not seen';
-      title = itemLabel(e); col = itemColour(e.quality);
-      body = `<div>${e.type === 'greed' ? 'Greed' : 'Need'} roll ${e.roll != null ? esc(e.roll) + ', ' : ''}${res}.</div>`;
+    case 'lv': title = t('tip.lvTitle', { level: e.level }); body = line('tip.lv'); break;
+    case 'de':
+      title = t('tip.deTitle');
+      body = line(e.klevel ? 'tip.deLevel' : 'tip.de', { killer: e.killer || t('fallback.something'), klevel: e.klevel }) +
+        (e.place && e.place !== 'world' ? line('tip.deIn', { place: e.place }) : '');
+      break;
+    case 'cc': title = t('tip.ccTitle'); body = line('tip.cc', { seconds: e.seconds || '?' }); break;
+    case 'pk': title = t(e.result === 'won' ? 'tip.pkWonTitle' : 'tip.pkLostTitle'); body = line('tip.pk', { name: e.name, level: e.level || '?', class: className(e.class) }); break;
+    case 'dn': title = e.name; body = line('tip.dn', { itype: itypeName(e.itype), size: e.size || '?' }); break;
+    case 'bo': title = e.name; body = line(e.success ? 'tip.boWin' : 'tip.boLose', { time: e.seconds ? clock(e.seconds).replace(/^0:/, '') : '?' }) + `<div class="dim">${esc(e.place)}</div>`; break;
+    case 'qt': title = e.title || t('fallback.questTitle'); body = line('tip.qt') + `<div>${esc(t('tip.qtReward', { xp: fmtNum(e.xp), money: moneyText(e.money) }))}</div>`; break;
+    case 'di': title = e.area; body = line('tip.di', { xp: fmtNum(e.xp) }); break;
+    case 'hs': title = t('tip.hsTitle'); body = line('tip.hs', { to: e.to }); break;
+    case 'tx': title = t('tip.txTitle'); body = line('tip.tx', { from: e.from, to: e.to, cost: moneyText(e.cost) }); break;
+    case 'ss': title = t('tip.ssTitle'); body = line('tip.ss', { why: e.why, result: e.result }) + (shotUrl ? `<img class="shot" src="${esc(shotUrl)}" alt="">` : ''); break;
+    case 'ga': {
+      title = withCount(e); col = itemColour(e.quality);
+      const prof = e.prof ? profName(e.prof) : t('fallback.gathering');
+      body = (e.node && e.node !== '?' ? line('tip.gaFrom', { prof, node: e.node }) : line('tip.ga', { prof })) + line(e.why === 'rare' ? 'tip.gaRare' : 'tip.gaFirst', {}, 'dim');
       break;
     }
-    case 'rp': title = e.faction; body = `<div>Reputation: ${esc(standing(e))}.</div>`; break;
-    case 'qa': title = e.title || 'Quest'; body = '<div>Quest accepted.</div>'; break;
-    case 'hb': title = 'New home'; body = `<div>Hearthstone bound to ${esc(e.home)}.</div>`; break;
-    case 'fp': title = e.node; body = '<div>Flight path learned.</div>'; break;
-    case 'bk': title = e.title; body = '<div>Read for the first time.</div>'; break;
-    case 'pt': title = e.name || 'Beast'; body = `<div>Tamed a ${esc(e.family || 'beast')}${e.level ? ' (level ' + esc(e.level) + ')' : ''}.</div>`; break;
-    case 'rc': title = e.name; body = '<div>Recipe learned.</div>'; break;
+    case 'fs': title = withCount(e); col = itemColour(e.quality); body = line('tip.fs') + line(e.why === 'rare' ? 'tip.fsRare' : 'tip.fsFirst', {}, 'dim'); break;
+    case 'op': title = e.name && e.name !== '?' ? e.name : kindOf(e); body = line(e.how === 'chest' ? 'tip.opChest' : 'tip.opContainer'); break;
+    case 'pp': title = t('tip.ppTitle'); col = itemColour(e.quality); body = line('tip.pp', { item: itemLabel(e), who: e.who && e.who !== '?' ? e.who : t('fallback.target') }); break;
+    case 'rl': {
+      const result = t(e.won === 1 ? 'tip.rlWon' : e.won === 0 ? 'tip.rlLost' : 'tip.rlUnseen');
+      const kind = t(e.type === 'greed' ? 'tip.rlGreed' : 'tip.rlNeed');
+      title = itemLabel(e); col = itemColour(e.quality);
+      body = e.roll != null ? line('tip.rlRolled', { kind, roll: e.roll, result }) : line('tip.rlPlain', { kind, result });
+      break;
+    }
+    case 'rp': title = e.faction; body = line('tip.rp', { standing: standing(e) }); break;
+    case 'qa': title = e.title || t('fallback.questTitle'); body = line('tip.qa'); break;
+    case 'hb': title = t('tip.hbTitle'); body = line('tip.hb', { home: e.home }); break;
+    case 'fp': title = e.node; body = line('tip.fp'); break;
+    case 'bk': title = e.title; body = line('tip.bk'); break;
+    case 'pt': title = e.name || t('fallback.beastTitle'); body = line(e.level ? 'tip.ptLevel' : 'tip.pt', { family: e.family || t('fallback.family'), level: e.level }); break;
+    case 'rc': title = e.name; body = line('tip.rc'); break;
   }
   return `<b class="tip-title" data-c="${esc(col)}">${esc(title)}</b>${body}${where}${when}`;
 }

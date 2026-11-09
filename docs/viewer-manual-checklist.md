@@ -41,3 +41,8 @@ browser at 360 × 740 and write "360 px" in the cell. Use a real character on `m
 | 34 | 6 | A link `#heatmaps/fishing?x=..&y=..&z=..` opens that view. A layer change replaces the URL and does not add a history entry. | not run | not run |
 | 35 | 6 | The layer picker is in the bottom sheet on a phone. A tap on the map shows the weight of the cell. | not run | not run |
 | 36 | 6 | An empty layer shows "No records for this layer." | not run | not run |
+| 37 | i18n | With no `lang` cookie and the browser in English, a character uploaded from a German client (`locale` is `deDE`) opens in German: tabs, labels, the journal log, the legends and the tooltips. | not run | not run |
+| 38 | i18n | In the footer picker, choose English. The page turns English, the cookie `lang=en` is set, and the hash (tab, camera, selection) stays. Reload: still English. | not run | not run |
+| 39 | i18n | Choose each language of the picker on the home page and on a character page. `<html lang>` follows, and the longest texts (German) are not clipped on a phone and at 1440 px. | not run | not run |
+| 40 | i18n | Dates, numbers and the coin letters follow the language (German: `1.234`, `G S K`). One kill reads "1 kill". | not run | not run |
+| 41 | i18n | With the network blocking `/_/i18n/de.mjs`, a German page still opens in English with no error. | not run | not run |

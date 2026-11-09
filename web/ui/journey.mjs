@@ -5,6 +5,7 @@ import { screenshotUrl } from '../lib/data.mjs';
 import { clamp, clock, coinsHtml, esc, fmtDate, fmtDay, moneyText } from '../lib/format.mjs';
 import { boundsOf } from '../lib/geo.mjs';
 import { EVENT_COLOURS, NOTE, noteOf, tipHtml } from '../lib/events.mjs';
+import { t } from '../lib/i18n.mjs';
 import { CAT, FLAG, LANES } from '../lib/model.mjs';
 import { advance, crossed, eventId, findEvent, goldAt, levelAt, placeAt, posAt, SPEEDS, spanAt } from '../lib/playback.mjs';
 import { ZONES } from '../zones.mjs';
@@ -134,8 +135,9 @@ function drawPlayer(ctx, view, pos, span, now) {
     ctx.lineWidth = 3.5;
     ctx.strokeStyle = 'rgba(10,6,2,0.9)';
     ctx.fillStyle = '#e4c8ff';
-    ctx.strokeText('Inside ' + span.name, sx, sy + 30);
-    ctx.fillText('Inside ' + span.name, sx, sy + 30);
+    const inside = t('map.inside', { name: span.name });
+    ctx.strokeText(inside, sx, sy + 30);
+    ctx.fillText(inside, sx, sy + 30);
   }
 }
 
@@ -174,7 +176,7 @@ export function drawTimeline(ctx, w, h, dpr, model, state) {
       ctx.moveTo(x, yBand - 4);
       ctx.lineTo(x, yBand);
       ctx.stroke();
-      ctx.fillText(step >= 86400 ? Math.floor(s / 86400) + 'd' : Math.floor(s / 3600) + ':' + String(Math.floor((s % 3600) / 60)).padStart(2, '0'), x, 6);
+      ctx.fillText(step >= 86400 ? t('tl.day', { n: Math.floor(s / 86400) }) : Math.floor(s / 3600) + ':' + String(Math.floor((s % 3600) / 60)).padStart(2, '0'), x, 6);
     }
   }
   model.levels.forEach((l, n) => {
@@ -187,11 +189,11 @@ export function drawTimeline(ctx, w, h, dpr, model, state) {
       ctx.fillStyle = cur ? '#ffd100' : '#d8c590';
       ctx.textAlign = 'center';
       ctx.font = `700 ${compact ? 9 : 11}px Cinzel, serif`;
-      ctx.fillText('Lv ' + l.level, (a + b) / 2, yBand + bandH / 2 + 1);
+      ctx.fillText(t('tl.level', { level: l.level }), (a + b) / 2, yBand + bandH / 2 + 1);
     }
   });
   if (!compact) {
-    LANES.forEach(([cat, label, ic], n) => {
+    LANES.forEach(([cat, ic], n) => {
       const y = laneY(n), on = state.show[cat] !== false;
       ctx.fillStyle = n % 2 ? '#ffffff08' : '#00000030';
       ctx.fillRect(0, y, w, TL.lane);
@@ -200,7 +202,8 @@ export function drawTimeline(ctx, w, h, dpr, model, state) {
       ctx.font = '700 10.5px Cinzel, serif';
       ctx.fillStyle = '#d8c590';
       ctx.textAlign = 'left';
-      ctx.fillText(label, 28, y + TL.lane / 2 + 1);
+      // A long translation is condensed to the gutter instead of running into the first markers.
+      ctx.fillText(t('lane.' + cat), 28, y + TL.lane / 2 + 1, TL.L - 30);
       ctx.globalAlpha = 1;
     });
   }
@@ -253,7 +256,7 @@ export function drawTimeline(ctx, w, h, dpr, model, state) {
     ctx.font = '700 10.5px Cinzel, serif';
     ctx.fillStyle = '#d8c590';
     ctx.textAlign = 'left';
-    ctx.fillText('Gold', 28, gy + gh / 2 + 1);
+    ctx.fillText(t('tl.gold'), 28, gy + gh / 2 + 1, TL.L - 30);
   }
   const curve = new Path2D();
   let pv = model.gold[0].v;
@@ -295,7 +298,7 @@ export function drawTimeline(ctx, w, h, dpr, model, state) {
     ctx.font = '500 10px Alegreya Sans, sans-serif';
     ctx.fillStyle = '#e7c46a';
     ctx.textAlign = 'right';
-    ctx.fillText('peak ' + moneyText(model.goldMax) + (model.goldAbout ? ' (about)' : ''), x1 - 2, gy + 8);
+    ctx.fillText(t(model.goldAbout ? 'tl.peakAbout' : 'tl.peak', { money: moneyText(model.goldMax) }), x1 - 2, gy + 8);
   }
   ctx.fillStyle = '#ffd10014';
   ctx.fillRect(x0, yBand, hx - x0, gy + gh - yBand);
@@ -376,11 +379,11 @@ export function createJourneyTab(panel, ctx) {
     img.hidden = false;
     img.onerror = () => {
       img.hidden = true;
-      $('lightboxCap').textContent = 'Screenshot not uploaded';
+      $('lightboxCap').textContent = t('lightbox.missing');
     };
     if (url) img.src = url;
     else img.onerror();
-    if (url) $('lightboxCap').textContent = 'Screenshot: ' + (e.why ?? '') + ' · ' + fmtDate(e.t);
+    if (url) $('lightboxCap').textContent = t('lightbox.caption', { why: e.why ?? '', date: fmtDate(e.t) });
     $('lightbox').hidden = false;
     lightboxAt = performance.now();
     hideTip();
@@ -406,7 +409,7 @@ export function createJourneyTab(panel, ctx) {
     }
     detailEv = e;
     hideTip();
-    showTip('<button type="button" class="x" aria-label="Close details" title="Close">×</button>' + tipHtml(model, e, null), x, y, host, $('detail'), above);
+    showTip(`<button type="button" class="x" aria-label="${esc(t('btn.close'))}" title="${esc(t('btn.close.title'))}">×</button>` + tipHtml(model, e, null), x, y, host, $('detail'), above);
   }
 
   function toast(text, colour) {
@@ -467,7 +470,7 @@ export function createJourneyTab(panel, ctx) {
     lastFeed = key;
     const feed = $('feed');
     if (!items.length) {
-      feed.innerHTML = '<li class="empty"><span class="sub">Nothing yet. Press play.</span></li>';
+      feed.innerHTML = `<li class="empty"><span class="sub">${esc(t('journal.empty'))}</span></li>`;
       return;
     }
     feed.innerHTML = items
@@ -485,8 +488,12 @@ export function createJourneyTab(panel, ctx) {
     const span = spanAt(model, c);
     const place = placeAt(model, c);
     $('rTime').textContent = clock(c) + ' / ' + clock(model.total);
-    $('rWhere').textContent =
-      'Level ' + levelAt(model, c) + (span ? ', inside ' + span.name : place.zone ? ', ' + place.zone + (place.sub ? ' (' + place.sub + ')' : '') : '');
+    const level = levelAt(model, c);
+    $('rWhere').textContent = span
+      ? t('hud.inside', { level, name: span.name })
+      : place.zone
+        ? t(place.sub ? 'hud.zoneSub' : 'hud.zone', { level, zone: place.zone, sub: place.sub })
+        : t('hud.level', { level });
     $('rGold').innerHTML = coinsHtml(goldAt(model, c));
     $('zLevel').textContent = view.levelName();
     const key = place.zone + '|' + place.sub;
@@ -551,8 +558,8 @@ export function createJourneyTab(panel, ctx) {
     state.playing = on;
     const b = $('play');
     b.textContent = on ? '❚❚' : '▶';
-    b.setAttribute('aria-label', on ? 'Pause' : 'Play');
-    b.title = on ? 'Pause (Space)' : 'Play (Space)';
+    b.setAttribute('aria-label', t(on ? 'btn.pause' : 'btn.play'));
+    b.title = t(on ? 'btn.pause.title' : 'btn.play.title');
     if (!on) pushParams();
   }
   function setPlaying(on) {
@@ -729,7 +736,7 @@ export function createJourneyTab(panel, ctx) {
       const sx = x + tlCanvas.getBoundingClientRect().left - stage.getBoundingClientRect().left - 14;
       if (!h && y >= tl.gold.y0 && y <= tl.gold.y1 && x >= tl.x0 && x <= tl.x1) {
         const c = clockAtX(x);
-        showTip(`<b class="tip-title" data-c="#ffd100">Purse</b><div class="coins">${coinsHtml(goldAt(model, c))}</div><div class="dim">${esc(clock(c))} played</div>`, sx, y, tlCanvas, $('tip'), true);
+        showTip(`<b class="tip-title" data-c="#ffd100">${esc(t('tip.purse'))}</b><div class="coins">${coinsHtml(goldAt(model, c))}</div><div class="dim">${esc(t('tip.played', { clock: clock(c) }))}</div>`, sx, y, tlCanvas, $('tip'), true);
       } else if (h && h.ev !== detailEv) showTip(tipHtml(model, h.ev, shotOf(h.ev)), sx, y, tlCanvas, $('tip'), true);
       else hideTip();
     });

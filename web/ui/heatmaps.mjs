@@ -1,7 +1,8 @@
 // The Heatmaps tab: one layer at a time over the map. The layer, the profession filter and the camera are in the hash.
-import { esc, fmtDur } from '../lib/format.mjs';
+import { esc, fmtDur, fmtNum } from '../lib/format.mjs';
 import { boundsOf } from '../lib/geo.mjs';
 import { binGrid, blur, colourise, layerById, layerPoints, LAYERS, rampTable } from '../lib/heat.mjs';
+import { t } from '../lib/i18n.mjs';
 import { ZONES } from '../zones.mjs';
 import { paintData } from './journey.mjs';
 import { MapView } from './mapview.mjs';
@@ -9,13 +10,12 @@ import { createSheet } from './shell.mjs';
 
 const CELL = 6;
 
-export const legendText = (count) => `${count.toLocaleString('en-US')} on the map`;
+export const legendText = (count) => t('heat.legend', { n: fmtNum(count) });
 
 // What a cell holds, for the tooltip: a duration for Presence, else a count.
 export function cellText(layer, weight) {
-  if (layer.id === 'presence') return fmtDur(weight) + ' (' + Math.round(weight) + ' s)';
-  const n = Math.round(weight);
-  return n + ' ' + layer.unit;
+  if (layer.id === 'presence') return t('heat.presence', { time: fmtDur(weight), seconds: Math.round(weight) });
+  return t('heat.cell.' + layer.id, { n: Math.round(weight) });
 }
 
 export function createHeatmapsTab(panel, ctx) {
@@ -42,8 +42,8 @@ export function createHeatmapsTab(panel, ctx) {
     ramp.imageSmoothingEnabled = false;
     ramp.drawImage(off, 0, 0, 160, 10);
     $('legendCount').textContent = legendText(points.count);
-    $('legendUnplaced').textContent = points.unplaced ? `${points.unplaced.toLocaleString('en-US')} with no map position (instances)` : '';
-    $('legendEmpty').textContent = points.count ? '' : 'No records for this layer.';
+    $('legendUnplaced').textContent = points.unplaced ? t('heat.unplaced', { n: fmtNum(points.unplaced) }) : '';
+    $('legendEmpty').textContent = points.count ? '' : t('heat.empty');
     view?.invalidate();
   }
 
@@ -85,7 +85,7 @@ export function createHeatmapsTab(panel, ctx) {
       return;
     }
     const layer = layerById(layerId);
-    tip.innerHTML = `<b class="tip-title" data-c="${esc(layer.colour)}">${esc(layer.label)}</b><div>${esc(cellText(layer, w))}</div>`;
+    tip.innerHTML = `<b class="tip-title" data-c="${esc(layer.colour)}">${esc(t('layer.' + layer.id))}</b><div>${esc(cellText(layer, w))}</div>`;
     paintData(tip);
     tip.hidden = false;
     const st = tip.parentElement.getBoundingClientRect();

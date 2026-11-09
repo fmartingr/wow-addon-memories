@@ -4,18 +4,20 @@
 const hex = (c) => [parseInt(c.slice(1, 3), 16), parseInt(c.slice(3, 5), 16), parseInt(c.slice(5, 7), 16)];
 
 // colour: the hue of the layer. kinds: the journal kinds that the layer counts; presence has none (it uses the trail).
+// The name of a layer is layer.<id> in the catalog.
 export const LAYERS = [
-  { id: 'presence', label: 'Presence', colour: '#ffd100', kinds: [], unit: 'time' },
-  { id: 'kills', label: 'Kills', colour: '#ff5a43', kinds: ['ki'], unit: 'kills' },
-  { id: 'deaths', label: 'Deaths', colour: '#c58cff', kinds: ['de', 'hc'], unit: 'deaths' },
-  { id: 'gathering', label: 'Gathering', colour: '#35c9a0', kinds: ['ga'], unit: 'finds' },
-  { id: 'fishing', label: 'Fishing', colour: '#4fa8e0', kinds: ['fs'], unit: 'catches' },
-  { id: 'quests', label: 'Quests', colour: '#f2a93b', kinds: ['qt'], unit: 'quests' },
-  { id: 'loot', label: 'Loot', colour: '#9ad65f', kinds: ['lo', 'op'], unit: 'loot' },
+  { id: 'presence', colour: '#ffd100', kinds: [] },
+  { id: 'kills', colour: '#ff5a43', kinds: ['ki'] },
+  { id: 'deaths', colour: '#c58cff', kinds: ['de', 'hc'] },
+  { id: 'gathering', colour: '#35c9a0', kinds: ['ga'] },
+  { id: 'fishing', colour: '#4fa8e0', kinds: ['fs'] },
+  { id: 'quests', colour: '#f2a93b', kinds: ['qt'] },
+  { id: 'loot', colour: '#9ad65f', kinds: ['lo', 'op'] },
 ];
 
 export const layerById = (id) => LAYERS.find((l) => l.id === id) ?? LAYERS[0];
 
+// The values are the English tokens that the addon writes to ga.prof. The label of a profession is prof.<id>.
 export const PROFESSIONS = { mining: 'Mining', herbalism: 'Herbalism', skinning: 'Skinning' };
 
 const keepProf = (e, prof) => {

@@ -1,29 +1,33 @@
 // The 19 gear slots and the item in each, derived from the gear snapshots and the equip records.
+import { t } from './i18n.mjs';
 
 // side: where the slot sits on the paper doll.
 export const SLOTS = [
-  { n: 1, key: 'head', label: 'Head', side: 'left' },
-  { n: 2, key: 'neck', label: 'Neck', side: 'left' },
-  { n: 3, key: 'shoulder', label: 'Shoulders', side: 'left' },
-  { n: 15, key: 'back', label: 'Back', side: 'left' },
-  { n: 5, key: 'chest', label: 'Chest', side: 'left' },
-  { n: 4, key: 'shirt', label: 'Shirt', side: 'left' },
-  { n: 19, key: 'tabard', label: 'Tabard', side: 'left' },
-  { n: 9, key: 'wrist', label: 'Wrists', side: 'left' },
-  { n: 10, key: 'hands', label: 'Hands', side: 'right' },
-  { n: 6, key: 'waist', label: 'Waist', side: 'right' },
-  { n: 7, key: 'legs', label: 'Legs', side: 'right' },
-  { n: 8, key: 'feet', label: 'Feet', side: 'right' },
-  { n: 11, key: 'finger1', label: 'Finger 1', side: 'right' },
-  { n: 12, key: 'finger2', label: 'Finger 2', side: 'right' },
-  { n: 13, key: 'trinket1', label: 'Trinket 1', side: 'right' },
-  { n: 14, key: 'trinket2', label: 'Trinket 2', side: 'right' },
-  { n: 16, key: 'mainhand', label: 'Main hand', side: 'bottom' },
-  { n: 17, key: 'offhand', label: 'Off hand', side: 'bottom' },
-  { n: 18, key: 'ranged', label: 'Ranged', side: 'bottom' },
+  { n: 1, key: 'head', side: 'left' },
+  { n: 2, key: 'neck', side: 'left' },
+  { n: 3, key: 'shoulder', side: 'left' },
+  { n: 15, key: 'back', side: 'left' },
+  { n: 5, key: 'chest', side: 'left' },
+  { n: 4, key: 'shirt', side: 'left' },
+  { n: 19, key: 'tabard', side: 'left' },
+  { n: 9, key: 'wrist', side: 'left' },
+  { n: 10, key: 'hands', side: 'right' },
+  { n: 6, key: 'waist', side: 'right' },
+  { n: 7, key: 'legs', side: 'right' },
+  { n: 8, key: 'feet', side: 'right' },
+  { n: 11, key: 'finger1', side: 'right' },
+  { n: 12, key: 'finger2', side: 'right' },
+  { n: 13, key: 'trinket1', side: 'right' },
+  { n: 14, key: 'trinket2', side: 'right' },
+  { n: 16, key: 'mainhand', side: 'bottom' },
+  { n: 17, key: 'offhand', side: 'bottom' },
+  { n: 18, key: 'ranged', side: 'bottom' },
 ];
 
-export const slotLabel = (n) => SLOTS.find((s) => s.n === n)?.label ?? '';
+export const slotLabel = (n) => {
+  const slot = SLOTS.find((s) => s.n === n);
+  return slot ? t('slot.' + slot.key) : '';
+};
 
 const itemId = (v) => {
   const text = String(v ?? '');

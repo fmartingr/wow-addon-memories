@@ -1,17 +1,19 @@
+import { t, tr } from './i18n.mjs';
+
 // deriveSummary turns character.json and the journal records into the plain numbers that the Summary tab shows.
 
 const STANDINGS = [
-  { standing: 1, name: 'Hated', from: -42000, to: -6000 },
-  { standing: 2, name: 'Hostile', from: -6000, to: -3000 },
-  { standing: 3, name: 'Unfriendly', from: -3000, to: 0 },
-  { standing: 4, name: 'Neutral', from: 0, to: 3000 },
-  { standing: 5, name: 'Friendly', from: 3000, to: 9000 },
-  { standing: 6, name: 'Honored', from: 9000, to: 21000 },
-  { standing: 7, name: 'Revered', from: 21000, to: 42000 },
-  { standing: 8, name: 'Exalted', from: 42000, to: 43000 },
+  { standing: 1, from: -42000, to: -6000 },
+  { standing: 2, from: -6000, to: -3000 },
+  { standing: 3, from: -3000, to: 0 },
+  { standing: 4, from: 0, to: 3000 },
+  { standing: 5, from: 3000, to: 9000 },
+  { standing: 6, from: 9000, to: 21000 },
+  { standing: 7, from: 21000, to: 42000 },
+  { standing: 8, from: 42000, to: 43000 },
 ];
 
-export const standingName = (n) => STANDINGS.find((s) => s.standing === n)?.name ?? '';
+export const standingName = (n) => (STANDINGS.some((s) => s.standing === n) ? tr('standing.' + n) : '');
 
 const isNum = (v) => typeof v === 'number' && Number.isFinite(v);
 
@@ -78,6 +80,8 @@ function derivePurse(char, steps) {
   return { copper: Math.max(0, anchor.value + later), about: false };
 }
 
+const OTHER = Symbol('other');
+
 function deriveSkills(char, steps) {
   const snap = latestSnap(char, 'Memories_Character', (s) => (typeof s.skills === 'string' ? s.skills : undefined));
   const groups = parseSkills(snap?.value);
@@ -101,9 +105,10 @@ function deriveSkills(char, steps) {
     else other.set(name, { rank, max });
   }
   for (const [group, g] of groups) if (!g.size) groups.delete(group);
-  if (other.size) groups.set('Other', other);
+  // A Symbol key keeps the skills of no group apart from a group of the client with the same name.
+  if (other.size) groups.set(OTHER, other);
   return [...groups].map(([group, skills]) => ({
-    group,
+    group: group === OTHER ? t('skills.other') : group,
     skills: [...skills].map(([name, v]) => ({ name, rank: v.rank, max: v.max })),
   }));
 }
@@ -114,7 +119,8 @@ function deriveReputation(steps) {
   return [...latest.values()]
     .map((s) => ({
       faction: s.faction,
-      label: typeof s.label === 'string' && s.label ? s.label : standingName(s.standing),
+      // The page language names the 8 standings; the label of the game client covers any other.
+      label: standingName(s.standing) || (typeof s.label === 'string' ? s.label : ''),
       standing: s.standing,
       value: s.value,
       progress: reputationProgress(s.standing, s.value),

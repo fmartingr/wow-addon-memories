@@ -721,7 +721,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated (`docs/self-host.md`: the cookie and `Vary`).
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 8. Viewer: translated character page and the character language
+### [x] 8. Viewer: translated character page and the character language
 
 - **Outcome:** every text of the character page shows in the chosen language. When the viewer has no saved choice,
   the page uses the language of the character's client.

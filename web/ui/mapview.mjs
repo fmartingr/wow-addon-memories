@@ -3,11 +3,9 @@
 // { x, y, s }: the world point at the middle of the canvas and the scale in CSS pixels for each world unit.
 import { CONT, H, W, ZONES } from '../zones.mjs';
 import { clamp } from '../lib/format.mjs';
+import { t } from '../lib/i18n.mjs';
 
 export const MAX_S = 40;
-export const LEGAL =
-  'Map art is the property of Blizzard Entertainment, Inc. World of Warcraft and Azeroth are Blizzard trademarks. This is an unofficial fan project, not affiliated with or endorsed by Blizzard.';
-export const NO_ART = 'Map art is not installed on this server.';
 
 /* ---------------------------------------------------------------- pure camera helpers
    v is a view { x, y, s, w, h }: the camera and the canvas size in CSS pixels. */
@@ -62,7 +60,7 @@ export function pinchCamera(start, w, h, from, to) {
 // The name of the zoom level: World, Continent or Zone.
 export const levelName = (s, w, h) => {
   const f = fitScale(w, h);
-  return s < f * 1.7 ? 'World' : s < f * 4 ? 'Continent' : 'Zone';
+  return t(s < f * 1.7 ? 'zoom.world' : s < f * 4 ? 'zoom.continent' : 'zoom.zone');
 };
 
 // The scale steps of the zoom buttons, from the world view to the closest zoom.
@@ -158,12 +156,12 @@ export class MapView {
     if (!world) {
       this.notice = document.createElement('p');
       this.notice.className = 'map-notice';
-      this.notice.textContent = NO_ART;
+      this.notice.textContent = t('map.noArt');
       canvas.parentElement?.append(this.notice);
     }
     this.legal = document.createElement('p');
     this.legal.className = 'legal map-legal';
-    this.legal.textContent = LEGAL;
+    this.legal.textContent = t('legal.map');
     (canvas.closest('.map-wrap') ?? canvas.parentElement).append(this.legal);
 
     VIEWS.add(this);

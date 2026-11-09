@@ -2,15 +2,15 @@
 // units, the events with their position, and the purse over time.
 import { toWorld } from './geo.mjs';
 
-// Marker category of each kind, and the lanes of the timeline as [category, label, icon kind].
+// Marker category of each kind, and the lanes of the timeline as [category, icon kind]. The name of a lane is
+// lane.<category> in the catalog.
 export const CAT = {
   lv: 'level', de: 'danger', cc: 'danger', pk: 'danger', dn: 'dungeon', bo: 'dungeon', qt: 'quest', di: 'quest', hs: 'quest', tx: 'quest',
   ss: 'shot', ga: 'find', fs: 'find', op: 'find', pp: 'find', rl: 'find', rp: 'world', qa: 'world', hb: 'world', fp: 'world', bk: 'world',
   pt: 'world', rc: 'world',
 };
 export const LANES = [
-  ['level', 'Levels', 'lv'], ['danger', 'Danger', 'de'], ['dungeon', 'Dungeons', 'dn'], ['quest', 'Quests', 'qt'],
-  ['find', 'Finds', 'ga'], ['world', 'World', 'rp'], ['shot', 'Shots', 'ss'],
+  ['level', 'lv'], ['danger', 'de'], ['dungeon', 'dn'], ['quest', 'qt'], ['find', 'ga'], ['world', 'rp'], ['shot', 'ss'],
 ];
 
 // Bits of the trail flags: ghost, taxi, combat, mounted.

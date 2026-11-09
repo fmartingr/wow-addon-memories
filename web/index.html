@@ -21,10 +21,10 @@
     </div>
   </header>
 
-  <nav class="tabs" role="tablist" aria-label="Character pages">
-    <button id="tab-summary" class="tab" role="tab" data-tab="summary" aria-controls="panel-summary" aria-selected="true">Summary</button>
-    <button id="tab-journey" class="tab" role="tab" data-tab="journey" aria-controls="panel-journey" aria-selected="false" tabindex="-1">Journey map</button>
-    <button id="tab-heatmaps" class="tab" role="tab" data-tab="heatmaps" aria-controls="panel-heatmaps" aria-selected="false" tabindex="-1">Heatmaps</button>
+  <nav class="tabs" role="tablist" aria-label="Character pages" data-i18n-aria="aria.tabs">
+    <button id="tab-summary" class="tab" role="tab" data-tab="summary" aria-controls="panel-summary" aria-selected="true" data-i18n="tab.summary">Summary</button>
+    <button id="tab-journey" class="tab" role="tab" data-tab="journey" aria-controls="panel-journey" aria-selected="false" tabindex="-1" data-i18n="tab.journey">Journey map</button>
+    <button id="tab-heatmaps" class="tab" role="tab" data-tab="heatmaps" aria-controls="panel-heatmaps" aria-selected="false" tabindex="-1" data-i18n="tab.heatmaps">Heatmaps</button>
   </nav>
 
   <main class="panels">
@@ -34,61 +34,61 @@
         <div class="journey-main">
           <div class="map-wrap" id="journeyWrap">
             <div class="map-stage" id="journeyStage">
-              <canvas id="journeyMap" aria-label="World map with the journey trail"></canvas>
+              <canvas id="journeyMap" aria-label="World map with the journey trail" data-i18n-aria="aria.journeyMap"></canvas>
               <div class="flash" id="flash"></div>
               <div class="banner" id="banner" aria-live="polite"><div id="bZone"></div><div id="bSub"></div></div>
               <div class="toasts" id="toasts" aria-live="polite"></div>
               <div class="map-tools">
-                <button type="button" class="btn icon" id="zIn" aria-label="Zoom in">+</button>
+                <button type="button" class="btn icon" id="zIn" aria-label="Zoom in" data-i18n-aria="btn.zoomIn">+</button>
                 <div class="zlevel" id="zLevel">World</div>
-                <button type="button" class="btn icon" id="zOut" aria-label="Zoom out">−</button>
-                <button type="button" class="btn" id="follow" aria-pressed="false">Follow</button>
-                <button type="button" class="btn" id="zWorld">World</button>
+                <button type="button" class="btn icon" id="zOut" aria-label="Zoom out" data-i18n-aria="btn.zoomOut">−</button>
+                <button type="button" class="btn" id="follow" aria-pressed="false" data-i18n="btn.follow">Follow</button>
+                <button type="button" class="btn" id="zWorld" data-i18n="btn.world">World</button>
               </div>
               <div class="tip" id="tip" hidden></div>
-              <div class="tip detail" id="detail" role="dialog" aria-label="Event details" hidden></div>
+              <div class="tip detail" id="detail" role="dialog" aria-label="Event details" data-i18n-aria="aria.details" hidden></div>
             </div>
           </div>
           <div class="timeline">
             <div class="transport">
-              <button type="button" class="btn icon" id="rew" aria-label="Back to start" title="Back to start">⏮</button>
-              <button type="button" class="btn icon big" id="play" aria-label="Play" title="Play (Space)">▶</button>
-              <div class="speeds" role="group" aria-label="Speed">
+              <button type="button" class="btn icon" id="rew" aria-label="Back to start" title="Back to start" data-i18n-aria="btn.rewind" data-i18n-title="btn.rewind">⏮</button>
+              <button type="button" class="btn icon big" id="play" aria-label="Play" title="Play (Space)" data-i18n-aria="btn.play" data-i18n-title="btn.play.title">▶</button>
+              <div class="speeds" role="group" aria-label="Speed" data-i18n-aria="aria.speed">
                 <button type="button" class="btn chip on" data-speed="1" aria-pressed="true">1×</button>
                 <button type="button" class="btn chip" data-speed="2" aria-pressed="false">2×</button>
                 <button type="button" class="btn chip" data-speed="4" aria-pressed="false">4×</button>
                 <button type="button" class="btn chip" data-speed="8" aria-pressed="false">8×</button>
                 <button type="button" class="btn chip" data-speed="16" aria-pressed="false">16×</button>
               </div>
-              <button type="button" class="btn speed-cycle" id="speedCycle" aria-label="Change speed">1×</button>
+              <button type="button" class="btn speed-cycle" id="speedCycle" aria-label="Change speed" data-i18n-aria="btn.speed">1×</button>
               <div class="readout">
                 <div class="time" id="rTime">0:00:00</div>
                 <div class="coins" id="rGold"></div>
                 <div class="sub" id="rWhere"></div>
               </div>
             </div>
-            <div class="track-wrap"><canvas id="tl" aria-label="Journey timeline"></canvas></div>
+            <div class="track-wrap"><canvas id="tl" aria-label="Journey timeline" data-i18n-aria="aria.timeline"></canvas></div>
           </div>
         </div>
-        <aside class="sheet" id="journeySheet" data-state="peek" aria-label="Journal log and markers">
-          <button type="button" class="sheet-handle" aria-label="Journal log and markers" aria-expanded="false"></button>
+        <aside class="sheet" id="journeySheet" data-state="peek" aria-label="Journal log and markers" data-i18n-aria="aria.journalSheet">
+          <button type="button" class="sheet-handle" aria-label="Journal log and markers" data-i18n-aria="aria.journalSheet" aria-expanded="false"></button>
           <div class="sheet-body">
-            <h3 class="panel-title">Journal log</h3>
+            <h3 class="panel-title" data-i18n="journal.title">Journal log</h3>
             <ol id="feed" class="feed"></ol>
             <fieldset class="filters">
-              <legend>Markers</legend>
-              <label><input type="checkbox" data-cat="level" checked><i class="sw" data-c="#ffd100"></i>Levels</label>
-              <label><input type="checkbox" data-cat="danger" checked><i class="sw" data-c="#d8402f"></i>Danger</label>
-              <label><input type="checkbox" data-cat="dungeon" checked><i class="sw" data-c="#a45ee8"></i>Dungeons</label>
-              <label><input type="checkbox" data-cat="quest" checked><i class="sw" data-c="#4a90ff"></i>Quests, travel</label>
-              <label><input type="checkbox" data-cat="find" checked><i class="sw" data-c="#35c9a0"></i>Finds, loot</label>
-              <label><input type="checkbox" data-cat="world" checked><i class="sw" data-c="#3fbf6a"></i>Reputation, world</label>
-              <label><input type="checkbox" data-cat="shot" checked><i class="sw" data-c="#cfd8e3"></i>Screenshots</label>
+              <legend data-i18n="markers.title">Markers</legend>
+              <label><input type="checkbox" data-cat="level" checked><i class="sw" data-c="#ffd100"></i><span data-i18n="filter.level">Levels</span></label>
+              <label><input type="checkbox" data-cat="danger" checked><i class="sw" data-c="#d8402f"></i><span data-i18n="filter.danger">Danger</span></label>
+              <label><input type="checkbox" data-cat="dungeon" checked><i class="sw" data-c="#a45ee8"></i><span data-i18n="filter.dungeon">Dungeons</span></label>
+              <label><input type="checkbox" data-cat="quest" checked><i class="sw" data-c="#4a90ff"></i><span data-i18n="filter.quest">Quests, travel</span></label>
+              <label><input type="checkbox" data-cat="find" checked><i class="sw" data-c="#35c9a0"></i><span data-i18n="filter.find">Finds, loot</span></label>
+              <label><input type="checkbox" data-cat="world" checked><i class="sw" data-c="#3fbf6a"></i><span data-i18n="filter.world">Reputation, world</span></label>
+              <label><input type="checkbox" data-cat="shot" checked><i class="sw" data-c="#cfd8e3"></i><span data-i18n="filter.shot">Screenshots</span></label>
             </fieldset>
           </div>
         </aside>
       </div>
-      <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot" hidden>
+      <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot" data-i18n-aria="aria.screenshot" hidden>
         <figure><img id="lightboxImg" alt=""><figcaption id="lightboxCap"></figcaption></figure>
       </div>
     </section>
@@ -96,12 +96,12 @@
       <div class="heat">
         <div class="map-wrap" id="heatWrap">
           <div class="map-stage">
-            <canvas id="heatMap" aria-label="Heat map of where things happened"></canvas>
+            <canvas id="heatMap" aria-label="Heat map of where things happened" data-i18n-aria="aria.heatMap"></canvas>
             <div class="map-tools">
-              <button type="button" class="btn icon" id="hIn" aria-label="Zoom in">+</button>
+              <button type="button" class="btn icon" id="hIn" aria-label="Zoom in" data-i18n-aria="btn.zoomIn">+</button>
               <div class="zlevel" id="hLevel">World</div>
-              <button type="button" class="btn icon" id="hOut" aria-label="Zoom out">−</button>
-              <button type="button" class="btn" id="hWorld">World</button>
+              <button type="button" class="btn icon" id="hOut" aria-label="Zoom out" data-i18n-aria="btn.zoomOut">−</button>
+              <button type="button" class="btn" id="hWorld" data-i18n="btn.world">World</button>
             </div>
             <div class="legend" id="legend">
               <canvas id="legendRamp" width="160" height="10" aria-hidden="true"></canvas>
@@ -112,26 +112,26 @@
             <div class="tip" id="hTip" hidden></div>
           </div>
         </div>
-        <aside class="sheet" id="heatSheet" data-state="peek" aria-label="Layers">
-          <button type="button" class="sheet-handle" aria-label="Layers" aria-expanded="false"></button>
+        <aside class="sheet" id="heatSheet" data-state="peek" aria-label="Layers" data-i18n-aria="aria.layersSheet">
+          <button type="button" class="sheet-handle" aria-label="Layers" data-i18n-aria="aria.layersSheet" aria-expanded="false"></button>
           <div class="sheet-body">
             <fieldset class="filters" id="layerPicker">
-              <legend>Layer</legend>
-              <label><input type="radio" name="heatLayer" value="presence" checked><i class="sw" data-c="#ffd100"></i>Presence</label>
-              <label><input type="radio" name="heatLayer" value="kills"><i class="sw" data-c="#ff5a43"></i>Kills</label>
-              <label><input type="radio" name="heatLayer" value="deaths"><i class="sw" data-c="#c58cff"></i>Deaths</label>
-              <label><input type="radio" name="heatLayer" value="gathering"><i class="sw" data-c="#35c9a0"></i>Gathering</label>
-              <label><input type="radio" name="heatLayer" value="fishing"><i class="sw" data-c="#4fa8e0"></i>Fishing</label>
-              <label><input type="radio" name="heatLayer" value="quests"><i class="sw" data-c="#f2a93b"></i>Quests</label>
-              <label><input type="radio" name="heatLayer" value="loot"><i class="sw" data-c="#9ad65f"></i>Loot</label>
+              <legend data-i18n="layer.title">Layer</legend>
+              <label><input type="radio" name="heatLayer" value="presence" checked><i class="sw" data-c="#ffd100"></i><span data-i18n="layer.presence">Presence</span></label>
+              <label><input type="radio" name="heatLayer" value="kills"><i class="sw" data-c="#ff5a43"></i><span data-i18n="layer.kills">Kills</span></label>
+              <label><input type="radio" name="heatLayer" value="deaths"><i class="sw" data-c="#c58cff"></i><span data-i18n="layer.deaths">Deaths</span></label>
+              <label><input type="radio" name="heatLayer" value="gathering"><i class="sw" data-c="#35c9a0"></i><span data-i18n="layer.gathering">Gathering</span></label>
+              <label><input type="radio" name="heatLayer" value="fishing"><i class="sw" data-c="#4fa8e0"></i><span data-i18n="layer.fishing">Fishing</span></label>
+              <label><input type="radio" name="heatLayer" value="quests"><i class="sw" data-c="#f2a93b"></i><span data-i18n="layer.quests">Quests</span></label>
+              <label><input type="radio" name="heatLayer" value="loot"><i class="sw" data-c="#9ad65f"></i><span data-i18n="layer.loot">Loot</span></label>
             </fieldset>
             <fieldset class="filters" id="profPicker" hidden>
-              <legend>Profession</legend>
-              <label><input type="radio" name="heatProf" value="all" checked>All</label>
-              <label><input type="radio" name="heatProf" value="mining">Mining</label>
-              <label><input type="radio" name="heatProf" value="herbalism">Herbalism</label>
-              <label><input type="radio" name="heatProf" value="skinning">Skinning</label>
-              <label><input type="radio" name="heatProf" value="other">Other</label>
+              <legend data-i18n="prof.title">Profession</legend>
+              <label><input type="radio" name="heatProf" value="all" checked><span data-i18n="prof.all">All</span></label>
+              <label><input type="radio" name="heatProf" value="mining"><span data-i18n="prof.mining">Mining</span></label>
+              <label><input type="radio" name="heatProf" value="herbalism"><span data-i18n="prof.herbalism">Herbalism</span></label>
+              <label><input type="radio" name="heatProf" value="skinning"><span data-i18n="prof.skinning">Skinning</span></label>
+              <label><input type="radio" name="heatProf" value="other"><span data-i18n="prof.other">Other</span></label>
             </fieldset>
           </div>
         </aside>
@@ -141,7 +141,7 @@
 
   <p class="legal" id="legal"></p>
   <footer class="foot">
-    <nav class="lang-picker" id="langPicker" aria-label="Language">
+    <nav class="lang-picker" id="langPicker" aria-label="Language" data-i18n-aria="aria.language">
       <a href="?lang=en" lang="en" hreflang="en">English</a>
       <a href="?lang=de" lang="de" hreflang="de">Deutsch</a>
       <a href="?lang=fr" lang="fr" hreflang="fr">Français</a>

@@ -1,4 +1,17 @@
 // Loads the files of one character from the folder of its entry.json.
+import { t } from './i18n.mjs';
+
+// DataError keeps its catalog key and values: the character loads while the catalog does, so the page translates the
+// message again with errorText() when it shows it.
+export class DataError extends Error {
+  constructor(key, vars) {
+    super(t(key, vars));
+    this.key = key;
+    this.vars = vars;
+  }
+}
+
+export const errorText = (err) => (err instanceof DataError ? t(err.key, err.vars) : err.message);
 
 function lines(text, name) {
   const out = [];
@@ -8,7 +21,7 @@ function lines(text, name) {
     try {
       out.push(JSON.parse(rows[i]));
     } catch {
-      throw new Error(`${name}: line ${i + 1} is not valid JSON`);
+      throw new DataError('data.badJson', { name, line: i + 1 });
     }
   }
   return out;
@@ -16,7 +29,7 @@ function lines(text, name) {
 
 async function getOk(fetchFn, url, name) {
   const res = await fetchFn(url);
-  if (!res.ok) throw new Error(`${name}: the server answered ${res.status}`);
+  if (!res.ok) throw new DataError('data.status', { name, status: res.status });
   return res;
 }
 
@@ -29,7 +42,7 @@ export async function loadCharacter(entryUrl, fetchFn) {
   const entry = await getJson(fetchFn, base.href, 'entry.json');
   const own = (name, fallback) => {
     const url = new URL(typeof entry[name] === 'string' ? entry[name] : fallback, base);
-    if (!url.href.startsWith(root)) throw new Error(`entry.json: ${name} points outside the character folder`);
+    if (!url.href.startsWith(root)) throw new DataError('data.outside', { name });
     return url.href;
   };
   const [char, steps, trail] = await Promise.all([

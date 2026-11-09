@@ -121,6 +121,16 @@ func TestDataFilesIgnoreTheLanguageQuery(t *testing.T) {
 	}
 }
 
+func TestViewerCatalogsAreServed(t *testing.T) {
+	s := newSite(t)
+	for _, code := range []string{"en", "de", "fr", "es", "it", "pt"} {
+		rec := s.get("/_/i18n/" + code + ".mjs")
+		if rec.Code != http.StatusOK || !strings.HasPrefix(rec.Header().Get("Content-Type"), "text/javascript") || !strings.Contains(rec.Body.String(), "export default") {
+			t.Errorf("GET /_/i18n/%s.mjs = %d %q", code, rec.Code, rec.Header().Get("Content-Type"))
+		}
+	}
+}
+
 func TestViewerIndexHasTheLanguagePicker(t *testing.T) {
 	s := newSite(t)
 	s.upload("eu-brumamar-nandu")
