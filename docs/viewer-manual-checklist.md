@@ -17,3 +17,9 @@ browser at 360 × 740 and write "360 px" in the cell. Use a real character on `m
 | 10 | 3 | A slot tap on a phone opens the slot detail and does not leave the page. "Open on Wowhead" opens a new tab. | not run | not run |
 | 11 | 3 | `#summary?slot=5` opens with slot 5 selected. A tap on a slot puts `slot=<n>` in the hash. | not run | not run |
 | 12 | 3 | The console shows no CSP error. The network panel shows requests to `wow.zamimg.com` and `nether.wowhead.com` only after Summary shows gear. | not run | not run |
+| 13 | 4 | The map art loads and sharpens when you zoom in. | not run | not run |
+| 14 | 4 | Drag, wheel (desktop) and pinch (phone) move and zoom the map. The zoom buttons and World work. | not run | not run |
+| 15 | 4 | A phone rotation keeps the centre of the map. | not run | not run |
+| 16 | 4 | A link `#journey?x=..&y=..&z=..` opens at that camera. The URL follows the camera, and Back does not step through each move. | not run | not run |
+| 17 | 4 | With `web/map/` renamed, the grid and the notice "Map art is not installed on this server." show, and the trail is still in the right place. | not run | not run |
+| 18 | 4 | The Blizzard legal notice shows under the map. | not run | not run |

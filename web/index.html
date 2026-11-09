@@ -7,6 +7,7 @@
 <link rel="icon" href="/_/icon.png">
 <link rel="stylesheet" href="/_/style.css">
 <script src="/_/kinds.js"></script>
+<script src="/_/map/world.js"></script>
 <script type="module" src="/_/app.mjs"></script>
 </head>
 <body>
@@ -27,7 +28,21 @@
 
   <main class="panels">
     <section id="panel-summary" class="tabpanel" role="tabpanel" aria-labelledby="tab-summary"></section>
-    <section id="panel-journey" class="tabpanel" role="tabpanel" aria-labelledby="tab-journey" hidden></section>
+    <section id="panel-journey" class="tabpanel fill" role="tabpanel" aria-labelledby="tab-journey" hidden>
+      <div class="journey">
+        <div class="map-wrap" id="journeyWrap">
+          <div class="map-stage">
+            <canvas id="journeyMap" aria-label="World map with the journey trail"></canvas>
+            <div class="map-tools">
+              <button type="button" class="btn icon" id="zIn" aria-label="Zoom in">+</button>
+              <div class="zlevel" id="zLevel">World</div>
+              <button type="button" class="btn icon" id="zOut" aria-label="Zoom out">−</button>
+              <button type="button" class="btn" id="zWorld">World</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
     <section id="panel-heatmaps" class="tabpanel" role="tabpanel" aria-labelledby="tab-heatmaps" hidden></section>
   </main>
 

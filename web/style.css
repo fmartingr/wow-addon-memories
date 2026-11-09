@@ -169,6 +169,19 @@ table { border-collapse: collapse; width: 100%; font-size: 0.9rem; }
 th { text-align: left; color: var(--muted); font: 700 0.7rem var(--display); letter-spacing: 0.1em; text-transform: uppercase; padding: 6px 8px; border-bottom: 1px solid #54462f; }
 td { padding: 6px 8px; border-bottom: 1px solid #36372e; }
 
+/* maps */
+.journey, .heat { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; height: calc(100dvh - var(--head-h) - var(--tabs-h) - 72px); min-height: 460px; }
+.map-wrap { display: flex; flex-direction: column; min-width: 0; min-height: 0; }
+.map-stage { position: relative; flex: 1; min-height: 0; overflow: hidden; border: 1px solid var(--edge); background: #0d1a24; box-shadow: inset 0 0 0 2px #000, 0 10px 30px #0006; }
+.map-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+.map-canvas.drag { cursor: grabbing; }
+.map-legal { margin: 6px 0 0; font-size: 0.72rem; }
+.map-notice { position: absolute; left: 12px; bottom: 12px; max-width: calc(100% - 110px); margin: 0; padding: 6px 12px; background: #000b; border: 1px solid var(--gold-dim); border-radius: 3px; color: var(--gold-light); font-size: 0.85rem; pointer-events: none; }
+.map-tools { position: absolute; right: 12px; top: 12px; z-index: 3; width: 72px; display: grid; gap: 6px; padding: 6px; background: #000a; border: 1px solid var(--edge); border-radius: 4px; }
+.map-tools .btn { width: 100%; padding: 0 6px; }
+.map-tools .btn.icon { font-size: 1.3rem; }
+.zlevel { text-align: center; font: 700 0.62rem var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
+
 /* bottom sheet: a side panel on a wide screen, a sheet with a handle on a phone */
 .sheet { position: relative; }
 .sheet-handle { display: none; }
@@ -187,6 +200,11 @@ td { padding: 6px 8px; border-bottom: 1px solid #36372e; }
   }
   .tab, .tab[aria-selected='true'] { flex: 1; height: var(--bar-h); min-height: 44px; margin: 0; padding: 0 4px; border: 0; border-radius: 0; box-shadow: none; font-size: 0.75rem; }
   .tab[aria-selected='true'] { background: linear-gradient(0deg, #b9823340, transparent); border-top: 2px solid var(--gold); }
+  .tabpanel.fill { padding-top: 0; }
+  .journey, .heat { height: calc(100dvh - var(--head-h) - var(--bar-h) - env(safe-area-inset-bottom)); min-height: 0; gap: 0; }
+  .map-stage { border-left: 0; border-right: 0; }
+  .map-legal { font-size: 0.62rem; line-height: 1.2; margin: 3px 0 0; }
+  .map-tools { top: 8px; right: 8px; }
   .summary-grid { grid-template-columns: minmax(0, 1fr); }
   .stats { grid-template-columns: minmax(0, 1fr); }
   .bars li { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
