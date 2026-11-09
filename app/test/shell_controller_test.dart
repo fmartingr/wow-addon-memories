@@ -116,6 +116,27 @@ void main() {
       expect(h.tray.updates, 2);
     });
 
+    test('the new menu has the labels of the new language', () async {
+      final h = _Shell();
+      await h.start();
+      await h.settings.update(readySettings.copyWith(language: 'de'));
+      await pumpEventQueue();
+      expect(h.tray.items.map((i) => i.label), [
+        'Jetzt sammeln',
+        'Fenster öffnen',
+        'Sicherungsordner öffnen',
+        'Beenden',
+      ]);
+      expect(h.tray.tooltip, 'WoW Journey');
+    });
+
+    test('the tray starts in the language of the system', () async {
+      final h = _Shell();
+      h.systemLocales = const [Locale('pt', 'PT')];
+      await h.start();
+      expect(h.tray.items.first.label, 'Coletar agora');
+    });
+
     test(
       'a setting that resolves to the same language changes nothing',
       () async {

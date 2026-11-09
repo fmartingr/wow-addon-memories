@@ -1171,7 +1171,7 @@ abstract class AppLocalizations {
   /// Upload error: the key is not registered.
   ///
   /// In en, this message translates to:
-  /// **'The website does not know the key of this app yet. Register in the settings.'**
+  /// **'The website does not know the key of this app yet. Register on the Website tab.'**
   String get errNotRegistered;
 
   /// Upload error: the character belongs to another key.

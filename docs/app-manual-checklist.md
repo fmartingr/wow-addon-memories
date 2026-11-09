@@ -51,6 +51,9 @@ unless the row names one system.
 | 25 | 12 | At a narrow window (about 400 px) the tabs drop their icons, nothing overflows, and every control is at least 44 px high. | not run | not run | not run |
 | 26 | 12 | A settings message (for example after a damaged `settings.json`) shows above the tabs on each tab. | not run | not run | not run |
 | 27 | 5 | Settings has a Language row with System, English, Deutsch, Français, Español, Italiano and Português, each in its own language. System is the default. Choosing a language saves it in `settings.json` (`"language": "<code>"`, `null` for System) and shows after a restart. | not run | not run | not run |
+| 28 | 6 | Language: Settings → Language → Español. Every screen, dialog and the tray menu turn Spanish at once, and stay Spanish after a restart. Choose System with the operating system in German: the app is German. Start a second copy while the first one does not answer: the error screen has the chosen language. | not run | not run | not run |
+| 29 | 6 | macOS only: set the system language to Deutsch (or Français), start the app: it shows German (or French) with Language on System. | — | not run | — |
+| 30 | 6 | German, the longest language: the wizard, the main screen at its narrowest width (480 px) and the Settings tab show no cut-off text, and a long label wraps. | not run | not run | not run |
 
 ## Also look at
 

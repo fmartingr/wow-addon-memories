@@ -120,9 +120,7 @@ class _WowJourneyAppState extends State<WowJourneyApp>
       builder: (context, _) => MaterialApp(
         onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
         theme: _theme,
-        locale: _settings.settings.language == null
-            ? null
-            : Locale(_settings.settings.language!),
+        locale: settingLocale(_settings.settings.language),
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         localeListResolutionCallback: (locales, _) =>

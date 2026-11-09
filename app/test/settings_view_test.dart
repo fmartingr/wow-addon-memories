@@ -109,7 +109,7 @@ void main() {
       final fakes = await _openSettings(tester);
       await choose(tester, 'Français');
       expect(fakes.store.saved.last.language, 'fr');
-      await choose(tester, 'System');
+      await choose(tester, 'Système');
       expect(fakes.store.saved.last.language, isNull);
       expect(appLocale(tester), isNull);
     });

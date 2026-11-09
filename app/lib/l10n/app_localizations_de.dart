@@ -13,124 +13,124 @@ class AppLocalizationsDe extends AppLocalizations {
   String get appTitle => 'WoW Journey';
 
   @override
-  String get loadingSettings => 'Loading your settings';
+  String get loadingSettings => 'Einstellungen werden geladen';
 
   @override
-  String get tabOverview => 'Overview';
+  String get tabOverview => 'Übersicht';
 
   @override
-  String get tabWebsite => 'Website';
+  String get tabWebsite => 'Webseite';
 
   @override
-  String get tabSettings => 'Settings';
+  String get tabSettings => 'Einstellungen';
 
   @override
   String get noDataText =>
-      'No Memories data yet. Play with the Memories addons on, then log out.';
+      'Noch keine Memories-Daten. Spiele mit den Memories-Addons und melde dich dann ab.';
 
   @override
   String get wowFolderGoneText =>
-      'We cannot find your WoW folder any more. It may have moved, or its drive is not connected. Choose the folder again.';
+      'Wir finden deinen WoW-Ordner nicht mehr. Er wurde vielleicht verschoben, oder sein Laufwerk ist nicht verbunden. Wähle den Ordner erneut.';
 
   @override
   String get saveHintText =>
-      'The game saves your journey when you log out or type /reload.';
+      'Das Spiel speichert deine Reise, wenn du dich abmeldest oder /reload eingibst.';
 
   @override
-  String get watchingText => 'Watching for changes';
+  String get watchingText => 'Änderungen werden überwacht';
 
   @override
   String get issueNoWtf =>
-      'This folder has no WoW game files. Choose the folder of one game version, such as _retail_.';
+      'In diesem Ordner liegen keine WoW-Spieldateien. Wähle den Ordner einer Spielversion, zum Beispiel _retail_.';
 
   @override
   String get issueDamagedFile =>
-      'A saved file could not be read, so we skipped it. Log in with that character, log out, then try again.';
+      'Eine gespeicherte Datei konnte nicht gelesen werden, daher haben wir sie übersprungen. Melde dich mit diesem Charakter an, melde dich ab und versuche es dann erneut.';
 
   @override
   String get issueAccountSkipped =>
-      'The Memories file of an account is missing or damaged, so we skipped its characters. Log in once, log out, then try again.';
+      'Die Memories-Datei eines Accounts fehlt oder ist beschädigt, daher haben wir seine Charaktere übersprungen. Melde dich einmal an, melde dich ab und versuche es dann erneut.';
 
   @override
   String get issueCharacterFailed =>
-      'We could not update the data of one character, so we left it as it was. Check its folder in the latest data, then try again.';
+      'Wir konnten die Daten eines Charakters nicht aktualisieren und haben sie unverändert gelassen. Prüfe seinen Ordner in den neuesten Daten und versuche es dann erneut.';
 
   @override
   String get issueOverlap =>
-      'The backup folder is inside the game files. Choose a backup folder outside the World of Warcraft folder.';
+      'Der Sicherungsordner liegt in den Spieldateien. Wähle einen Sicherungsordner außerhalb des World-of-Warcraft-Ordners.';
 
   @override
   String get issueLockHeld =>
-      'Another gather is running on this backup folder. Wait until it ends, then try again.';
+      'In diesem Sicherungsordner läuft bereits eine andere Sammlung. Warte, bis sie endet, und versuche es dann erneut.';
 
   @override
   String get issueNotWritable =>
-      'We cannot write to the backup folder. Check that its drive is connected and has free space, or choose another backup folder.';
+      'Wir können nicht in den Sicherungsordner schreiben. Prüfe, ob sein Laufwerk verbunden ist und freien Platz hat, oder wähle einen anderen Sicherungsordner.';
 
   @override
   String get issueBadIndex =>
-      'The file index.json in the latest data is damaged. Move it out of the folder, then try again.';
+      'Die Datei index.json in den neuesten Daten ist beschädigt. Verschiebe sie aus dem Ordner und versuche es dann erneut.';
 
   @override
   String get issueBadDefault =>
-      'The first character to show is not in your data. Try again.';
+      'Der erste anzuzeigende Charakter ist nicht in deinen Daten. Versuche es erneut.';
 
   @override
   String get issueSkippedFile =>
-      'A saved file had no Memories data or belonged to another character, so we skipped it.';
+      'Eine gespeicherte Datei enthielt keine Memories-Daten oder gehörte zu einem anderen Charakter, daher haben wir sie übersprungen.';
 
   @override
   String get issueDuplicateGuid =>
-      'Two folders hold the same character. We kept the one you played last.';
+      'Zwei Ordner enthalten denselben Charakter. Wir haben den zuletzt gespielten behalten.';
 
   @override
   String get issueBackupFailed =>
-      'We could not copy a saved file into the backup folder. Check that its drive has free space, then try again.';
+      'Wir konnten eine gespeicherte Datei nicht in den Sicherungsordner kopieren. Prüfe, ob sein Laufwerk freien Platz hat, und versuche es dann erneut.';
 
   @override
   String get issueScreenshotFailed =>
-      'We could not copy a screenshot. Check that the drive has free space, then try again.';
+      'Wir konnten einen Screenshot nicht kopieren. Prüfe, ob das Laufwerk freien Platz hat, und versuche es dann erneut.';
 
   @override
   String get issueIoError =>
-      'A file could not be read or written, so the gather stopped. Check that your drives are connected and have free space, then try again.';
+      'Eine Datei konnte nicht gelesen oder geschrieben werden, daher wurde die Sammlung gestoppt. Prüfe, ob deine Laufwerke verbunden sind und freien Platz haben, und versuche es dann erneut.';
 
   @override
-  String get fixChooseWowFolder => 'Choose folder';
+  String get fixChooseWowFolder => 'Ordner wählen';
 
   @override
-  String get fixChooseBackupFolder => 'Choose backup folder';
+  String get fixChooseBackupFolder => 'Sicherungsordner wählen';
 
   @override
-  String get fixOpenLatest => 'Open latest data';
+  String get fixOpenLatest => 'Neueste Daten öffnen';
 
   @override
-  String get fixTryAgain => 'Try again';
+  String get fixTryAgain => 'Erneut versuchen';
 
   @override
-  String get statusGathering => 'Gathering your journey…';
+  String get statusGathering => 'Deine Reise wird gesammelt…';
 
   @override
   String get statusFailed =>
-      'The last gather did not finish. See the problem below.';
+      'Die letzte Sammlung wurde nicht beendet. Siehe das Problem unten.';
 
   @override
   String statusDoneProblems(String when) {
-    return 'Gathered with problems. Last gathered $when';
+    return 'Mit Problemen gesammelt. Zuletzt gesammelt $when';
   }
 
   @override
   String statusDone(String when) {
-    return 'Up to date. Last gathered $when';
+    return 'Auf dem neuesten Stand. Zuletzt gesammelt $when';
   }
 
   @override
   String statusIdleLast(String when) {
-    return 'Last gathered $when';
+    return 'Zuletzt gesammelt $when';
   }
 
   @override
-  String get statusNever => 'Never gathered';
+  String get statusNever => 'Noch nie gesammelt';
 
   @override
   String statusSemantics(String status) {
@@ -138,22 +138,22 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get gathering => 'Gathering…';
+  String get gathering => 'Sammeln…';
 
   @override
-  String get gatheringSemantics => 'Gathering, please wait';
+  String get gatheringSemantics => 'Es wird gesammelt, bitte warten';
 
   @override
-  String get gatheringProgress => 'Gathering';
+  String get gatheringProgress => 'Sammeln';
 
   @override
-  String get gatherNow => 'Gather now';
+  String get gatherNow => 'Jetzt sammeln';
 
   @override
-  String get countCharacters => 'Characters';
+  String get countCharacters => 'Charaktere';
 
   @override
-  String get countJournalLines => 'Journal lines';
+  String get countJournalLines => 'Journalzeilen';
 
   @override
   String get countScreenshots => 'Screenshots';
@@ -164,50 +164,50 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get charactersTitle => 'Characters';
+  String get charactersTitle => 'Charaktere';
 
   @override
-  String get noCharacters => 'No characters yet. Click Gather now.';
+  String get noCharacters => 'Noch keine Charaktere. Klicke auf Jetzt sammeln.';
 
   @override
   String characterLevel(int level) {
-    return 'Level $level';
+    return 'Stufe $level';
   }
 
   @override
-  String get backupFolderTitle => 'Backup folder';
+  String get backupFolderTitle => 'Sicherungsordner';
 
   @override
-  String get notSet => 'Not set';
+  String get notSet => 'Nicht festgelegt';
 
   @override
   String backupSize(String size) {
-    return 'Size: $size';
+    return 'Größe: $size';
   }
 
   @override
-  String get openBackupFolder => 'Open backup folder';
+  String get openBackupFolder => 'Sicherungsordner öffnen';
 
   @override
-  String get openLatestData => 'Open latest data';
+  String get openLatestData => 'Neueste Daten öffnen';
 
   @override
   String get openFolderFailed =>
-      'We could not open this folder. If you have not gathered yet, click Gather now first.';
+      'Wir konnten diesen Ordner nicht öffnen. Wenn du noch nicht gesammelt hast, klicke zuerst auf Jetzt sammeln.';
 
   @override
-  String get dismiss => 'Dismiss';
+  String get dismiss => 'Schließen';
 
   @override
-  String get showWebsiteTab => 'Show the Website tab';
+  String get showWebsiteTab => 'Reiter Webseite anzeigen';
 
   @override
   String andMore(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'and $count more',
-      one: 'and 1 more',
+      other: 'und $count weitere',
+      one: 'und 1 weiterer',
     );
     return '$_temp0';
   }
@@ -217,7 +217,8 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count bytes',
+      other: '$count Bytes',
+      one: '1 Byte',
     );
     return '$_temp0';
   }
@@ -243,78 +244,80 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get classWarrior => 'Warrior';
+  String get classWarrior => 'Krieger';
 
   @override
   String get classPaladin => 'Paladin';
 
   @override
-  String get classHunter => 'Hunter';
+  String get classHunter => 'Jäger';
 
   @override
-  String get classRogue => 'Rogue';
+  String get classRogue => 'Schurke';
 
   @override
-  String get classPriest => 'Priest';
+  String get classPriest => 'Priester';
 
   @override
-  String get classDeathKnight => 'Death Knight';
+  String get classDeathKnight => 'Todesritter';
 
   @override
-  String get classShaman => 'Shaman';
+  String get classShaman => 'Schamane';
 
   @override
-  String get classMage => 'Mage';
+  String get classMage => 'Magier';
 
   @override
-  String get classWarlock => 'Warlock';
+  String get classWarlock => 'Hexenmeister';
 
   @override
-  String get classMonk => 'Monk';
+  String get classMonk => 'Mönch';
 
   @override
-  String get classDruid => 'Druid';
+  String get classDruid => 'Druide';
 
   @override
-  String get classDemonHunter => 'Demon Hunter';
+  String get classDemonHunter => 'Dämonenjäger';
 
   @override
-  String get classEvoker => 'Evoker';
+  String get classEvoker => 'Rufer';
 
   @override
   String get settingsSaveFailed =>
-      'We could not save your settings. Check that your disk has free space, then change the setting again.';
+      'Wir konnten deine Einstellungen nicht speichern. Prüfe, ob deine Festplatte freien Platz hat, und ändere die Einstellung dann erneut.';
 
   @override
   String get settingsDamaged =>
-      'Your settings file was damaged, so the app started with the default settings. Check your folders and switches.';
+      'Deine Einstellungsdatei war beschädigt, daher startete die App mit den Standardeinstellungen. Prüfe deine Ordner und Schalter.';
 
   @override
-  String get wowFolderTitle => 'WoW folder';
+  String get wowFolderTitle => 'WoW-Ordner';
 
   @override
-  String get changeWowFolderSemantics => 'Change the WoW folder';
+  String get changeWowFolderSemantics => 'WoW-Ordner ändern';
 
   @override
-  String get changeBackupFolderSemantics => 'Change the backup folder';
+  String get changeBackupFolderSemantics => 'Sicherungsordner ändern';
 
   @override
-  String get change => 'Change';
+  String get change => 'Ändern';
 
   @override
-  String get watchTitle => 'Watch';
+  String get watchTitle => 'Überwachen';
 
   @override
-  String get watchSubtitle => 'Gather on its own each time the game saves.';
+  String get watchSubtitle =>
+      'Automatisch sammeln, sobald das Spiel speichert.';
 
   @override
-  String get startAtLoginTitle => 'Start at login';
+  String get startAtLoginTitle => 'Beim Anmelden starten';
 
   @override
-  String get startAtLoginSubtitle => 'Start the app hidden when you sign in.';
+  String get startAtLoginSubtitle =>
+      'Die App versteckt starten, wenn du dich anmeldest.';
 
   @override
-  String get languageTitle => 'Language';
+  String get languageTitle => 'Sprache';
 
   @override
   String get languageSystem => 'System';
@@ -328,128 +331,130 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
-  String get wizardTitle => 'Welcome to WoW Journey';
+  String get wizardTitle => 'Willkommen bei WoW Journey';
 
   @override
   String wizardStep(int step, int total) {
-    return 'Step $step of $total';
+    return 'Schritt $step von $total';
   }
 
   @override
-  String get back => 'Back';
+  String get back => 'Zurück';
 
   @override
   String backSemantics(int step) {
-    return 'Back to step $step';
+    return 'Zurück zu Schritt $step';
   }
 
   @override
-  String get next => 'Next';
+  String get next => 'Weiter';
 
   @override
-  String get nextSemantics => 'Next step';
+  String get nextSemantics => 'Nächster Schritt';
 
   @override
-  String get finish => 'Finish';
+  String get finish => 'Fertig';
 
   @override
-  String get finishSemantics => 'Finish the setup';
+  String get finishSemantics => 'Einrichtung abschließen';
 
   @override
-  String get wowStepTitle => 'Your WoW folder';
+  String get wowStepTitle => 'Dein WoW-Ordner';
 
   @override
   String get wowStepIntro =>
-      'We read the files that the Memories addons save in this folder. We never change them.';
+      'Wir lesen die Dateien, die die Memories-Addons in diesem Ordner speichern. Wir ändern sie nie.';
 
   @override
-  String get lookingForWow => 'Looking for World of Warcraft…';
+  String get lookingForWow => 'World of Warcraft wird gesucht…';
 
   @override
   String get noWowFound =>
-      'We could not find World of Warcraft. Choose the folder of one game version, such as _retail_, inside your World of Warcraft folder.';
+      'Wir konnten World of Warcraft nicht finden. Wähle in deinem World-of-Warcraft-Ordner den Ordner einer Spielversion, zum Beispiel _retail_.';
 
   @override
-  String get chooseFolder => 'Choose folder';
+  String get chooseFolder => 'Ordner wählen';
 
   @override
-  String get chooseWowSemantics => 'Choose the WoW folder';
+  String get chooseWowSemantics => 'WoW-Ordner wählen';
 
   @override
-  String get noMemoriesYet => 'No Memories data yet.';
+  String get noMemoriesYet => 'Noch keine Memories-Daten.';
 
   @override
   String wowFolderSemantics(String path) {
-    return 'WoW folder: $path';
+    return 'WoW-Ordner: $path';
   }
 
   @override
-  String get backupStepTitle => 'Your backup folder';
+  String get backupStepTitle => 'Dein Sicherungsordner';
 
   @override
   String get backupStepIntro =>
-      'We keep a copy of your game files and your screenshots here.';
+      'Hier bewahren wir eine Kopie deiner Spieldateien und deiner Screenshots auf.';
 
   @override
   String backupFolderSemantics(String path) {
-    return 'Backup folder: $path';
+    return 'Sicherungsordner: $path';
   }
 
   @override
-  String get backupFolderSemanticsNotSet => 'Backup folder: not set';
+  String get backupFolderSemanticsNotSet =>
+      'Sicherungsordner: nicht festgelegt';
 
   @override
-  String get chooseBackupPrompt => 'Choose a backup folder.';
+  String get chooseBackupPrompt => 'Wähle einen Sicherungsordner.';
 
   @override
-  String get switchStepTitle => 'How the app runs';
+  String get switchStepTitle => 'So läuft die App';
 
   @override
-  String get switchStepIntro => 'You can change these later in Settings.';
+  String get switchStepIntro =>
+      'Du kannst das später in den Einstellungen ändern.';
 
   @override
-  String get useThisFolder => 'Use this folder';
+  String get useThisFolder => 'Diesen Ordner verwenden';
 
   @override
   String get pickerFailed =>
-      'We could not open the folder picker. Try again, or restart the app.';
+      'Wir konnten die Ordnerauswahl nicht öffnen. Versuche es erneut oder starte die App neu.';
 
   @override
   String get checkFailed =>
-      'We could not check this folder. Try again, or choose another folder.';
+      'Wir konnten diesen Ordner nicht prüfen. Versuche es erneut oder wähle einen anderen Ordner.';
 
   @override
-  String get chooseGameVersion => 'Choose a game version';
+  String get chooseGameVersion => 'Spielversion wählen';
 
   @override
   String get backupInsideWow =>
-      'This folder is inside your World of Warcraft folder, or holds it. Choose a backup folder outside the game folder.';
+      'Dieser Ordner liegt in deinem World-of-Warcraft-Ordner oder enthält ihn. Wähle einen Sicherungsordner außerhalb des Spielordners.';
 
   @override
   String get backupInsideWowFirst =>
-      'Your backup folder is inside this World of Warcraft folder, or holds it. Choose another backup folder first, then this WoW folder.';
+      'Dein Sicherungsordner liegt in diesem World-of-Warcraft-Ordner oder enthält ihn. Wähle zuerst einen anderen Sicherungsordner und dann diesen WoW-Ordner.';
 
   @override
-  String get useBackupTitle => 'Use this backup folder?';
+  String get useBackupTitle => 'Diesen Sicherungsordner verwenden?';
 
   @override
   String useBackupBody(String path) {
-    return 'New gathers go to $path. Your old backup folder stays as it is. We do not move or delete it.';
+    return 'Neue Sammlungen gehen nach $path. Dein alter Sicherungsordner bleibt unverändert. Wir verschieben oder löschen ihn nicht.';
   }
 
   @override
-  String get cancel => 'Cancel';
+  String get cancel => 'Abbrechen';
 
   @override
-  String get flavorReady => 'This WoW folder is ready.';
+  String get flavorReady => 'Dieser WoW-Ordner ist bereit.';
 
   @override
   String get flavorReadyNoData =>
-      'This WoW folder is ready, but it has no Memories data yet. Play with the Memories addons on. The game saves its files when you log out or type /reload.';
+      'Dieser WoW-Ordner ist bereit, hat aber noch keine Memories-Daten. Spiele mit den Memories-Addons. Das Spiel speichert seine Dateien, wenn du dich abmeldest oder /reload eingibst.';
 
   @override
   String get flavorNoWtf =>
-      'This folder is not a WoW game folder. It has no WTF/Account folder. Pick the folder of one game version inside your World of Warcraft folder, such as _retail_.';
+      'Dieser Ordner ist kein WoW-Spielordner. Er hat keinen Ordner WTF/Account. Wähle in deinem World-of-Warcraft-Ordner den Ordner einer Spielversion, zum Beispiel _retail_.';
 
   @override
   String flavorInstallFolder(int count, String names) {
@@ -457,162 +462,162 @@ class AppLocalizationsDe extends AppLocalizations {
       count,
       locale: localeName,
       other:
-          'This is the World of Warcraft folder. It holds $count game versions: $names. Pick one of them.',
+          'Das ist der World-of-Warcraft-Ordner. Er enthält $count Spielversionen: $names. Wähle einen davon.',
       one:
-          'This is the World of Warcraft folder. It holds one game version: $names. Pick that folder.',
+          'Das ist der World-of-Warcraft-Ordner. Er enthält eine Spielversion: $names. Wähle diesen Ordner.',
     );
     return '$_temp0';
   }
 
   @override
   String get flavorNotADirectory =>
-      'This is not a folder, or it does not exist any more. Pick a folder.';
+      'Das ist kein Ordner, oder er existiert nicht mehr. Wähle einen Ordner.';
 
   @override
   String get flavorNotReadable =>
-      'This folder, or a folder in it, cannot be read. Check that your user may open it, then pick it again.';
+      'Dieser Ordner oder ein Ordner darin kann nicht gelesen werden. Prüfe, ob dein Benutzer ihn öffnen darf, und wähle ihn dann erneut.';
 
   @override
-  String get websiteTitle => 'Website';
+  String get websiteTitle => 'Webseite';
 
   @override
   String websiteCardTitle(String site) {
-    return 'Website: $site';
+    return 'Webseite: $site';
   }
 
   @override
-  String get registrationTitle => 'Registration';
+  String get registrationTitle => 'Registrierung';
 
   @override
   String get unlistedText =>
-      'Your character pages are unlisted: anybody with the link can open them.';
+      'Deine Charakterseiten sind nicht gelistet: Jeder mit dem Link kann sie öffnen.';
 
   @override
   String get lostKeyText =>
-      'If you reinstall the app, ask the website admin to move your characters to your new key.';
+      'Wenn du die App neu installierst, bitte den Admin der Webseite, deine Charaktere auf deinen neuen Schlüssel zu übertragen.';
 
   @override
-  String get websiteAddressLabel => 'Website address';
+  String get websiteAddressLabel => 'Webseiten-Adresse';
 
   @override
-  String get checkSiteLabel => 'Check';
+  String get checkSiteLabel => 'Prüfen';
 
   @override
-  String get inviteCodeLabel => 'Invite code';
+  String get inviteCodeLabel => 'Einladungscode';
 
   @override
-  String get registerLabel => 'Register';
+  String get registerLabel => 'Registrieren';
 
   @override
-  String get uploadSwitchTitle => 'Upload';
+  String get uploadSwitchTitle => 'Hochladen';
 
   @override
   String get uploadSwitchSubtitle =>
-      'Send your journey to the website after each gather.';
+      'Deine Reise nach jeder Sammlung an die Webseite senden.';
 
   @override
-  String get uploadNowLabel => 'Upload now';
+  String get uploadNowLabel => 'Jetzt hochladen';
 
   @override
-  String get uploadingLabel => 'Uploading…';
+  String get uploadingLabel => 'Hochladen…';
 
   @override
-  String get uploadingSemantics => 'Uploading, please wait';
+  String get uploadingSemantics => 'Es wird hochgeladen, bitte warten';
 
   @override
   String get uploadPausedText =>
-      'Upload paused. It continues after the next gather.';
+      'Hochladen pausiert. Es geht nach der nächsten Sammlung weiter.';
 
   @override
-  String get requestScreenshotsLabel => 'Request screenshots';
+  String get requestScreenshotsLabel => 'Screenshots anfragen';
 
   @override
-  String get copyLinkLabel => 'Copy link';
+  String get copyLinkLabel => 'Link kopieren';
 
   @override
   String copyLinkSemantics(String name) {
-    return 'Copy link of $name';
+    return 'Link von $name kopieren';
   }
 
   @override
-  String get removeFromWebsiteLabel => 'Remove from website';
+  String get removeFromWebsiteLabel => 'Von der Webseite entfernen';
 
   @override
   String removeFromWebsiteSemantics(String name) {
-    return 'Remove $name from website';
+    return '$name von der Webseite entfernen';
   }
 
   @override
-  String get linkCopiedText => 'Link copied';
+  String get linkCopiedText => 'Link kopiert';
 
   @override
-  String get removeLabel => 'Remove';
+  String get removeLabel => 'Entfernen';
 
   @override
   String siteFoundOpen(String name) {
-    return 'Found $name. Anybody can register here.';
+    return '$name gefunden. Hier kann sich jeder registrieren.';
   }
 
   @override
   String siteFoundInvite(String name) {
-    return 'Found $name. You need an invite code from the website admin to register.';
+    return '$name gefunden. Zum Registrieren brauchst du einen Einladungscode vom Admin der Webseite.';
   }
 
   @override
   String get notAMemoriesSite =>
-      'This address does not look like a Memories website. Check the address.';
+      'Diese Adresse sieht nicht nach einer Memories-Webseite aus. Prüfe die Adresse.';
 
   @override
   String registeredText(String site) {
-    return 'Registered on $site.';
+    return 'Auf $site registriert.';
   }
 
   @override
   String notRegisteredText(String site) {
-    return 'Not registered on $site. Register to upload your journey.';
+    return 'Nicht auf $site registriert. Registriere dich, um deine Reise hochzuladen.';
   }
 
   @override
   String fingerprintText(String fingerprint) {
-    return 'Your key: $fingerprint';
+    return 'Dein Schlüssel: $fingerprint';
   }
 
   @override
   String get screenshotsNone =>
-      'Screenshots are not uploaded. Ask the website admin to approve them.';
+      'Screenshots werden nicht hochgeladen. Bitte den Admin der Webseite, sie zu genehmigen.';
 
   @override
   String get screenshotsPending =>
-      'Waiting for the website admin to approve your screenshots.';
+      'Warten darauf, dass der Admin der Webseite deine Screenshots genehmigt.';
 
   @override
   String get screenshotsApproved =>
-      'Your screenshots are uploaded with your journey.';
+      'Deine Screenshots werden mit deiner Reise hochgeladen.';
 
   @override
   String get screenshotsDenied =>
-      'The website admin did not approve screenshots. You can ask again.';
+      'Der Admin der Webseite hat Screenshots nicht genehmigt. Du kannst erneut anfragen.';
 
   @override
   String cardNotRegistered(String site) {
-    return 'You are not registered on $site. Register below to share your journey.';
+    return 'Du bist nicht auf $site registriert. Registriere dich unten, um deine Reise zu teilen.';
   }
 
   @override
   String get cardUploadOff =>
-      'Upload is off. Turn on the Upload switch below to send your journey.';
+      'Hochladen ist aus. Schalte unten den Schalter Hochladen ein, um deine Reise zu senden.';
 
   @override
   String uploadProgress(int done, int total) {
-    return 'Uploading $done of $total';
+    return 'Hochladen $done von $total';
   }
 
   @override
-  String get lastUploadNever => 'Nothing uploaded yet.';
+  String get lastUploadNever => 'Noch nichts hochgeladen.';
 
   @override
   String lastUpload(String time) {
-    return 'Last upload $time';
+    return 'Letzter Upload $time';
   }
 
   @override
@@ -620,8 +625,8 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'uploaded $count characters',
-      one: 'uploaded 1 character',
+      other: '$count Charaktere hochgeladen',
+      one: '1 Charakter hochgeladen',
     );
     return '$_temp0';
   }
@@ -631,22 +636,23 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'sent $count screenshots',
-      one: 'sent 1 screenshot',
+      other: '$count Screenshots gesendet',
+      one: '1 Screenshot gesendet',
     );
     return '$_temp0';
   }
 
   @override
-  String get syncUpToDate => 'everything is up to date';
+  String get syncUpToDate => 'alles ist aktuell';
 
   @override
   String syncRemoved(int count) {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: 'skipped $count removed characters (Upload now sends them again)',
-      one: 'skipped 1 removed character (Upload now sends it again)',
+      other:
+          '$count entfernte Charaktere übersprungen (Jetzt hochladen sendet sie erneut)',
+      one: '1 entfernten Charakter übersprungen (Jetzt hochladen sendet ihn erneut)',
     );
     return '$_temp0';
   }
@@ -656,8 +662,8 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count characters failed',
-      one: '1 character failed',
+      other: '$count Charaktere fehlgeschlagen',
+      one: '1 Charakter fehlgeschlagen',
     );
     return '$_temp0';
   }
@@ -667,125 +673,126 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       count,
       locale: localeName,
-      other: '$count screenshots failed',
-      one: '1 screenshot failed',
+      other: '$count Screenshots fehlgeschlagen',
+      one: '1 Screenshot fehlgeschlagen',
     );
     return '$_temp0';
   }
 
   @override
   String errNetwork(String host) {
-    return 'Could not reach $host. Check the internet connection and the website address.';
+    return '$host ist nicht erreichbar. Prüfe die Internetverbindung und die Adresse der Webseite.';
   }
 
   @override
   String get errBadResponse =>
-      'The website sent an answer that this program does not understand. Check the website address.';
+      'Die Webseite hat eine Antwort gesendet, die dieses Programm nicht versteht. Prüfe die Adresse der Webseite.';
 
   @override
   String get errBadFiles =>
-      'A file of your journey is missing or cannot be read, so it was not uploaded. Gather again, then try again.';
+      'Eine Datei deiner Reise fehlt oder kann nicht gelesen werden, daher wurde sie nicht hochgeladen. Sammle erneut und versuche es dann erneut.';
 
   @override
   String get errNoIndex =>
-      'Could not read index.json of the latest data. Run the gather first, then try again.';
+      'index.json der neuesten Daten konnte nicht gelesen werden. Führe zuerst die Sammlung aus und versuche es dann erneut.';
 
   @override
   String get errBadKey =>
-      'The key file of the app cannot be read or written. Check its permissions and the free space of its folder.';
+      'Die Schlüsseldatei der App kann nicht gelesen oder geschrieben werden. Prüfe ihre Berechtigungen und den freien Platz ihres Ordners.';
 
   @override
   String get errBadSite =>
-      'The website address is not valid. Write it like https://example.com.';
+      'Die Adresse der Webseite ist ungültig. Schreibe sie so: https://example.com.';
 
   @override
   String get errBadState =>
-      'The character was removed from the website, but the app could not save that, so the next gather may upload it again. Check that the app folder can be written to.';
+      'Der Charakter wurde von der Webseite entfernt, aber die App konnte das nicht speichern, daher wird er bei der nächsten Sammlung eventuell erneut hochgeladen. Prüfe, ob in den App-Ordner geschrieben werden kann.';
 
   @override
   String get errFailed =>
-      'The upload stopped because of a problem inside the app. Try again after the next gather.';
+      'Das Hochladen wurde wegen eines Problems in der App gestoppt. Versuche es nach der nächsten Sammlung erneut.';
 
   @override
   String errHttp(String status) {
-    return 'The website answered with status $status. Try again later, and check the website address.';
+    return 'Die Webseite antwortete mit Status $status. Versuche es später erneut und prüfe die Adresse der Webseite.';
   }
 
   @override
   String errKeyRevoked(String site) {
-    return 'The website admin blocked this app\'s key. Uploads to $site are off.';
+    return 'Der Admin der Webseite hat den Schlüssel dieser App gesperrt. Das Hochladen zu $site ist aus.';
   }
 
   @override
   String get errNotRegistered =>
-      'The website does not know the key of this app yet. Register in the settings.';
+      'Die Webseite kennt den Schlüssel dieser App noch nicht. Registriere dich im Reiter Webseite.';
 
   @override
   String errClaimed(String name, String realm) {
-    return 'Another player already uploaded $name on $realm. Ask the website admin.';
+    return 'Ein anderer Spieler hat $name auf $realm bereits hochgeladen. Frage den Admin der Webseite.';
   }
 
   @override
-  String get realmUnknown => 'its realm';
+  String get realmUnknown => 'seinem Realm';
 
   @override
   String get errInvalid =>
-      'The website did not accept the data. Fix the saved files, then upload again.';
+      'Die Webseite hat die Daten nicht akzeptiert. Behebe die gespeicherten Dateien und lade dann erneut hoch.';
 
   @override
   String get errInviteInvalid =>
-      'The invite code is not valid. Ask the website admin for a new one.';
+      'Der Einladungscode ist ungültig. Bitte den Admin der Webseite um einen neuen.';
 
   @override
   String get errBadSignature =>
-      'The website did not accept the signature of the app. Check that the clock of your computer is right, then try again.';
+      'Die Webseite hat die Signatur der App nicht akzeptiert. Prüfe, ob die Uhr deines Computers richtig geht, und versuche es dann erneut.';
 
   @override
   String get errRateLimited =>
-      'Too many requests. Wait a minute, then try again.';
+      'Zu viele Anfragen. Warte eine Minute und versuche es dann erneut.';
 
   @override
   String get errBusy =>
-      'The website is busy with other uploads. Try again in a few minutes.';
+      'Die Webseite ist mit anderen Uploads beschäftigt. Versuche es in ein paar Minuten erneut.';
 
   @override
   String get errQuota =>
-      'The website has no more room for your data. Ask the website admin.';
+      'Die Webseite hat keinen Platz mehr für deine Daten. Frage den Admin der Webseite.';
 
   @override
   String get errTooLarge =>
-      'Your data is too large for this website. Ask the website admin to raise the limit.';
+      'Deine Daten sind für diese Webseite zu groß. Bitte den Admin der Webseite, das Limit zu erhöhen.';
 
   @override
   String get errInternal =>
-      'The website had a problem. Try again in a few minutes.';
+      'Die Webseite hatte ein Problem. Versuche es in ein paar Minuten erneut.';
 
   @override
   String get errBadRequest =>
-      'The website could not read the request. Try again, and update the app if it keeps happening.';
+      'Die Webseite konnte die Anfrage nicht lesen. Versuche es erneut und aktualisiere die App, wenn es weiter passiert.';
 
   @override
-  String get errNotFound => 'This website has no such character for this key.';
+  String get errNotFound =>
+      'Diese Webseite hat keinen solchen Charakter für diesen Schlüssel.';
 
   @override
   String get errScreenshotsNotApproved =>
-      'The website admin has not approved your screenshots yet.';
+      'Der Admin der Webseite hat deine Screenshots noch nicht genehmigt.';
 
   @override
   String get errUnsupportedImage =>
-      'The website did not accept a screenshot because its image type is not supported.';
+      'Die Webseite hat einen Screenshot nicht akzeptiert, weil sein Bildtyp nicht unterstützt wird.';
 
   @override
   String get errNotReferenced =>
-      'A screenshot does not belong to any journal line, so the website did not keep it.';
+      'Ein Screenshot gehört zu keiner Journalzeile, daher hat die Webseite ihn nicht behalten.';
 
   @override
   String get errGuidMismatch =>
-      'This character name already belongs to another character on the website. Ask the website admin.';
+      'Dieser Charaktername gehört auf der Webseite bereits zu einem anderen Charakter. Frage den Admin der Webseite.';
 
   @override
   String get errGzipRequired =>
-      'The upload was not compressed as the website needs. Update the app, then try again.';
+      'Der Upload war nicht so komprimiert, wie die Webseite es braucht. Aktualisiere die App und versuche es dann erneut.';
 
   @override
   String namedError(String name, String text) {
@@ -797,74 +804,75 @@ class AppLocalizationsDe extends AppLocalizations {
     String _temp0 = intl.Intl.pluralLogic(
       more,
       locale: localeName,
-      other: ' And $more more problems.',
-      one: ' And 1 more problem.',
+      other: ' Und $more weitere Probleme.',
+      one: ' Und 1 weiteres Problem.',
       zero: '',
     );
-    return 'The website did not accept the data of $name: $problems$_temp0 Fix the saved files, then upload again.';
+    return 'Die Webseite hat die Daten von $name nicht akzeptiert: $problems$_temp0 Behebe die gespeicherten Dateien und lade dann erneut hoch.';
   }
 
   @override
   String get siteInvalid =>
-      'The website address is not valid. Write it like https://example.com.';
+      'Die Adresse der Webseite ist ungültig. Schreibe sie so: https://example.com.';
 
   @override
   String get siteNeedsHost =>
-      'The website address needs a scheme and a host, like https://example.com.';
+      'Die Adresse der Webseite braucht ein Schema und einen Host, wie https://example.com.';
 
   @override
-  String get siteNeedsHttps => 'The website address must start with https://.';
+  String get siteNeedsHttps =>
+      'Die Adresse der Webseite muss mit https:// beginnen.';
 
   @override
   String get siteHttpLoopback =>
-      'The website address must start with https://. Plain http:// is only allowed for localhost, 127.0.0.1 and [::1].';
+      'Die Adresse der Webseite muss mit https:// beginnen. Einfaches http:// ist nur für localhost, 127.0.0.1 und [::1] erlaubt.';
 
   @override
   String get siteUserInfo =>
-      'The website address may not hold a user name or a password.';
+      'Die Adresse der Webseite darf keinen Benutzernamen und kein Passwort enthalten.';
 
   @override
   String get siteQuery =>
-      'The website address may not hold a query or a fragment.';
+      'Die Adresse der Webseite darf keine Abfrage und kein Fragment enthalten.';
 
   @override
   String get sitePath =>
-      'The website address may not hold a path. Use the address of the site itself, like https://example.com.';
+      'Die Adresse der Webseite darf keinen Pfad enthalten. Verwende die Adresse der Seite selbst, wie https://example.com.';
 
   @override
   String removeQuestionText(String name, String site) {
-    return 'Remove $name from $site? The page and its data are deleted.';
+    return '$name von $site entfernen? Die Seite und ihre Daten werden gelöscht.';
   }
 
   @override
   String removedText(String name) {
-    return '$name was removed from the website. Gathers do not upload it again; Upload now does.';
+    return '$name wurde von der Webseite entfernt. Sammlungen laden ihn nicht erneut hoch; Jetzt hochladen tut es.';
   }
 
   @override
   String get busyText =>
-      'The app is busy with the website. Try again when the upload ends.';
+      'Die App ist mit der Webseite beschäftigt. Versuche es erneut, wenn der Upload endet.';
 
   @override
   String get genericFailureText =>
-      'Something went wrong with the website. Try again in a few minutes.';
+      'Mit der Webseite ist etwas schiefgelaufen. Versuche es in ein paar Minuten erneut.';
 
   @override
   String get notAnswering =>
-      'WoW Journey is already running, but it did not answer. Quit it from its tray icon menu, or end it in the task manager, then start it again.';
+      'WoW Journey läuft bereits, hat aber nicht geantwortet. Beende es über das Menü seines Tray-Symbols oder im Task-Manager und starte es dann erneut.';
 
   @override
-  String get close => 'Close';
+  String get close => 'Schließen';
 
   @override
-  String get trayGatherNow => 'Gather now';
+  String get trayGatherNow => 'Jetzt sammeln';
 
   @override
-  String get trayOpenWindow => 'Open window';
+  String get trayOpenWindow => 'Fenster öffnen';
 
   @override
-  String get trayOpenBackupFolder => 'Open backup folder';
+  String get trayOpenBackupFolder => 'Sicherungsordner öffnen';
 
   @override
-  String get trayQuit => 'Quit';
+  String get trayQuit => 'Beenden';
 }

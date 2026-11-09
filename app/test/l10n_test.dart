@@ -72,6 +72,128 @@ void main() {
     });
   });
 
+  group('parity with English', () {
+    final en = _arb('en');
+    final enKeys = en.keys.where((k) => !k.startsWith('@')).toSet();
+
+    // The {name} arguments that print a value. The selector of a plural
+    // (`{count, plural, ...}`) is not one: a branch must print it itself.
+    Set<String> placeholders(String text) => {
+      for (final m in RegExp(r'\{(\w+)\}').allMatches(text)) m[1]!,
+    };
+
+    // Names and codes that are the same word as in English, per language.
+    const sameAsEnglish = {
+      'de': {
+        'appTitle',
+        'statusSemantics',
+        'countScreenshots',
+        'countSemantics',
+        'sizeKb',
+        'sizeMb',
+        'sizeGb',
+        'sizeTb',
+        'classPaladin',
+        'languageSystem',
+        'versionTitle',
+        'versionText',
+        'namedError',
+      },
+      'fr': {
+        'appTitle',
+        'classPaladin',
+        'classMage',
+        'versionTitle',
+        'versionText',
+      },
+      'es': {
+        'appTitle',
+        'countSemantics',
+        'sizeKb',
+        'sizeMb',
+        'sizeGb',
+        'sizeTb',
+        'versionText',
+        'namedError',
+      },
+      'it': {
+        'appTitle',
+        'countSemantics',
+        'sizeKb',
+        'sizeMb',
+        'sizeGb',
+        'sizeTb',
+        'versionText',
+        'namedError',
+      },
+      'pt': {
+        'appTitle',
+        'statusSemantics',
+        'countSemantics',
+        'sizeKb',
+        'sizeMb',
+        'sizeGb',
+        'sizeTb',
+        'versionText',
+        'namedError',
+      },
+    };
+
+    for (final code in appLanguageCodes.skip(1)) {
+      final arb = _arb(code);
+      final keys = arb.keys.where((k) => !k.startsWith('@')).toSet();
+
+      test('$code has exactly the keys of English', () {
+        expect(keys.difference(enKeys), isEmpty, reason: 'extra keys');
+        expect(enKeys.difference(keys), isEmpty, reason: 'missing keys');
+      });
+
+      test('$code has the placeholders of English in every message', () {
+        for (final key in enKeys) {
+          expect(
+            placeholders(arb[key]! as String),
+            placeholders(en[key]! as String),
+            reason: '$code $key',
+          );
+        }
+      });
+
+      test('$code keeps the plural form of every plural message', () {
+        for (final key in enKeys) {
+          if ((en[key]! as String).contains(', plural,')) {
+            expect(arb[key]! as String, contains(', plural,'), reason: key);
+          }
+        }
+      });
+
+      test('$code has a non-empty text that is not the English one', () {
+        for (final key in enKeys) {
+          final text = arb[key]! as String;
+          expect(text.trim(), isNotEmpty, reason: '$code $key');
+          if (!sameAsEnglish[code]!.contains(key)) {
+            expect(text, isNot(en[key]), reason: '$code $key');
+          }
+        }
+      });
+
+      test('$code keeps the program words and commands as they are', () {
+        for (final key in enKeys) {
+          final enText = en[key]! as String;
+          for (final word in [
+            '/reload',
+            'index.json',
+            '_retail_',
+            'https://',
+          ]) {
+            if (enText.contains(word)) {
+              expect(arb[key]! as String, contains(word), reason: '$code $key');
+            }
+          }
+        }
+      });
+    }
+  });
+
   group('resolveAppLocale', () {
     test('takes the language part of a supported locale', () {
       expect(resolveAppLocale(const [Locale('pt', 'PT')]), const Locale('pt'));

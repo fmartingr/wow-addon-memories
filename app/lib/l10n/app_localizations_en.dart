@@ -718,7 +718,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errNotRegistered =>
-      'The website does not know the key of this app yet. Register in the settings.';
+      'The website does not know the key of this app yet. Register on the Website tab.';
 
   @override
   String errClaimed(String name, String realm) {

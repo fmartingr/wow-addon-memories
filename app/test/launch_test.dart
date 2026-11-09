@@ -20,7 +20,9 @@ Future<Widget?> _launch(
   FakeSingleInstance instance,
   FakeWindow window, [
   List<String> args = const [],
+  Future<String?> Function()? language,
 ]) => launch(
+  language: language,
   args: args,
   instance: instance,
   window: window,
@@ -72,6 +74,29 @@ void main() {
     expect(window.calls, isEmpty);
   });
 
+  test('the error screen gets the language of the settings', () async {
+    final app = await _launch(
+      FakeSingleInstance(const OtherInstance(answered: false)),
+      FakeWindow(),
+      const [],
+      () async => 'fr',
+    );
+    expect((app! as AlreadyRunningApp).language, 'fr');
+  });
+
+  test(
+    'a settings file that cannot be read gives the system language',
+    () async {
+      final app = await _launch(
+        FakeSingleInstance(const OtherInstance(answered: false)),
+        FakeWindow(),
+        const [],
+        () async => throw StateError('no file'),
+      );
+      expect((app! as AlreadyRunningApp).language, isNull);
+    },
+  );
+
   test('a hidden later copy with no answer shows its window', () async {
     final window = FakeWindow();
     await _launch(
@@ -96,5 +121,20 @@ void main() {
     expect(find.text(notAnsweringText), findsOneWidget);
     await tester.tap(find.text('Close'));
     expect(window.calls, ['quit']);
+  });
+
+  testWidgets('the error screen shows the chosen language', (tester) async {
+    await tester.pumpWidget(AlreadyRunningApp(onClose: () {}, language: 'es'));
+    expect(find.text('Cerrar'), findsOneWidget);
+    expect(find.text('Close'), findsNothing);
+  });
+
+  testWidgets('the error screen follows the system with no language', (
+    tester,
+  ) async {
+    tester.platformDispatcher.localesTestValue = const [Locale('de', 'DE')];
+    addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+    await tester.pumpWidget(AlreadyRunningApp(onClose: () {}));
+    expect(find.text('Schließen'), findsOneWidget);
   });
 }

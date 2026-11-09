@@ -22,6 +22,7 @@ Future<Widget?> launch({
   required SingleInstance instance,
   required WindowService window,
   required AppBuilder app,
+  Future<String?> Function()? language,
 }) async {
   final hidden = startsHidden(args);
   InstanceClaim? claim;
@@ -37,7 +38,10 @@ Future<Widget?> launch({
       return null;
     case OtherInstance(answered: false):
       if (hidden) await window.show();
-      return AlreadyRunningApp(onClose: window.quit);
+      return AlreadyRunningApp(
+        onClose: window.quit,
+        language: await _savedLanguage(language),
+      );
     case FirstInstance(:final showRequests):
       return app(startHidden: hidden, showRequests: showRequests);
     case null:
@@ -45,15 +49,29 @@ Future<Widget?> launch({
   }
 }
 
-/// The screen of a copy whose first copy did not answer.
+/// The language that the user chose in the settings, or null. The settings
+/// file is not needed to show the error, so a failed read gives null.
+Future<String?> _savedLanguage(Future<String?> Function()? language) async {
+  if (language == null) return null;
+  try {
+    return await language().timeout(const Duration(seconds: 2));
+  } on Object {
+    return null;
+  }
+}
+
+/// The screen of a copy whose first copy did not answer. [language] is the
+/// code from the settings, or null to follow the system.
 class AlreadyRunningApp extends StatelessWidget {
-  const AlreadyRunningApp({super.key, required this.onClose});
+  const AlreadyRunningApp({super.key, required this.onClose, this.language});
 
   final VoidCallback onClose;
+  final String? language;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
     onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+    locale: settingLocale(language),
     localizationsDelegates: AppLocalizations.localizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     localeListResolutionCallback: (locales, _) =>

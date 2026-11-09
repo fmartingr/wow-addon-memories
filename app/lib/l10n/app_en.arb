@@ -918,7 +918,7 @@
       }
     }
   },
-  "errNotRegistered": "The website does not know the key of this app yet. Register in the settings.",
+  "errNotRegistered": "The website does not know the key of this app yet. Register on the Website tab.",
   "@errNotRegistered": {
     "description": "Upload error: the key is not registered."
   },

@@ -23,6 +23,13 @@ const Map<String, String> appLanguageNames = {
 String? validLanguageCode(Object? value) =>
     value is String && appLanguageCodes.contains(value) ? value : null;
 
+/// The locale of the [language] setting for `MaterialApp.locale`, or null to
+/// follow the system.
+Locale? settingLocale(String? language) {
+  final code = validLanguageCode(language);
+  return code == null ? null : Locale(code);
+}
+
 /// The first of [preferred] that the app supports, matched on the language
 /// part only (`pt_PT` is Portuguese, `es_419` is Spanish), else English.
 Locale resolveAppLocale(Iterable<Locale> preferred) {
@@ -36,10 +43,8 @@ Locale resolveAppLocale(Iterable<Locale> preferred) {
 
 /// The locale to show: the [language] setting, or the system [preferred]
 /// list when the setting is null.
-Locale effectiveLocale(String? language, Iterable<Locale> preferred) {
-  final code = validLanguageCode(language);
-  return code == null ? resolveAppLocale(preferred) : Locale(code);
-}
+Locale effectiveLocale(String? language, Iterable<Locale> preferred) =>
+    settingLocale(language) ?? resolveAppLocale(preferred);
 
 /// The texts for [locale], with no widget tree.
 AppLocalizations textsFor(Locale locale) => lookupAppLocalizations(locale);

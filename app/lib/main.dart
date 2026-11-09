@@ -37,6 +37,7 @@ Future<void> main(List<String> args) async {
     args: args,
     instance: FileSingleInstance(directories.support),
     window: window,
+    language: () async => (await services.store.load()).settings.language,
     app: ({required startHidden, showRequests}) => WowJourneyApp(
       services: services,
       startHidden: startHidden,

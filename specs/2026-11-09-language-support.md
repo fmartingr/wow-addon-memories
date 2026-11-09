@@ -611,7 +611,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
         Language row).
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 6. App: the 5 translations and macOS languages
+### [x] 6. App: the 5 translations and macOS languages
 
 - **Outcome:** the app shows German, French, Spanish, Italian or Portuguese from the OS language or the setting.
 - **Depends on:** Task 5 (the English catalog, the Language setting and the code mapping).
