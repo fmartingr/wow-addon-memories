@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("settings page", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local FAILED = "Memories: the settings page failed; see /memories errors"
 
 	local function def(addon, group, kinds, box)

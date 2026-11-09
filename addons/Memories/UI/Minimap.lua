@@ -1,5 +1,7 @@
 local _, ns = ...
 
+local L = ns.L
+
 local MinimapButton = {}
 ns.MinimapButton = MinimapButton
 
@@ -49,9 +51,9 @@ end
 function MinimapButton.Tooltip(owner)
 	GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
 	GameTooltip:SetText("Memories")
-	GameTooltip:AddLine(("%d min since the last save"):format(math.floor(ns.Save.Age() / 60)), 1, 1, 1)
-	GameTooltip:AddLine("Left click: save (reload)")
-	GameTooltip:AddLine("Right click: settings")
+	GameTooltip:AddLine(L["%d min since the last save"]:format(math.floor(ns.Save.Age() / 60)), 1, 1, 1)
+	GameTooltip:AddLine(L["Left click: save (reload)"])
+	GameTooltip:AddLine(L["Right click: settings"])
 	GameTooltip:Show()
 end
 

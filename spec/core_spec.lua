@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("core", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local ns
 
 	before_each(function()

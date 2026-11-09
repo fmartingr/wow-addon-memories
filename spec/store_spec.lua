@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("store", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local NEWER = "Memories: saved data from a newer version; this addon will not write"
 
 	local function lines(journal)
@@ -189,6 +191,8 @@ describe("store", function()
 end)
 
 describe("store failure", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	it("keeps the modules off when the store cannot open", function()
 		local ns = wow.boot({ login = false })
 		local calls = {}

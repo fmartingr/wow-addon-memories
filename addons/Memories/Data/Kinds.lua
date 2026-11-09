@@ -1,5 +1,7 @@
 local ADDON, ns = ...
 
+local L = ns.L
+
 local Kinds = {}
 ns.Kinds = Kinds
 
@@ -89,21 +91,21 @@ function Kinds.Describe()
 end
 
 local CORE = {
-	{ "Sessions", "in", "Login or reload", "how" },
-	{ "Sessions", "out", "Logout or reload" },
-	{ "Sessions", "pl", "Total /played", "#played" },
-	{ "Sessions", "gp", "Gap (game ran, nothing saved)", "#seconds", "#lastSave" },
-	{ "Sessions", "pc", "Computer this session ran on", "computer" },
-	{ "Sessions", "af", "Away from keyboard", "on" },
-	{ "Progress", "lv", "Level up", "#level" },
-	{ "Progress", "xp", "Experience gained", "#amount", "src", "name", "#bonus" },
-	{ "Progress", "qt", "Quest turned in", "#quest", "#xp", "#money", "title" },
-	{ "Progress", "di", "Discovered an area", "area", "#xp" },
-	{ "Progress", "rs", "Rested state", "#rested" },
+	{ "Sessions", "in", L["Login or reload"], "how" },
+	{ "Sessions", "out", L["Logout or reload"] },
+	{ "Sessions", "pl", L["Total /played"], "#played" },
+	{ "Sessions", "gp", L["Gap (game ran, nothing saved)"], "#seconds", "#lastSave" },
+	{ "Sessions", "pc", L["Computer this session ran on"], "computer" },
+	{ "Sessions", "af", L["Away from keyboard"], "on" },
+	{ "Progress", "lv", L["Level up"], "#level" },
+	{ "Progress", "xp", L["Experience gained"], "#amount", "src", "name", "#bonus" },
+	{ "Progress", "qt", L["Quest turned in"], "#quest", "#xp", "#money", "title" },
+	{ "Progress", "di", L["Discovered an area"], "area", "#xp" },
+	{ "Progress", "rs", L["Rested state"], "#rested" },
 	{
 		"Deaths",
 		"de",
-		"Died",
+		L["Died"],
 		"killer",
 		"#npc",
 		"spell",
@@ -116,36 +118,36 @@ local CORE = {
 		"#byPlayer",
 		"inst",
 	},
-	{ "Deaths", "gh", "Released spirit" },
-	{ "Deaths", "al", "Alive again", "how", "by" },
-	{ "Deaths", "cc", "Close call", "#seconds", "combat" },
-	{ "Deaths", "lh", "Low-health warning", "combat" },
-	{ "Deaths", "hc", "Hardcore death", "killer" },
-	{ "Travel", "zo", "Entered a zone", "zone" },
-	{ "Travel", "sz", "Entered a subzone", "sub" },
-	{ "Travel", "ld", "Loading screen started", "#spell", "taxi" },
-	{ "Travel", "le", "Loading screen ended" },
-	{ "Travel", "tx", "Took a flight", "from", "to", "#cost" },
-	{ "Travel", "tl", "Flight landed", "at" },
-	{ "Travel", "bt", "Boat or zeppelin", "#fromMap", "#toMap", "from", "to" },
-	{ "Travel", "hs", "Hearthstone", "#fromMap", "#toMap", "to", "#yards" },
-	{ "Travel", "so", "Summon offered", "who", "area" },
-	{ "Travel", "su", "Summoned", "who", "area", "#fromMap", "#toMap", "#yards" },
-	{ "Travel", "po", "Portal or teleport", "dest", "#fromMap", "#toMap", "#spell", "#yards" },
-	{ "Travel", "jp", "Other teleport", "#fromMap", "#toMap", "#yards", "why" },
-	{ "Travel", "mo", "Mount up or down", "on", "#spell", "name" },
-	{ "Travel", "ml", "Learned a mount or riding", "name", "#spell" },
-	{ "Dungeons", "dn", "Entered a dungeon or raid", "name", "#instance", "itype", "#difficulty", "#size" },
-	{ "Dungeons", "dx", "Left a dungeon or raid", "name", "#instance", "#seconds", "#deaths" },
-	{ "Dungeons", "bo", "Boss fight ended", "name", "#encounter", "#success", "last", "place", "#seconds" },
-	{ "Dungeons", "wb", "World boss killed", "name", "#npc" },
-	{ "Screenshots", "ss", "Screenshot saved", "why", "result", "file" },
-	{ "Other addons", "sn", "Screenshot note from another addon", "source", "note", "file" },
-	{ "Other addons", "ex", "Event from another addon", "source", "what", "detail" },
+	{ "Deaths", "gh", L["Released spirit"] },
+	{ "Deaths", "al", L["Alive again"], "how", "by" },
+	{ "Deaths", "cc", L["Close call"], "#seconds", "combat" },
+	{ "Deaths", "lh", L["Low-health warning"], "combat" },
+	{ "Deaths", "hc", L["Hardcore death"], "killer" },
+	{ "Travel", "zo", L["Entered a zone"], "zone" },
+	{ "Travel", "sz", L["Entered a subzone"], "sub" },
+	{ "Travel", "ld", L["Loading screen started"], "#spell", "taxi" },
+	{ "Travel", "le", L["Loading screen ended"] },
+	{ "Travel", "tx", L["Took a flight"], "from", "to", "#cost" },
+	{ "Travel", "tl", L["Flight landed"], "at" },
+	{ "Travel", "bt", L["Boat or zeppelin"], "#fromMap", "#toMap", "from", "to" },
+	{ "Travel", "hs", L["Hearthstone"], "#fromMap", "#toMap", "to", "#yards" },
+	{ "Travel", "so", L["Summon offered"], "who", "area" },
+	{ "Travel", "su", L["Summoned"], "who", "area", "#fromMap", "#toMap", "#yards" },
+	{ "Travel", "po", L["Portal or teleport"], "dest", "#fromMap", "#toMap", "#spell", "#yards" },
+	{ "Travel", "jp", L["Other teleport"], "#fromMap", "#toMap", "#yards", "why" },
+	{ "Travel", "mo", L["Mount up or down"], "on", "#spell", "name" },
+	{ "Travel", "ml", L["Learned a mount or riding"], "name", "#spell" },
+	{ "Dungeons", "dn", L["Entered a dungeon or raid"], "name", "#instance", "itype", "#difficulty", "#size" },
+	{ "Dungeons", "dx", L["Left a dungeon or raid"], "name", "#instance", "#seconds", "#deaths" },
+	{ "Dungeons", "bo", L["Boss fight ended"], "name", "#encounter", "#success", "last", "place", "#seconds" },
+	{ "Dungeons", "wb", L["World boss killed"], "name", "#npc" },
+	{ "Screenshots", "ss", L["Screenshot saved"], "why", "result", "file" },
+	{ "Other addons", "sn", L["Screenshot note from another addon"], "source", "note", "file" },
+	{ "Other addons", "ex", L["Event from another addon"], "source", "what", "detail" },
 }
 
 for _, row in ipairs(CORE) do
 	Kinds.Register(row[2], { addon = ADDON, group = row[1], name = row[3], fields = { select(4, unpack(row)) } })
 end
 
-Kinds.Register("nt", { addon = ADDON, name = "Note from Memories", fields = { "what", "detail" }, always = true })
+Kinds.Register("nt", { addon = ADDON, name = L["Note from Memories"], fields = { "what", "detail" }, always = true })

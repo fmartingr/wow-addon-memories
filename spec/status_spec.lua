@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("/memories status", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local GUID = "Player-1234-0ABCDEF0"
 
 	local function status()

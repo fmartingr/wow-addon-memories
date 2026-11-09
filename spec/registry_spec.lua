@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("sub-addon registry", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local function lines(data)
 		local out = {}
 		for _, chunk in ipairs(data.log.chunks) do

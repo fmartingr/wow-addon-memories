@@ -1,5 +1,7 @@
 local _, ns = ...
 
+local L = ns.L
+
 local Slash = { commands = {} }
 ns.Slash = Slash
 
@@ -12,7 +14,7 @@ function Slash.Add(name, fn, help)
 end
 
 function Slash.Help()
-	ns.Print("commands:")
+	ns.Print(L["commands:"])
 	for _, c in ipairs(Slash.commands) do
 		DEFAULT_CHAT_FRAME:AddMessage("  /memories " .. c.name .. " - " .. c.help)
 	end
@@ -36,7 +38,7 @@ function Slash.ErrorText()
 	for _, e in ipairs(ns.Errors()) do
 		if type(e) == "table" then
 			-- date returns nil for a time out of range.
-			local stamp = type(e.t) == "number" and date("%Y-%m-%d %H:%M:%S", e.t) or "unknown time"
+			local stamp = type(e.t) == "number" and date("%Y-%m-%d %H:%M:%S", e.t) or L["unknown time"]
 			lines[#lines + 1] = stamp .. "  " .. tostring(e.where) .. ": " .. tostring(e.msg)
 			if e.stack then
 				lines[#lines + 1] = tostring(e.stack)
@@ -60,7 +62,7 @@ local function errorBox()
 		table.insert(UISpecialFrames, "MemoriesErrorsFrame")
 	end
 	if box.TitleText then
-		box.TitleText:SetText("Memories errors")
+		box.TitleText:SetText(L["Memories errors"])
 	end
 	local scroll = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", 12, -30)
@@ -81,7 +83,7 @@ end
 Slash.Add("errors", function()
 	local text = Slash.ErrorText()
 	if text == "" then
-		ns.Print("no saved errors.")
+		ns.Print(L["no saved errors."])
 		return
 	end
 	local f = errorBox()
@@ -90,17 +92,17 @@ Slash.Add("errors", function()
 	f:Show()
 	f.EditBox:SetFocus()
 	f.EditBox:HighlightText()
-end, "show the saved errors, ready to copy")
+end, L["show the saved errors, ready to copy"])
 
 local function options()
 	ns.Options.Open()
 end
 
-Slash.Add("options", options, "open the settings page")
-Slash.Add("settings", options, "open the settings page")
+Slash.Add("options", options, L["open the settings page"])
+Slash.Add("settings", options, L["open the settings page"])
 Slash.Add("status", function()
 	ns.Status.Print()
-end, "show the state of each Memories addon")
+end, L["show the state of each Memories addon"])
 
 SLASH_MEMORIES1 = "/memories"
 SLASH_MEMORIES2 = "/mem"

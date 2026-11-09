@@ -1,5 +1,7 @@
 local _, ns = ...
 
+local L = ns.L
+
 -- Close calls need the client's low-health flash, since the player's health is always secret. The flash is the account
 -- CVar doNotFlashLowHealthWarning: "0" flashes (the client default), "1" does not. It is the only CVar Memories
 -- changes, and only on the player's click.
@@ -10,8 +12,9 @@ LowHealth.CVAR = "doNotFlashLowHealthWarning"
 local CVAR = LowHealth.CVAR
 local POPUP = "MEMORIES_LOW_HEALTH"
 
-LowHealth.TITLE = "Memories needs this setting on"
-LowHealth.BODY = "Memories needs the low-health flash to record close calls. With it off, close calls are not counted."
+LowHealth.TITLE = L["Memories needs this setting on"]
+LowHealth.BODY =
+	L["Memories needs the low-health flash to record close calls. With it off, close calls are not counted."]
 
 local dialog
 -- The value of our own CVar write, so its CVAR_UPDATE is no change by the player.
@@ -75,8 +78,8 @@ end
 
 StaticPopupDialogs[POPUP] = {
 	text = "|cffffd100" .. LowHealth.TITLE .. "|r\n\n" .. LowHealth.BODY,
-	button1 = "Keep it on",
-	button2 = "Turn it off",
+	button1 = L["Keep it on"],
+	button2 = L["Turn it off"],
 	OnAccept = function()
 		ns.Safe("low health:on", LowHealth.Set, true)
 	end,

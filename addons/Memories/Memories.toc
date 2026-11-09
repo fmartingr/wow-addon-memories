@@ -1,6 +1,18 @@
 ## Interface: 16001
 ## Title: Memories
 ## Notes: Records your journey.
+## Title-deDE: Memories
+## Notes-deDE: Zeichnet deine Reise auf.
+## Title-frFR: Memories
+## Notes-frFR: Enregistre votre aventure.
+## Title-esES: Memories
+## Notes-esES: Registra tu viaje.
+## Title-esMX: Memories
+## Notes-esMX: Registra tu viaje.
+## Title-itIT: Memories
+## Notes-itIT: Registra il tuo viaggio.
+## Title-ptBR: Memories
+## Notes-ptBR: Registra a sua jornada.
 ## Author: Felipe M.
 ## Version: 0.1.0
 ## SavedVariables: MemoriesDB
@@ -10,6 +22,7 @@
 ## IconTexture: Interface\AddOns\Memories\Media\icon
 ## Category: Map
 
+Locales.lua
 Core\Core.lua
 Core\Secret.lua
 Core\Util.lua

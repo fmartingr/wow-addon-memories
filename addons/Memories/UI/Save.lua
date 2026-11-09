@@ -1,5 +1,7 @@
 local _, ns = ...
 
+local L = ns.L
+
 -- The client writes the saved files only at logout or on a UI reload, so a reload is the save.
 local Save = {}
 ns.Save = Save
@@ -17,7 +19,7 @@ end
 
 function Save.Now()
 	if InCombatLockdown() then
-		ns.Print("cannot save in combat.")
+		ns.Print(L["cannot save in combat."])
 		return false
 	end
 	C_UI.Reload()
@@ -42,7 +44,7 @@ function Save.Check()
 		ticker:Cancel()
 		ticker = nil
 	end
-	ns.Print("1 hour since the last save. Click the minimap button to save (reloads the UI).")
+	ns.Print(L["1 hour since the last save. Click the minimap button to save (reloads the UI)."])
 	ns.Emit("SAVE_REMINDER")
 end
 

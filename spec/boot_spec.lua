@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("boot", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local function start(opts)
 		wow.reset(opts)
 		local ns = wow.load_addon("Memories", opts and opts.saved)
@@ -24,7 +26,8 @@ describe("boot", function()
 		local toc = wow.read_toc("Memories")
 		assert.equal("16001", toc.meta.Interface)
 		assert.same({ "MemoriesDB", "MemoriesCharDB" }, toc.saved)
-		assert.equal("addons/Memories/Core/Core.lua", toc.files[1])
+		assert.equal("addons/Memories/Locales.lua", toc.files[1])
+		assert.equal("addons/Memories/Core/Core.lua", toc.files[2])
 		assert.equal("addons/Memories/Init.lua", toc.files[#toc.files])
 	end)
 

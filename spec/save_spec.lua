@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("save reminder and minimap button", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local REMINDER = "Memories: 1 hour since the last save. Click the minimap button to save (reloads the UI)."
 
 	local function count(list, text)

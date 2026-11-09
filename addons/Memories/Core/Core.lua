@@ -1,5 +1,7 @@
 local ADDON, ns = ...
 
+local L = ns.L
+
 ns.name = ADDON
 ns.modules = {}
 ns.VERSION = C_AddOns and C_AddOns.GetAddOnMetadata and C_AddOns.GetAddOnMetadata(ADDON, "Version") or "dev"
@@ -71,7 +73,7 @@ function ns.LogError(where, err, stack, quiet)
 	end
 	if not printed[where] then
 		printed[where] = true
-		ns.Print("error in " .. where .. ". See /memories errors.")
+		ns.Print(L["error in %s. See /memories errors."]:format(where))
 	end
 	local handler = geterrorhandler and geterrorhandler()
 	if handler then

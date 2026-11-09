@@ -9,6 +9,8 @@ reaches the core only through the global `Memories` and the handle that `Memorie
 ## Interface: 16001
 ## Title: Memories - <Part>
 ## Notes: <what it records>
+## Title-deDE: <translated title>
+## Notes-deDE: <translated notes>
 ## Version: 0.1.0
 ## Dependencies: Memories
 ## Group: Memories
@@ -16,16 +18,32 @@ reaches the core only through the global `Memories` and the handle that `Memorie
 ## LoadSavedVariablesFirst: 1
 ## X-Memories-API: 1
 
+Locales.lua
 <Part>.lua
 ```
 
 - `## Dependencies: Memories`: the client loads the core first and skips the sub-addon when the core is missing.
 - `## Group: Memories`: the AddOn list shows the whole set as one group.
+- `## Title-<locale>` and `## Notes-<locale>` follow the plain lines, one pair for each of `deDE`, `frFR`, `esES`,
+  `esMX`, `itIT` and `ptBR`. The AddOn list shows them on a client with that language.
 - The saved table is per character only. Account data (settings, backups, orphans) lives in the core's `MemoriesDB`.
+
+## Strings
+
+`Locales.lua` is the first file. Each addon carries its own strings, so a sub-addon needs no core API for them. It
+builds `ns.L`, a table that is keyed by the English text and answers with the text in the language of `GetLocale()`
+(`deDE`, `frFR`, `esES`, `esMX`, `itIT`, `ptBR`). A missing translation, a missing key or any other locale gives the
+key itself, so English is the fallback. Code uses `local L = ns.L` and `L["English text"]`. A format string keeps the
+same placeholders, in the same order, in every language. Start each translated table with the note "Machine
+translated. Corrections are welcome."
+
+A kind registers its `name` and its new-only `label` through `L`. The `group` stays an English token: it is saved in
+`MemoriesDB.kinds`. The core Settings page translates the group names it knows ("Combat", "Gathering", "Character",
+"Milestones", "Loot", "Money", "Social", "PvP"). A sub-addon with another group shows that group in English.
 
 ## Missing core
 
-The first file starts with this guard. It covers a client that loads the sub-addon without the core:
+The first file after `Locales.lua` starts with this guard. It covers a client that loads the sub-addon without the core:
 
 ```lua
 local ADDON, ns = ...

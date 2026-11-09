@@ -208,3 +208,6 @@ files["spec/"] = {
 	std = "+busted",
 	globals = { "_G", "print", "C_EncodingUtil", "Enum", "MemoriesMinimapButton", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "MemoriesSocialCharDB", "SomeBlizzardFunc", "Settings", "CHAT_FRAMES", "ChatFrame1", "C_GameRules", "UnitIsAFK", "GetXPExhaustion", "C_QuestLog", "UnitPosition", "date", "C_DeathRecap", "C_CVar", "LowHealthFrame", "SetCVar" },
 }
+
+-- Translated sentences stay on one line each.
+files["addons/**/Locales.lua"] = { max_line_length = false }

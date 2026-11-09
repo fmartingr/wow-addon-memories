@@ -3,6 +3,8 @@ local serialize = require("helpers.serialize")
 
 local wow = {}
 
+wow.default_locale = "esES"
+
 local real_time, real_date = os.time, os.date
 
 local baseline = {}
@@ -885,7 +887,7 @@ local function install_travel()
 	wow.skill_lines = wow.opts.skillLines or {}
 	wow.bind = wow.opts.bind
 	wow.region = wow.opts.region
-	wow.locale = wow.opts.locale or "esES"
+	wow.locale = wow.opts.locale or wow.default_locale
 	_G.NumTaxiNodes = function()
 		return #wow.taxi
 	end
@@ -1844,6 +1846,19 @@ function wow.fire(event, ...)
 			handler(frame, event, ...)
 		end
 	end
+end
+
+-- Makes every boot inside the enclosing describe report locale unless a boot sets its own. Busted's hooks are passed
+-- in because they live in the spec file environment.
+function wow.pin_locale(locale, before_each, after_each)
+	local previous
+	before_each(function()
+		previous = wow.default_locale
+		wow.default_locale = locale
+	end)
+	after_each(function()
+		wow.default_locale = previous
+	end)
 end
 
 wow.reset()

@@ -339,7 +339,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
 
 ## Tasks
 
-### [ ] 1. Addon core: string table, core strings, TOC fields and translations
+### [x] 1. Addon core: string table, core strings, TOC fields and translations
 
 - **Outcome:** the core addon `Memories` shows all its text in the client language for the 6 languages, and English for
   other locales. The addon list shows the translated title and notes.

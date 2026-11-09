@@ -1,5 +1,7 @@
 local ADDON, ns = ...
 
+local L = ns.L
+
 local Registry = {}
 ns.Registry = Registry
 
@@ -140,7 +142,7 @@ local function register(def)
 	if reason == "newer api" and not newerSeen[def.addon] then
 		newerSeen[def.addon] = true
 		newer[#newer + 1] = def.addon
-		ns.Print(def.addon .. " needs a newer Memories")
+		ns.Print(L["%s needs a newer Memories"]:format(def.addon))
 	end
 	if reason then
 		return nil, reason

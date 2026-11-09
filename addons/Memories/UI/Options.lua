@@ -1,12 +1,13 @@
 local ADDON, ns = ...
 
+local L = ns.L
+
 -- The Settings page. Settings is the client's API; ns.Settings holds the values.
 local Options = {}
 ns.Options = Options
 
 Options.NAME = "Memories"
 local VARIABLE = "Memories_"
-local FAILED = "the settings page failed; see /memories errors"
 
 local category, layout
 local byPath = {}
@@ -37,29 +38,29 @@ end
 local function rateOptions()
 	local container = Settings.CreateControlTextContainer()
 	for _, rate in ipairs(ns.Settings.RATES) do
-		container:Add(rate, rate .. " s")
+		container:Add(rate, L["%d s"]:format(rate))
 	end
 	return container:GetData()
 end
 
 local function general()
-	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer("General"))
-	local rate = register("recordRate", Settings.VarType.Number, "Recording rate")
-	Settings.CreateDropdown(category, rate, rateOptions, "Seconds between two points of the position trail.")
-	checkbox("saveReminder", "Save reminder", "Reminds you to save after one hour without a reload.")
-	checkbox("minimapButton", "Minimap button", "Shows the Memories button on the minimap.")
+	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["General"]))
+	local rate = register("recordRate", Settings.VarType.Number, L["Recording rate"])
+	Settings.CreateDropdown(category, rate, rateOptions, L["Seconds between two points of the position trail."])
+	checkbox("saveReminder", L["Save reminder"], L["Reminds you to save after one hour without a reload."])
+	checkbox("minimapButton", L["Minimap button"], L["Shows the Memories button on the minimap."])
 	checkbox(
 		"lowHealthFlash",
-		"Low-health flash",
-		"Keeps the game's low-health flash on, so Memories can record close calls."
+		L["Low-health flash"],
+		L["Keeps the game's low-health flash on, so Memories can record close calls."]
 	)
 end
 
 local function groupButton(addon, group, label, on)
-	local text = on and "Enable all" or "Disable all"
+	local text = on and L["Enable all"] or L["Disable all"]
 	return CreateSettingsButtonInitializer(label, text, function()
 		ns.Safe("options:group", ns.Settings.SetGroup, addon, group, on)
-	end, (on and "Turns on" or "Turns off") .. " every kind of this group.", false)
+	end, on and L["Turns on every kind of this group."] or L["Turns off every kind of this group."], false)
 end
 
 -- The groups of an addon in the order of its first kind, each with its kinds and its new-only boxes.
@@ -84,21 +85,45 @@ local function groups(addon, boxes)
 	return order, byGroup
 end
 
+-- The groups stay English tokens in MemoriesDB.kinds; only this page shows these labels. The sub-addon groups are here
+-- because this page draws their sections.
+local GROUPS = {
+	Sessions = L["Sessions"],
+	Progress = L["Progress"],
+	Deaths = L["Deaths"],
+	Travel = L["Travel"],
+	Dungeons = L["Dungeons"],
+	Screenshots = L["Screenshots"],
+	["Other addons"] = L["Other addons"],
+	Combat = L["Combat"],
+	Gathering = L["Gathering"],
+	Character = L["Character"],
+	Milestones = L["Milestones"],
+	Loot = L["Loot"],
+	Money = L["Money"],
+	Social = L["Social"],
+	PvP = L["PvP"],
+}
+
 local function section(addon, boxes)
 	local order, byGroup = groups(addon, boxes)
 	for _, g in ipairs(order) do
-		local title = g == "" and addon or addon .. " — " .. g
+		local label, title = addon, addon
+		if g ~= "" then
+			label = GROUPS[g] or g
+			title = addon .. " — " .. label
+		end
 		layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(title))
-		layout:AddInitializer(groupButton(addon, g, "All " .. (g == "" and addon or g) .. " kinds", true))
+		layout:AddInitializer(groupButton(addon, g, L["All %s kinds"]:format(label), true))
 		layout:AddInitializer(groupButton(addon, g, "", false))
 		for _, spec in ipairs(byGroup[g].kinds) do
-			checkbox("kinds." .. spec.kind, spec.name, "Writes the " .. spec.kind .. " line.")
+			checkbox("kinds." .. spec.kind, spec.name, L["Writes the %s line."]:format(spec.kind))
 		end
 		for _, box in ipairs(byGroup[g].boxes) do
 			checkbox(
 				"newOnly." .. box.key,
 				box.label or box.key,
-				"Writes a line only for a first finding or a rare one. Every event is still counted."
+				L["Writes a line only for a first finding or a rare one. Every event is still counted."]
 			)
 		end
 	end
@@ -126,7 +151,7 @@ end
 
 function Options.Open()
 	if not category then
-		ns.Print(FAILED)
+		ns.Print(L["the settings page failed; see /memories errors"])
 		return false
 	end
 	Settings.OpenToCategory(category:GetID())

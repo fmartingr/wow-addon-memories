@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("journal", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local ns, data, j
 
 	local function collect(journal)
@@ -245,6 +247,8 @@ describe("journal", function()
 end)
 
 describe("kinds", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local Kinds
 
 	before_each(function()

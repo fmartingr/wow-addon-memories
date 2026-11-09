@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("low-health popup", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local CVAR = "doNotFlashLowHealthWarning"
 	local POPUP = "MEMORIES_LOW_HEALTH"
 
