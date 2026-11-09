@@ -10,5 +10,11 @@ The desktop app that gathers the Memories addon data from the WoW folder. It use
   `ak_theme.dart` is the `ThemeData` and the panel border; `ak_widgets.dart` has the header, the tabs, the tags and the
   panel title. The fonts are in `assets/fonts/` (the same families as the website, as TTF). `make theme-check` compares
   the app theme with the website, and `make app-shots` writes pictures of the screens.
+- Language: every text comes from `AppLocalizations` (Flutter `gen_l10n`). The English catalog is
+  `lib/l10n/app_en.arb`; the generated `lib/l10n/app_localizations*.dart` are committed, because `flutter analyze` does
+  not generate them. After a change of an ARB file run `fvm flutter gen-l10n` in `app/`. The app follows the language of
+  the system, and the Language row of Settings (`language` in `settings.json`, `null` for System) overrides it at once.
+  The tray menu is rebuilt in the same language. Controllers keep codes and arguments (`upload/notice.dart`), and the
+  screens turn them into text, so a notice on the screen changes language with the app.
 - Run: `fvm flutter run -d linux` (or `windows`, `macos`).
 - Check: `make app-lint app-test` from the repository root.

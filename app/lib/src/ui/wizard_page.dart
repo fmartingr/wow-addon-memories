@@ -5,10 +5,13 @@ import 'package:flutter/material.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:path/path.dart' as p;
 
+import '../../l10n/app_localizations.dart';
 import '../platform/documents_dir.dart';
 import '../platform/services.dart';
 import '../settings/settings.dart';
+import '../settings/settings_store.dart';
 import 'folder_flow.dart';
+import 'messages.dart';
 import 'switch_tiles.dart';
 
 /// Three steps with Back and Next. Finish gives the chosen settings to
@@ -27,11 +30,14 @@ class WizardPage extends StatefulWidget {
   final Future<void> Function(Settings settings) onFinish;
 
   /// A message about the settings file, shown above the steps.
-  final String? notice;
+  final SettingsNotice? notice;
 
   @override
   State<WizardPage> createState() => _WizardPageState();
 }
+
+/// Why the backup folder step shows a problem.
+enum _BackupProblem { insideGame, pickerFailed }
 
 class _WizardPageState extends State<WizardPage> {
   int _step = 0;
@@ -40,10 +46,10 @@ class _WizardPageState extends State<WizardPage> {
   bool _picking = false;
   List<WowFolder> _folders = const [];
   WowFolder? _selected;
-  String? _wowMessage;
+  WowPick? _wowPick;
 
   String? _backupRoot;
-  String? _backupMessage;
+  _BackupProblem? _backupProblem;
 
   late bool _watch = widget.initial.watch;
   late bool _startAtLogin = widget.initial.startAtLogin;
@@ -90,6 +96,7 @@ class _WizardPageState extends State<WizardPage> {
     final pick = await pickWowFolder(
       widget.services.picker,
       widget.services.discovery,
+      confirmText: AppLocalizations.of(context).useThisFolder,
       initialDirectory: _selected?.installDir,
     );
     if (!mounted) return;
@@ -98,16 +105,16 @@ class _WizardPageState extends State<WizardPage> {
       switch (pick) {
         case WowPickCancelled():
           break;
-        case WowPickRefused(:final message):
-          _wowMessage = message;
+        case WowPickRefused():
+          _wowPick = pick;
         case WowPicked(:final folder):
           _folders = [folder];
           _selected = folder;
-          _wowMessage = null;
-        case WowPickChoices(:final folders, :final message):
+          _wowPick = null;
+        case WowPickChoices(:final folders):
           _folders = folders;
           _selected = folders.first;
-          _wowMessage = message;
+          _wowPick = pick;
       }
     });
   }
@@ -115,26 +122,28 @@ class _WizardPageState extends State<WizardPage> {
   Future<void> _changeBackup() async {
     if (_picking) return;
     setState(() => _picking = true);
+    final confirmText = AppLocalizations.of(context).useThisFolder;
     String? path;
-    String? failed;
+    var failed = false;
     try {
       path = await widget.services.picker.pickFolder(
         initialDirectory: _backupRoot == null ? null : p.dirname(_backupRoot!),
-        confirmText: 'Use this folder',
+        confirmText: confirmText,
       );
     } on Object {
-      failed = pickerFailedText;
+      failed = true;
     }
     if (!mounted) return;
     setState(() {
       _picking = false;
-      if (path == null && failed == null) return;
+      if (path == null && !failed) return;
       if (path == null) {
-        _backupMessage = failed;
+        _backupProblem = _BackupProblem.pickerFailed;
         return;
       }
-      _backupMessage = backupFolderProblem(path, _selected?.flavorDir);
-      if (_backupMessage == null) _backupRoot = path;
+      final overlaps = backupFolderOverlaps(path, _selected?.flavorDir);
+      _backupProblem = overlaps ? _BackupProblem.insideGame : null;
+      if (!overlaps) _backupRoot = path;
     });
   }
 
@@ -142,7 +151,7 @@ class _WizardPageState extends State<WizardPage> {
     0 => _selected != null,
     1 =>
       _backupRoot != null &&
-          backupFolderProblem(_backupRoot!, _selected?.flavorDir) == null,
+          !backupFolderOverlaps(_backupRoot!, _selected?.flavorDir),
     _ => !_finishing,
   };
 
@@ -151,10 +160,10 @@ class _WizardPageState extends State<WizardPage> {
       setState(() {
         _step++;
         if (_step == 1 && _backupRoot != null) {
-          _backupMessage = backupFolderProblem(
-            _backupRoot!,
-            _selected?.flavorDir,
-          );
+          _backupProblem =
+              backupFolderOverlaps(_backupRoot!, _selected?.flavorDir)
+              ? _BackupProblem.insideGame
+              : null;
         }
       });
       return;
@@ -175,8 +184,9 @@ class _WizardPageState extends State<WizardPage> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Welcome to WoW Journey')),
+      appBar: AppBar(title: Text(l.wizardTitle)),
       body: SafeArea(
         child: Center(
           child: ConstrainedBox(
@@ -192,27 +202,27 @@ class _WizardPageState extends State<WizardPage> {
                           Padding(
                             padding: const EdgeInsets.only(bottom: 16),
                             child: Text(
-                              widget.notice!,
+                              settingsNoticeText(l, widget.notice!),
                               style: TextStyle(color: theme.colorScheme.error),
                             ),
                           ),
                         Semantics(
                           header: true,
                           child: Text(
-                            'Step ${_step + 1} of 3',
+                            l.wizardStep(_step + 1, 3),
                             style: theme.textTheme.labelLarge,
                           ),
                         ),
                         const SizedBox(height: 8),
                         ...switch (_step) {
-                          0 => _wowStep(theme),
-                          1 => _backupStep(theme),
-                          _ => _switchStep(theme),
+                          0 => _wowStep(theme, l),
+                          1 => _backupStep(theme, l),
+                          _ => _switchStep(theme, l),
                         },
                       ],
                     ),
                   ),
-                  _buttons(),
+                  _buttons(l),
                 ],
               ),
             ),
@@ -222,58 +232,50 @@ class _WizardPageState extends State<WizardPage> {
     );
   }
 
-  Widget _buttons() => Padding(
+  Widget _buttons(AppLocalizations l) => Padding(
     padding: const EdgeInsets.all(16),
     child: Row(
       children: [
         if (_step > 0)
           OutlinedButton(
             onPressed: _finishing ? null : () => setState(() => _step--),
-            child: Text('Back', semanticsLabel: 'Back to step $_step'),
+            child: Text(l.back, semanticsLabel: l.backSemantics(_step)),
           ),
         const Spacer(),
         FilledButton(
           onPressed: _canNext ? _next : null,
           child: Text(
-            _step == 2 ? 'Finish' : 'Next',
-            semanticsLabel: _step == 2 ? 'Finish the setup' : 'Next step',
+            _step == 2 ? l.finish : l.next,
+            semanticsLabel: _step == 2 ? l.finishSemantics : l.nextSemantics,
           ),
         ),
       ],
     ),
   );
 
-  List<Widget> _wowStep(ThemeData theme) => [
+  List<Widget> _wowStep(ThemeData theme, AppLocalizations l) => [
     Semantics(
       header: true,
-      child: Text('Your WoW folder', style: theme.textTheme.headlineSmall),
+      child: Text(l.wowStepTitle, style: theme.textTheme.headlineSmall),
     ),
     const SizedBox(height: 8),
-    const Text(
-      'We read the files that the Memories addons save in this folder. '
-      'We never change them.',
-    ),
+    Text(l.wowStepIntro),
     const SizedBox(height: 16),
     if (_searching)
-      const Row(
+      Row(
         children: [
           SizedBox.square(
             dimension: 24,
-            child: CircularProgressIndicator(
-              semanticsLabel: 'Looking for World of Warcraft',
-            ),
+            child: CircularProgressIndicator(semanticsLabel: l.lookingForWow),
           ),
-          SizedBox(width: 16),
-          Expanded(child: Text('Looking for World of Warcraft…')),
+          const SizedBox(width: 16),
+          Expanded(child: Text(l.lookingForWow)),
         ],
       )
     else if (_folders.isEmpty)
-      const Text(
-        'We could not find World of Warcraft. Choose the folder of one game '
-        'version, such as _retail_, inside your World of Warcraft folder.',
-      )
+      Text(l.noWowFound)
     else if (_folders.length == 1)
-      _folderTile(_folders.single, theme)
+      _folderTile(_folders.single, theme, l)
     else
       RadioGroup<WowFolder>(
         groupValue: _selected,
@@ -284,16 +286,16 @@ class _WizardPageState extends State<WizardPage> {
               RadioListTile<WowFolder>(
                 value: f,
                 title: Text(f.flavor),
-                subtitle: Text(_folderDetail(f)),
+                subtitle: Text(_folderDetail(f, l)),
               ),
           ],
         ),
       ),
-    if (_wowMessage != null)
+    if (_wowPick != null)
       Padding(
         padding: const EdgeInsets.only(top: 12),
         child: Text(
-          _wowMessage!,
+          pickText(l, _wowPick!)!,
           style: TextStyle(color: theme.colorScheme.error),
         ),
       ),
@@ -304,75 +306,75 @@ class _WizardPageState extends State<WizardPage> {
         child: OutlinedButton(
           onPressed: _picking ? null : _choose,
           child: _folders.isEmpty
-              ? const Text(
-                  'Choose folder',
-                  semanticsLabel: 'Choose the WoW folder',
-                )
-              : const Text('Change', semanticsLabel: 'Change the WoW folder'),
+              ? Text(l.chooseFolder, semanticsLabel: l.chooseWowSemantics)
+              : Text(l.change, semanticsLabel: l.changeWowFolderSemantics),
         ),
       ),
   ];
 
-  String _folderDetail(WowFolder f) =>
-      f.hasMemoriesData ? f.flavorDir : '${f.flavorDir}\nNo Memories data yet.';
+  String _folderDetail(WowFolder f, AppLocalizations l) =>
+      f.hasMemoriesData ? f.flavorDir : '${f.flavorDir}\n${l.noMemoriesYet}';
 
-  Widget _folderTile(WowFolder f, ThemeData theme) => Semantics(
-    label: 'WoW folder: ${f.flavorDir}',
-    excludeSemantics: true,
-    container: true,
-    child: Card(
-      child: ListTile(
-        leading: const Icon(Icons.folder_outlined),
-        title: Text(f.flavor),
-        subtitle: Text(_folderDetail(f)),
-      ),
-    ),
-  );
+  Widget _folderTile(WowFolder f, ThemeData theme, AppLocalizations l) =>
+      Semantics(
+        label: l.wowFolderSemantics(f.flavorDir),
+        excludeSemantics: true,
+        container: true,
+        child: Card(
+          child: ListTile(
+            leading: const Icon(Icons.folder_outlined),
+            title: Text(f.flavor),
+            subtitle: Text(_folderDetail(f, l)),
+          ),
+        ),
+      );
 
-  List<Widget> _backupStep(ThemeData theme) => [
+  List<Widget> _backupStep(ThemeData theme, AppLocalizations l) => [
     Semantics(
       header: true,
-      child: Text('Your backup folder', style: theme.textTheme.headlineSmall),
+      child: Text(l.backupStepTitle, style: theme.textTheme.headlineSmall),
     ),
     const SizedBox(height: 8),
-    const Text('We keep a copy of your game files and your screenshots here.'),
+    Text(l.backupStepIntro),
     const SizedBox(height: 16),
     Semantics(
-      label: 'Backup folder: ${_backupRoot ?? 'not set'}',
+      label: _backupRoot == null
+          ? l.backupFolderSemanticsNotSet
+          : l.backupFolderSemantics(_backupRoot!),
       excludeSemantics: true,
       container: true,
       child: Card(
         child: ListTile(
           leading: const Icon(Icons.inventory_2_outlined),
-          title: Text(_backupRoot ?? 'Choose a backup folder.'),
+          title: Text(_backupRoot ?? l.chooseBackupPrompt),
         ),
       ),
     ),
-    if (_backupMessage != null)
+    if (_backupProblem != null)
       Padding(
         padding: const EdgeInsets.only(top: 12),
-        child: Text(
-          _backupMessage!,
-          style: TextStyle(color: theme.colorScheme.error),
-        ),
+        child: Text(switch (_backupProblem!) {
+          _BackupProblem.insideGame => l.backupInsideWow,
+          _BackupProblem.pickerFailed => l.pickerFailed,
+        }, style: TextStyle(color: theme.colorScheme.error)),
       ),
     const SizedBox(height: 16),
     Align(
       alignment: AlignmentDirectional.centerStart,
       child: OutlinedButton(
         onPressed: _picking ? null : _changeBackup,
-        child: const Text('Change', semanticsLabel: 'Change the backup folder'),
+        child: Text(l.change, semanticsLabel: l.changeBackupFolderSemantics),
       ),
     ),
   ];
 
-  List<Widget> _switchStep(ThemeData theme) => [
+  List<Widget> _switchStep(ThemeData theme, AppLocalizations l) => [
     Semantics(
       header: true,
-      child: Text('How the app runs', style: theme.textTheme.headlineSmall),
+      child: Text(l.switchStepTitle, style: theme.textTheme.headlineSmall),
     ),
     const SizedBox(height: 8),
-    const Text('You can change these later in Settings.'),
+    Text(l.switchStepIntro),
     const SizedBox(height: 16),
     WatchTile(value: _watch, onChanged: (v) => setState(() => _watch = v)),
     StartAtLoginTile(

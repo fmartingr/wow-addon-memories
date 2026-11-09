@@ -63,7 +63,11 @@ class AkHeader extends StatelessWidget {
 
 /// A tab of [AkTabBar].
 class AkTab {
-  const AkTab({required this.label, this.icon});
+  const AkTab({required this.label, this.icon, this.id});
+
+  /// A name for the tab that does not change with the language. It keys the
+  /// tab button; the label is used when it is null.
+  final String? id;
 
   final String label;
   final IconData? icon;
@@ -131,7 +135,9 @@ class _AkTabBarState extends State<AkTabBar> {
                     child: Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: _TabButton(
-                        key: ValueKey('tab-${widget.tabs[i].label}'),
+                        key: ValueKey(
+                          'tab-${widget.tabs[i].id ?? widget.tabs[i].label}',
+                        ),
                         tab: widget.tabs[i],
                         node: _nodes[i],
                         selected: i == widget.selected,

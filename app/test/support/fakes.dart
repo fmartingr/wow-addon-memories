@@ -179,6 +179,7 @@ class FakeTray implements TrayService {
 
   bool shows;
   List<TrayItem> items = [];
+  String tooltip = '';
   bool disposed = false;
   bool _available = false;
 
@@ -186,10 +187,21 @@ class FakeTray implements TrayService {
   bool get available => _available;
 
   @override
-  Future<bool> start(List<TrayItem> items) async {
+  Future<bool> start(List<TrayItem> items, {required String tooltip}) async {
     this.items = items;
+    this.tooltip = tooltip;
     return _available = shows;
   }
+
+  @override
+  Future<void> update(List<TrayItem> items, {required String tooltip}) async {
+    this.items = items;
+    this.tooltip = tooltip;
+    updates++;
+  }
+
+  /// How many times the menu was replaced.
+  int updates = 0;
 
   @override
   Future<void> dispose() async {

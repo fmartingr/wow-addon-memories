@@ -7,9 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:path/path.dart' as p;
 
+import '../../l10n/app_localizations.dart';
 import '../platform/discovery.dart';
 import '../platform/folder_picker.dart';
 import '../settings/settings_controller.dart';
+import 'messages.dart';
 
 /// The answer of [pickWowFolder].
 sealed class WowPick {
@@ -27,63 +29,80 @@ class WowPicked extends WowPick {
   final WowFolder folder;
 }
 
-/// The user picked the World of Warcraft folder; it holds [folders].
+/// The user picked the World of Warcraft folder; it holds [folders]. [check]
+/// says so in words.
 class WowPickChoices extends WowPick {
-  const WowPickChoices(this.folders, this.message);
+  const WowPickChoices(this.folders, this.check);
 
   final List<WowFolder> folders;
-  final String message;
+  final FlavorCheck check;
 }
 
-/// The folder cannot be gathered; [message] tells why.
+/// Why [WowPickRefused] refused the folder.
+enum PickRefusal {
+  /// The folder picker failed to open.
+  pickerFailed,
+
+  /// The check of the picked folder failed to run.
+  checkFailed,
+
+  /// The check found that the folder cannot be gathered.
+  flavor,
+}
+
+/// The folder cannot be gathered. [check] says why when [reason] is
+/// [PickRefusal.flavor].
 class WowPickRefused extends WowPick {
-  const WowPickRefused(this.message);
+  const WowPickRefused(this.reason, [this.check])
+    : assert((reason == PickRefusal.flavor) == (check != null));
 
-  final String message;
+  final PickRefusal reason;
+  final FlavorCheck? check;
 }
 
-/// Shown when the folder picker fails to open.
-const String pickerFailedText =
-    'We could not open the folder picker. Try again, or restart the app.';
-
-/// Shown when the check of a picked folder fails to run.
-const String checkFailedText =
-    'We could not check this folder. Try again, or choose another folder.';
+/// The text that tells the user about [pick], or null when it needs none.
+String? pickText(AppLocalizations l, WowPick pick) => switch (pick) {
+  WowPickChoices(:final check) => flavorCheckText(l, check),
+  WowPickRefused(reason: PickRefusal.pickerFailed) => l.pickerFailed,
+  WowPickRefused(reason: PickRefusal.checkFailed) => l.checkFailed,
+  WowPickRefused(:final check?) => flavorCheckText(l, check),
+  _ => null,
+};
 
 /// Opens the folder picker and checks the folder the user chose.
 Future<WowPick> pickWowFolder(
   FolderPicker picker,
   Discovery discovery, {
+  required String confirmText,
   String? initialDirectory,
 }) async {
   final String? path;
   try {
     path = await picker.pickFolder(
       initialDirectory: initialDirectory,
-      confirmText: 'Use this folder',
+      confirmText: confirmText,
     );
   } on Object {
-    return const WowPickRefused(pickerFailedText);
+    return const WowPickRefused(PickRefusal.pickerFailed);
   }
   if (path == null) return const WowPickCancelled();
   final FlavorCheck check;
   try {
     check = await discovery.validate(path);
   } on Object {
-    return const WowPickRefused(checkFailedText);
+    return const WowPickRefused(PickRefusal.checkFailed);
   }
   return switch (check) {
     Valid(:final folder) => WowPicked(folder),
-    IsInstallFolder(:final flavors) => WowPickChoices(flavors, check.message),
-    _ => WowPickRefused(check.message),
+    IsInstallFolder(:final flavors) => WowPickChoices(flavors, check),
+    _ => WowPickRefused(PickRefusal.flavor, check),
   };
 }
 
-/// The text to show when [backupRoot] cannot hold the backups of
-/// [flavorDir], or null when it can. A backup root inside the World of
-/// Warcraft folder, or one that holds it, is refused.
-String? backupFolderProblem(String backupRoot, String? flavorDir) {
-  if (flavorDir == null) return null;
+/// Whether [backupRoot] cannot hold the backups of [flavorDir]: a backup root
+/// inside the World of Warcraft folder, or one that holds it, is refused.
+bool backupFolderOverlaps(String backupRoot, String? flavorDir) {
+  if (flavorDir == null) return false;
   final ignoreCase = !Platform.isLinux;
   String key(String path) {
     final n = p.normalize(p.absolute(path));
@@ -92,13 +111,9 @@ String? backupFolderProblem(String backupRoot, String? flavorDir) {
 
   final root = key(backupRoot);
   final install = key(p.dirname(flavorDir));
-  if (p.equals(root, install) ||
+  return p.equals(root, install) ||
       p.isWithin(install, root) ||
-      p.isWithin(root, install)) {
-    return 'This folder is inside your World of Warcraft folder, or holds '
-        'it. Choose a backup folder outside the game folder.';
-  }
-  return null;
+      p.isWithin(root, install);
 }
 
 void _showText(BuildContext context, String text) {
@@ -119,6 +134,7 @@ Future<void> changeWowFolder(
   final pick = await pickWowFolder(
     picker,
     discovery,
+    confirmText: AppLocalizations.of(context).useThisFolder,
     initialDirectory: current == null ? null : p.dirname(current),
   );
   if (!context.mounted) return;
@@ -126,20 +142,20 @@ Future<void> changeWowFolder(
   switch (pick) {
     case WowPickCancelled():
       return;
-    case WowPickRefused(:final message):
-      _showText(context, message);
+    case WowPickRefused():
+      _showText(context, pickText(AppLocalizations.of(context), pick)!);
       return;
     case WowPicked(:final folder):
       chosen = folder;
-    case WowPickChoices(:final folders, :final message):
+    case WowPickChoices(:final folders):
       chosen = await showDialog<WowFolder>(
         context: context,
         builder: (context) => SimpleDialog(
-          title: const Text('Choose a game version'),
+          title: Text(AppLocalizations.of(context).chooseGameVersion),
           children: [
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
-              child: Text(message),
+              child: Text(pickText(AppLocalizations.of(context), pick)!),
             ),
             for (final f in folders)
               SimpleDialogOption(
@@ -152,12 +168,8 @@ Future<void> changeWowFolder(
   }
   if (chosen == null || !context.mounted) return;
   final root = settings.settings.backupRoot;
-  if (root != null && backupFolderProblem(root, chosen.flavorDir) != null) {
-    _showText(
-      context,
-      'Your backup folder is inside this World of Warcraft folder, or holds '
-      'it. Choose another backup folder first, then this WoW folder.',
-    );
+  if (root != null && backupFolderOverlaps(root, chosen.flavorDir)) {
+    _showText(context, AppLocalizations.of(context).backupInsideWowFirst);
     return;
   }
   await settings.update(
@@ -177,38 +189,39 @@ Future<void> changeBackupFolder(
   try {
     path = await picker.pickFolder(
       initialDirectory: current == null ? null : p.dirname(current),
-      confirmText: 'Use this folder',
+      confirmText: AppLocalizations.of(context).useThisFolder,
     );
   } on Object {
-    if (context.mounted) _showText(context, pickerFailedText);
+    if (context.mounted) {
+      _showText(context, AppLocalizations.of(context).pickerFailed);
+    }
     return;
   }
   if (path == null || !context.mounted) return;
-  final problem = backupFolderProblem(path, settings.settings.flavorDir);
-  if (problem != null) {
-    _showText(context, problem);
+  if (backupFolderOverlaps(path, settings.settings.flavorDir)) {
+    _showText(context, AppLocalizations.of(context).backupInsideWow);
     return;
   }
   if (current != null && !p.equals(current, path)) {
     final ok = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Use this backup folder?'),
-        content: Text(
-          'New gathers go to $path. Your old backup folder stays as it is. '
-          'We do not move or delete it.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context, false),
-            child: const Text('Cancel'),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.pop(context, true),
-            child: const Text('Use this folder'),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l.useBackupTitle),
+          content: Text(l.useBackupBody(path!)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context, false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.pop(context, true),
+              child: Text(l.useThisFolder),
+            ),
+          ],
+        );
+      },
     );
     if (ok != true || !context.mounted) return;
   }

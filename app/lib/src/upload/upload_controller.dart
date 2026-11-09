@@ -10,7 +10,7 @@ import 'package:path/path.dart' as p;
 
 import '../gather/gather_controller.dart';
 import '../settings/settings_controller.dart';
-import '../ui/messages.dart';
+import 'notice.dart';
 import 'upload_service.dart';
 
 /// The state of [UploadController].
@@ -40,12 +40,12 @@ enum UploadState {
 }
 
 /// A character as the screens name it.
-typedef CharacterName = ({String name, String realm});
+typedef CharacterName = ({String name, String? realm});
 
 /// Uploads after each gather when the Upload switch is on, and does the
 /// explicit actions: check, register, request screenshots, remove.
 ///
-/// No method throws: a failure becomes a plain message.
+/// No method throws: a failure becomes a [Notice].
 class UploadController extends ChangeNotifier {
   UploadController({
     required this.service,
@@ -87,10 +87,10 @@ class UploadController extends ChangeNotifier {
   SyncReport? _lastReport;
   List<RemoteCharacter> _characters = const [];
   String _screenshots = 'none';
-  List<String> _issues = const [];
+  List<Notice> _issues = const [];
   SiteInfo? _siteInfo;
-  String? _siteError;
-  String? _registerError;
+  Notice? _siteError;
+  Notice? _registerError;
 
   UploadState get state {
     if (_uploading) return UploadState.uploading;
@@ -132,17 +132,17 @@ class UploadController extends ChangeNotifier {
   ({int done, int total}) get progressCounts =>
       (done: _progressDone, total: _progressTotal);
 
-  /// Plain messages about the last upload or action.
-  List<String> get issues => _issues;
+  /// The problems of the last upload or action.
+  List<Notice> get issues => _issues;
 
   /// The answer of the last Check, or null.
   SiteInfo? get siteInfo => _siteInfo;
 
   /// Why the last Check failed, or null.
-  String? get siteError => _siteError;
+  Notice? get siteError => _siteError;
 
   /// Why the last Register failed, or null.
-  String? get registerError => _registerError;
+  Notice? get registerError => _registerError;
 
   bool get checking => _checking;
   bool get registering => _registering;
@@ -167,7 +167,7 @@ class UploadController extends ChangeNotifier {
       return _gathered('${parts[1]}-${parts[2]}-${parts[3]}') ??
           (name: parts[3], realm: parts[2]);
     }
-    return (name: path, realm: 'its realm');
+    return (name: path, realm: null);
   }
 
   CharacterName? _gathered(String id) {
@@ -179,7 +179,7 @@ class UploadController extends ChangeNotifier {
 
   CharacterName _describeEntry(String id, String path) =>
       _gathered(id) ??
-      (path.isEmpty ? (name: id, realm: 'its realm') : describe(path));
+      (path.isEmpty ? (name: id, realm: null) : describe(path));
 
   void _notify() {
     if (!_disposed) notifyListeners();
@@ -233,13 +233,13 @@ class UploadController extends ChangeNotifier {
     final site = _siteText;
     final epoch = _epoch;
     SiteStatus status;
-    String? error;
+    Notice? error;
     try {
       status = await service.status(site);
     } on UploadException catch (e) {
       // A damaged key file shows here, before the player tries to register.
       status = (registered: false, fingerprint: null);
-      error = uploadErrorText(e, site);
+      error = UploadErrorNotice.of(e, site);
     } on Object {
       status = (registered: false, fingerprint: null);
     }
@@ -263,29 +263,29 @@ class UploadController extends ChangeNotifier {
         _revoked(site);
       } else if (!e.recoverable) {
         _onKeyError(e.code);
-        _addIssue(uploadErrorText(e, site));
+        _addIssue(UploadErrorNotice.of(e, site));
       }
     } on Object {
       if (epoch != _epoch || _disposed) return;
-      _addIssue(genericFailureText);
+      _addIssue(const GenericFailureNotice());
     }
     _notify();
   }
 
   /// Keeps the messages of the upload or action that ran just before.
-  void _addIssue(String text) {
-    if (!_issues.contains(text)) _issues = [..._issues, text];
+  void _addIssue(Notice notice) {
+    if (!_issues.contains(notice)) _issues = [..._issues, notice];
   }
 
-  /// Saves the address [text] as the website. Returns a plain message when
-  /// it is not an address that the app accepts, else null. A new website
-  /// starts unregistered with Upload off; the state of the old one is kept.
-  String? changeSite(String text) {
+  /// Saves the address [text] as the website. Returns why when it is not an
+  /// address that the app accepts, else null. A new website starts
+  /// unregistered with Upload off; the state of the old one is kept.
+  Notice? changeSite(String text) {
     final Uri uri;
     try {
       uri = parseSite(text);
-    } on FormatException catch (e) {
-      return e.message;
+    } on SiteFormatException catch (e) {
+      return SiteAddressNotice(e.error);
     }
     final next = uri.toString();
     final current = settings.settings.site;
@@ -319,17 +319,17 @@ class UploadController extends ChangeNotifier {
     _siteError = null;
     _notify();
     SiteInfo? info;
-    String? error;
+    Notice? error;
     try {
       info = await service.info(site);
       if (info.api != 1 || info.name.isEmpty) {
         info = null;
-        error = notAMemoriesSiteText;
+        error = const NotAMemoriesSiteNotice();
       }
     } on UploadException catch (e) {
-      error = uploadErrorText(e, site);
+      error = UploadErrorNotice.of(e, site);
     } on Object {
-      error = genericFailureText;
+      error = const GenericFailureNotice();
     }
     _checking = false;
     if (epoch == _epoch) {
@@ -356,12 +356,12 @@ class UploadController extends ChangeNotifier {
       _fingerprint = status.fingerprint;
     } on UploadException catch (e) {
       if (epoch == _epoch) {
-        _registerError = uploadErrorText(e, site);
+        _registerError = UploadErrorNotice.of(e, site);
         if (e.code == 'key_revoked') _setUploadOff();
       }
       return false;
     } on Object {
-      if (epoch == _epoch) _registerError = genericFailureText;
+      if (epoch == _epoch) _registerError = const GenericFailureNotice();
       return false;
     } finally {
       _registering = false;
@@ -395,7 +395,7 @@ class UploadController extends ChangeNotifier {
     _progressTotal = 0;
     _notify();
     SyncReport? report;
-    var issues = <String>[];
+    var issues = <Notice>[];
     var ok = false;
     var paused = false;
     final keyErrors = <String>{};
@@ -423,11 +423,11 @@ class UploadController extends ChangeNotifier {
       if (e.recoverable) {
         paused = true;
       } else {
-        issues = [uploadErrorText(e, site)];
+        issues = [UploadErrorNotice.of(e, site)];
         keyErrors.add(e.code);
       }
     } on Object {
-      issues = [genericFailureText];
+      issues = const [GenericFailureNotice()];
     }
     _uploading = false;
     _progressDone = 0;
@@ -456,17 +456,17 @@ class UploadController extends ChangeNotifier {
   }
 
   void _revoked(String site) {
-    _issues = [keyRevokedText(site)];
+    _issues = [UploadErrorNotice('key_revoked', '', site)];
     _setUploadOff();
   }
 
-  /// One message for each problem of [report]. A failure that every next
+  /// One notice for each problem of [report]. A failure that every next
   /// request of the run would get too shows once.
-  List<String> _issuesOf(SyncReport report) {
+  List<Notice> _issuesOf(SyncReport report) {
     final site = _siteText;
-    final out = <String>[];
-    void add(String text) {
-      if (!out.contains(text)) out.add(text);
+    final out = <Notice>[];
+    void add(Notice notice) {
+      if (!out.contains(notice)) out.add(notice);
     }
 
     for (final c in report.characters) {
@@ -474,24 +474,34 @@ class UploadController extends ChangeNotifier {
       final e = c.error;
       if (e != null && !e.recoverable) {
         if (stopsRun(e)) {
-          add(uploadErrorText(e, site));
+          add(UploadErrorNotice.of(e, site));
         } else if (e.code == 'claimed') {
-          add(claimedText(who.name, who.realm));
+          add(ClaimedNotice(who.name, who.realm));
         } else if (e.code == 'invalid' && e.problems.isNotEmpty) {
-          add(rejectedText(who.name, e.problems));
+          add(_rejected(who.name, e.problems));
         } else {
-          add('${who.name}: ${uploadErrorText(e, site)}');
+          add(UploadErrorNotice.of(e, site, who: who.name));
         }
       }
       for (final m in c.shots.errors.take(3)) {
-        add('${who.name}: $m');
+        add(TextNotice('${who.name}: $m'));
       }
       final stop = c.shots.stop;
       if (stop != null && !stop.recoverable && stopsRun(stop)) {
-        add(uploadErrorText(stop, site));
+        add(UploadErrorNotice.of(stop, site));
       }
     }
     return out;
+  }
+
+  /// The first 3 problems of a rejected upload, in the English of the website.
+  RejectedNotice _rejected(String name, List<UploadProblem> problems) {
+    final shown = problems.take(3).map((p) => p.toString()).join('; ');
+    return RejectedNotice(
+      name,
+      shown.endsWith('.') ? shown : '$shown.',
+      problems.length > 3 ? problems.length - 3 : 0,
+    );
   }
 
   /// Removes the character at the web [path] from the website. Returns
@@ -500,7 +510,7 @@ class UploadController extends ChangeNotifier {
     if (!_registered) return false;
     if (busy) {
       // An upload can start while the confirm dialog is open.
-      _issues = const [busyText];
+      _issues = const [BusyNotice()];
       _notify();
       return false;
     }
@@ -518,13 +528,13 @@ class UploadController extends ChangeNotifier {
       if (e.code != 'not_found') {
         if (e.code != 'bad_state') gone = false;
         if (epoch == _epoch) {
-          _issues = [uploadErrorText(e, site)];
+          _issues = [UploadErrorNotice.of(e, site)];
           _onKeyError(e.code);
         }
       }
     } on Object {
       gone = false;
-      if (epoch == _epoch) _issues = const [genericFailureText];
+      if (epoch == _epoch) _issues = const [GenericFailureNotice()];
     }
     _removing = false;
     _notify();
@@ -546,12 +556,12 @@ class UploadController extends ChangeNotifier {
     } on UploadException catch (e) {
       ok = false;
       if (epoch == _epoch) {
-        _issues = [uploadErrorText(e, site)];
+        _issues = [UploadErrorNotice.of(e, site)];
         _onKeyError(e.code);
       }
     } on Object {
       ok = false;
-      if (epoch == _epoch) _issues = const [genericFailureText];
+      if (epoch == _epoch) _issues = const [GenericFailureNotice()];
     }
     _requesting = false;
     _notify();

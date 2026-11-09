@@ -5,10 +5,11 @@ import 'package:memories_core/memories_core.dart' hide UploadState;
 import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_controller.dart';
-import 'package:wow_journey/src/ui/messages.dart';
+import 'package:wow_journey/src/upload/notice.dart';
 import 'package:wow_journey/src/upload/upload_controller.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 const String site = 'https://wowjourney.xyz';
 const String otherSite = 'http://localhost:8080';
@@ -111,7 +112,10 @@ void main() {
       addTearDown(rig.dispose);
       rig.upload.statusError = const UploadException('bad_key', 'Bad key.');
       await rig.load();
-      expect(rig.controller.registerError, 'Bad key.');
+      expect(
+        rig.controller.registerError,
+        const UploadErrorNotice('bad_key', 'Bad key.', site),
+      );
       rig.upload.statusError = null;
       await rig.controller.refresh();
       expect(rig.controller.registerError, isNull);
@@ -332,8 +336,10 @@ void main() {
       );
       await rig.gatherOnce();
       expect(rig.controller.state, UploadState.failed);
-      expect(rig.controller.issues, [claimedText('Ñandú', 'Brumamar')]);
-      expect(syncSummaryText(rig.upload.report!), '1 character failed.');
+      expect(noticesEn(rig.controller.issues), [
+        claimedText('Ñandú', 'Brumamar'),
+      ]);
+      expect(syncSummary(rig.upload.report!), '1 character failed.');
 
       rig.upload.report = null;
       await rig.gatherOnce();
@@ -371,7 +377,7 @@ void main() {
           ],
         );
         await rig.controller.uploadNow();
-        final text = rig.controller.issues.single;
+        final text = noticeEn(rig.controller.issues.single);
         expect(text, contains('Ñandú'));
         expect(text, contains('journey, line 1, field k: the value is wrong'));
         expect(text, contains('line 3'));
@@ -395,7 +401,7 @@ void main() {
         ],
       );
       await rig.controller.uploadNow();
-      expect(rig.controller.issues, [stop.message]);
+      expect(noticesEn(rig.controller.issues), [stop.message]);
     });
 
     test('screenshot errors show with the character name', () async {
@@ -413,9 +419,33 @@ void main() {
         ],
       );
       await rig.controller.uploadNow();
-      expect(rig.controller.issues, ['Ñandú: a.jpg: The image is too large.']);
+      expect(noticesEn(rig.controller.issues), [
+        'Ñandú: a.jpg: The image is too large.',
+      ]);
       expect(rig.controller.state, UploadState.failed);
       expect(rig.controller.screenshots, 'approved');
+    });
+
+    test('problems are kept as codes and arguments, not as text', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.syncError = const UploadException(
+        'network',
+        'Could not reach example.',
+      );
+      await rig.controller.uploadNow();
+      expect(rig.controller.issues, [
+        const UploadErrorNotice('network', 'Could not reach example.', site),
+      ]);
+      rig.upload.syncError = StateError('boom');
+      await rig.controller.uploadNow();
+      expect(rig.controller.issues, [const GenericFailureNotice()]);
+    });
+
+    test('an unknown code keeps the text of the server', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.syncError = const UploadException('brand_new', 'Server says.');
+      await rig.controller.uploadNow();
+      expect(noticesEn(rig.controller.issues), ['Server says.']);
     });
 
     test(
@@ -428,14 +458,12 @@ void main() {
         );
         expect(await rig.controller.uploadNow(), isNull);
         expect(rig.controller.state, UploadState.failed);
-        expect(rig.controller.issues, [
-          'Could not read the index. Run the gather first, then try again.',
-        ]);
+        expect(noticesEn(rig.controller.issues), [en.errNoIndex]);
 
         rig.upload.syncError = StateError('boom');
         await rig.controller.uploadNow();
-        expect(rig.controller.issues, [genericFailureText]);
-        expect(rig.controller.issues.single, isNot(contains('boom')));
+        expect(noticesEn(rig.controller.issues), [genericFailureText]);
+        expect(noticeEn(rig.controller.issues.single), isNot(contains('boom')));
       },
     );
 
@@ -447,7 +475,7 @@ void main() {
         status: 403,
       );
       await rig.controller.uploadNow();
-      expect(rig.controller.issues, [keyRevokedText(site)]);
+      expect(noticesEn(rig.controller.issues), [keyRevokedText(site)]);
       expect(rig.settingsController.settings.upload, isFalse);
       expect(rig.controller.state, UploadState.off);
       await pumpEventQueue();
@@ -560,10 +588,10 @@ void main() {
   group('website', () {
     test('changeSite refuses an address the app does not accept', () async {
       final rig = await _rig();
-      final message = rig.controller.changeSite('http://example.com');
-      expect(message, contains('https://'));
+      final refused = rig.controller.changeSite('http://example.com');
+      expect(refused, const SiteAddressNotice(SiteError.httpLoopback));
       expect(rig.settingsController.settings.site, site);
-      expect(rig.controller.changeSite('not a url'), isNotNull);
+      expect(rig.controller.changeSite('not a url'), isA<SiteAddressNotice>());
     });
 
     test('a new site starts unregistered with the switch off, and the old one is kept', () async {
@@ -607,7 +635,10 @@ void main() {
         );
         await rig.controller.checkSite();
         expect(rig.controller.siteInfo, isNull);
-        expect(rig.controller.siteError, startsWith('Could not reach'));
+        expect(
+          noticeEn(rig.controller.siteError!),
+          startsWith('Could not reach'),
+        );
       },
     );
 
@@ -621,7 +652,7 @@ void main() {
           registration: 'open',
         );
         await rig.controller.checkSite();
-        expect(rig.controller.siteError, notAMemoriesSiteText);
+        expect(rig.controller.siteError, const NotAMemoriesSiteNotice());
       },
     );
   });
@@ -651,10 +682,7 @@ void main() {
       );
       expect(await rig.controller.register('nope'), isFalse);
       expect(rig.controller.registered, isFalse);
-      expect(
-        rig.controller.registerError,
-        'This invite code is not valid. Ask the website admin for a new one.',
-      );
+      expect(noticeEn(rig.controller.registerError!), en.errInviteInvalid);
     });
 
     test('a revoked key says so', () async {
@@ -665,7 +693,7 @@ void main() {
         status: 403,
       );
       expect(await rig.controller.register(null), isFalse);
-      expect(rig.controller.registerError, keyRevokedText(site));
+      expect(noticeEn(rig.controller.registerError!), keyRevokedText(site));
     });
   });
 
@@ -708,7 +736,10 @@ void main() {
             'the website address.',
       );
       expect(await rig.controller.removeCharacter(nandu.path), isFalse);
-      expect(rig.controller.issues.single, startsWith('Could not reach'));
+      expect(
+        noticeEn(rig.controller.issues.single),
+        startsWith('Could not reach'),
+      );
       expect(rig.controller.characters, [nandu]);
     });
 
@@ -718,7 +749,7 @@ void main() {
       unawaited(rig.controller.uploadNow());
       await pumpEventQueue();
       expect(await rig.controller.removeCharacter(nandu.path), isFalse);
-      expect(rig.controller.issues, [busyText]);
+      expect(noticesEn(rig.controller.issues), [busyText]);
       expect(rig.upload.deletions, isEmpty);
       rig.upload.pendingSync!.complete(
         const SyncReport(screenshots: 'none', characters: []),
@@ -730,7 +761,7 @@ void main() {
       final rig = await _rig();
       rig.upload.deleteError = const UploadException('bad_state', 'Not saved.');
       expect(await rig.controller.removeCharacter(nandu.path), isTrue);
-      expect(rig.controller.issues, ['Not saved.']);
+      expect(noticesEn(rig.controller.issues), [en.errBadState]);
       expect(rig.upload.calls.last, 'me $site');
     });
 
@@ -748,9 +779,9 @@ void main() {
       );
       rig.upload.meError = const UploadException('network', 'No network.');
       await rig.gatherOnce();
-      expect(rig.controller.issues, [
+      expect(noticesEn(rig.controller.issues), [
         claimedText('Ñandú', 'Brumamar'),
-        'No network.',
+        en.errNetwork('wowjourney.xyz'),
       ]);
     });
 
@@ -792,7 +823,10 @@ void main() {
             'the website address.',
       );
       expect(await rig.controller.requestScreenshots(), isFalse);
-      expect(rig.controller.issues.single, startsWith('Could not reach'));
+      expect(
+        noticeEn(rig.controller.issues.single),
+        startsWith('Could not reach'),
+      );
     });
   });
 
@@ -805,7 +839,7 @@ void main() {
       status: 403,
     );
     await rig.load();
-    expect(rig.controller.issues, [keyRevokedText(site)]);
+    expect(noticesEn(rig.controller.issues), [keyRevokedText(site)]);
     expect(rig.settingsController.settings.upload, isFalse);
   });
 }

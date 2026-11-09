@@ -3,14 +3,11 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../l10n/app_locale.dart';
 import '../platform/single_instance.dart';
 import '../platform/window_service.dart';
 import 'shell_controller.dart';
-
-/// Shown when another copy runs but did not answer.
-const String notAnsweringText =
-    'WoW Journey is already running, but it did not answer. Quit it from its '
-    'tray icon menu, or end it in the task manager, then start it again.';
 
 /// Builds the app of the first copy.
 typedef AppBuilder = Widget Function({
@@ -56,21 +53,30 @@ class AlreadyRunningApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'WoW Journey',
-    home: Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(notAnsweringText, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              FilledButton(onPressed: onClose, child: const Text('Close')),
-            ],
+    onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    localeListResolutionCallback: (locales, _) =>
+        resolveAppLocale(locales ?? const []),
+    home: Builder(
+      builder: (context) {
+        final l = AppLocalizations.of(context);
+        return Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l.notAnswering, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  FilledButton(onPressed: onClose, child: Text(l.close)),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     ),
   );
 }

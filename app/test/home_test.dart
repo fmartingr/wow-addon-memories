@@ -4,11 +4,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:path/path.dart' as p;
+import 'package:wow_journey/src/settings/settings_store.dart';
 import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/ui/messages.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 const String root = '/backups/WoW Journey';
 
@@ -169,10 +171,16 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.textContaining('Gathered with problems.'), findsOneWidget);
-    expect(find.text(issueText(GatherIssueCode.damagedFile)), findsOneWidget);
+    expect(
+      find.text(issueText(en, GatherIssueCode.damagedFile)),
+      findsOneWidget,
+    );
     expect(find.text('/wtf/a.lua'), findsOneWidget);
     expect(find.text('/wtf/b.lua'), findsOneWidget);
-    expect(find.text(issueText(GatherIssueCode.duplicateGuid)), findsOneWidget);
+    expect(
+      find.text(issueText(en, GatherIssueCode.duplicateGuid)),
+      findsOneWidget,
+    );
     expect(find.text('Try again'), findsOneWidget);
     expect(find.textContaining('core text'), findsNothing);
 
@@ -205,7 +213,7 @@ void main() {
     await tester.tap(_gatherButton());
     await tester.pumpAndSettle();
 
-    expect(find.text(issueText(GatherIssueCode.ioError)), findsOneWidget);
+    expect(find.text(issueText(en, GatherIssueCode.ioError)), findsOneWidget);
     expect(find.textContaining('boom'), findsNothing);
   });
 
@@ -218,7 +226,7 @@ void main() {
     await tester.pumpAndSettle();
 
     for (final c in GatherIssueCode.values) {
-      expect(find.text(issueText(c), skipOffstage: false), findsOneWidget);
+      expect(find.text(issueText(en, c), skipOffstage: false), findsOneWidget);
     }
   });
 
@@ -321,15 +329,15 @@ void main() {
     final fakes = Fakes(
       store: FakeSettingsStore((
         settings: readySettings,
-        notice: 'Something about the settings.',
+        notice: SettingsNotice.damaged,
       )),
       discovery: FakeDiscovery(checks: {retailDir: const Valid(retail)}),
     );
     await pumpApp(tester, fakes);
-    expect(find.text('Something about the settings.'), findsOneWidget);
+    expect(find.text(en.settingsDamaged), findsOneWidget);
     await tester.tap(find.byTooltip('Dismiss'));
     await tester.pumpAndSettle();
-    expect(find.text('Something about the settings.'), findsNothing);
+    expect(find.text(en.settingsDamaged), findsNothing);
   });
 
   testWidgets('no backup folder keeps Gather now off', (tester) async {

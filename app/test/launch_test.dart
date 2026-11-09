@@ -4,6 +4,7 @@ import 'package:wow_journey/src/platform/single_instance.dart';
 import 'package:wow_journey/src/shell/launch.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 class _Built extends StatelessWidget {
   const _Built({required this.startHidden, this.showRequests});

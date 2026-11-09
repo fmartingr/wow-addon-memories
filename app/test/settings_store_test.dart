@@ -62,6 +62,57 @@ void main() {
     expect(loaded.notice, isNull);
   });
 
+  group('language', () {
+    test('the default follows the system', () {
+      expect(const Settings().language, isNull);
+    });
+
+    test('a chosen language reads back the same', () async {
+      await store.save(const Settings(language: 'pt'));
+      expect(file().readAsStringSync(), contains('"language": "pt"'));
+      final loaded = await store.load();
+      expect(loaded.settings.language, 'pt');
+      expect(loaded.notice, isNull);
+    });
+
+    test('System is saved as null and reads back as System', () async {
+      await store.save(const Settings());
+      expect(file().readAsStringSync(), contains('"language": null'));
+      expect((await store.load()).settings.language, isNull);
+    });
+
+    for (final (name, json) in [
+      ('a file without the key', '{"watch": false}'),
+      ('an unsupported code', '{"language": "ru"}'),
+      ('an empty text', '{"language": ""}'),
+      ('a number', '{"language": 3}'),
+      ('a list', '{"language": ["de"]}'),
+    ]) {
+      test('$name loads as System with no notice', () async {
+        file().writeAsStringSync(json);
+        final loaded = await store.load();
+        expect(loaded.settings.language, isNull);
+        expect(loaded.notice, isNull);
+      });
+    }
+
+    test('copyWith sets, keeps and clears the language', () {
+      const s = Settings(language: 'fr');
+      expect(s.copyWith(watch: false).language, 'fr');
+      expect(s.copyWith(language: 'es').language, 'es');
+      expect(s.copyWith(clearLanguage: true).language, isNull);
+      expect(s.copyWith(language: 'ru').language, 'fr');
+    });
+
+    test('the language is part of the equality', () {
+      expect(const Settings(language: 'de'), const Settings(language: 'de'));
+      expect(
+        const Settings(language: 'de'),
+        isNot(const Settings(language: 'fr')),
+      );
+    });
+  });
+
   test('a save replaces the file and leaves no temporary file', () async {
     await store.save(const Settings(backupRoot: '/one'));
     await store.save(const Settings(backupRoot: '/two'));
@@ -99,7 +150,7 @@ void main() {
       file().writeAsStringSync(text);
       final loaded = await store.load();
       expect(loaded.settings, const Settings());
-      expect(loaded.notice, damagedSettingsNotice);
+      expect(loaded.notice, SettingsNotice.damaged);
     });
   }
 
@@ -107,7 +158,7 @@ void main() {
     file().writeAsBytesSync([0xff, 0xfe, 0x00]);
     final loaded = await store.load();
     expect(loaded.settings, const Settings());
-    expect(loaded.notice, damagedSettingsNotice);
+    expect(loaded.notice, SettingsNotice.damaged);
   });
 
   test('a missing key takes its default', () async {
@@ -132,7 +183,7 @@ void main() {
       file().writeAsStringSync(text);
       final loaded = await store.load();
       expect(loaded.settings, const Settings());
-      expect(loaded.notice, damagedSettingsNotice);
+      expect(loaded.notice, SettingsNotice.damaged);
     }
   });
 
@@ -150,14 +201,14 @@ void main() {
     test('load gives the settings and the notice of the store', () async {
       final fake = FakeSettingsStore((
         settings: readySettings,
-        notice: damagedSettingsNotice,
+        notice: SettingsNotice.damaged,
       ));
       final c = SettingsController(fake);
       expect(c.loaded, isFalse);
       await c.load();
       expect(c.loaded, isTrue);
       expect(c.settings, readySettings);
-      expect(c.notice, damagedSettingsNotice);
+      expect(c.notice, SettingsNotice.damaged);
       c.dismissNotice();
       expect(c.notice, isNull);
     });
@@ -180,7 +231,7 @@ void main() {
         final c = SettingsController(fake);
         expect(await c.update(readySettings), isFalse);
         expect(c.settings, readySettings);
-        expect(c.notice, saveFailedText);
+        expect(c.notice, SettingsNotice.saveFailed);
       },
     );
   });

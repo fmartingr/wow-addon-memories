@@ -50,6 +50,7 @@ unless the row names one system.
 | 24 | 12 | The fonts show (Cinzel capitals in the titles and buttons, Alegreya Sans in the text) and the panels have the gold double border. Compare with the website landing page: `make theme-check` and the review in `.claude/skills/theme-parity`. | not run | not run | not run |
 | 25 | 12 | At a narrow window (about 400 px) the tabs drop their icons, nothing overflows, and every control is at least 44 px high. | not run | not run | not run |
 | 26 | 12 | A settings message (for example after a damaged `settings.json`) shows above the tabs on each tab. | not run | not run | not run |
+| 27 | 5 | Settings has a Language row with System, English, Deutsch, Français, Español, Italiano and Português, each in its own language. System is the default. Choosing a language saves it in `settings.json` (`"language": "<code>"`, `null` for System) and shows after a restart. | not run | not run | not run |
 
 ## Also look at
 
