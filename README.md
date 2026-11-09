@@ -8,6 +8,8 @@ JSONL files for a website. Both run the same gather of the Dart core `packages/m
 The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-06-memories-addon-set.md). Every kind
 of journal line and its fields are in [`docs/kinds.md`](docs/kinds.md).
 
+Memories is inspired by the Muddy Boots addon.
+
 > Memories takes no screenshots of its own; use Paparazzi for that.
 
 ## The addons
