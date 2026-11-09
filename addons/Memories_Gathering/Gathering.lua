@@ -43,6 +43,8 @@ local byID = {}
 -- The sent cast { guid, target }, the last known cast { what, prof, from, node, at } and the last loot-bearing item use
 -- { item, name, at }. One loot window uses them up.
 local sent, cast, used
+-- The open loot window { c, u, fishing, window, done }, from its first LOOT_READY to its LOOT_CLOSED.
+local open
 
 local function pass(ok, ...)
 	if ok then
@@ -252,22 +254,38 @@ end
 
 local CLASSES = { gather = gather, chest = chest, pick = pick }
 
-local function onLoot(_, _, isFromItem)
+-- With auto-loot on, the client sends no LOOT_OPENED, and an auto-loot addon empties the slots before LOOT_CLOSED. So
+-- the window is read at its first LOOT_READY, and handled at LOOT_OPENED, which tells an item's window, else at
+-- LOOT_CLOSED. The client can send LOOT_READY more than once for one window.
+local function onReady()
+	if open then
+		return
+	end
 	local now = GetTime()
 	local c = cast and now - cast.at <= CAST_WINDOW and cast or nil
 	local u = used and now - used.at <= ITEM_WINDOW and used or nil
 	cast, used, sent = nil, nil, nil
-	if h:R(call(IsFishingLoot)) == true then
-		fish(readWindow())
+	open = { c = c, u = u, fishing = h:R(call(IsFishingLoot)) == true }
+	-- Most windows are corpses looted with nothing pending, and they are not read.
+	if open.fishing or (c and c.what ~= "craft") or u then
+		open.window = readWindow()
+	end
+end
+
+local function claim(fromItem)
+	if open.done then
 		return
 	end
-	local fromItem = h:R(isFromItem) == true
-	-- Most windows are corpses looted with nothing pending, and they write nothing.
+	open.done = true
+	local c, u, window = open.c, open.u, open.window
+	if open.fishing then
+		fish(window)
+		return
+	end
 	if (c and c.what == "craft") or not (fromItem or c or u) then
 		return
 	end
-	local window = readWindow()
-	local source = window.source
+	local source = window and window.source or {}
 	-- An item used with no window of its own, such as a locked box, leaves a corpse or object window unclaimed.
 	if fromItem or (u and not c and not source.npc and not source.object) then
 		h:Count("gather", "open:item")
@@ -277,7 +295,19 @@ local function onLoot(_, _, isFromItem)
 	end
 end
 
-local function onError(_, _, message)
+local function onOpened(_, _, isFromItem)
+	onReady()
+	claim(h:R(isFromItem) == true)
+end
+
+local function onClosed()
+	if open then
+		claim(false)
+		open = nil
+	end
+end
+
+local function onMessage(_, _, message)
 	message = text(message)
 	if not message then
 		return
@@ -292,8 +322,12 @@ end
 -- A registration after login calls OnLogin before RegisterModule returns, so the handle comes from the argument.
 local function onLogin(handle)
 	h = handle
-	h:On("LOOT_OPENED", onLoot)
-	h:On("UI_ERROR_MESSAGE", onError)
+	h:On("LOOT_READY", onReady)
+	h:On("LOOT_OPENED", onOpened)
+	h:On("LOOT_CLOSED", onClosed)
+	-- Forever sends the fishing messages as UI info messages; other clients send them as UI errors.
+	h:On("UI_INFO_MESSAGE", onMessage)
+	h:On("UI_ERROR_MESSAGE", onMessage)
 	if type(C_Container) == "table" then
 		h:Hook(C_Container, "UseContainerItem", onUse)
 	end

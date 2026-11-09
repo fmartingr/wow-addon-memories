@@ -2096,8 +2096,10 @@ Offered: none.
 - `UNIT_SPELLCAST_SENT(unit, target, castGUID, spellID)` → for a known cast, remember { castGUID, target name }. Empty or secret target → no name.
 - `UNIT_SPELLCAST_SUCCEEDED(unit, castGUID, spellID)` → for a known cast, remember { what, profession, node name (only if the sent castGUID matches), time }.
 - Secure post-hook on `C_Container.UseContainerItem(bag, slot)` → if `C_Container.GetContainerItemInfo(bag, slot).hasLoot`, remember { item id, name (`C_Item.GetItemNameByID`), time }. Items without loot (a potion) are ignored.
-- `LOOT_OPENED(autoLoot, isFromItem)` → classify and record.
-- `UI_ERROR_MESSAGE(type, message)` → `ERR_FISH_ESCAPED` / `ERR_FISH_NOT_HOOKED`.
+- `LOOT_READY(autoLoot)` → the first one of a window reads the window and the remembered cast and item use. With auto-loot on, the client sends no `LOOT_OPENED`, and an auto-loot addon empties the slots before `LOOT_CLOSED`.
+- `LOOT_OPENED(autoLoot, isFromItem)` → classify and record (it reads the window first if no `LOOT_READY` came).
+- `LOOT_CLOSED` → classify and record a window that got no `LOOT_OPENED`, then forget the window.
+- `UI_INFO_MESSAGE(type, message)` and `UI_ERROR_MESSAGE(type, message)` → `ERR_FISH_ESCAPED` / `ERR_FISH_NOT_HOOKED`. Forever sends them as info messages.
 
 **Known casts (by localized name, see Shared facts):** Mining, Herb Gathering, Herbalism, Skinning → `gather` with that profession (Herb Gathering → Herbalism). Pick Pocket → `pick`. Opening, "Opening - No Text" → `chest`. Fishing is not a known cast here; fish are found by `IsFishingLoot()`.
 
@@ -2126,12 +2128,12 @@ None.
 
 #### Rules and edge cases
 
-1. **Classification on `LOOT_OPENED`**, in this order:
+1. **Classification on `LOOT_OPENED`, else on `LOOT_CLOSED`**, in this order:
    1. `IsFishingLoot()` true → **fish**.
    2. `isFromItem` true, or a loot-bearing item used within **2 s** and no known cast within **3 s** → **item**.
    3. A known cast within **3 s** → its what (`gather`, `pick`, `chest`).
    4. Else nothing (a corpse; another part reads loot from chat).
-2. After every `LOOT_OPENED`, forget the remembered cast and item use (one window each).
+2. At the first `LOOT_READY` of a window, forget the remembered cast and item use (one window each). A second `LOOT_READY` before `LOOT_CLOSED` belongs to the same window.
 3. **Reading the window:** for each slot `1..GetNumLootItems()`: `GetLootSlotType` money → "has money"; item → `GetLootSlotInfo` (name, count, quality, isQuestItem) and the item id from `GetLootSlotLink`. A slot without an item id is skipped. Count defaults to 1.
 4. **Source ids:** from the first slot whose `GetLootSourceInfo(slot)` returns a GUID. GUID form `Type-0-server-instance-zone-ID-spawn`; the 6th dash field is the id. `GameObject` → object id; `Creature` or `Vehicle` → npc id.
 5. **Rare:** for `ga`, quality ≥ **3** (blue) or item id in {13468 Black Lotus, 12363 Arcane Crystal}. For `fs`, quality ≥ **2** (green). `why` = `rare` beats `first`.
@@ -2140,7 +2142,7 @@ None.
 8. **Item open:** one `op` per window with the used item's id and name (both empty when only `isFromItem` was known; name then "?").
 9. **Chest:** write `op` only if the window has money or at least one **non-quest** item. Quest crates opened with the same cast hold only their quest item and are skipped. Name = the cast's target name.
 10. **Pick pocket:** the "best" item is the highest quality, first one wins on ties. Money-only window → count only.
-11. **Fish escape:** `UI_ERROR_MESSAGE` with `ERR_FISH_ESCAPED` → `fish:escaped`; `ERR_FISH_NOT_HOOKED` → `fish:missed`. GlobalStrings are localized, so this works on any client.
+11. **Fish escape:** `UI_INFO_MESSAGE` or `UI_ERROR_MESSAGE` with `ERR_FISH_ESCAPED` → `fish:escaped`; `ERR_FISH_NOT_HOOKED` → `fish:missed`. GlobalStrings are localized, so this works on any client.
 12. Every game call is protected. No source GUID → no object id. Hidden target name → node "?".
 13. Unproven on Forever: `IsFishingLoot`, `GetLootSourceInfo`, and the sent-target name. Each falls back as above; never error.
 

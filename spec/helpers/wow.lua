@@ -1378,10 +1378,19 @@ function wow.set_money(copper)
 	wow.fire("PLAYER_MONEY")
 end
 
--- Opens a loot window: LOOT_OPENED with autoLoot false.
+-- Opens a loot window and closes it, as the client does: LOOT_READY, then LOOT_OPENED and LOOT_CLOSED. With
+-- window.autoLoot, the client sends no LOOT_OPENED and the slots are empty before LOOT_CLOSED, as with an auto-loot
+-- addon.
 function wow.open_loot(window, isFromItem)
 	wow.loot = window
-	wow.fire("LOOT_OPENED", false, isFromItem == true)
+	local auto = window.autoLoot == true
+	wow.fire("LOOT_READY", auto)
+	if auto then
+		wow.loot = { slots = {} }
+	else
+		wow.fire("LOOT_OPENED", false, isFromItem == true)
+	end
+	wow.fire("LOOT_CLOSED")
 end
 
 -- Fires the player's UNIT_SPELLCAST_SENT for spell on a target, with the castGUID that wow.cast uses.
