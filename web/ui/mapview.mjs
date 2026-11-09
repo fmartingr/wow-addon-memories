@@ -171,12 +171,6 @@ export class MapView {
     this.resize();
   }
 
-  destroy() {
-    VIEWS.delete(this);
-    this.resizer?.disconnect();
-    cancelAnimationFrame(this.raf);
-  }
-
   /* ---------------------------------------------------------------- size and camera */
   resize() {
     const dpr = globalThis.devicePixelRatio || 1;
@@ -452,6 +446,11 @@ export class MapView {
       const p = pos(e);
       this.pointers.delete(e.pointerId);
       if (this.pointers.size < 2) this.pinch = null;
+      // When one finger of a pinch lifts, the other starts a new drag from the current camera.
+      if (this.pointers.size === 1) {
+        const [rest] = this.pointers.values();
+        this.down = { ...rest, cx: this.cam.x, cy: this.cam.y, moved: true };
+      }
       if (this.pointers.size === 0) {
         const d = this.down;
         this.down = null;

@@ -9,7 +9,7 @@ import { createSheet } from './shell.mjs';
 
 const CELL = 6;
 
-export const legendText = (layer, count) => `${count.toLocaleString('en-US')} on the map`;
+export const legendText = (count) => `${count.toLocaleString('en-US')} on the map`;
 
 // What a cell holds, for the tooltip: a duration for Presence, else a count.
 export function cellText(layer, weight) {
@@ -41,7 +41,7 @@ export function createHeatmapsTab(panel, ctx) {
     off.getContext('2d').putImageData(img, 0, 0);
     ramp.imageSmoothingEnabled = false;
     ramp.drawImage(off, 0, 0, 160, 10);
-    $('legendCount').textContent = legendText(layer, points.count);
+    $('legendCount').textContent = legendText(points.count);
     $('legendUnplaced').textContent = points.unplaced ? `${points.unplaced.toLocaleString('en-US')} with no map position (instances)` : '';
     $('legendEmpty').textContent = points.count ? '' : 'No records for this layer.';
     view?.invalidate();
@@ -138,7 +138,6 @@ export function createHeatmapsTab(panel, ctx) {
         pushParams();
       }),
     );
-    new ResizeObserver(() => (heatKey = '')).observe($('heatMap'));
   }
 
   const check = (name, value) => {
@@ -151,14 +150,18 @@ export function createHeatmapsTab(panel, ctx) {
       if (first) init();
       active = true;
       const p = route.params;
+      const before = layerId;
       layerId = LAYERS.some((l) => l.id === route.layer) ? route.layer : 'presence';
-      prof = layerId === 'gathering' ? (p.prof ?? 'all') : 'all';
+      const layerChanged = before !== layerId;
+      // A tab switch has no parameters and keeps the filter and the camera; a link sets them.
+      const keep = !first && Object.keys(p).length === 0;
+      prof = layerId === 'gathering' ? (p.prof ?? (keep ? prof : 'all')) : 'all';
       check('heatLayer', layerId);
       check('heatProf', prof);
       view.resize();
       loadLayer();
       if (Number.isFinite(p.x) && Number.isFinite(p.y) && Number.isFinite(p.z)) view.setCamera({ x: p.x, y: p.y, s: p.z }, { notify: false });
-      else fitLayer();
+      else if (!keep || layerChanged) fitLayer();
       $('hLevel').textContent = view.levelName();
       view.invalidate();
       pushParams();

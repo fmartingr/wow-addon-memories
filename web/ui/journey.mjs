@@ -85,7 +85,7 @@ export function drawMarks(ctx, view, model, show, uptoC = Infinity, now = 0) {
   const hits = [];
   const r = clamp(5 + view.rel * 0.6, 6, 9);
   for (const e of model.marks) {
-    if (e.c > uptoC || show[CAT[e.k]] === false || e.k === 'dx') continue;
+    if (e.c > uptoC || show[CAT[e.k]] === false) continue;
     const sx = (e.wx - view.x) * view.s + view.w / 2, sy = (e.wy - view.y) * view.s + view.h / 2;
     if (sx < -20 || sy < -20 || sx > view.w + 20 || sy > view.h + 20) continue;
     const age = uptoC - e.c;
@@ -139,6 +139,10 @@ function drawPlayer(ctx, view, pos, span, now) {
   }
 }
 
+// The ruler step in played seconds: the first of the steps that leaves at least 64 px between two labels.
+export const RULER_STEPS = [60, 300, 600, 900, 1800, 3600, 7200, 14400, 43200, 86400, 172800, 432000];
+export const rulerStep = (total, span) => RULER_STEPS.find((s) => (s * span) / total >= 64) ?? RULER_STEPS.at(-1) * Math.ceil((64 * total) / (RULER_STEPS.at(-1) * span));
+
 const TL = { L: 84, R: 14, ruler: 16, band: 22, lane: 20, gold: 44 };
 
 // drawTimeline paints the timeline: the played clock ruler, the level bands, one lane for each marker category, the
@@ -160,7 +164,7 @@ export function drawTimeline(ctx, w, h, dpr, model, state) {
   ctx.font = '500 11px Alegreya Sans, sans-serif';
   ctx.textBaseline = 'middle';
   if (!compact) {
-    const step = [60, 300, 600, 900, 1800, 3600].find((s) => (s * span) / model.total >= 64) ?? 3600;
+    const step = rulerStep(model.total, span);
     ctx.fillStyle = '#a79f91';
     ctx.strokeStyle = '#a79f9166';
     ctx.textAlign = 'center';
@@ -170,7 +174,7 @@ export function drawTimeline(ctx, w, h, dpr, model, state) {
       ctx.moveTo(x, yBand - 4);
       ctx.lineTo(x, yBand);
       ctx.stroke();
-      ctx.fillText(Math.floor(s / 3600) + ':' + String(Math.floor((s % 3600) / 60)).padStart(2, '0'), x, 6);
+      ctx.fillText(step >= 86400 ? Math.floor(s / 86400) + 'd' : Math.floor(s / 3600) + ':' + String(Math.floor((s % 3600) / 60)).padStart(2, '0'), x, 6);
     }
   }
   model.levels.forEach((l, n) => {
@@ -339,7 +343,7 @@ export function createJourneyTab(panel, ctx) {
     if (!active || !view) return;
     const p = { x: view.cam.x, y: view.cam.y, z: view.cam.s };
     if (state.c >= 1) p.at = Math.floor(state.c);
-    if (state.sel) p.ev = eventId(state.sel);
+    if (state.sel && Number.isInteger(state.sel.t)) p.ev = eventId(state.sel);
     ctx.setParams('journey', p);
   }
 
@@ -528,7 +532,8 @@ export function createJourneyTab(panel, ctx) {
       const prev = state.c;
       const next = advance(state, dt, model.total);
       state.c = next.c;
-      notifyCrossed(prev, next.c);
+      // An event at the very end has c == total, and crossed() excludes its upper bound.
+      notifyCrossed(prev, next.playing ? next.c : next.c + 1);
       if (!next.playing) syncPlay(false);
     }
     followCamera();
@@ -590,7 +595,7 @@ export function createJourneyTab(panel, ctx) {
       return;
     }
     if (e.code === 'Escape') closeDetail();
-    if (e.target.matches?.('input, select, textarea') || e.ctrlKey || e.metaKey || e.altKey) return;
+    if (e.target.matches?.('input, select, textarea') || e.target.closest?.('[role="tablist"]') || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.code === 'Space' && !e.target.closest?.('button, a')) {
       e.preventDefault();
       setPlaying(!state.playing);

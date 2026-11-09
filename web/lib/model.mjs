@@ -113,7 +113,9 @@ function buildGold(char, events, clockAt) {
     bal = Math.max(0, bal + e.delta);
     gold.push({ c: e.c, v: bal });
   }
-  return { gold, goldAbout: about, goldMax: Math.max(1, ...gold.map((g) => g.v)) };
+  let goldMax = 1;
+  for (const g of gold) if (g.v > goldMax) goldMax = g.v;
+  return { gold, goldAbout: about, goldMax };
 }
 
 export function buildModel(char, steps, trail) {

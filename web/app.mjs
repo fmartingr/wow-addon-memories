@@ -36,6 +36,7 @@ async function main() {
       .join(' ');
 
   let route = parseHash(location.hash);
+  let heatLayer = route.layer ?? 'presence';
   let last = 0;
   let timer = 0;
   let pending = null;
@@ -44,6 +45,7 @@ async function main() {
     last = Date.now();
     history.replaceState(null, '', formatHash(pending));
     route = pending;
+    if (route.tab === 'heatmaps') heatLayer = route.layer;
     pending = null;
   };
   // A tab moves the camera or the playhead many times a second. The URL is replaced at most once each 500 ms and the
@@ -67,7 +69,7 @@ async function main() {
         clearTimeout(timer);
         applyReplace();
       }
-      history.pushState(null, '', formatHash({ tab, layer: tab === 'heatmaps' ? route.layer : null, params: {} }));
+      history.pushState(null, '', formatHash({ tab, layer: tab === 'heatmaps' ? heatLayer : null, params: {} }));
       show();
     },
   });
@@ -83,6 +85,7 @@ async function main() {
     timer = 0;
     pending = null;
     route = parseHash(location.hash);
+    if (route.tab === 'heatmaps') heatLayer = route.layer;
     if (shown && shown !== route.tab) tabs[shown].hide();
     shell.show(route.tab);
     shown = route.tab;

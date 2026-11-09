@@ -137,3 +137,10 @@ test('the real-shaped fixture builds', () => {
   assert.equal(m.points.count, 3);
   assert.ok(m.total >= 1);
 });
+
+test('a purse history of 200,000 changes builds, and an event after the last session is crossed at the end', () => {
+  const steps = Array.from({ length: 200000 }, (_, i) => ({ k: 'mn', t: 1000 + (i % 100), delta: 1 }));
+  assert.equal(buildModel(char, steps, []).goldMax, 200000);
+  const late = buildModel({ sessions: [{ start: 0, last: 100 }] }, [{ k: 'lv', t: 150, level: 2 }], []);
+  assert.equal(late.events[0].c, 100);
+});

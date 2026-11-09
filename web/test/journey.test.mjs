@@ -95,3 +95,12 @@ test('drawTimeline returns hits for the markers and the purse band, in the full 
   assert.ok(compact.hits.length >= 3);
   assert.ok(compact.gold.y1 - compact.gold.y0 >= 12);
 });
+
+test('the ruler step grows with the length of the journey', async () => {
+  const { rulerStep } = await import('../ui/journey.mjs');
+  assert.equal(rulerStep(3600, 1000), 300);
+  assert.equal(rulerStep(8 * 3600, 800), 3600);
+  const long = rulerStep(864000, 1000);
+  assert.ok(long >= 86400 && (long * 1000) / 864000 >= 64);
+  assert.ok((rulerStep(1e9, 1000) * 1000) / 1e9 >= 64);
+});
