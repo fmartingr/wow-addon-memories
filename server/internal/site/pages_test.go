@@ -18,7 +18,7 @@ import (
 )
 
 const testIndex = `<!doctype html>
-<html><head><title>Memories Viewer</title><link rel="stylesheet" href="/_/style.css"></head>
+<html lang="en"><head><title>Memories Viewer</title><link rel="stylesheet" href="/_/style.css"></head>
 <BODY class="x"><main></main><script src="/_/app.js"></script></BODY></html>`
 
 const shot = "WoWScrnShot_110126_114820.jpg"
@@ -127,9 +127,14 @@ func TestNewPagesNeedsTheViewerFiles(t *testing.T) {
 		want string
 	}{
 		"no folder":  {func() string { return filepath.Join(t.TempDir(), "none") }, "index.html"},
-		"no body":    {func() string { return writeWeb(t, "<html><head><title>x</title></head></html>") }, "<title>"},
-		"no title":   {func() string { return writeWeb(t, "<html><body></body></html>") }, "<title>"},
-		"title last": {func() string { return writeWeb(t, "<body></body><title>x</title>") }, "<title>"},
+		"no body":    {func() string { return writeWeb(t, `<html lang="en"><head><title>x</title></head></html>`) }, "<title>"},
+		"no title":   {func() string { return writeWeb(t, `<html lang="en"><body></body></html>`) }, "<title>"},
+		"title last": {func() string { return writeWeb(t, `<html lang="en"><body></body><title>x</title>`) }, "<title>"},
+		"no lang":    {func() string { return writeWeb(t, "<html><head><title>x</title></head><body></body></html>") }, "lang attribute"},
+		"data-lang": {func() string {
+			return writeWeb(t, `<html data-lang="en"><head><title>x</title></head><body></body></html>`)
+		}, "lang attribute"},
+		"lang after": {func() string { return writeWeb(t, `<title>x</title><html lang="en"><body></body>`) }, "lang attribute"},
 	} {
 		t.Run(name, func(t *testing.T) {
 			_, err := NewPages(tc.dir(), nil, nil, site.NotFound(), slog.Default())

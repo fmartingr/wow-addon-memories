@@ -1,8 +1,10 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
-  className, classColour, clamp, clock, coins, coinsHtml, esc, fmtDate, fmtDay, fmtDur, kindLabel, moneyText, pad, qualityColour, qualityName, raceName,
+  className, classColour, clamp, clock, coins, coinsHtml, esc, fmtDate, fmtDay, fmtDur, fmtNum, kindLabel, moneyText, pad, qualityColour, qualityName, raceName,
 } from '../lib/format.mjs';
+import { setLang } from '../lib/i18n.mjs';
+import es from '../i18n/es.mjs';
 
 test('esc escapes the five HTML characters and null', () => {
   assert.equal(esc(`<>&"'`), '&lt;&gt;&amp;&quot;&#39;');
@@ -78,4 +80,23 @@ test('kindLabel and clamp', () => {
   assert.equal(kindLabel('zz', undefined), 'zz');
   assert.equal(clamp(5, 0, 3), 3);
   assert.equal(clamp(-1, 0, 3), 0);
+});
+
+test('fmtNum groups digits by language and treats a bad value as 0', () => {
+  assert.equal(fmtNum(1234567, 'en'), '1,234,567');
+  assert.equal(fmtNum(1234567, 'de'), '1.234.567');
+  assert.equal(fmtNum(1234.6, 'en'), '1,235');
+  assert.equal(fmtNum(NaN, 'de'), '0');
+  assert.equal(fmtNum(undefined), '0');
+});
+
+test('className and raceName read the catalog of the language', () => {
+  setLang('es', es);
+  try {
+    assert.equal(className('WARRIOR'), 'Guerrero');
+    assert.equal(raceName('Scourge'), 'No-muerto');
+  } finally {
+    setLang('en');
+  }
+  assert.equal(className('WARRIOR'), 'Warrior');
 });

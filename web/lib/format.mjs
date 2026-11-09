@@ -1,4 +1,5 @@
 // Formatters shared by the tabs. Every function that makes HTML text goes through esc().
+import { currentLang, t, tr } from './i18n.mjs';
 
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 
@@ -15,18 +16,21 @@ export function clock(sec) {
 
 export function fmtDur(sec) {
   const s = whole(sec);
-  return Math.floor(s / 3600) + 'h ' + pad(Math.floor((s % 3600) / 60)) + 'm';
+  return t('dur.h', { h: Math.floor(s / 3600), m: pad(Math.floor((s % 3600) / 60)) });
 }
 
-export function fmtDate(t) {
-  if (!Number.isFinite(t)) return '';
-  return new Date(t * 1000).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+export function fmtDate(time, lang = currentLang()) {
+  if (!Number.isFinite(time)) return '';
+  return new Date(time * 1000).toLocaleString(lang, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
 }
 
-export function fmtDay(t) {
-  if (!Number.isFinite(t)) return '';
-  return new Date(t * 1000).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
+export function fmtDay(time, lang = currentLang()) {
+  if (!Number.isFinite(time)) return '';
+  return new Date(time * 1000).toLocaleDateString(lang, { month: 'short', day: 'numeric' });
 }
+
+// A whole number in the digit grouping of the page language.
+export const fmtNum = (n, lang = currentLang()) => Math.round(Number.isFinite(n) ? n : 0).toLocaleString(lang);
 
 export function coins(copper) {
   const c = Number.isFinite(copper) ? Math.max(0, Math.round(copper)) : 0;
@@ -35,7 +39,7 @@ export function coins(copper) {
 
 export function moneyText(copper) {
   const { g, s, c } = coins(copper);
-  return (g ? g + 'g ' : '') + (g || s ? s + 's ' : '') + c + 'c';
+  return (g ? g + t('coin.g') + ' ' : '') + (g || s ? s + t('coin.s') + ' ' : '') + c + t('coin.c');
 }
 
 export function coinsHtml(copper) {
@@ -51,26 +55,23 @@ const CLASS_COLOURS = {
 export const classColour = (token) => CLASS_COLOURS[String(token ?? '').toUpperCase()] ?? '#e9e1d4';
 
 export function className(token) {
-  const t = String(token ?? '');
-  return t ? t[0].toUpperCase() + t.slice(1).toLowerCase() : '';
+  const text = String(token ?? '');
+  return tr('class.' + text.toUpperCase()) ?? (text ? text[0].toUpperCase() + text.slice(1).toLowerCase() : '');
 }
 
-const RACES = { Scourge: 'Undead' };
-
 export function raceName(token) {
-  const t = String(token ?? '');
-  return RACES[t] ?? t.replace(/([a-z])([A-Z])/g, '$1 $2');
+  const text = String(token ?? '');
+  return tr('race.' + text) ?? text.replace(/([a-z])([A-Z])/g, '$1 $2');
 }
 
 const QUALITY_COLOURS = ['#9d9d9d', '#ffffff', '#1eff00', '#0070dd', '#a335ee', '#ff8000'];
-export const QUALITY_NAMES = ['Poor', 'Common', 'Uncommon', 'Rare', 'Epic', 'Legendary'];
 
 export function qualityColour(q) {
   return Number.isInteger(q) && q >= 0 && q < QUALITY_COLOURS.length ? QUALITY_COLOURS[q] : QUALITY_COLOURS[1];
 }
 
 export function qualityName(q) {
-  return Number.isInteger(q) && q >= 0 && q < QUALITY_NAMES.length ? QUALITY_NAMES[q] : 'Unknown quality';
+  return Number.isInteger(q) && q >= 0 && q < QUALITY_COLOURS.length ? t('quality.' + q) : t('quality.unknown');
 }
 
 export function kindLabel(k, kinds) {

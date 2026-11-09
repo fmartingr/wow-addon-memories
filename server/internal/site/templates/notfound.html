@@ -1,18 +1,21 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{.Lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Page not found</title>
+<title>{{T "notfound.title"}}</title>
 <link rel="icon" href="/_/icon.png">
 <link rel="stylesheet" href="{{.BaseCSS}}">
 <link rel="stylesheet" href="{{.CSS}}">
 </head>
 <body>
 <main>
-<h1>Page not found</h1>
-<p>There is no page at this address. Check the link, or ask the person who sent it for a new one.</p>
-<p><a href="/">Go to the home page</a></p>
+<h1>{{T "notfound.title"}}</h1>
+<p>{{T "notfound.text"}}</p>
+<p><a href="/">{{T "notfound.home"}}</a></p>
 </main>
+<footer class="foot">
+{{template "picker" .}}
+</footer>
 </body>
 </html>

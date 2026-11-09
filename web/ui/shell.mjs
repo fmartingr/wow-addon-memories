@@ -1,4 +1,33 @@
 // The frame: tab buttons with keyboard support, and the bottom sheet that holds the side panels on a phone.
+import { LANGS, t } from '../lib/i18n.mjs';
+
+// applyTexts fills the static text of the page from the catalog: data-i18n sets the text, data-i18n-aria the aria-label
+// and data-i18n-title the title. The values are text, never markup.
+export function applyTexts(root = document) {
+  for (const el of root.querySelectorAll('[data-i18n]')) el.textContent = t(el.dataset.i18n);
+  for (const el of root.querySelectorAll('[data-i18n-aria]')) el.setAttribute('aria-label', t(el.dataset.i18nAria));
+  for (const el of root.querySelectorAll('[data-i18n-title]')) el.setAttribute('title', t(el.dataset.i18nTitle));
+}
+
+// pickerHref is the link of a language in the picker. The other query parameters and the hash (tab, camera, selection)
+// go along, and the server keeps them across its redirect.
+export const pickerHref = (code, hash = '', search = '') => {
+  const query = new URLSearchParams(search);
+  query.set('lang', code);
+  return `?${query}${hash}`;
+};
+
+// syncPicker points each link of the picker at its language with the current query and hash, and marks the page
+// language.
+export function syncPicker(nav, lang, hash = '', search = '') {
+  for (const a of nav.querySelectorAll('a[hreflang]')) {
+    const code = a.getAttribute('hreflang');
+    if (!LANGS.includes(code)) continue;
+    a.setAttribute('href', pickerHref(code, hash, search));
+    if (code === lang) a.setAttribute('aria-current', 'true');
+    else a.removeAttribute('aria-current');
+  }
+}
 
 export const SHEET_STATES = ['peek', 'half', 'full'];
 

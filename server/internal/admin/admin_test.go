@@ -92,7 +92,7 @@ func newEnvWith(t *testing.T, wrap func(store.Blobs) store.Blobs) *env {
 
 	web := t.TempDir()
 	for name, body := range map[string]string{
-		"index.html": "<!doctype html><title>Memories</title><body>viewer</body>",
+		"index.html": "<!doctype html><html lang=\"en\"><title>Memories</title><body>viewer</body>",
 		"app.js":     "//", "kinds.js": "//", "style.css": "/**/",
 	} {
 		if err := os.WriteFile(filepath.Join(web, name), []byte(body), 0o600); err != nil {

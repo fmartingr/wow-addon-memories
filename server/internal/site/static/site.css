@@ -187,6 +187,42 @@ main.landing h2.panel-title {
 	border-bottom: 0;
 }
 
+.foot {
+	max-width: 56rem;
+	margin: 0 auto;
+	padding: 0 1rem 2.5rem;
+	text-align: center;
+}
+
+.cookie-note {
+	margin: 0 0 0.75rem;
+	color: var(--muted);
+	font-size: 0.85rem;
+}
+
+.lang-picker {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 0.25rem 1.25rem;
+}
+
+.lang-picker a {
+	color: var(--muted);
+	text-decoration: none;
+}
+
+.lang-picker a:hover,
+.lang-picker a:focus-visible {
+	color: var(--gold-light);
+	text-decoration: underline;
+}
+
+.lang-picker a[aria-current="true"] {
+	color: var(--gold-light);
+	font-weight: bold;
+}
+
 @media (max-width: 36rem) {
 	body {
 		font-size: 16px;

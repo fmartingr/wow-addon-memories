@@ -1,0 +1,2 @@
+{{define "picker"}}<nav class="lang-picker" aria-label="{{T "lang.label"}}">{{range .Langs}}<a href="?lang={{.Code}}" lang="{{.Code}}" hreflang="{{.Code}}"{{if .Current}} aria-current="true"{{end}}>{{.Name}}</a>
+{{end}}</nav>{{end}}

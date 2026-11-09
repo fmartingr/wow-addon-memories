@@ -41,6 +41,7 @@ const (
 
 var (
 	bodyTag  = regexp.MustCompile(`(?i)<body(\s[^>]*)?>`)
+	htmlLang = regexp.MustCompile(`(?i)<html(?:\s[^>]*?)?(\slang="[^"]*")[^>]*>`)
 	titleTag = regexp.MustCompile(`(?is)<title>(.*?)</title>`)
 	shotName = regexp.MustCompile(`^WoWScrnShot_[0-9]{6}_[0-9]{6}\.(jpg|png)$`)
 )
@@ -84,6 +85,7 @@ type Pages struct {
 	index    []byte
 	titleAt  [2]int // the text between <title> and </title> of index
 	attrAt   int    // where the data-entry attribute goes: right after "<body"
+	langAt   [2]int // the lang="..." attribute of the <html> tag of index
 	claims   ClaimFinder
 	blobs    store.Blobs
 	notFound http.Handler
@@ -92,8 +94,8 @@ type Pages struct {
 	titles   etagCache
 }
 
-// NewPages reads the viewer files of webDir once. It fails when index.html has no <title> before its <body> tag,
-// because the character pages are made from those two places.
+// NewPages reads the viewer files of webDir once. It fails when index.html has no lang attribute on <html> or no
+// <title> before its <body> tag, because the character pages are made from those places.
 func NewPages(webDir string, claims ClaimFinder, blobs store.Blobs, notFound http.Handler, log *slog.Logger) (*Pages, error) {
 	read := func(name string) ([]byte, error) {
 		b, err := os.ReadFile(filepath.Join(webDir, name))
@@ -116,6 +118,12 @@ func NewPages(webDir string, claims ClaimFinder, blobs store.Blobs, notFound htt
 		return nil, fmt.Errorf("the viewer file %s needs a <title> element before its <body> tag. Check MEMORIES_WEB_DIR",
 			filepath.Join(webDir, "index.html"))
 	}
+	lang := htmlLang.FindSubmatchIndex(p.index)
+	if lang == nil || lang[3] > title[0] {
+		return nil, fmt.Errorf("the viewer file %s needs a lang attribute on its <html> tag. Check MEMORIES_WEB_DIR",
+			filepath.Join(webDir, "index.html"))
+	}
+	p.langAt = [2]int{lang[2], lang[3]}
 	p.titleAt = [2]int{title[2], title[3]}
 	p.attrAt = body[0] + len("<body")
 	return p, p.loadAssets(read)
@@ -278,8 +286,12 @@ func (p *Pages) page(w http.ResponseWriter, r *http.Request, parts []string) {
 		return
 	}
 	var out bytes.Buffer
-	out.Grow(len(p.index) + len(title) + len(entryAttr))
-	out.Write(p.index[:p.titleAt[0]])
+	lang, from := Pick(r)
+	langAttrs := ` lang="` + string(lang) + `" data-lang-from="` + from + `"`
+	out.Grow(len(p.index) + len(title) + len(entryAttr) + len(langAttrs))
+	out.Write(p.index[:p.langAt[0]])
+	out.WriteString(langAttrs)
+	out.Write(p.index[p.langAt[1]:p.titleAt[0]])
 	out.WriteString(html.EscapeString(title))
 	out.Write(p.index[p.titleAt[1]:p.attrAt])
 	out.WriteString(entryAttr)
@@ -289,6 +301,7 @@ func (p *Pages) page(w http.ResponseWriter, r *http.Request, parts []string) {
 	h.Set("Content-Security-Policy", characterPagePolicy)
 	h.Set("X-Robots-Tag", robotsNoIndex)
 	h.Set("Cache-Control", "no-cache")
+	h.Set("Vary", varyLang)
 	h.Set("ETag", etagOf(out.Bytes()))
 	http.ServeContent(w, r, "", time.Time{}, bytes.NewReader(out.Bytes()))
 }

@@ -329,7 +329,8 @@ func TestViewerAssetsAreServedFromTheWebFolder(t *testing.T) {
 	}
 }
 
-var assetRef = regexp.MustCompile(`(?:src|href)="([^"]+)"`)
+// assetRef skips the picker links, which start with a query.
+var assetRef = regexp.MustCompile(`(?:src|href)="([^"?][^"]*)"`)
 
 // The page of a character loads only the files of /_/, so that no relative or root path breaks behind the prefix.
 func TestCharacterPageReferencesOnlyViewerAssets(t *testing.T) {

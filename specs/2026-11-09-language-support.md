@@ -650,7 +650,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 7. Website server: language choice, picker, cookie and translated home and 404
+### [x] 7. Website server: language choice, picker, cookie and translated home and 404
 
 - **Outcome:** the server picks the page language (AC9 steps 1, 2, 4, 5), sets the cookie from the picker, serves home
   and 404 in that language, and marks the character page with the language and its source.
@@ -721,7 +721,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated (`docs/self-host.md`: the cookie and `Vary`).
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 8. Viewer: translated character page and the character language
+### [x] 8. Viewer: translated character page and the character language
 
 - **Outcome:** every text of the character page shows in the chosen language. When the viewer has no saved choice,
   the page uses the language of the character's client.
@@ -787,7 +787,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
         section).
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 9. Viewer: Wowhead links and map zone labels in the page language
+### [x] 9. Viewer: Wowhead links and map zone labels in the page language
 
 - **Outcome:** gear tooltips show translated item names and the map shows translated zone labels.
 - **Depends on:** Task 8 (the page language and `t()`).

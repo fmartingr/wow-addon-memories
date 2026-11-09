@@ -1,6 +1,7 @@
 // The paper doll: the 19 gear slots as Wowhead links, and the detail of the selected slot.
 import { esc, qualityColour, qualityName } from '../lib/format.mjs';
 import { SLOTS, slotLabel, wowheadUrl } from '../lib/gear.mjs';
+import { t } from '../lib/i18n.mjs';
 
 const WIDGET = 'https://wow.zamimg.com/js/tooltips.js';
 let widget = null;
@@ -28,19 +29,19 @@ function slotHtml(s, selected) {
   const label = `<span class="slot-label">${esc(slotLabel(s.slot))}</span>`;
   const url = wowheadUrl(s.item);
   if (!url) {
-    return `<div class="slot-cell">${label}<button type="button" class="slot empty${sel}" data-slot="${s.slot}" aria-label="${esc(slotLabel(s.slot))}, empty"></button></div>`;
+    return `<div class="slot-cell">${label}<button type="button" class="slot empty${sel}" data-slot="${s.slot}" aria-label="${esc(t('gear.empty', { slot: slotLabel(s.slot) }))}"></button></div>`;
   }
   const q = Number.isInteger(s.quality) && s.quality >= 0 && s.quality <= 5 ? ` q${s.quality}` : '';
-  return `<div class="slot-cell">${label}<a class="slot${q}${sel}" data-slot="${s.slot}" href="${url}" target="_blank" rel="noopener noreferrer">Item ${s.item}</a></div>`;
+  return `<div class="slot-cell">${label}<a class="slot${q}${sel}" data-slot="${s.slot}" href="${url}" target="_blank" rel="noopener noreferrer">${esc(t('gear.item', { id: s.item }))}</a></div>`;
 }
 
 function detailHtml(s) {
   if (!s) return '';
   const title = esc(slotLabel(s.slot));
   const url = wowheadUrl(s.item);
-  if (!url) return `<h4>${title}</h4><p class="sub">Nothing equipped.</p>`;
-  return `<h4>${title}</h4><p>Item ${s.item} <span class="q-name q${Number.isInteger(s.quality) ? s.quality : 1}">${esc(s.quality == null ? '' : qualityName(s.quality))}</span></p>
-<p><a class="wh-link" href="${url}" target="_blank" rel="noopener noreferrer" data-wh-rename-link="false" data-wh-icon-add="false">Open on Wowhead</a></p>`;
+  if (!url) return `<h4>${title}</h4><p class="sub">${esc(t('gear.nothing'))}</p>`;
+  return `<h4>${title}</h4><p>${esc(t('gear.item', { id: s.item }))} <span class="q-name q${Number.isInteger(s.quality) ? s.quality : 1}">${esc(s.quality == null ? '' : qualityName(s.quality))}</span></p>
+<p><a class="wh-link" href="${url}" target="_blank" rel="noopener noreferrer" data-wh-rename-link="false" data-wh-icon-add="false">${esc(t('gear.open'))}</a></p>`;
 }
 
 export function paintDoll(root) {
@@ -57,7 +58,7 @@ export function paintDoll(root) {
 export function dollHtml(gear, selected) {
   const order = (name) => SLOTS.filter((s) => s.side === name).map((s) => gear.find((g) => g.slot === s.n));
   const column = (name) => `<div class="doll-col ${name}">${order(name).map((s) => slotHtml(s, selected)).join('')}</div>`;
-  return `<h3 class="panel-title">Equipment</h3>
+  return `<h3 class="panel-title">${esc(t('gear.title'))}</h3>
 <div class="doll">${column('left')}${column('right')}</div>
 <div class="doll-bottom">${order('bottom').map((s) => slotHtml(s, selected)).join('')}</div>
 <div class="slot-detail" aria-live="polite">${detailHtml(gear.find((g) => g.slot === selected))}</div>`;
