@@ -1,13 +1,11 @@
 name: Set up FVM
-description: Install FVM and the Flutter version pinned in .fvmrc.
+description: Install FVM and the Flutter version pinned in .fvmrc. Run dart-lang/setup-dart first.
 
 runs:
   using: composite
   steps:
-    - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
-      with:
-        sdk: 3.13.4
-    # setup-dart already puts the pub cache bin folder on PATH.
+    # The job runs dart-lang/setup-dart before this action. Inside a composite action, setup-dart looks for its
+    # problem matcher in this folder and fails.
     - name: Install FVM
       shell: bash
       run: |

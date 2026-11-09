@@ -56,6 +56,9 @@ jobs:
       RUN_NUMBER: ${{ github.run_number }}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: 3.13.4
       - uses: ./.github/actions/setup-fvm
       # tray_manager builds its native library from source and needs the GTK 3, X11 and Xi development files.
       - name: Install the Linux build packages
@@ -88,6 +91,9 @@ jobs:
         shell: pwsh
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: 3.13.4
       - uses: ./.github/actions/setup-fvm
       - name: Build
         working-directory: app
@@ -141,6 +147,9 @@ jobs:
           done
           exit "$missing"
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: dart-lang/setup-dart@6afc89df92d6eb3834022f73cd65adc8cdfcb92d # v1.8.1
+        with:
+          sdk: 3.13.4
       - uses: ./.github/actions/setup-fvm
       - name: Build
         working-directory: app

@@ -51,7 +51,7 @@ web-lint: ## Check the syntax of each web/**/*.mjs file
 	@find web -name '*.mjs' -not -path 'web/map/*' -print0 | xargs -0 -n1 node --check
 
 web-test: ## Run the node tests of the viewer logic with a coverage threshold (lines of web/lib/ at least 80 %)
-	node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-include='web/lib/**' web/test/
+	node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-include='web/lib/**' 'web/test/*.test.mjs'
 
 app-theme: ## Write app/lib/src/theme/tokens.dart from the website tokens (web/base.css)
 	node scripts/gen-app-theme.mjs
