@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 
 import '../../l10n/app_localizations.dart';
+import '../platform/clipboard.dart';
 import '../settings/settings_controller.dart';
 import '../theme/ak_widgets.dart';
 import '../upload/notice.dart';
@@ -16,10 +17,12 @@ class WebsiteSection extends StatefulWidget {
     super.key,
     required this.upload,
     required this.settings,
+    this.copyText = copyToClipboard,
   });
 
   final UploadController upload;
   final SettingsController settings;
+  final CopyText copyText;
 
   @override
   State<WebsiteSection> createState() => _WebsiteSectionState();
@@ -61,6 +64,47 @@ class _WebsiteSectionState extends State<WebsiteSection> {
     // may be left from another website.
     final open = _upload.siteInfo?.registration == 'open';
     if (await _upload.register(open ? null : _invite.text)) _invite.clear();
+  }
+
+  void _showSnack(String text) {
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(SnackBar(content: Text(text)));
+  }
+
+  /// Copies the fingerprint: the admin page finds a key by it, and Move
+  /// claim takes it.
+  Future<void> _copyKey(String fingerprint) async {
+    await widget.copyText(fingerprint);
+    if (mounted) _showSnack(AppLocalizations.of(context).keyCopiedText);
+  }
+
+  Future<void> _replaceKey() async {
+    final site = siteLabel(widget.settings.settings.site);
+    final yes = await showDialog<bool>(
+      context: context,
+      builder: (context) {
+        final l = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l.newKeyTitle),
+          content: Text(l.newKeyQuestionText(site)),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l.newKeyLabel),
+            ),
+          ],
+        );
+      },
+    );
+    if (yes != true) return;
+    if (await _upload.replaceKey() && mounted) {
+      _showSnack(AppLocalizations.of(context).newKeyDoneText);
+    }
   }
 
   @override
@@ -180,9 +224,36 @@ class _WebsiteSectionState extends State<WebsiteSection> {
               ],
               if (fingerprint != null) ...[
                 const SizedBox(height: 16),
-                Text(l.fingerprintText(fingerprint)),
+                Row(
+                  children: [
+                    Flexible(
+                      child: SelectableText(l.fingerprintText(fingerprint)),
+                    ),
+                    IconButton(
+                      tooltip: l.copyKeyLabel,
+                      icon: Icon(Icons.copy, semanticLabel: l.copyKeySemantics),
+                      onPressed: () => _copyKey(fingerprint),
+                    ),
+                  ],
+                ),
                 const SizedBox(height: 4),
                 Text(l.lostKeyText, style: theme.textTheme.bodySmall),
+                const SizedBox(height: 8),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton(
+                    onPressed: _upload.canReplaceKey ? _replaceKey : null,
+                    child: Text(l.newKeyLabel),
+                  ),
+                ),
+                if (_upload.keyError != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: Text(
+                      noticeText(l, _upload.keyError!),
+                      style: errorStyle,
+                    ),
+                  ),
               ],
             ],
           ),

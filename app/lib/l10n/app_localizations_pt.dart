@@ -493,7 +493,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get lostKeyText =>
-      'Se você reinstalar o app, peça ao administrador do site para mover os seus personagens para a sua nova chave.';
+      'Se você reinstalar o app ou criar uma chave nova, copie a sua chave nova e peça ao administrador do site para mover os seus personagens para ela.';
 
   @override
   String get websiteAddressLabel => 'Endereço do site';
@@ -580,6 +580,35 @@ class AppLocalizationsPt extends AppLocalizations {
   String fingerprintText(String fingerprint) {
     return 'Sua chave: $fingerprint';
   }
+
+  @override
+  String get copyKeyLabel => 'Copiar a sua chave';
+
+  @override
+  String get copyKeySemantics =>
+      'Copiar a sua chave para o administrador do site';
+
+  @override
+  String get keyCopiedText => 'Chave copiada';
+
+  @override
+  String get newKeyLabel => 'Criar uma chave nova';
+
+  @override
+  String get newKeyTitle => 'Criar uma chave nova?';
+
+  @override
+  String newKeyQuestionText(String site) {
+    return 'Faça isso só quando o site tiver bloqueado ou recusado esta chave. O app cria uma chave nova e guarda uma cópia da antiga. Os seus personagens em $site ficam com a chave antiga. O administrador do site pode movê-los para a chave nova. Depois, cadastre-se de novo. O site pode pedir um código de convite novo. O app envia todos os seus personagens de novo. O envio fica desativado até você ativá-lo.';
+  }
+
+  @override
+  String get newKeyDoneText =>
+      'Chave nova criada. Cadastre-se de novo para enviar.';
+
+  @override
+  String get errKeyNotReplaced =>
+      'O app não conseguiu criar uma chave nova, então mantém a antiga. Confira se a pasta dele pode ser gravada e tem espaço livre, e tente de novo.';
 
   @override
   String get screenshotsNone =>

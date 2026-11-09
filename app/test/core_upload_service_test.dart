@@ -267,6 +267,129 @@ void main() {
     );
   });
 
+  group('replaceKey', () {
+    File stateFile() => File(p.join(support.path, 'upload-state.json'));
+
+    List<String> keyCopies() => [
+      for (final f in support.listSync())
+        if (RegExp(r'^upload-key\.\d{8}T\d{6}Z(-\d+)?\.json$')
+            .hasMatch(p.basename(f.path)))
+          p.basename(f.path),
+    ]..sort();
+
+    test(
+      'keeps the old key under a dated name and forgets the sites',
+      () async {
+        service = CoreUploadService(
+          () async => support.path,
+          sleep: (_) async {},
+          clock: () => DateTime.utc(2026, 11, 9, 15, 30, 12),
+        );
+        await service.register(site.address, null);
+        await service.sync(site.address, fixtureLatest);
+        await service.delete(site.address, 'wow/eu/brumamar/nandu');
+        final oldBytes = keyFile().readAsBytesSync();
+        final old = (await service.status(site.address)).fingerprint;
+
+        final fresh = await service.replaceKey();
+
+        expect(fresh, matches(RegExp(r'^[0-9a-f]{16}$')));
+        expect(fresh, isNot(old));
+        final status = await service.status(site.address);
+        expect(status.fingerprint, fresh);
+        expect(status.registered, isFalse);
+        expect(keyCopies(), ['upload-key.20261109T153012Z.json']);
+        final copy = File(
+          p.join(support.path, 'upload-key.20261109T153012Z.json'),
+        );
+        expect(copy.readAsBytesSync(), oldBytes);
+        expect(UploadKey.load(copy).fingerprint, old);
+        if (Platform.isLinux || Platform.isMacOS) {
+          expect(copy.statSync().modeString(), 'rw-------');
+          expect(keyFile().statSync().modeString(), 'rw-------');
+        }
+        final state = UploadState.load(stateFile());
+        final record = state.site(parseSite(site.address));
+        expect(record.sent, isEmpty);
+        expect(record.shots, isEmpty);
+        expect(record.removed, {'wow/eu/brumamar/nandu'});
+        expect(
+          support.listSync().whereType<Directory>(),
+          isEmpty,
+          reason: 'no temporary folder stays',
+        );
+
+        // Two new keys in the same second never overwrite a copy.
+        final third = await service.replaceKey();
+        expect(keyCopies(), [
+          'upload-key.20261109T153012Z-2.json',
+          'upload-key.20261109T153012Z.json',
+        ]);
+        expect(
+          UploadKey.load(
+            File(p.join(support.path, 'upload-key.20261109T153012Z-2.json')),
+          ).fingerprint,
+          fresh,
+        );
+        expect((await service.status(site.address)).fingerprint, third);
+      },
+    );
+
+    test('the new key registers and sends everything again', () async {
+      await service.register(site.address, null);
+      await service.sync(site.address, fixtureLatest);
+      await service.replaceKey();
+      await service.register(site.address, 'CODE');
+      final again = await service.sync(site.address, fixtureLatest);
+      expect(again.characters.map((c) => c.status), [
+        SyncStatus.uploaded,
+        SyncStatus.uploaded,
+      ]);
+    });
+
+    test('with no key it makes none', () async {
+      await expectLater(
+        service.replaceKey(),
+        throwsA(
+          isA<UploadException>().having(
+            (e) => e.code,
+            'code',
+            'not_registered',
+          ),
+        ),
+      );
+      expect(support.listSync(), isEmpty);
+    });
+
+    test('a damaged key file is left as it is', () async {
+      keyFile().writeAsStringSync('not json');
+      await expectLater(
+        service.replaceKey(),
+        throwsA(
+          isA<UploadException>().having((e) => e.code, 'code', 'bad_key'),
+        ),
+      );
+      expect(keyFile().readAsStringSync(), 'not json');
+      expect(keyCopies(), isEmpty);
+    });
+
+    test('a state that cannot be saved keeps the old key', () async {
+      await service.register(site.address, null);
+      final oldBytes = keyFile().readAsBytesSync();
+      stateFile().deleteSync();
+      Directory(stateFile().path).createSync();
+      await expectLater(
+        service.replaceKey(),
+        throwsA(
+          isA<UploadException>()
+              .having((e) => e.code, 'code', 'key_not_replaced')
+              .having((e) => e.message, 'message', contains('keeps the old')),
+        ),
+      );
+      expect(keyFile().readAsBytesSync(), oldBytes);
+    });
+  });
+
   test('an unreachable site says so in plain words', () async {
     final address = site.address;
     await site.server.close(force: true);

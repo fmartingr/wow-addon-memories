@@ -294,6 +294,13 @@ class FakeUploadService implements UploadService {
   Object? syncError;
   Object? deleteError;
   Object? requestError;
+  Object? replaceError;
+
+  /// The fingerprint of the key that [replaceKey] makes.
+  String newFingerprint = 'fedcba9876543210';
+
+  /// A new key that is made when the test completes it.
+  Completer<void>? pendingReplace;
 
   /// A sync that ends when the test completes it.
   Completer<SyncReport>? pendingSync;
@@ -383,6 +390,17 @@ class FakeUploadService implements UploadService {
     meInfo = MeInfo(screenshots: requested, characters: meInfo.characters);
     return requested;
   }
+
+  @override
+  Future<String> replaceKey() async {
+    calls.add('replaceKey');
+    if (replaceError != null) throw replaceError!;
+    if (pendingReplace != null) await pendingReplace!.future;
+    registeredSites.clear();
+    fingerprint = newFingerprint;
+    meInfo = const MeInfo(screenshots: 'none', characters: []);
+    return newFingerprint;
+  }
 }
 
 class Fakes {
@@ -411,6 +429,9 @@ class Fakes {
   final FakeStartup startup = FakeStartup();
   final FakeUploadService upload;
 
+  /// The texts put on the clipboard.
+  final List<String> copied = [];
+
   /// The time of Watch; a widget test sets it to the fake time of the test.
   DateTime Function() clock = DateTime.now;
 
@@ -427,6 +448,7 @@ class Fakes {
     uploader: upload,
     signature: signature.call,
     clock: () => clock(),
+    copyText: (text) async => copied.add(text),
   );
 }
 

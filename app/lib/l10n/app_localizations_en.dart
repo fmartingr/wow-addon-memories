@@ -489,7 +489,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lostKeyText =>
-      'If you reinstall the app, ask the website admin to move your characters to your new key.';
+      'If you reinstall the app or make a new key, copy your new key and ask the website admin to move your characters to it.';
 
   @override
   String get websiteAddressLabel => 'Website address';
@@ -576,6 +576,33 @@ class AppLocalizationsEn extends AppLocalizations {
   String fingerprintText(String fingerprint) {
     return 'Your key: $fingerprint';
   }
+
+  @override
+  String get copyKeyLabel => 'Copy your key';
+
+  @override
+  String get copyKeySemantics => 'Copy your key for the website admin';
+
+  @override
+  String get keyCopiedText => 'Key copied';
+
+  @override
+  String get newKeyLabel => 'Make a new key';
+
+  @override
+  String get newKeyTitle => 'Make a new key?';
+
+  @override
+  String newKeyQuestionText(String site) {
+    return 'Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on $site stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends all your characters again. Upload stays off until you turn it on.';
+  }
+
+  @override
+  String get newKeyDoneText => 'New key made. Register again to upload.';
+
+  @override
+  String get errKeyNotReplaced =>
+      'The app could not make a new key, so it keeps the old one. Check that its folder can be written to and has free space, then try again.';
 
   @override
   String get screenshotsNone =>

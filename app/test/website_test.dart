@@ -1,7 +1,6 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
 import 'package:wow_journey/src/settings/settings.dart';
@@ -231,6 +230,183 @@ void main() {
     });
   });
 
+  group('Website tab, key', () {
+    Future<void> openNewKeyDialog(WidgetTester tester) async {
+      await tapVisible(tester, _button(newKeyLabel));
+      await tester.pumpAndSettle();
+    }
+
+    Finder dialogButton(String label) =>
+        find.descendant(of: find.byType(AlertDialog), matching: _button(label));
+
+    testWidgets('a refused code can be followed by another one', (
+      tester,
+    ) async {
+      final fakes = _fakes();
+      fakes.upload.registerError = const UploadException(
+        'invite_invalid',
+        'Not valid.',
+        status: 403,
+      );
+      await _openSettings(tester, fakes);
+      await tester.enterText(_field(inviteCodeLabel), 'nope');
+      await tester.tap(_button(registerLabel));
+      await tester.pumpAndSettle();
+      expect(find.text(en.errInviteInvalid), findsOneWidget);
+      expect(_enabled(tester, _button(registerLabel)), isTrue);
+
+      fakes.upload.registerError = null;
+      await tester.enterText(_field(inviteCodeLabel), 'GOOD1234');
+      await tester.tap(_button(registerLabel));
+      await tester.pumpAndSettle();
+      expect(fakes.upload.registrations, [(site, 'nope'), (site, 'GOOD1234')]);
+      expect(find.text(registeredText(site)), findsOneWidget);
+      expect(find.text(en.errInviteInvalid), findsNothing);
+    });
+
+    testWidgets('Make a new key shows only when the app has a key', (
+      tester,
+    ) async {
+      await _openSettings(tester, _fakes());
+      expect(find.text(newKeyLabel), findsNothing);
+      expect(find.byTooltip(copyKeyLabel), findsNothing);
+    });
+
+    testWidgets('Make a new key waits while an upload runs', (tester) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      fakes.upload.pendingSync = Completer<SyncReport>();
+      await _openSettings(tester, fakes);
+      expect(_enabled(tester, _button(newKeyLabel)), isTrue);
+      await tester.tap(find.text(uploadNowLabel));
+      await tester.pump();
+      expect(_enabled(tester, _button(newKeyLabel)), isFalse);
+      fakes.upload.pendingSync!.complete(
+        const SyncReport(screenshots: 'none', characters: []),
+      );
+      await tester.pumpAndSettle();
+      expect(_enabled(tester, _button(newKeyLabel)), isTrue);
+    });
+
+    testWidgets('Cancel in the dialog keeps the key', (tester) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      await _openSettings(tester, fakes);
+      await openNewKeyDialog(tester);
+      expect(find.text(en.newKeyTitle), findsOneWidget);
+      expect(
+        find.text(en.newKeyQuestionText('wowjourney.xyz')),
+        findsOneWidget,
+      );
+      await tester.tap(dialogButton(cancelLabel));
+      await tester.pumpAndSettle();
+      expect(find.byType(AlertDialog), findsNothing);
+      expect(fakes.upload.calls, isNot(contains('replaceKey')));
+      expect(find.text(fingerprintText('0123456789abcdef')), findsOneWidget);
+      expect(find.text(registeredText(site)), findsOneWidget);
+      expect(_uploadSwitch(tester).value, isTrue);
+    });
+
+    testWidgets('a new key starts unregistered with Upload off', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      await _openSettings(tester, fakes);
+      await openNewKeyDialog(tester);
+      await tester.tap(dialogButton(newKeyLabel));
+      await tester.pumpAndSettle();
+
+      expect(fakes.upload.calls, contains('replaceKey'));
+      expect(find.text(fingerprintText('fedcba9876543210')), findsOneWidget);
+      expect(find.text(notRegisteredText(site)), findsOneWidget);
+      expect(_field(inviteCodeLabel), findsOneWidget);
+      expect(fakes.store.saved.last.upload, isFalse);
+      expect(_uploadSwitch(tester).value, isFalse);
+      expect(_uploadSwitch(tester).onChanged, isNull);
+      expect(find.text(en.newKeyDoneText), findsOneWidget);
+    });
+
+    testWidgets('a blocked key can be replaced, then registered again', (
+      tester,
+    ) async {
+      final fakes = _fakes();
+      fakes.upload.fingerprint = '0123456789abcdef';
+      fakes.upload.registerError = const UploadException(
+        'key_revoked',
+        'Blocked.',
+        status: 403,
+      );
+      await _openSettings(tester, fakes);
+      await tester.enterText(_field(inviteCodeLabel), 'CODE1');
+      await tester.tap(_button(registerLabel));
+      await tester.pumpAndSettle();
+      expect(find.text(keyRevokedText(site)), findsOneWidget);
+
+      await openNewKeyDialog(tester);
+      await tester.tap(dialogButton(newKeyLabel));
+      await tester.pumpAndSettle();
+      expect(find.text(keyRevokedText(site)), findsNothing);
+      expect(find.text(fingerprintText('fedcba9876543210')), findsOneWidget);
+
+      fakes.upload.registerError = null;
+      await tester.enterText(_field(inviteCodeLabel), 'CODE2');
+      await tester.tap(_button(registerLabel));
+      await tester.pumpAndSettle();
+      expect(fakes.upload.registrations.last, (site, 'CODE2'));
+      expect(find.text(registeredText(site)), findsOneWidget);
+    });
+
+    testWidgets('a failed new key keeps the old key and says why', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      fakes.upload.replaceError = const UploadException(
+        'key_not_replaced',
+        'Could not write.',
+      );
+      await _openSettings(tester, fakes);
+      await openNewKeyDialog(tester);
+      await tester.tap(dialogButton(newKeyLabel));
+      await tester.pumpAndSettle();
+
+      expect(find.text(en.errKeyNotReplaced), findsOneWidget);
+      expect(find.text(fingerprintText('0123456789abcdef')), findsOneWidget);
+      expect(find.text(registeredText(site)), findsOneWidget);
+      expect(_uploadSwitch(tester).value, isTrue);
+      expect(find.text(en.newKeyDoneText), findsNothing);
+    });
+
+    testWidgets('Copy puts the fingerprint on the clipboard', (tester) async {
+      final semantics = tester.ensureSemantics();
+      final fakes = _fakes(registered: true);
+      await _openSettings(tester, fakes);
+      expect(
+        find.widgetWithText(
+          SelectableText,
+          fingerprintText('0123456789abcdef'),
+        ),
+        findsOneWidget,
+      );
+      expect(find.bySemanticsLabel(en.copyKeySemantics), findsOneWidget);
+
+      await tapVisible(tester, find.byTooltip(copyKeyLabel));
+      await tester.pumpAndSettle();
+      expect(fakes.copied, ['0123456789abcdef']);
+      expect(find.text(keyCopiedText), findsOneWidget);
+      semantics.dispose();
+    });
+  });
+
   group('Website tab, card', () {
     testWidgets('an unregistered key points to the registration below', (
       tester,
@@ -443,29 +619,13 @@ void main() {
     });
 
     testWidgets('Copy link puts the link on the clipboard', (tester) async {
-      final copied = <String?>[];
-      tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-        SystemChannels.platform,
-        (call) async {
-          if (call.method == 'Clipboard.setData') {
-            copied.add((call.arguments as Map)['text'] as String?);
-          }
-          return null;
-        },
-      );
-      addTearDown(
-        () => tester.binding.defaultBinaryMessenger.setMockMethodCallHandler(
-          SystemChannels.platform,
-          null,
-        ),
-      );
       final fakes = _fakes(registered: true, characters: [nandu]);
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
       await openTab(tester, 'Website');
       await tester.tap(find.text(copyLinkLabel));
       await tester.pumpAndSettle();
-      expect(copied, [nandu.url]);
+      expect(fakes.copied, [nandu.url]);
       expect(find.text(linkCopiedText), findsOneWidget);
     });
 

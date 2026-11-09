@@ -842,4 +842,113 @@ void main() {
     expect(noticesEn(rig.controller.issues), [keyRevokedText(site)]);
     expect(rig.settingsController.settings.upload, isFalse);
   });
+
+  group('replaceKey', () {
+    test(
+      'makes a new key that is registered nowhere, with Upload off',
+      () async {
+        final rig = await _rig(settings: _on);
+        rig.upload.meInfo = const MeInfo(
+          screenshots: 'approved',
+          characters: [nandu],
+        );
+        await rig.controller.refresh();
+        expect(rig.controller.characters, [nandu]);
+        expect(rig.controller.canReplaceKey, isTrue);
+
+        expect(await rig.controller.replaceKey(), isTrue);
+        expect(rig.upload.calls.last, 'replaceKey');
+        expect(rig.controller.fingerprint, 'fedcba9876543210');
+        expect(rig.controller.registered, isFalse);
+        expect(rig.controller.state, UploadState.unregistered);
+        expect(rig.controller.characters, isEmpty);
+        expect(rig.controller.screenshots, 'none');
+        expect(rig.controller.keyError, isNull);
+        expect(rig.settingsController.settings.upload, isFalse);
+      },
+    );
+
+    test(
+      'clears the refusal of the old key, so Register can run again',
+      () async {
+        final rig = await _rig(registered: false);
+        rig.upload.fingerprint = '0123456789abcdef';
+        await rig.controller.refresh();
+        rig.upload.registerError = const UploadException(
+          'key_revoked',
+          'Blocked.',
+          status: 403,
+        );
+        expect(await rig.controller.register('CODE1'), isFalse);
+        expect(noticeEn(rig.controller.registerError!), keyRevokedText(site));
+
+        expect(await rig.controller.replaceKey(), isTrue);
+        expect(rig.controller.registerError, isNull);
+        rig.upload.registerError = null;
+        expect(await rig.controller.register('CODE2'), isTrue);
+        expect(rig.upload.registrations.last, (site, 'CODE2'));
+        expect(rig.controller.fingerprint, 'fedcba9876543210');
+      },
+    );
+
+    test('a failure keeps the old key and says why', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.replaceError = const UploadException(
+        'key_not_replaced',
+        'Could not write.',
+      );
+      expect(await rig.controller.replaceKey(), isFalse);
+      expect(noticeEn(rig.controller.keyError!), en.errKeyNotReplaced);
+      expect(rig.controller.fingerprint, '0123456789abcdef');
+      expect(rig.controller.registered, isTrue);
+      expect(rig.settingsController.settings.upload, isTrue);
+      expect(rig.controller.replacing, isFalse);
+    });
+
+    test('an unforeseen failure shows the generic message', () async {
+      final rig = await _rig();
+      rig.upload.replaceError = StateError('boom');
+      expect(await rig.controller.replaceKey(), isFalse);
+      expect(noticeEn(rig.controller.keyError!), genericFailureText);
+    });
+
+    test('does nothing with no key', () async {
+      final rig = await _rig(registered: false);
+      expect(rig.controller.canReplaceKey, isFalse);
+      expect(await rig.controller.replaceKey(), isFalse);
+      expect(rig.upload.calls, isNot(contains('replaceKey')));
+      expect(rig.controller.keyError, isNull);
+    });
+
+    test('says to wait while an upload runs', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.pendingSync = Completer<SyncReport>();
+      unawaited(rig.controller.uploadNow());
+      await pumpEventQueue();
+      expect(rig.controller.canReplaceKey, isFalse);
+      expect(await rig.controller.replaceKey(), isFalse);
+      expect(noticeEn(rig.controller.keyError!), busyText);
+      expect(rig.upload.calls, isNot(contains('replaceKey')));
+      rig.upload.pendingSync!.complete(
+        const SyncReport(screenshots: 'none', characters: []),
+      );
+      await pumpEventQueue();
+    });
+
+    test('no upload, register or request starts while it runs', () async {
+      final rig = await _rig(settings: _on);
+      rig.upload.pendingReplace = Completer<void>();
+      final replaced = rig.controller.replaceKey();
+      await pumpEventQueue();
+      expect(rig.controller.replacing, isTrue);
+      expect(rig.controller.canUploadNow, isFalse);
+      expect(await rig.controller.uploadNow(), isNull);
+      expect(await rig.controller.register('CODE'), isFalse);
+      expect(rig.controller.canRequestScreenshots, isFalse);
+      rig.upload.pendingReplace!.complete();
+      expect(await replaced, isTrue);
+      expect(rig.upload.syncs, isEmpty);
+      expect(rig.upload.registrations, isEmpty);
+    });
+  });
 }

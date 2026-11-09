@@ -495,7 +495,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get lostKeyText =>
-      'Si vous réinstallez l’app, demandez à l’administrateur du site de déplacer vos personnages vers votre nouvelle clé.';
+      'Si vous réinstallez l’app ou créez une nouvelle clé, copiez votre nouvelle clé et demandez à l’administrateur du site de déplacer vos personnages vers elle.';
 
   @override
   String get websiteAddressLabel => 'Adresse du site web';
@@ -582,6 +582,35 @@ class AppLocalizationsFr extends AppLocalizations {
   String fingerprintText(String fingerprint) {
     return 'Votre clé : $fingerprint';
   }
+
+  @override
+  String get copyKeyLabel => 'Copier votre clé';
+
+  @override
+  String get copyKeySemantics =>
+      'Copier votre clé pour l’administrateur du site';
+
+  @override
+  String get keyCopiedText => 'Clé copiée';
+
+  @override
+  String get newKeyLabel => 'Créer une nouvelle clé';
+
+  @override
+  String get newKeyTitle => 'Créer une nouvelle clé ?';
+
+  @override
+  String newKeyQuestionText(String site) {
+    return 'Faites-le seulement si le site web a bloqué ou refusé cette clé. L’app crée une nouvelle clé et garde une copie de l’ancienne. Vos personnages sur $site restent liés à l’ancienne clé. L’administrateur du site peut les déplacer vers la nouvelle clé. Inscrivez-vous ensuite à nouveau. Le site web peut demander un nouveau code d’invitation. L’app envoie à nouveau tous vos personnages. L’envoi reste désactivé jusqu’à ce que vous l’activiez.';
+  }
+
+  @override
+  String get newKeyDoneText =>
+      'Nouvelle clé créée. Inscrivez-vous à nouveau pour envoyer.';
+
+  @override
+  String get errKeyNotReplaced =>
+      'L’app n’a pas pu créer de nouvelle clé, elle garde donc l’ancienne. Vérifiez que son dossier est accessible en écriture et a de la place libre, puis réessayez.';
 
   @override
   String get screenshotsNone =>

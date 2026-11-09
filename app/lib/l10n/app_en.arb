@@ -629,9 +629,9 @@
   "@unlistedText": {
     "description": "Says what a character link means."
   },
-  "lostKeyText": "If you reinstall the app, ask the website admin to move your characters to your new key.",
+  "lostKeyText": "If you reinstall the app or make a new key, copy your new key and ask the website admin to move your characters to it.",
   "@lostKeyText": {
-    "description": "What to do after a reinstall, which makes a new key."
+    "description": "What to do after a reinstall or a new key: the admin moves the characters to the new key."
   },
   "websiteAddressLabel": "Website address",
   "@websiteAddressLabel": {
@@ -759,6 +759,43 @@
         "type": "String"
       }
     }
+  },
+  "copyKeyLabel": "Copy your key",
+  "@copyKeyLabel": {
+    "description": "Tooltip of the button that copies the key fingerprint to the clipboard."
+  },
+  "copyKeySemantics": "Copy your key for the website admin",
+  "@copyKeySemantics": {
+    "description": "Screen reader label of the button that copies the key fingerprint."
+  },
+  "keyCopiedText": "Key copied",
+  "@keyCopiedText": {
+    "description": "Shown after the key fingerprint was copied."
+  },
+  "newKeyLabel": "Make a new key",
+  "@newKeyLabel": {
+    "description": "Label of the button that replaces the key of the app, and of the button that confirms it."
+  },
+  "newKeyTitle": "Make a new key?",
+  "@newKeyTitle": {
+    "description": "Title of the dialog that confirms a new key."
+  },
+  "newKeyQuestionText": "Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on {site} stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends all your characters again. Upload stays off until you turn it on.",
+  "@newKeyQuestionText": {
+    "description": "Body of the dialog that confirms a new key: what happens to the characters and what to do next.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "newKeyDoneText": "New key made. Register again to upload.",
+  "@newKeyDoneText": {
+    "description": "Shown after the app made a new key."
+  },
+  "errKeyNotReplaced": "The app could not make a new key, so it keeps the old one. Check that its folder can be written to and has free space, then try again.",
+  "@errKeyNotReplaced": {
+    "description": "Error: the new key could not be made; the old key stays."
   },
   "screenshotsNone": "Screenshots are not uploaded. Ask the website admin to approve them.",
   "@screenshotsNone": {

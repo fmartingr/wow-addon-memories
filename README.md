@@ -107,12 +107,14 @@ Releases are cut as described in [`docs/releasing.md`](docs/releasing.md).
 - **Website tab:** the Registration panel has the website address (default `https://wowjourney.xyz`; only
   `https://`, or `http://` for `localhost`, `127.0.0.1` and `[::1]`), a Check button, the registration (an invite code,
   or one click on a website with open registration), the Upload switch (off by default, and it stays off until the key
-  is registered), Request screenshots and the key fingerprint. With Upload on, the app sends the journey after each
+  is registered), Request screenshots, and the key fingerprint with a Copy button and Make a new key. With Upload on, the app sends the journey after each
   gather. The Website panel above it has Upload now, the last result, and for each uploaded character its
   link with Copy link and Remove from website. A removed character is not uploaded again after a gather; Upload now
   sends every removed character again. Character pages are unlisted: anybody with the link can open them. The
   key is `upload-key.json` and the state `upload-state.json`, in the app support folder; after a reinstall the website
-  admin moves your characters to the new key. A build can set another default address with
+  admin moves your characters to the new key. Make a new key is for a key that the website blocked or refused: it
+  keeps the old key as `upload-key.<UTC time>.json` next to it, makes a new one, turns Upload off and forgets every
+  registration, so you register again and the app sends everything again. A build can set another default address with
   `--dart-define=WOWJOURNEY_SITE=http://localhost:8080`.
 - **Tray:** the tray icon has the menu Gather now, Open window, Open backup folder and Quit. Closing the window hides
   it to the tray; Quit stops Watch and ends the app. A gather from the tray leaves a hidden window hidden. When there

@@ -46,18 +46,28 @@ abstract interface class UploadService {
 
   /// Asks [site] to approve screenshots. Returns the new state.
   Future<String> requestScreenshots(String site);
+
+  /// Makes a new key in place of the one that a website blocked or refused,
+  /// and returns its fingerprint. The old key file stays next to the new one
+  /// under a dated name, and the app is registered on no website any more.
+  /// After a failure the old key is still the key of the app.
+  Future<String> replaceKey();
 }
 
 /// The upload of `memories_core`. The key is `<support>/upload-key.json` and
 /// the state is `<support>/upload-state.json`.
 class CoreUploadService implements UploadService {
-  CoreUploadService(this.supportDir, {this.sleep});
+  CoreUploadService(this.supportDir, {this.sleep, DateTime Function()? clock})
+    : _clock = clock ?? DateTime.now;
 
   /// The folder where the app keeps its own files.
   final Future<String> Function() supportDir;
 
   /// Replaces the waits of the clients that run in this isolate, for tests.
   final Future<void> Function(Duration)? sleep;
+
+  /// The time in the name of the copy of an old key.
+  final DateTime Function() _clock;
 
   /// The end of the last write of the state file. A sync loads the state at
   /// its start and saves it at its end, so a register in between would be
@@ -196,6 +206,37 @@ class CoreUploadService implements UploadService {
     (client, files) => client.requestScreenshots(),
   );
 
+  @override
+  Future<String> replaceKey() async {
+    final files = await _files();
+    return _serialState(() async {
+      final old = _loadKey(files.key, MissingKey.fail)!;
+      final fresh = core.UploadKey.generate();
+      // The order keeps a working key at its path after any failure: the
+      // copy of the old key first, then the state, which only makes the app
+      // register and send again, and last the rename of the new key.
+      try {
+        final copy = _copyPath(files.key, _clock());
+        old.save(copy);
+        if (core.UploadKey.load(copy).fingerprint != old.fingerprint) {
+          throw const core.UploadKeyException('The copy of the key differs.');
+        }
+        final stateFile = File(files.state);
+        final state = core.UploadState.load(stateFile)..forgetKey();
+        state.save(stateFile);
+        fresh.save(File(files.key));
+      } on Exception {
+        throw core.UploadException(
+          'key_not_replaced',
+          'The app could not make a new key, so it keeps the old one. Check '
+              'that ${p.dirname(files.key)} can be written to and has free '
+              'space, then try again.',
+        );
+      }
+      return fresh.fingerprint;
+    });
+  }
+
   Future<T> _withClient<T>(
     String site,
     MissingKey missing,
@@ -272,6 +313,21 @@ core.UploadKey? _loadKey(String path, MissingKey missing) {
         'not_registered',
         'This app has no key for the website yet.',
       );
+  }
+}
+
+/// A free path next to [keyPath] for the copy of the old key, such as
+/// `upload-key.20261109T153012Z.json`. A key file is never overwritten.
+File _copyPath(String keyPath, DateTime now) {
+  final t = now.toUtc();
+  String two(int n) => n.toString().padLeft(2, '0');
+  final stamp =
+      '${t.year}${two(t.month)}${two(t.day)}T'
+      '${two(t.hour)}${two(t.minute)}${two(t.second)}Z';
+  final base = p.withoutExtension(keyPath);
+  for (var i = 1; ; i++) {
+    final file = File(i == 1 ? '$base.$stamp.json' : '$base.$stamp-$i.json');
+    if (!file.existsSync()) return file;
   }
 }
 

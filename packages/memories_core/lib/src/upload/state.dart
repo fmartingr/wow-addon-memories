@@ -129,6 +129,19 @@ class UploadState {
   SiteState site(Uri site) =>
       _sites.putIfAbsent(site.toString(), SiteState.new);
 
+  /// Forgets what each website knows of the key, for a new key: no site is
+  /// registered, and every character and screenshot goes out again. The
+  /// characters that the player removed stay removed: that is a wish of the
+  /// player, not a fact about the key.
+  void forgetKey() {
+    for (final s in _sites.values) {
+      s.registered = false;
+      s.screenshotsApproved = false;
+      s.sent.clear();
+      s.shots.clear();
+    }
+  }
+
   /// Writes the state through a temporary file and a rename.
   void save(File file) {
     final json = {

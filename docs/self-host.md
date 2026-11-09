@@ -251,13 +251,19 @@ approve the new key again. Each player's key is new, so each player needs an inv
 **Deploy the server before you release an addon version that adds kinds.** The server accepts an unknown kind with a
 strict generic check, but only an updated server checks the new kind by its fields.
 
-## A player lost their key
+## A player lost or replaced their key
 
-A player who reinstalls or changes computer loses the private key, and cannot upload their characters any more. To fix it:
+A player who reinstalls or changes computer loses the private key, and cannot upload their characters any more. A player
+whose key you revoked, or whose key the site refuses, can make a new key with **Make a new key** in the Website tab of the
+app. The app keeps the old key file as `upload-key.<UTC time>.json` next to the new one, so it can still be restored. To
+fix it:
 
-1. The player registers a new key in the app. In invite mode, make a new invite for it.
-2. On the admin page, go to Keys and find the new key. Note its fingerprint (the first 16 characters of the key hash).
+1. The player registers the new key in the app. In invite mode, make a new invite for it.
+2. The player sends you the fingerprint: the copy button next to "Your key" in the Website tab copies it. You can also
+   find the new key on the Keys page of the admin page. The fingerprint is the first 16 characters of the key hash.
 3. Go to Characters, search the character path, and use Move claim with the new fingerprint. Do this for each character.
+   A search for the old fingerprint lists every character of the old key.
 4. Revoke the old key if the player cannot find it again.
 
-The player can then upload each character with the new key.
+The player can then upload each character with the new key. Until you move a character, the site refuses it for the new
+key as `claimed`, and the app says another player already uploaded it; the other characters upload as usual.

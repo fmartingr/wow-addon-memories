@@ -79,6 +79,7 @@ class UploadController extends ChangeNotifier {
   bool _registering = false;
   bool _removing = false;
   bool _requesting = false;
+  bool _replacing = false;
   bool? _lastOk;
   bool _paused = false;
   int _progressDone = 0;
@@ -91,6 +92,7 @@ class UploadController extends ChangeNotifier {
   SiteInfo? _siteInfo;
   Notice? _siteError;
   Notice? _registerError;
+  Notice? _keyError;
 
   UploadState get state {
     if (_uploading) return UploadState.uploading;
@@ -144,9 +146,19 @@ class UploadController extends ChangeNotifier {
   /// Why the last Register failed, or null.
   Notice? get registerError => _registerError;
 
+  /// Why the last Make a new key failed, or null. A wait notice shows only
+  /// while the other action still runs.
+  Notice? get keyError =>
+      _keyError is BusyNotice && !busy && !_registering ? null : _keyError;
+
   bool get checking => _checking;
   bool get registering => _registering;
-  bool get busy => _uploading || _removing || _requesting;
+  bool get replacing => _replacing;
+  bool get busy => _uploading || _removing || _requesting || _replacing;
+
+  /// Whether Make a new key can start now: the app has a key, and no other
+  /// action uses it.
+  bool get canReplaceKey => _fingerprint != null && !_registering && !busy;
 
   /// Whether Upload now can start: no other action runs, and no gather is
   /// writing `latest/`.
@@ -156,6 +168,7 @@ class UploadController extends ChangeNotifier {
   bool get canRequestScreenshots =>
       _registered &&
       !_requesting &&
+      !_replacing &&
       (_screenshots == 'none' || _screenshots == 'denied');
 
   String get _siteText => _site ?? settings.settings.site;
@@ -193,9 +206,19 @@ class UploadController extends ChangeNotifier {
       return;
     }
     _site = site;
+    _forgetSite();
+    _fingerprint = null;
+    _siteInfo = null;
+    _siteError = null;
+    _notify();
+    unawaited(refresh());
+  }
+
+  /// Drops what the app knows of the key on the website, and the answers of
+  /// the requests that still run.
+  void _forgetSite() {
     _epoch++;
     _registered = false;
-    _fingerprint = null;
     _lastOk = null;
     _paused = false;
     _lastReport = null;
@@ -203,11 +226,8 @@ class UploadController extends ChangeNotifier {
     _characters = const [];
     _screenshots = 'none';
     _issues = const [];
-    _siteInfo = null;
-    _siteError = null;
     _registerError = null;
-    _notify();
-    unawaited(refresh());
+    _keyError = null;
   }
 
   void _onGather() {
@@ -342,7 +362,7 @@ class UploadController extends ChangeNotifier {
   /// Registers the key on the website, with the [invite] code when the
   /// website asks for one. Returns whether it worked.
   Future<bool> register(String? invite) async {
-    if (_registering) return false;
+    if (_registering || _replacing) return false;
     final site = _siteText;
     final epoch = _epoch;
     _registering = true;
@@ -381,6 +401,7 @@ class UploadController extends ChangeNotifier {
     final root = s.backupRoot;
     if (_uploading ||
         _removing ||
+        _replacing ||
         gather.state == GatherState.running ||
         !_registered ||
         !s.upload ||
@@ -566,6 +587,46 @@ class UploadController extends ChangeNotifier {
     _requesting = false;
     _notify();
     return ok;
+  }
+
+  /// Makes a new key in place of the one that the website blocked or
+  /// refused. The app is then registered nowhere, with Upload off, so the
+  /// player registers again and the app sends everything again. Returns
+  /// whether it worked; after a failure the old key stays.
+  Future<bool> replaceKey() async {
+    if (!canReplaceKey) {
+      // An upload can start while the confirm dialog is open.
+      if (busy || _registering) {
+        _keyError = const BusyNotice();
+        _notify();
+      }
+      return false;
+    }
+    final site = _siteText;
+    _replacing = true;
+    _keyError = null;
+    _notify();
+    var changed = true;
+    try {
+      final fingerprint = await service.replaceKey();
+      if (_disposed) return true;
+      _forgetSite();
+      _fingerprint = fingerprint;
+      _setUploadOff();
+      return true;
+    } on UploadException catch (e) {
+      _keyError = UploadErrorNotice.of(e, site);
+      // A failure before any write (no key, a damaged key) changed nothing.
+      changed = e.code == 'key_not_replaced';
+    } on Object {
+      _keyError = const GenericFailureNotice();
+    } finally {
+      _replacing = false;
+      _notify();
+    }
+    // A failure late in the change can leave the old key unregistered here.
+    if (changed) await refresh();
+    return false;
   }
 
   @override

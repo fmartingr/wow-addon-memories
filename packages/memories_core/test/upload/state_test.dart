@@ -144,4 +144,26 @@ void main() {
     expect(s.warning, contains('damaged'));
     expect(s.site(a).sent, isEmpty);
   });
+
+  test('forgetKey unregisters every site and keeps the removed set', () {
+    final s = UploadState.empty();
+    for (final site in [a, b]) {
+      s.site(site)
+        ..registered = true
+        ..screenshotsApproved = true
+        ..sent['wow/eu/r/n'] = 'abc'
+        ..shots['wow/eu/r/n'] = {'f.jpg': 'def'}
+        ..markRemoved('wow/eu/r/z');
+    }
+    s.forgetKey();
+    s.save(file);
+    final back = UploadState.load(file);
+    for (final site in [a, b]) {
+      expect(back.site(site).registered, isFalse);
+      expect(back.site(site).screenshotsApproved, isFalse);
+      expect(back.site(site).sent, isEmpty);
+      expect(back.site(site).shots, isEmpty);
+      expect(back.site(site).removed, {'wow/eu/r/z'});
+    }
+  });
 }

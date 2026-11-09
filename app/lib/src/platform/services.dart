@@ -6,6 +6,7 @@ import '../gather/gather_controller.dart';
 import '../settings/settings_store.dart';
 import '../upload/upload_service.dart';
 import '../watch/watch_controller.dart';
+import 'clipboard.dart';
 import 'discovery.dart';
 import 'documents_dir.dart';
 import 'folder_opener.dart';
@@ -28,6 +29,7 @@ class AppServices {
     required this.uploader,
     this.signature = flavorSignature,
     this.clock = DateTime.now,
+    this.copyText = copyToClipboard,
   });
 
   final SettingsStore store;
@@ -46,4 +48,7 @@ class AppServices {
 
   /// The time that Watch measures with.
   final DateTime Function() clock;
+
+  /// Puts a text on the clipboard.
+  final CopyText copyText;
 }

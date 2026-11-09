@@ -492,7 +492,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get lostKeyText =>
-      'Se reinstalli l’app, chiedi all’amministratore del sito di spostare i tuoi personaggi sulla tua nuova chiave.';
+      'Se reinstalli l’app o crei una nuova chiave, copia la tua nuova chiave e chiedi all’amministratore del sito di spostare i tuoi personaggi su di essa.';
 
   @override
   String get websiteAddressLabel => 'Indirizzo del sito web';
@@ -579,6 +579,35 @@ class AppLocalizationsIt extends AppLocalizations {
   String fingerprintText(String fingerprint) {
     return 'La tua chiave: $fingerprint';
   }
+
+  @override
+  String get copyKeyLabel => 'Copia la tua chiave';
+
+  @override
+  String get copyKeySemantics =>
+      'Copia la tua chiave per l’amministratore del sito';
+
+  @override
+  String get keyCopiedText => 'Chiave copiata';
+
+  @override
+  String get newKeyLabel => 'Crea una nuova chiave';
+
+  @override
+  String get newKeyTitle => 'Creare una nuova chiave?';
+
+  @override
+  String newKeyQuestionText(String site) {
+    return 'Fallo solo se il sito web ha bloccato o rifiutato questa chiave. L’app crea una nuova chiave e tiene una copia di quella vecchia. I tuoi personaggi su $site restano legati alla vecchia chiave. L’amministratore del sito può spostarli sulla nuova chiave. Poi registrati di nuovo. Il sito web può chiedere un nuovo codice d’invito. L’app carica di nuovo tutti i tuoi personaggi. Il caricamento resta disattivato finché non lo attivi.';
+  }
+
+  @override
+  String get newKeyDoneText =>
+      'Nuova chiave creata. Registrati di nuovo per caricare.';
+
+  @override
+  String get errKeyNotReplaced =>
+      'L’app non è riuscita a creare una nuova chiave, quindi tiene quella vecchia. Controlla che la sua cartella sia scrivibile e abbia spazio libero, poi riprova.';
 
   @override
   String get screenshotsNone =>

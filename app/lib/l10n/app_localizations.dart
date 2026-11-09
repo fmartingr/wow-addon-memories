@@ -874,10 +874,10 @@ abstract class AppLocalizations {
   /// **'Your character pages are unlisted: anybody with the link can open them.'**
   String get unlistedText;
 
-  /// What to do after a reinstall, which makes a new key.
+  /// What to do after a reinstall or a new key: the admin moves the characters to the new key.
   ///
   /// In en, this message translates to:
-  /// **'If you reinstall the app, ask the website admin to move your characters to your new key.'**
+  /// **'If you reinstall the app or make a new key, copy your new key and ask the website admin to move your characters to it.'**
   String get lostKeyText;
 
   /// Label of the website address field.
@@ -1017,6 +1017,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Your key: {fingerprint}'**
   String fingerprintText(String fingerprint);
+
+  /// Tooltip of the button that copies the key fingerprint to the clipboard.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy your key'**
+  String get copyKeyLabel;
+
+  /// Screen reader label of the button that copies the key fingerprint.
+  ///
+  /// In en, this message translates to:
+  /// **'Copy your key for the website admin'**
+  String get copyKeySemantics;
+
+  /// Shown after the key fingerprint was copied.
+  ///
+  /// In en, this message translates to:
+  /// **'Key copied'**
+  String get keyCopiedText;
+
+  /// Label of the button that replaces the key of the app, and of the button that confirms it.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a new key'**
+  String get newKeyLabel;
+
+  /// Title of the dialog that confirms a new key.
+  ///
+  /// In en, this message translates to:
+  /// **'Make a new key?'**
+  String get newKeyTitle;
+
+  /// Body of the dialog that confirms a new key: what happens to the characters and what to do next.
+  ///
+  /// In en, this message translates to:
+  /// **'Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on {site} stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends all your characters again. Upload stays off until you turn it on.'**
+  String newKeyQuestionText(String site);
+
+  /// Shown after the app made a new key.
+  ///
+  /// In en, this message translates to:
+  /// **'New key made. Register again to upload.'**
+  String get newKeyDoneText;
+
+  /// Error: the new key could not be made; the old key stays.
+  ///
+  /// In en, this message translates to:
+  /// **'The app could not make a new key, so it keeps the old one. Check that its folder can be written to and has free space, then try again.'**
+  String get errKeyNotReplaced;
 
   /// Screenshot state: none.
   ///

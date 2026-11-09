@@ -211,12 +211,14 @@ class _HomePageState extends State<HomePage> {
                           upload: widget.upload,
                           settings: _settings,
                           clock: widget.clock,
+                          copyText: widget.services.copyText,
                         ),
                         const SizedBox(height: 12),
                         Card(
                           child: WebsiteSection(
                             upload: widget.upload,
                             settings: _settings,
+                            copyText: widget.services.copyText,
                           ),
                         ),
                       ]),

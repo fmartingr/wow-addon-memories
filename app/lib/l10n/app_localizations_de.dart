@@ -494,7 +494,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get lostKeyText =>
-      'Wenn du die App neu installierst, bitte den Admin der Webseite, deine Charaktere auf deinen neuen Schlüssel zu übertragen.';
+      'Wenn du die App neu installierst oder einen neuen Schlüssel erstellst, kopiere deinen neuen Schlüssel und bitte den Admin der Webseite, deine Charaktere darauf zu übertragen.';
 
   @override
   String get websiteAddressLabel => 'Webseiten-Adresse';
@@ -581,6 +581,35 @@ class AppLocalizationsDe extends AppLocalizations {
   String fingerprintText(String fingerprint) {
     return 'Dein Schlüssel: $fingerprint';
   }
+
+  @override
+  String get copyKeyLabel => 'Deinen Schlüssel kopieren';
+
+  @override
+  String get copyKeySemantics =>
+      'Deinen Schlüssel für den Admin der Webseite kopieren';
+
+  @override
+  String get keyCopiedText => 'Schlüssel kopiert';
+
+  @override
+  String get newKeyLabel => 'Neuen Schlüssel erstellen';
+
+  @override
+  String get newKeyTitle => 'Neuen Schlüssel erstellen?';
+
+  @override
+  String newKeyQuestionText(String site) {
+    return 'Tu das nur, wenn die Webseite diesen Schlüssel gesperrt oder abgelehnt hat. Die App erstellt einen neuen Schlüssel und behält eine Kopie des alten. Deine Charaktere auf $site bleiben beim alten Schlüssel. Der Admin der Webseite kann sie auf den neuen Schlüssel übertragen. Registriere dich dann erneut. Die Webseite fragt eventuell nach einem neuen Einladungscode. Die App lädt alle deine Charaktere erneut hoch. Das Hochladen bleibt aus, bis du es einschaltest.';
+  }
+
+  @override
+  String get newKeyDoneText =>
+      'Neuer Schlüssel erstellt. Registriere dich erneut, um hochzuladen.';
+
+  @override
+  String get errKeyNotReplaced =>
+      'Die App konnte keinen neuen Schlüssel erstellen und behält den alten. Prüfe, ob ihr Ordner beschreibbar ist und freien Platz hat, und versuche es dann erneut.';
 
   @override
   String get screenshotsNone =>

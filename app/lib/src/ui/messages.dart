@@ -220,6 +220,7 @@ String uploadErrorText(
   'bad_state' => l.errBadState,
   'failed' => l.errFailed,
   'key_revoked' => l.errKeyRevoked(siteLabel(site)),
+  'key_not_replaced' => l.errKeyNotReplaced,
   'not_registered' => l.errNotRegistered,
   'invalid' => l.errInvalid,
   'invite_invalid' => l.errInviteInvalid,

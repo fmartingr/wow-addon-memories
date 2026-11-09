@@ -3,10 +3,10 @@
 library;
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
 
 import '../../l10n/app_localizations.dart';
+import '../platform/clipboard.dart';
 import '../settings/settings_controller.dart';
 import '../theme/ak_widgets.dart';
 import '../upload/upload_controller.dart';
@@ -18,14 +18,16 @@ class WebsiteCard extends StatelessWidget {
     required this.upload,
     required this.settings,
     this.clock = DateTime.now,
+    this.copyText = copyToClipboard,
   });
 
   final UploadController upload;
   final SettingsController settings;
   final DateTime Function() clock;
+  final CopyText copyText;
 
   Future<void> _copy(BuildContext context, RemoteCharacter c) async {
-    await Clipboard.setData(ClipboardData(text: c.url));
+    await copyText(c.url);
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
