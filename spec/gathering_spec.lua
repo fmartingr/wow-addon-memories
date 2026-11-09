@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("gathering", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local SPELLS = {
 		[2575] = "Minería",
 		[2366] = "Herboristería",

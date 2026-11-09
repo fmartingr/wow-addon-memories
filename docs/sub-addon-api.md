@@ -47,9 +47,10 @@ The first file after `Locales.lua` starts with this guard. It covers a client th
 
 ```lua
 local ADDON, ns = ...
+local L = ns.L
 
 if not Memories or not Memories.RegisterModule then
-	print(ADDON .. ": Memories is not loaded.")
+	print(ADDON .. ": " .. L["Memories is not loaded."])
 	return
 end
 ```
@@ -80,9 +81,9 @@ local h, reason = Memories.RegisterModule({
 	api = 1, -- the API_VERSION this addon was written for
 	saved = "MemoriesCombatCharDB", -- its SavedVariablesPerCharacter global
 	kinds = {
-		{ kind = "ki", group = "Combat", name = "Killed a creature", fields = { "name", "#npc", "ctype" } },
+		{ kind = "ki", group = "Combat", name = L["Killed a creature"], fields = { "name", "#npc", "ctype" } },
 	},
-	newOnly = { { key = "kills", label = "Kills: new findings only", kinds = { "ki" } } },
+	newOnly = { { key = "kills", label = L["Kills: new findings only"], kinds = { "ki" } } },
 	OnLogin = function(h) end,
 	OnEnterWorld = function(h, isLogin, isReload) end,
 })

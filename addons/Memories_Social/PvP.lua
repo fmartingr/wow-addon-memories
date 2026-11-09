@@ -1,4 +1,5 @@
 local ADDON, ns = ...
+local L = ns.L
 
 -- Social.lua stopped at its missing-core guard.
 if not ns.Social then
@@ -670,30 +671,30 @@ Memories.RegisterModule({
 	api = 1,
 	saved = "MemoriesSocialCharDB",
 	kinds = {
-		{ kind = "gj", group = "Social", name = "Joined a group", fields = { "name", "guild", "class", "#level" } },
-		{ kind = "gl", group = "Social", name = "Left a group", fields = { "name" } },
-		{ kind = "gu", group = "Social", name = "Own guild changed", fields = { "guild", "rank" } },
+		{ kind = "gj", group = "Social", name = L["Joined a group"], fields = { "name", "guild", "class", "#level" } },
+		{ kind = "gl", group = "Social", name = L["Left a group"], fields = { "name" } },
+		{ kind = "gu", group = "Social", name = L["Own guild changed"], fields = { "guild", "rank" } },
 		{
 			kind = "ep",
 			group = "PvP",
-			name = "Enemy player met",
+			name = L["Enemy player met"],
 			fields = { "name", "class", "race", "#level", "guild" },
 		},
 		{
 			kind = "pk",
 			group = "PvP",
-			name = "PvP kill or death",
+			name = L["PvP kill or death"],
 			fields = { "result", "name", "class", "#level", "guild" },
 		},
-		{ kind = "hk", group = "PvP", name = "Honor gained", fields = { "#honor", "victim", "rank" } },
-		{ kind = "du", group = "PvP", name = "Duel", fields = { "result", "opponent", "class" } },
+		{ kind = "hk", group = "PvP", name = L["Honor gained"], fields = { "#honor", "victim", "rank" } },
+		{ kind = "du", group = "PvP", name = L["Duel"], fields = { "result", "opponent", "class" } },
 		{
 			kind = "bg",
 			group = "PvP",
-			name = "Battleground ended",
+			name = L["Battleground ended"],
 			fields = { "name", "result", "#seconds", "#honor", "#kills", "#kb", "#deaths" },
 		},
-		{ kind = "rk", group = "PvP", name = "PvP rank changed", fields = { "#rank", "title" } },
+		{ kind = "rk", group = "PvP", name = L["PvP rank changed"], fields = { "#rank", "title" } },
 	},
 	OnLogin = onLogin,
 	OnEnterWorld = PvP.EnterWorld,

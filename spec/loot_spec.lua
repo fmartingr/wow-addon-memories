@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("loot", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local LINEN, SWORD, RING, FLASK = 2589, 2488, 11287, 3087
 	local WHITE, GREEN, BLUE = "|cffffffff", "|cff1eff00", "|cff0070dd"
 

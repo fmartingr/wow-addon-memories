@@ -1,6 +1,18 @@
 ## Interface: 16001
 ## Title: Memories - Combat
 ## Notes: Records kills, rare kills and long fights.
+## Title-deDE: Memories - Kampf
+## Notes-deDE: Zeichnet Tötungen, seltene Tötungen und lange Kämpfe auf.
+## Title-frFR: Memories - Combat
+## Notes-frFR: Enregistre les victimes, les rares tués et les longs combats.
+## Title-esES: Memories - Combate
+## Notes-esES: Registra muertes, criaturas raras y combates largos.
+## Title-esMX: Memories - Combate
+## Notes-esMX: Registra muertes, criaturas raras y combates largos.
+## Title-itIT: Memories - Combattimento
+## Notes-itIT: Registra uccisioni, rari uccisi e combattimenti lunghi.
+## Title-ptBR: Memories - Combate
+## Notes-ptBR: Registra mortes, raros mortos e lutas longas.
 ## Author: Felipe M.
 ## Version: 0.1.0
 ## Dependencies: Memories
@@ -9,4 +21,5 @@
 ## LoadSavedVariablesFirst: 1
 ## X-Memories-API: 1
 
+Locales.lua
 Combat.lua

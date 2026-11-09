@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("combat", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local DEFIAS = "Creature-0-4389-0-47-589-00002B3A60"
 	local KOBOLD = "Creature-0-4389-0-47-116-00002B3A61"
 	local MORLADIM = "Creature-0-4389-0-47-522-00002B3A62"

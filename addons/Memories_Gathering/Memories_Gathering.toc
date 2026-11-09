@@ -1,6 +1,18 @@
 ## Interface: 16001
 ## Title: Memories - Gathering
 ## Notes: Records gathering, fishing, opening and pick pocket.
+## Title-deDE: Memories - Sammeln
+## Notes-deDE: Zeichnet Sammeln, Angeln, Öffnen und Taschendiebstahl auf.
+## Title-frFR: Memories - Récolte
+## Notes-frFR: Enregistre la récolte, la pêche, les ouvertures et le vol à la tire.
+## Title-esES: Memories - Recolección
+## Notes-esES: Registra la recolección, la pesca, las aperturas y el robo de bolsillos.
+## Title-esMX: Memories - Recolección
+## Notes-esMX: Registra la recolección, la pesca, las aperturas y el robo de bolsillos.
+## Title-itIT: Memories - Raccolta
+## Notes-itIT: Registra raccolta, pesca, aperture e borseggio.
+## Title-ptBR: Memories - Coleta
+## Notes-ptBR: Registra coleta, pesca, aberturas e furtos.
 ## Author: Felipe M.
 ## Version: 0.1.0
 ## Dependencies: Memories
@@ -9,4 +21,5 @@
 ## LoadSavedVariablesFirst: 1
 ## X-Memories-API: 1
 
+Locales.lua
 Gathering.lua

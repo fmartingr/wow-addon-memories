@@ -1,4 +1,5 @@
 local ADDON, ns = ...
+local L = ns.L
 
 -- Character.lua stopped at its missing-core guard.
 if not ns.Character then
@@ -191,28 +192,28 @@ Memories.RegisterModule({
 	api = 1,
 	saved = "MemoriesCharacterCharDB",
 	kinds = {
-		{ kind = "sk", group = "Character", name = "Skill changed", fields = { "name", "#rank", "#max" } },
-		{ kind = "lr", group = "Character", name = "Learned a spell", fields = { "name", "#spell" } },
-		{ kind = "rc", group = "Character", name = "Learned a recipe", fields = { "name", "#spell" } },
-		{ kind = "ta", group = "Character", name = "Talent points", fields = { "#spent", "#unspent" } },
+		{ kind = "sk", group = "Character", name = L["Skill changed"], fields = { "name", "#rank", "#max" } },
+		{ kind = "lr", group = "Character", name = L["Learned a spell"], fields = { "name", "#spell" } },
+		{ kind = "rc", group = "Character", name = L["Learned a recipe"], fields = { "name", "#spell" } },
+		{ kind = "ta", group = "Character", name = L["Talent points"], fields = { "#spent", "#unspent" } },
 		{
 			kind = "cu",
 			group = "Character",
-			name = "Used a consumable",
+			name = L["Used a consumable"],
 			fields = { "#item", "kind", "name", "combat" },
 		},
-		{ kind = "pt", group = "Character", name = "Tamed a beast", fields = { "family", "name", "#level" } },
+		{ kind = "pt", group = "Character", name = L["Tamed a beast"], fields = { "family", "name", "#level" } },
 		{
 			kind = "rp",
 			group = "Milestones",
-			name = "Reputation changed",
+			name = L["Reputation changed"],
 			fields = { "faction", "#value", "#standing", "label" },
 		},
-		{ kind = "qa", group = "Milestones", name = "Quest accepted", fields = { "#quest", "title" } },
-		{ kind = "hb", group = "Milestones", name = "Hearthstone bound", fields = { "home" } },
-		{ kind = "fp", group = "Milestones", name = "Learned a flight path", fields = { "node" } },
-		{ kind = "bk", group = "Milestones", name = "Read a book", fields = { "title" } },
+		{ kind = "qa", group = "Milestones", name = L["Quest accepted"], fields = { "#quest", "title" } },
+		{ kind = "hb", group = "Milestones", name = L["Hearthstone bound"], fields = { "home" } },
+		{ kind = "fp", group = "Milestones", name = L["Learned a flight path"], fields = { "node" } },
+		{ kind = "bk", group = "Milestones", name = L["Read a book"], fields = { "title" } },
 	},
-	newOnly = { { key = "consumables", label = "Consumables: new findings only", kinds = { "cu" } } },
+	newOnly = { { key = "consumables", label = L["Consumables: new findings only"], kinds = { "cu" } } },
 	OnLogin = onLogin,
 })

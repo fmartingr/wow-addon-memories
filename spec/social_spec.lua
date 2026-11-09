@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("social", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local ALLIANCE = { "Alliance", "Alianza" }
 	local OAK = { name = "Oak Guard", rank = "Miembro", index = 3 }
 

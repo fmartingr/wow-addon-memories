@@ -1,6 +1,8 @@
 local wow = require("helpers.wow")
 
 describe("character", function()
+	wow.pin_locale("enUS", before_each, after_each)
+
 	local SPELLS = {
 		[133] = "Bola de Fuego",
 		[430] = "Beber",

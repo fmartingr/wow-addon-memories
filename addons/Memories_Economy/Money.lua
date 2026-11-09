@@ -1,4 +1,5 @@
 local ADDON, ns = ...
+local L = ns.L
 
 -- Loot.lua stops before it fills ns when the core is missing, and it has said why.
 if not ns.Loot then
@@ -777,23 +778,23 @@ Memories.RegisterModule({
 		{
 			kind = "lo",
 			group = "Loot",
-			name = "Loot",
+			name = L["Loot"],
 			fields = { "#item", "#quality", "#count", "how", "name", "#gear", "#first" },
 		},
 		{
 			kind = "rl",
 			group = "Loot",
-			name = "Group roll ended",
+			name = L["Group roll ended"],
 			fields = { "#item", "type", "#roll", "#won", "name", "#quality" },
 		},
-		{ kind = "ge", group = "Loot", name = "Gear snapshot", fields = { "#level", "ids", "src" } },
-		{ kind = "eq", group = "Loot", name = "Equipped an item", fields = { "#slot", "#item", "#quality" } },
-		{ kind = "mn", group = "Money", name = "Money in or out", fields = { "#delta", "src", "what" } },
-		{ kind = "tb", group = "Money", name = "Trainer purchase", fields = { "kind", "what", "#cost" } },
-		{ kind = "ah", group = "Money", name = "Auction house", fields = { "act", "#copper", "item" } },
-		{ kind = "ma", group = "Money", name = "Mail", fields = { "act", "who", "#copper", "item" } },
-		{ kind = "tr", group = "Money", name = "Traded with someone", fields = { "name", "#copper" } },
+		{ kind = "ge", group = "Loot", name = L["Gear snapshot"], fields = { "#level", "ids", "src" } },
+		{ kind = "eq", group = "Loot", name = L["Equipped an item"], fields = { "#slot", "#item", "#quality" } },
+		{ kind = "mn", group = "Money", name = L["Money in or out"], fields = { "#delta", "src", "what" } },
+		{ kind = "tb", group = "Money", name = L["Trainer purchase"], fields = { "kind", "what", "#cost" } },
+		{ kind = "ah", group = "Money", name = L["Auction house"], fields = { "act", "#copper", "item" } },
+		{ kind = "ma", group = "Money", name = L["Mail"], fields = { "act", "who", "#copper", "item" } },
+		{ kind = "tr", group = "Money", name = L["Traded with someone"], fields = { "name", "#copper" } },
 	},
-	newOnly = { { key = "loot", label = "Loot: new findings only", kinds = { "lo" } } },
+	newOnly = { { key = "loot", label = L["Loot: new findings only"], kinds = { "lo" } } },
 	OnLogin = onLogin,
 })

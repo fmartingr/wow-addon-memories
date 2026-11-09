@@ -1,6 +1,18 @@
 ## Interface: 16001
 ## Title: Memories - Character
 ## Notes: Records skills, spells, recipes, talents, consumables, tamed pets, reputation, quests, homes, flight paths and books.
+## Title-deDE: Memories - Charakter
+## Notes-deDE: Zeichnet Fertigkeiten, Zauber, Rezepte, Talente, Verbrauchsgüter, gezähmte Tiere, Ruf, Quests, Ruhesteinorte, Flugrouten und Bücher auf.
+## Title-frFR: Memories - Personnage
+## Notes-frFR: Enregistre les compétences, sorts, recettes, talents, consommables, familiers apprivoisés, réputation, quêtes, foyers, trajets de vol et livres.
+## Title-esES: Memories - Personaje
+## Notes-esES: Registra habilidades, hechizos, recetas, talentos, consumibles, mascotas domadas, reputación, misiones, hogares, rutas de vuelo y libros.
+## Title-esMX: Memories - Personaje
+## Notes-esMX: Registra habilidades, hechizos, recetas, talentos, consumibles, mascotas domadas, reputación, misiones, hogares, rutas de vuelo y libros.
+## Title-itIT: Memories - Personaggio
+## Notes-itIT: Registra abilità, incantesimi, ricette, talenti, consumabili, animali domati, reputazione, missioni, case, rotte di volo e libri.
+## Title-ptBR: Memories - Personagem
+## Notes-ptBR: Registra habilidades, feitiços, receitas, talentos, consumíveis, feras domadas, reputação, missões, lares, rotas de voo e livros.
 ## Author: Felipe M.
 ## Version: 0.1.0
 ## Dependencies: Memories
@@ -9,5 +21,6 @@
 ## LoadSavedVariablesFirst: 1
 ## X-Memories-API: 1
 
+Locales.lua
 Character.lua
 Milestones.lua

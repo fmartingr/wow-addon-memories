@@ -1,7 +1,8 @@
 local ADDON, ns = ...
+local L = ns.L
 
 if not Memories or not Memories.RegisterModule then
-	print(ADDON .. ": Memories is not loaded.")
+	print(ADDON .. ": " .. L["Memories is not loaded."])
 	return
 end
 

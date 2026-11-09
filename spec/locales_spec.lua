@@ -4,7 +4,14 @@ describe("addon strings", function()
 	local PLAIN = { "Title", "Notes" }
 	local TOC_LOCALES = { "deDE", "frFR", "esES", "esMX", "itIT", "ptBR" }
 	local LANGUAGES = { "deDE", "frFR", "esES", "itIT", "ptBR" }
-	local ADDONS = { "Memories" }
+	local ADDONS = {
+		"Memories",
+		"Memories_Character",
+		"Memories_Combat",
+		"Memories_Economy",
+		"Memories_Gathering",
+		"Memories_Social",
+	}
 
 	local function read(path)
 		local f = assert(io.open(path))
@@ -186,6 +193,78 @@ describe("addon strings", function()
 
 			it(addon .. " lists Locales.lua first", function()
 				assert.equal("addons/" .. addon .. "/Locales.lua", wow.read_toc(addon).files[1])
+			end)
+		end
+	end)
+
+	describe("sub-addons in French", function()
+		local KIND = {
+			Memories_Combat = { kind = "ki", group = "Combat", fr = "Créature tuée", en = "Killed a creature" },
+			Memories_Gathering = { kind = "ga", group = "Gathering", fr = "Récolté", en = "Gathered" },
+			Memories_Character = {
+				kind = "sk",
+				group = "Character",
+				fr = "Compétence modifiée",
+				en = "Skill changed",
+			},
+			Memories_Economy = {
+				kind = "mn",
+				group = "Money",
+				fr = "Argent reçu ou dépensé",
+				en = "Money in or out",
+			},
+			Memories_Social = { kind = "gj", group = "Social", fr = "Groupe rejoint", en = "Joined a group" },
+		}
+		local BOX = {
+			Memories_Combat = {
+				key = "kills",
+				fr = "Victimes : nouvelles trouvailles uniquement",
+				en = "Kills: new findings only",
+			},
+			Memories_Gathering = {
+				key = "gathering",
+				fr = "Récolte : nouvelles trouvailles uniquement",
+				en = "Gathering: new findings only",
+			},
+			Memories_Character = {
+				key = "consumables",
+				fr = "Consommables : nouvelles trouvailles uniquement",
+				en = "Consumables: new findings only",
+			},
+			Memories_Economy = {
+				key = "loot",
+				fr = "Butin : nouvelles trouvailles uniquement",
+				en = "Loot: new findings only",
+			},
+		}
+
+		for addon, kind in pairs(KIND) do
+			it(addon .. " names its kind in the Settings page by locale", function()
+				wow.boot({ addons = { "Memories", addon }, locale = "frFR" })
+				assert.equal(kind.fr, wow.categories[1].settings["Memories_kinds." .. kind.kind].name)
+				wow.boot({ addons = { "Memories", addon }, locale = "enUS" })
+				assert.equal(kind.en, wow.categories[1].settings["Memories_kinds." .. kind.kind].name)
+			end)
+
+			it(addon .. " keeps the English group in MemoriesDB.kinds", function()
+				wow.boot({ addons = { "Memories", addon }, locale = "frFR" })
+				assert.equal(kind.group, MemoriesDB.kinds[kind.kind]:match("^[^;]*;([^;]*);"))
+			end)
+		end
+
+		for addon, box in pairs(BOX) do
+			it(addon .. " labels its new-only box by locale", function()
+				wow.boot({ addons = { "Memories", addon }, locale = "frFR" })
+				assert.equal(box.fr, wow.categories[1].settings["Memories_newOnly." .. box.key].name)
+				wow.boot({ addons = { "Memories", addon }, locale = "enUS" })
+				assert.equal(box.en, wow.categories[1].settings["Memories_newOnly." .. box.key].name)
+			end)
+		end
+
+		for addon in pairs(KIND) do
+			it(addon .. " prints the missing core line in French", function()
+				wow.boot({ addons = { addon }, locale = "frFR" })
+				assert.equal(addon .. ": Memories n'est pas chargé.", wow.chat()[1])
 			end)
 		end
 	end)

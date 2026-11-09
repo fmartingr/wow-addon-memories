@@ -598,7 +598,6 @@ local found = T[GetLocale and GetLocale()] or {}
 
 ns.L = setmetatable({}, {
 	__index = function(_, key)
-		local value = found[key]
-		return value ~= nil and value or key
+		return found[key] or key
 	end,
 })

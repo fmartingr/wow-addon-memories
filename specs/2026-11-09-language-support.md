@@ -406,7 +406,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 2. Sub-addons: strings, kind names and TOC fields
+### [x] 2. Sub-addons: strings, kind names and TOC fields
 
 - **Outcome:** the 5 sub-addons show their kind names, new-only labels and the "Memories is not loaded." line in the
   client language. Their TOC titles and notes are translated.

@@ -1,7 +1,8 @@
-local ADDON = ...
+local ADDON, ns = ...
+local L = ns.L
 
 if not Memories or not Memories.RegisterModule then
-	print(ADDON .. ": Memories is not loaded.")
+	print(ADDON .. ": " .. L["Memories is not loaded."])
 	return
 end
 
@@ -313,28 +314,28 @@ Memories.RegisterModule({
 		{
 			kind = "ga",
 			group = "Gathering",
-			name = "Gathered",
+			name = L["Gathered"],
 			fields = { "prof", "node", "#object", "#item", "#quality", "#count", "name", "why" },
 		},
 		{
 			kind = "fs",
 			group = "Gathering",
-			name = "Caught while fishing",
+			name = L["Caught while fishing"],
 			fields = { "#item", "#quality", "#count", "name", "#object", "why" },
 		},
 		{
 			kind = "op",
 			group = "Gathering",
-			name = "Opened a container or chest",
+			name = L["Opened a container or chest"],
 			fields = { "how", "#item", "name", "#object" },
 		},
 		{
 			kind = "pp",
 			group = "Gathering",
-			name = "Picked a pocket",
+			name = L["Picked a pocket"],
 			fields = { "who", "#npc", "#item", "#quality", "name" },
 		},
 	},
-	newOnly = { { key = "gathering", label = "Gathering: new findings only", kinds = { "ga", "fs" } } },
+	newOnly = { { key = "gathering", label = L["Gathering: new findings only"], kinds = { "ga", "fs" } } },
 	OnLogin = onLogin,
 })
