@@ -30,17 +30,65 @@
     <section id="panel-summary" class="tabpanel" role="tabpanel" aria-labelledby="tab-summary"></section>
     <section id="panel-journey" class="tabpanel fill" role="tabpanel" aria-labelledby="tab-journey" hidden>
       <div class="journey">
-        <div class="map-wrap" id="journeyWrap">
-          <div class="map-stage">
-            <canvas id="journeyMap" aria-label="World map with the journey trail"></canvas>
-            <div class="map-tools">
-              <button type="button" class="btn icon" id="zIn" aria-label="Zoom in">+</button>
-              <div class="zlevel" id="zLevel">World</div>
-              <button type="button" class="btn icon" id="zOut" aria-label="Zoom out">−</button>
-              <button type="button" class="btn" id="zWorld">World</button>
+        <div class="journey-main">
+          <div class="map-wrap" id="journeyWrap">
+            <div class="map-stage" id="journeyStage">
+              <canvas id="journeyMap" aria-label="World map with the journey trail"></canvas>
+              <div class="flash" id="flash"></div>
+              <div class="banner" id="banner" aria-live="polite"><div id="bZone"></div><div id="bSub"></div></div>
+              <div class="toasts" id="toasts" aria-live="polite"></div>
+              <div class="map-tools">
+                <button type="button" class="btn icon" id="zIn" aria-label="Zoom in">+</button>
+                <div class="zlevel" id="zLevel">World</div>
+                <button type="button" class="btn icon" id="zOut" aria-label="Zoom out">−</button>
+                <button type="button" class="btn" id="follow" aria-pressed="false">Follow</button>
+                <button type="button" class="btn" id="zWorld">World</button>
+              </div>
+              <div class="tip" id="tip" hidden></div>
+              <div class="tip detail" id="detail" role="dialog" aria-label="Event details" hidden></div>
             </div>
           </div>
+          <div class="timeline">
+            <div class="transport">
+              <button type="button" class="btn icon" id="rew" aria-label="Back to start" title="Back to start">⏮</button>
+              <button type="button" class="btn icon big" id="play" aria-label="Play" title="Play (Space)">▶</button>
+              <div class="speeds" role="group" aria-label="Speed">
+                <button type="button" class="btn chip on" data-speed="1" aria-pressed="true">1×</button>
+                <button type="button" class="btn chip" data-speed="2" aria-pressed="false">2×</button>
+                <button type="button" class="btn chip" data-speed="4" aria-pressed="false">4×</button>
+                <button type="button" class="btn chip" data-speed="8" aria-pressed="false">8×</button>
+                <button type="button" class="btn chip" data-speed="16" aria-pressed="false">16×</button>
+              </div>
+              <button type="button" class="btn speed-cycle" id="speedCycle" aria-label="Change speed">1×</button>
+              <div class="readout">
+                <div class="time" id="rTime">0:00:00</div>
+                <div class="coins" id="rGold"></div>
+                <div class="sub" id="rWhere"></div>
+              </div>
+            </div>
+            <div class="track-wrap"><canvas id="tl" aria-label="Journey timeline"></canvas></div>
+          </div>
         </div>
+        <aside class="sheet" id="journeySheet" data-state="peek" aria-label="Journal log and markers">
+          <button type="button" class="sheet-handle" aria-label="Journal log and markers" aria-expanded="false"></button>
+          <div class="sheet-body">
+            <h3 class="panel-title">Journal log</h3>
+            <ol id="feed" class="feed"></ol>
+            <fieldset class="filters">
+              <legend>Markers</legend>
+              <label><input type="checkbox" data-cat="level" checked><i class="sw" data-c="#ffd100"></i>Levels</label>
+              <label><input type="checkbox" data-cat="danger" checked><i class="sw" data-c="#d8402f"></i>Danger</label>
+              <label><input type="checkbox" data-cat="dungeon" checked><i class="sw" data-c="#a45ee8"></i>Dungeons</label>
+              <label><input type="checkbox" data-cat="quest" checked><i class="sw" data-c="#4a90ff"></i>Quests, travel</label>
+              <label><input type="checkbox" data-cat="find" checked><i class="sw" data-c="#35c9a0"></i>Finds, loot</label>
+              <label><input type="checkbox" data-cat="world" checked><i class="sw" data-c="#3fbf6a"></i>Reputation, world</label>
+              <label><input type="checkbox" data-cat="shot" checked><i class="sw" data-c="#cfd8e3"></i>Screenshots</label>
+            </fieldset>
+          </div>
+        </aside>
+      </div>
+      <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot" hidden>
+        <figure><img id="lightboxImg" alt=""><figcaption id="lightboxCap"></figcaption></figure>
       </div>
     </section>
     <section id="panel-heatmaps" class="tabpanel" role="tabpanel" aria-labelledby="tab-heatmaps" hidden></section>

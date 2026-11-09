@@ -68,3 +68,30 @@ test('drawMarks returns hits for the visible marks that pass the filter', () => 
   assert.equal(drawMarks(fakeCtx(), v, m, {}, 5).length, 0);
   assert.equal(drawMarks(fakeCtx(), { ...v, x: 0, y: 0 }, m, {}).length, 0);
 });
+
+class FakePath {
+  moveTo() {}
+  lineTo() {}
+  closePath() {}
+}
+
+test('drawTimeline returns hits for the markers and the purse band, in the full and the compact form', async () => {
+  globalThis.Path2D = FakePath;
+  const { drawTimeline } = await import('../ui/journey.mjs');
+  const c = { ...char, addons: { Memories_Economy: { snap: { 5: { money: 500 } } }, Memories: { snap: { 5: { t: 1100 } } } } };
+  const steps = [
+    { k: 'lv', t: 1010, level: 2 }, { k: 'de', t: 1020 }, { k: 'dn', t: 1030, name: 'D' }, { k: 'dx', t: 1060 }, { k: 'ss', t: 1070 },
+    { k: 'mn', t: 1080, delta: 20 }, { k: 'di', t: 1090 },
+  ];
+  const m = buildModel(c, steps, []);
+  const ctx = new Proxy({}, { get: (t, k) => (k === 'createLinearGradient' ? () => ({ addColorStop() {} }) : () => {}), set: () => true });
+  const full = drawTimeline(ctx, 900, 224, 1, m, { c: 50, show: { danger: false } });
+  assert.ok(full.hits.some((h) => h.ev.k === 'lv'));
+  assert.ok(!full.hits.some((h) => h.ev.k === 'de'), 'a hidden category has no hit');
+  assert.ok(full.hits.some((h) => h.ev.k === 'dn'), 'a dungeon span has a hit');
+  assert.ok(!full.hits.some((h) => h.ev.k === 'di'));
+  assert.ok(full.gold.y1 > full.gold.y0 && full.x1 > full.x0);
+  const compact = drawTimeline(ctx, 360, 64, 2, m, { c: 0, show: {} });
+  assert.ok(compact.hits.length >= 3);
+  assert.ok(compact.gold.y1 - compact.gold.y0 >= 12);
+});
