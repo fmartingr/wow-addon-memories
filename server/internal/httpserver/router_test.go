@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"testing"
 
@@ -146,10 +147,14 @@ func TestHome(t *testing.T) {
 		t.Errorf("Content-Type = %q", ct)
 	}
 	checkSecurityHeaders(t, rec, "home")
-	for _, bad := range []string{"<script", "style=", "<img", "<iframe"} {
+	for _, bad := range []string{"<script", "style=", "<iframe"} {
 		if strings.Contains(body, bad) {
 			t.Errorf("home page has %q, which the content security policy blocks", bad)
 		}
+	}
+	// The policy allows an image from this site (the crest) and blocks one from another host.
+	if regexp.MustCompile(`(?i)<img[^>]+src="(https?:)?//`).MatchString(body) || !strings.Contains(body, `src="/_/icon.png"`) {
+		t.Errorf("home page images are not all from this site: %s", body)
 	}
 }
 
