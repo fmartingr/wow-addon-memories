@@ -158,7 +158,14 @@ class _HomePageState extends State<HomePage> {
       child: FocusTraversalGroup(
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 16),
-          children: children,
+          // The settings message is the first line of each tab, so it scrolls with the tab.
+          children: [
+            if (_settings.notice != null) ...[
+              _notice(context),
+              const SizedBox(height: 12),
+            ],
+            ...children,
+          ],
         ),
       ),
     ),
@@ -181,11 +188,6 @@ class _HomePageState extends State<HomePage> {
                   selected: _tab,
                   onSelected: (i) => setState(() => _tab = i),
                 ),
-                if (_settings.notice != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 12),
-                    child: _notice(context),
-                  ),
                 Expanded(
                   child: IndexedStack(
                     index: _tab,
@@ -197,6 +199,7 @@ class _HomePageState extends State<HomePage> {
                         ],
                         _statusCard(context),
                         const SizedBox(height: 12),
+                        _uploadProblems(context),
                         const _HintCard(),
                         ..._issueCards(context),
                         const SizedBox(height: 12),
@@ -236,6 +239,43 @@ class _HomePageState extends State<HomePage> {
       ),
     );
   }
+
+  /// The problems of the last upload, on the first tab so that they are not missed. The details are on the Website tab.
+  Widget _uploadProblems(BuildContext context) => ListenableBuilder(
+    listenable: widget.upload,
+    builder: (context, _) {
+      final issues = widget.upload.issues;
+      if (issues.isEmpty) return const SizedBox.shrink();
+      return Padding(
+        padding: const EdgeInsets.only(bottom: 12),
+        child: Card(
+          color: Theme.of(context).colorScheme.errorContainer,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                for (final issue in issues)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 4),
+                    child: Text(
+                      issue,
+                      style: TextStyle(
+                        color: Theme.of(context).colorScheme.onErrorContainer,
+                      ),
+                    ),
+                  ),
+                TextButton(
+                  onPressed: () => setState(() => _tab = 1),
+                  child: const Text(showWebsiteLabel),
+                ),
+              ],
+            ),
+          ),
+        ),
+      );
+    },
+  );
 
   Widget _notice(BuildContext context) => Card(
     color: Theme.of(context).colorScheme.secondaryContainer,

@@ -8,6 +8,8 @@ import 'package:wow_journey/src/theme/ak_theme.dart';
 import 'package:wow_journey/src/theme/ak_widgets.dart';
 import 'package:wow_journey/src/theme/tokens.dart';
 
+void _noop() {}
+
 Widget _host(Widget child) => MaterialApp(
   theme: buildAkTheme(),
   home: Scaffold(body: child),
@@ -50,6 +52,56 @@ void main() {
         border.getInnerPath(const Rect.fromLTWH(0, 0, 100, 50)),
         isNotNull,
       );
+    });
+  });
+
+  group('button states', () {
+    testWidgets('a focused button has a gold-light ring', (tester) async {
+      await tester.pumpWidget(
+        _host(FilledButton(onPressed: () {}, child: const Text('Go'))),
+      );
+      bool ring() =>
+          tester.widgetList<DecoratedBox>(find.byType(DecoratedBox)).any((b) {
+            final d = b.decoration;
+            return d is BoxDecoration &&
+                d.border is Border &&
+                (d.border! as Border).top.color == Tokens.goldLight &&
+                (d.border! as Border).top.width == 2;
+          });
+      expect(ring(), isFalse);
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.pump();
+      expect(ring(), isTrue);
+    });
+
+    testWidgets('a disabled text button and switch look disabled', (
+      tester,
+    ) async {
+      await tester.pumpWidget(
+        _host(
+          const Column(
+            children: [
+              TextButton(onPressed: null, child: Text('Off')),
+              TextButton(onPressed: _noop, child: Text('On')),
+              Switch(value: true, onChanged: null),
+            ],
+          ),
+        ),
+      );
+      Color? ink(String label) => tester
+          .widget<DefaultTextStyle>(
+            find
+                .descendant(
+                  of: find.widgetWithText(TextButton, label),
+                  matching: find.byType(DefaultTextStyle),
+                )
+                .first,
+          )
+          .style
+          .color;
+      expect(ink('Off'), isNot(ink('On')));
+      final track = tester.widget<Switch>(find.byType(Switch));
+      expect(track.onChanged, isNull);
     });
   });
 
@@ -105,6 +157,42 @@ void main() {
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
       await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
       expect(picked, [1, 2]);
+    });
+
+    testWidgets('Left and Right move the focus with the selection', (
+      tester,
+    ) async {
+      var selected = 0;
+      await tester.pumpWidget(
+        _host(
+          StatefulBuilder(
+            builder: (context, set) => AkTabBar(
+              tabs: const [
+                AkTab(label: 'One'),
+                AkTab(label: 'Two'),
+              ],
+              selected: selected,
+              onSelected: (i) => set(() => selected = i),
+            ),
+          ),
+        ),
+      );
+      await tester.sendKeyEvent(LogicalKeyboardKey.tab);
+      await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+      await tester.pump();
+      expect(selected, 1);
+      expect(
+        tester.getSemantics(find.bySemanticsLabel('Two')),
+        isSemantics(
+          label: 'Two',
+          isFocused: true,
+          isFocusable: true,
+          isButton: true,
+          hasTapAction: true,
+          hasSelectedState: true,
+          isSelected: true,
+        ),
+      );
     });
 
     testWidgets('a narrow bar drops the icons and fits', (tester) async {

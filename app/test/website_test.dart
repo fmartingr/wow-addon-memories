@@ -374,6 +374,30 @@ void main() {
       expect(find.textContaining('Exception'), findsNothing);
     });
 
+    testWidgets('an upload problem shows on the Overview tab too', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      fakes.upload.syncError = const UploadException(
+        'bad_signature',
+        'The website did not accept the request.',
+        status: 401,
+      );
+      useWindow(tester, height: 2400);
+      await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
+      await tester.tap(find.text(uploadNowLabel));
+      await tester.pumpAndSettle();
+      await openTab(tester, 'Overview');
+      expect(find.textContaining('did not accept the request'), findsOneWidget);
+      await tester.tap(find.text(showWebsiteLabel));
+      await tester.pumpAndSettle();
+      expect(find.text(uploadNowLabel), findsOneWidget);
+    });
+
     testWidgets('a revoked key turns Upload off and says so', (tester) async {
       final fakes = _fakes(
         settings: readySettings.copyWith(upload: true),

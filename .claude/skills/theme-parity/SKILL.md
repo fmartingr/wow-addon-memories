@@ -25,9 +25,9 @@ It runs two scripts that need only Node:
 | tokens | each colour of `:root` in `web/base.css` with `Tokens` in `tokens.dart` |
 | game | class colours and quality colours of `web/lib/format.mjs` with `tokens.dart` |
 | fonts | the families and files of the website with `app/pubspec.yaml` and `app/assets/fonts/` |
-| components | each entry of `docs/theme-parity.json`: its values must be in the CSS rule and in the Dart file |
-| coverage | each class of `web/base.css` must be a component or `webOnly` in `docs/theme-parity.json` |
-| hard-coded | no `Color(0x...)` or `Colors.*` in `app/lib/src` outside `app/lib/src/theme` |
+| components | each entry of `docs/theme-parity.json`: its values must be whole words in the CSS rule and in the Dart file (inside the `scope` of the entry) |
+| coverage | each class that `web/base.css` styles must be a component or `webOnly` in `docs/theme-parity.json` (components of `web/style.css` are listed by hand) |
+| hard-coded | no `Color(...)`, `Color.from*` or `Colors.*` in `app/lib` outside `app/lib/src/theme` |
 
 `node scripts/theme-parity.mjs --json` gives the same rows as data.
 

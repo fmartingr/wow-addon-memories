@@ -80,6 +80,19 @@ void main() {
     });
   });
 
+  testWidgets('a notice scrolls with the tab at a small window', (
+    tester,
+  ) async {
+    useWindow(tester, width: 400, height: 600, textScale: 1.5);
+    await pumpApp(tester, _home());
+    expect(tester.takeException(), isNull);
+    for (final tab in ['Website', 'Settings', 'Overview']) {
+      await openTab(tester, tab);
+      expect(tester.takeException(), isNull, reason: tab);
+      expect(find.text('A notice.'), findsOneWidget, reason: tab);
+    }
+  });
+
   testWidgets('the controls have Semantics labels', (tester) async {
     useWindow(tester);
     final fakes = _home();

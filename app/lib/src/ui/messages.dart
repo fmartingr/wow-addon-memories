@@ -162,6 +162,9 @@ const String copyLinkLabel = 'Copy link';
 const String removeFromWebsiteLabel = 'Remove from website';
 const String linkCopiedText = 'Link copied';
 const String cancelLabel = 'Cancel';
+
+/// The button of an upload problem on the Overview tab that opens the Website tab.
+const String showWebsiteLabel = 'Show the Website tab';
 const String removeLabel = 'Remove';
 
 /// The site as people read it: `example.com`, or `localhost:8080`.

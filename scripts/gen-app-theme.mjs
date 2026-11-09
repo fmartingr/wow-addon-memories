@@ -15,7 +15,11 @@ export const dartColour = (hex) => `Color(0xFF${hex.slice(1).toUpperCase()})`;
 export function cssColours(css) {
   const block = /:root\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
   const colours = {};
-  for (const m of block.matchAll(/--([a-z0-9-]+):\s*(#[0-9a-fA-F]{6})\s*;/g)) colours[m[1]] = m[2].toLowerCase();
+  for (const m of block.matchAll(/--([a-z0-9-]+):\s*([^;]+);/g)) {
+    const value = m[2].trim();
+    if (/^#[0-9a-fA-F]{6}$/.test(value)) colours[m[1]] = value.toLowerCase();
+    else if (/^(#|rgb|hsl)/i.test(value)) throw new Error(`--${m[1]}: ${value} is not a 6 digit hex colour; the app tokens cannot hold it. Use #rrggbb.`);
+  }
   return colours;
 }
 

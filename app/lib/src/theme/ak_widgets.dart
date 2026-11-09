@@ -5,6 +5,7 @@ library;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import 'ak_theme.dart' show akRule;
 import 'tokens.dart';
 
 // The literals of `.tab` and `.tab[aria-selected]` in web/style.css.
@@ -12,7 +13,6 @@ const Color _tabTop = Color(0xFF1B1F1F);
 const Color _tabBottom = Color(0xFF101516);
 const Color _tabOnTop = Color(0xFF3A2D16);
 const Color _tabOnBottom = Color(0xFF1A1409);
-const Color _rule = Color(0xFF423B2D);
 
 /// The title bar of the window: the crest and the name of the app, as `.frame-head`.
 class AkHeader extends StatelessWidget {
@@ -70,8 +70,9 @@ class AkTab {
 }
 
 /// The tabs at the top of the window, as `.tabs` of the website: raised tabs with a gold edge, the selected one lit.
-/// Left and Right move the selection while a tab has the focus; Tab moves between the tabs and the content.
-class AkTabBar extends StatelessWidget {
+/// Left and Right move the selection and the focus to the next tab; Tab moves between the tabs and the content. The
+/// focused tab has a gold-light ring, as `:focus-visible` of the website.
+class AkTabBar extends StatefulWidget {
   const AkTabBar({
     super.key,
     required this.tabs,
@@ -84,6 +85,29 @@ class AkTabBar extends StatelessWidget {
   final ValueChanged<int> onSelected;
 
   @override
+  State<AkTabBar> createState() => _AkTabBarState();
+}
+
+class _AkTabBarState extends State<AkTabBar> {
+  late final List<FocusNode> _nodes = [
+    for (final t in widget.tabs) FocusNode(debugLabel: 'tab ${t.label}'),
+  ];
+
+  @override
+  void dispose() {
+    for (final n in _nodes) {
+      n.dispose();
+    }
+    super.dispose();
+  }
+
+  void _move(int by) {
+    final i = (widget.selected + by + widget.tabs.length) % widget.tabs.length;
+    widget.onSelected(i);
+    _nodes[i].requestFocus();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Container(
       decoration: const BoxDecoration(
@@ -92,10 +116,8 @@ class AkTabBar extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 6),
       child: CallbackShortcuts(
         bindings: {
-          const SingleActivator(LogicalKeyboardKey.arrowRight): () =>
-              onSelected((selected + 1) % tabs.length),
-          const SingleActivator(LogicalKeyboardKey.arrowLeft): () =>
-              onSelected((selected - 1 + tabs.length) % tabs.length),
+          const SingleActivator(LogicalKeyboardKey.arrowRight): () => _move(1),
+          const SingleActivator(LogicalKeyboardKey.arrowLeft): () => _move(-1),
         },
         child: LayoutBuilder(
           // On a narrow window the tabs drop their icons and share the width.
@@ -104,16 +126,17 @@ class AkTabBar extends StatelessWidget {
             return Row(
               crossAxisAlignment: CrossAxisAlignment.end,
               children: [
-                for (var i = 0; i < tabs.length; i++)
+                for (var i = 0; i < widget.tabs.length; i++)
                   Flexible(
                     child: Padding(
                       padding: const EdgeInsets.only(right: 4),
                       child: _TabButton(
-                        key: ValueKey('tab-${tabs[i].label}'),
-                        tab: tabs[i],
-                        selected: i == selected,
+                        key: ValueKey('tab-${widget.tabs[i].label}'),
+                        tab: widget.tabs[i],
+                        node: _nodes[i],
+                        selected: i == widget.selected,
                         compact: narrow,
-                        onTap: () => onSelected(i),
+                        onTap: () => widget.onSelected(i),
                       ),
                     ),
                   ),
@@ -126,30 +149,47 @@ class AkTabBar extends StatelessWidget {
   }
 }
 
-class _TabButton extends StatelessWidget {
+class _TabButton extends StatefulWidget {
   const _TabButton({
     super.key,
     required this.tab,
+    required this.node,
     required this.selected,
     required this.compact,
     required this.onTap,
   });
 
   final AkTab tab;
-  final bool compact;
+  final FocusNode node;
   final bool selected;
+  final bool compact;
   final VoidCallback onTap;
+
+  @override
+  State<_TabButton> createState() => _TabButtonState();
+}
+
+class _TabButtonState extends State<_TabButton> {
+  bool _focused = false;
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final selected = widget.selected;
     final colour = selected ? Tokens.goldLight : Tokens.muted;
+    final edge = selected ? Tokens.goldDim : Tokens.edgeSoft;
+    final side = BorderSide(
+      color: _focused ? Tokens.goldLight : edge,
+      width: _focused ? 2 : 1,
+    );
     return Semantics(
       button: true,
       selected: selected,
-      label: tab.label,
+      focusable: true,
+      focused: _focused,
+      label: widget.tab.label,
       excludeSemantics: true,
-      onTap: onTap,
+      onTap: widget.onTap,
       child: Container(
         margin: EdgeInsets.only(top: selected ? 0 : 4),
         decoration: BoxDecoration(
@@ -160,47 +200,41 @@ class _TabButton extends StatelessWidget {
                 ? const [_tabOnTop, _tabOnBottom]
                 : const [_tabTop, _tabBottom],
           ),
-          border: Border(
-            top: BorderSide(color: selected ? Tokens.goldDim : Tokens.edgeSoft),
-            left: BorderSide(
-              color: selected ? Tokens.goldDim : Tokens.edgeSoft,
-            ),
-            right: BorderSide(
-              color: selected ? Tokens.goldDim : Tokens.edgeSoft,
-            ),
-          ),
+          border: Border(top: side, left: side, right: side),
           borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
         ),
         child: InkWell(
-          onTap: onTap,
+          focusNode: widget.node,
+          onFocusChange: (v) => setState(() => _focused = v),
+          onTap: widget.onTap,
           borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: 44, minWidth: 44),
             child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: compact ? 8 : 20),
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 11),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (tab.icon != null && !compact) ...[
-                      Icon(tab.icon, size: 18, color: colour),
-                      const SizedBox(width: 8),
-                    ],
-                    Flexible(
-                      child: Text(
-                        tab.label.toUpperCase(),
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: theme.textTheme.labelLarge?.copyWith(
-                          color: colour,
-                          fontSize: 13,
-                          letterSpacing: 1,
-                        ),
+              padding: EdgeInsets.symmetric(
+                horizontal: widget.compact ? 6 : 20,
+                vertical: 11,
+              ),
+              child: Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  if (widget.tab.icon != null && !widget.compact) ...[
+                    Icon(widget.tab.icon, size: 18, color: colour),
+                    const SizedBox(width: 8),
+                  ],
+                  Flexible(
+                    child: Text(
+                      widget.tab.label.toUpperCase(),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: theme.textTheme.labelLarge?.copyWith(
+                        color: colour,
+                        fontSize: widget.compact ? 12 : 13,
+                        letterSpacing: widget.compact ? 0.2 : 1,
                       ),
                     ),
-                  ],
-                ),
+                  ),
+                ],
               ),
             ),
           ),
@@ -263,7 +297,7 @@ class AkPanelTitle extends StatelessWidget {
         padding: const EdgeInsets.only(bottom: 8),
         margin: const EdgeInsets.only(bottom: 12),
         decoration: const BoxDecoration(
-          border: Border(bottom: BorderSide(color: _rule)),
+          border: Border(bottom: BorderSide(color: akRule)),
         ),
         child: Text(label, style: Theme.of(context).textTheme.titleMedium),
       ),

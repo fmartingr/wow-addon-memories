@@ -8,18 +8,17 @@ import 'package:flutter/material.dart';
 
 import 'tokens.dart';
 
-// The literals of `.btn`, `.btn.primary` and `.panel` in web/base.css.
-const Color _btnTop = Color(0xFF4A3818);
-const Color _btnBottom = Color(0xFF21170A);
-const Color _primaryTop = Color(0xFFE7BB68);
-const Color _primaryBottom = Color(0xFFAE742B);
-const Color _primaryEdge = Color(0xFFE3B76B);
-const Color _primaryInk = Color(0xFF20180E);
-const Color _panelInset = Color(0xFF0D1213);
-const Color _panelGlow = Color(0x20C09958);
-const Color _panelRule = Color(0xFF423B2D);
+/// The rule under a panel title and between list rows, as `.panel-title` of the website.
+const Color akRule = Color(0xFF423B2D);
+// The literals of `.tip` in web/style.css.
+const Color _tipBg = Color(0xFF0B1020);
+const Color _tipEdge = Color(0xFF8A7A50);
 const Color _fieldFill = Color(0xFF0B1013);
 const Color _meterTrack = Color(0xFF080C0E);
+
+// The literals of `.panel` in web/base.css.
+const Color _panelInset = Color(0xFF0D1213);
+const Color _panelGlow = Color(0x20C09958);
 
 /// The border of a panel: the outer edge, a dark inset line and a faint gold line, as the `.panel` box shadows.
 class AkPanelBorder extends ShapeBorder {
@@ -122,6 +121,14 @@ ColorScheme _scheme() => const ColorScheme.dark(
   onErrorContainer: Color(0xFFFFD9D2),
 );
 
+// The literals of `.btn` and `.btn.primary` in web/base.css.
+const Color _btnTop = Color(0xFF4A3818);
+const Color _btnBottom = Color(0xFF21170A);
+const Color _primaryTop = Color(0xFFE7BB68);
+const Color _primaryBottom = Color(0xFFAE742B);
+const Color _primaryEdge = Color(0xFFE3B76B);
+const Color _primaryInk = Color(0xFF20180E);
+
 /// A button with a gradient, a border and the button font. Its look is `.btn` (or `.btn.primary`) of the website.
 ButtonStyle _button({required bool primary}) {
   final top = primary ? _primaryTop : _btnTop;
@@ -138,7 +145,6 @@ ButtonStyle _button({required bool primary}) {
     backgroundColor: const WidgetStatePropertyAll(Colors.transparent),
     shadowColor: const WidgetStatePropertyAll(Colors.transparent),
     elevation: const WidgetStatePropertyAll(0),
-    overlayColor: WidgetStatePropertyAll(Colors.white.withValues(alpha: 0.1)),
     side: const WidgetStatePropertyAll(BorderSide.none),
     shape: const WidgetStatePropertyAll(
       RoundedRectangleBorder(
@@ -146,22 +152,31 @@ ButtonStyle _button({required bool primary}) {
       ),
     ),
     textStyle: WidgetStatePropertyAll(_display(13, color: ink, weight: 700)),
+    // The gradient is opaque and Flutter paints ink below it, so the states are drawn here: a gold-light ring for the
+    // focus (as `:focus-visible` of the website), a lighter fill for hover and a darker fill while pressed.
     backgroundBuilder: (context, states, child) {
-      final hover = states.contains(WidgetState.hovered) && !primary;
+      final pressed = states.contains(WidgetState.pressed);
+      final hover = states.contains(WidgetState.hovered);
+      final focused = states.contains(WidgetState.focused);
+      final colours = pressed
+          ? [bottom, top]
+          : hover
+          ? (primary
+                ? const [Color(0xFFF0C97C), Color(0xFFBE823A)]
+                : const [Color(0xFF6A5022), Color(0xFF2C1F0D)])
+          : [top, bottom];
       final box = DecoratedBox(
         decoration: BoxDecoration(
           gradient: LinearGradient(
             begin: Alignment.topCenter,
             end: Alignment.bottomCenter,
-            colors: hover
-                ? const [Color(0xFF6A5022), Color(0xFF2C1F0D)]
-                : [top, bottom],
+            colors: colours,
           ),
-          border: Border.all(color: edge),
+          border: Border.all(
+            color: focused ? Tokens.goldLight : edge,
+            width: focused ? 2 : 1,
+          ),
           borderRadius: BorderRadius.circular(3),
-          boxShadow: const [
-            BoxShadow(color: Colors.black, offset: Offset(0, 2)),
-          ],
         ),
         child: child,
       );
@@ -189,8 +204,9 @@ ThemeData buildAkTheme() {
     textTheme: text,
     primaryTextTheme: text,
     iconTheme: const IconThemeData(color: Tokens.gold),
-    dividerTheme: const DividerThemeData(color: _panelRule, space: 1),
-    focusColor: Tokens.goldLight,
+    dividerTheme: const DividerThemeData(color: akRule, space: 1),
+    focusColor: Tokens.goldLight.withValues(alpha: 0.18),
+    hoverColor: Tokens.goldLight.withValues(alpha: 0.08),
     cardTheme: const CardThemeData(
       color: Tokens.surface,
       elevation: 0,
@@ -221,39 +237,58 @@ ThemeData buildAkTheme() {
     textButtonTheme: TextButtonThemeData(
       style: ButtonStyle(
         minimumSize: const WidgetStatePropertyAll(Size(44, 44)),
-        foregroundColor: const WidgetStatePropertyAll(Tokens.goldLight),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.disabled)
+              ? Tokens.muted.withValues(alpha: 0.5)
+              : Tokens.goldLight,
+        ),
         textStyle: WidgetStatePropertyAll(_body(15, weight: FontWeight.w700)),
       ),
     ),
     iconButtonTheme: IconButtonThemeData(
       style: ButtonStyle(
         minimumSize: const WidgetStatePropertyAll(Size(44, 44)),
-        foregroundColor: const WidgetStatePropertyAll(Tokens.goldLight),
+        foregroundColor: WidgetStateProperty.resolveWith(
+          (s) => s.contains(WidgetState.disabled)
+              ? Tokens.muted.withValues(alpha: 0.5)
+              : Tokens.goldLight,
+        ),
       ),
     ),
     inputDecorationTheme: InputDecorationTheme(
       filled: true,
       fillColor: _fieldFill,
       labelStyle: _body(16, color: Tokens.muted),
-      border: field(Tokens.edgeSoft),
-      enabledBorder: field(Tokens.edgeSoft),
+      border: field(Tokens.goldDim),
+      enabledBorder: field(Tokens.goldDim),
       focusedBorder: field(Tokens.goldLight, 2),
       errorBorder: field(Tokens.red),
       focusedErrorBorder: field(Tokens.red, 2),
     ),
     switchTheme: SwitchThemeData(
       thumbColor: WidgetStateProperty.resolveWith(
-        (s) => s.contains(WidgetState.selected) ? _primaryInk : Tokens.muted,
+        (s) => s.contains(WidgetState.disabled)
+            ? Tokens.muted.withValues(alpha: 0.4)
+            : s.contains(WidgetState.selected)
+            ? _primaryInk
+            : Tokens.muted,
       ),
       trackColor: WidgetStateProperty.resolveWith(
-        (s) => s.contains(WidgetState.selected) ? Tokens.gold : _fieldFill,
+        (s) => s.contains(WidgetState.disabled)
+            ? _fieldFill
+            : s.contains(WidgetState.selected)
+            ? Tokens.gold
+            : _fieldFill,
       ),
-      trackOutlineColor: const WidgetStatePropertyAll(Tokens.goldDim),
+      trackOutlineColor: WidgetStateProperty.resolveWith(
+        (s) =>
+            s.contains(WidgetState.disabled) ? Tokens.edgeSoft : Tokens.goldDim,
+      ),
     ),
     progressIndicatorTheme: const ProgressIndicatorThemeData(
       color: Tokens.gold,
       linearTrackColor: _meterTrack,
-      linearMinHeight: 14,
+      linearMinHeight: 18,
       borderRadius: BorderRadius.zero,
     ),
     listTileTheme: ListTileThemeData(
@@ -264,18 +299,18 @@ ThemeData buildAkTheme() {
     ),
     snackBarTheme: SnackBarThemeData(
       behavior: SnackBarBehavior.floating,
-      backgroundColor: const Color(0xFF0A1016),
+      backgroundColor: _tipBg,
       contentTextStyle: _body(16),
       actionTextColor: Tokens.goldLight,
       shape: const RoundedRectangleBorder(
         borderRadius: BorderRadius.all(Radius.circular(4)),
-        side: BorderSide(color: Tokens.goldDim),
+        side: BorderSide(color: _tipEdge),
       ),
     ),
     tooltipTheme: TooltipThemeData(
       decoration: BoxDecoration(
-        color: const Color(0xFF0A1016),
-        border: Border.all(color: Tokens.goldDim),
+        color: _tipBg,
+        border: Border.all(color: _tipEdge),
         borderRadius: BorderRadius.circular(4),
       ),
       textStyle: _body(14),
@@ -283,6 +318,6 @@ ThemeData buildAkTheme() {
     scrollbarTheme: const ScrollbarThemeData(
       thumbColor: WidgetStatePropertyAll(Tokens.edge),
     ),
-    dividerColor: _panelRule,
+    dividerColor: akRule,
   );
 }

@@ -2,6 +2,7 @@
 // Usage: node scripts/theme-shot.mjs <url> <out.png> [width=1000] [height=900] [waitMs=1500]
 // It starts its own Firefox with a private profile and stops only that one.
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
 import { mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
@@ -11,7 +12,13 @@ if (!url || !out) {
   console.error('usage: node scripts/theme-shot.mjs <url> <out.png> [width] [height] [waitMs]');
   process.exit(2);
 }
-const port = 9300 + Math.floor(Math.random() * 500);
+// A free port: the system gives one and it is closed again before Firefox opens it.
+const port = await new Promise((res) => {
+  const srv = createServer().listen(0, '127.0.0.1', () => {
+    const { port } = srv.address();
+    srv.close(() => res(port));
+  });
+});
 const profile = mkdtempSync(join(tmpdir(), 'theme-shot-'));
 const ff = spawn('firefox', ['--headless', '--no-remote', '--profile', profile, `--remote-debugging-port=${port}`], {
   env: { ...process.env, MOZ_REMOTE_ALLOW_SYSTEM_ACCESS: '1' },
@@ -23,6 +30,7 @@ const stop = () => {
 };
 ff.on('error', (e) => {
   console.error('could not start firefox: ' + e.message);
+  stop();
   process.exit(2);
 });
 

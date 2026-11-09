@@ -1,5 +1,5 @@
 {
-  "about": "Maps each component of the website theme to the app theme. scripts/theme-parity.mjs checks it. Each value has a css form (found in the rule) and a dart form (found in the Dart file). A class of web/base.css that is not listed here fails the check, so a new web component is never forgotten in the app.",
+  "about": "Maps each component of the website theme to the app theme. scripts/theme-parity.mjs checks it. Each value has a css form (found as a whole word in the CSS rule) and a dart form (found in the Dart file, inside `dart.scope` when it is given). Each class that web/base.css styles must be in `components` (its selector or `alsoCovers`) or in `webOnly`, so a new shared component is never forgotten in the app. Components of web/style.css are listed by hand.",
   "components": [
     {
       "name": "panel",
@@ -10,7 +10,11 @@
       "dart": {
         "file": "app/lib/src/theme/ak_theme.dart",
         "symbol": "AkPanelBorder",
-        "use": "CardThemeData, DialogThemeData"
+        "use": "CardThemeData, DialogThemeData",
+        "scope": [
+          "// The literals of `.panel`",
+          "TextStyle _display("
+        ]
       },
       "values": [
         {
@@ -34,8 +38,9 @@
         "selector": ".panel-title {"
       },
       "dart": {
-        "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkPanelTitle"
+        "file": "app/lib/src/theme/ak_theme.dart",
+        "symbol": "akRule",
+        "use": "AkPanelTitle, DividerThemeData"
       },
       "values": [
         {
@@ -53,7 +58,11 @@
       "dart": {
         "file": "app/lib/src/theme/ak_theme.dart",
         "symbol": "_button(primary: false)",
-        "use": "OutlinedButton, ElevatedButton"
+        "use": "OutlinedButton, ElevatedButton",
+        "scope": [
+          "// The literals of `.btn`",
+          "/// The dark theme of the app."
+        ]
       },
       "values": [
         {
@@ -82,7 +91,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_theme.dart",
-        "symbol": "_button hover"
+        "symbol": "_button hover",
+        "scope": [
+          "// The literals of `.btn`",
+          "/// The dark theme of the app."
+        ]
       },
       "values": [
         {
@@ -104,7 +117,11 @@
       "dart": {
         "file": "app/lib/src/theme/ak_theme.dart",
         "symbol": "_button(primary: true)",
-        "use": "FilledButton"
+        "use": "FilledButton",
+        "scope": [
+          "// The literals of `.btn`",
+          "/// The dark theme of the app."
+        ]
       },
       "values": [
         {
@@ -123,6 +140,9 @@
           "css": "#20180e",
           "dart": "0xFF20180E"
         }
+      ],
+      "alsoCovers": [
+        "on"
       ]
     },
     {
@@ -133,7 +153,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkHeader"
+        "symbol": "AkHeader",
+        "scope": [
+          "class AkHeader",
+          "/// A tab of [AkTabBar]"
+        ]
       },
       "values": [
         {
@@ -150,7 +174,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkTabBar"
+        "symbol": "AkTabBar",
+        "scope": [
+          "// The literals of `.tab`",
+          "class AkHeader"
+        ]
       },
       "values": [
         {
@@ -171,7 +199,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkTabBar selected"
+        "symbol": "AkTabBar selected",
+        "scope": [
+          "// The literals of `.tab`",
+          "class AkHeader"
+        ]
       },
       "values": [
         {
@@ -192,7 +224,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkTagKind.alliance"
+        "symbol": "AkTagKind.alliance",
+        "scope": [
+          "enum AkTagKind",
+          "/// A small label"
+        ]
       },
       "values": [
         {
@@ -213,7 +249,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkTagKind.horde"
+        "symbol": "AkTagKind.horde",
+        "scope": [
+          "enum AkTagKind",
+          "/// A small label"
+        ]
       },
       "values": [
         {
@@ -234,7 +274,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkTagKind.hardcore"
+        "symbol": "AkTagKind.hardcore",
+        "scope": [
+          "enum AkTagKind",
+          "/// A small label"
+        ]
       },
       "values": [
         {
@@ -255,7 +299,11 @@
       },
       "dart": {
         "file": "app/lib/src/theme/ak_widgets.dart",
-        "symbol": "AkTagKind.selfFound"
+        "symbol": "AkTagKind.selfFound",
+        "scope": [
+          "enum AkTagKind",
+          "/// A small label"
+        ]
       },
       "values": [
         {
@@ -282,8 +330,13 @@
         {
           "css": "#080c0e",
           "dart": "0xFF080C0E"
+        },
+        {
+          "css": "height: 18px",
+          "dart": "linearMinHeight: 18"
         }
-      ]
+      ],
+      "note": "The app fill is the flat gold token, the website fill is a gold gradient. The app bar has no border."
     },
     {
       "name": "tip and toast",
@@ -295,8 +348,17 @@
         "file": "app/lib/src/theme/ak_theme.dart",
         "symbol": "snackBarTheme, tooltipTheme"
       },
-      "values": [],
-      "note": "The tip edge is a one-off colour of the viewer; the app uses the gold-dim token. Listed so a change is looked at."
+      "values": [
+        {
+          "css": "#0b1020f2",
+          "dart": "0xFF0B1020",
+          "note": "The website fill is 95 % opaque; the app fill is opaque."
+        },
+        {
+          "css": "#8a7a50",
+          "dart": "0xFF8A7A50"
+        }
+      ]
     }
   ],
   "webOnly": [
@@ -316,7 +378,7 @@
   "appOnly": [
     {
       "dart": "InputDecorationTheme",
-      "reason": "Text fields of the Website tab. The website has no form. They use the surface and edge tokens."
+      "reason": "Text fields of the Website tab. The website has no form. They use the fill and gold-dim tokens."
     },
     {
       "dart": "SwitchThemeData",
@@ -328,7 +390,7 @@
     },
     {
       "dart": "SnackBarThemeData",
-      "reason": "Short messages. They use the tip colours."
+      "reason": "Short messages. They use the colours of .tip."
     }
   ]
 }

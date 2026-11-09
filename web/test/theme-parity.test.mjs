@@ -91,3 +91,62 @@ test('a missing font file in the app is found', () => {
     rmSync(dir, { recursive: true });
   }
 });
+
+test('a value that is only found elsewhere in the Dart file is found', () => {
+  const dir = copy();
+  try {
+    // Size(44, 44) is still in the text buttons, outside the scope of the button style.
+    change(dir, 'app/lib/src/theme/ak_theme.dart', 'minimumSize: const WidgetStatePropertyAll(Size(44, 44)),\n    padding', 'minimumSize: const WidgetStatePropertyAll(Size(32, 32)),\n    padding');
+    const out = JSON.parse(run(dir).stdout);
+    assert.ok(out.rows.some((r) => r.area === 'components' && r.item === 'btn min-height: 44px' && !r.ok));
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test('a value that only starts like the expected one is not a match', () => {
+  const dir = copy();
+  try {
+    change(dir, 'app/lib/src/theme/ak_theme.dart', 'radius = 5}', 'radius = 50}');
+    const out = JSON.parse(run(dir).stdout);
+    assert.ok(out.rows.some((r) => r.area === 'components' && r.item === 'panel border-radius: 5px' && !r.ok));
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test('a new variant of a listed class and a new class in a media rule are found', () => {
+  const dir = copy();
+  try {
+    writeFileSync(join(dir, 'web/base.css'), readFileSync(join(dir, 'web/base.css'), 'utf8') + '\n.btn.danger { color: red; }\n@media (max-width: 10px) {\n  .chip { color: red; }\n}\n');
+    const out = JSON.parse(run(dir).stdout);
+    assert.ok(out.rows.some((r) => r.item === '.danger' && !r.ok));
+    assert.ok(out.rows.some((r) => r.item === '.chip' && !r.ok));
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test('a Color.fromARGB in a screen is found', () => {
+  const dir = copy();
+  try {
+    writeFileSync(join(dir, 'app/lib/src/ui/extra.dart'), 'final c = Color.fromARGB(255, 1, 2, 3);\n');
+    const out = JSON.parse(run(dir).stdout);
+    assert.ok(out.rows.some((r) => r.area === 'hard-coded' && r.item.endsWith('extra.dart') && !r.ok));
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
+
+test('a colour token that is not a 6 digit hex stops the generator', () => {
+  const dir = copy();
+  try {
+    change(dir, 'web/base.css', '--gold: #d5a64f;', '--gold: rgba(213, 166, 79, 0.5);');
+    const gen = join(repo, 'scripts/gen-app-theme.mjs');
+    const r = spawnSync('node', ['-e', `import('${gen}').then((m) => m.cssColours(require('fs').readFileSync('${join(dir, 'web/base.css')}', 'utf8')))`], { encoding: 'utf8' });
+    assert.notEqual(r.status, 0);
+    assert.match(r.stderr, /not a 6 digit hex colour/);
+  } finally {
+    rmSync(dir, { recursive: true });
+  }
+});
