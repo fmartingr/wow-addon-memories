@@ -16,7 +16,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-data web web-demo web-assets
+.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -31,7 +31,7 @@ deps: ## Install the Lua test and lint tools with luarocks
 	luarocks --lua-version=5.1 --local install luacov 0.17.0-1
 	luarocks --lua-version=5.1 --local install luacheck 1.2.0-1
 
-lint: lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check ## Run all linters
+lint: lint-lua lint-no-go lint-actions server-lint web-lint dart-lint app-lint fmt-check ## Run all linters
 
 lint-lua: ## Run luacheck
 	luacheck .
@@ -46,6 +46,12 @@ lint-actions: ## Check the GitHub workflows with actionlint, when it is installe
 server-lint: ## Run gofmt and go vet on the Go server
 	@cd server && unformatted="$$(gofmt -l .)" && if [ -n "$$unformatted" ]; then echo "server-lint: run gofmt -w on:" >&2; echo "$$unformatted" >&2; exit 1; fi
 	cd server && go vet ./...
+
+web-lint: ## Check the syntax of each web/**/*.mjs file
+	@find web -name '*.mjs' -not -path 'web/map/*' -print0 | xargs -0 -n1 node --check
+
+web-test: ## Run the node tests of the viewer logic with a coverage threshold (lines of web/lib/ at least 80 %)
+	node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-include='web/lib/**' web/test/
 
 dart-lint: ## Analyze and check the format of the Dart core
 	cd $(CORE) && fvm dart pub get
@@ -65,7 +71,7 @@ fmt: ## Format the Lua, Dart and Go code
 	cd app && fvm dart format .
 	cd server && gofmt -w .
 
-test: test-lua test-scripts server-test dart-test app-test ## Run all tests
+test: test-lua test-scripts server-test web-test dart-test app-test ## Run all tests
 
 test-lua: ## Run the busted tests
 	busted $(BUSTED_FLAGS)
@@ -169,22 +175,6 @@ install: ## Copy each addon folder into WOW_DIR (a flavor folder)
 
 clean: ## Remove build output
 	rm -rf luacov.*.out $(CORE)/coverage app/build app/coverage server/coverage.out build/memories-server
-
-WEB_PORT ?= 8765
-
-web-data: ## Run the converter into dist-characters/ for the viewer (needs WOW_DIR)
-	@$(MAKE) --no-print-directory export
-
-web: ## Serve the viewer in web/ with dist-characters/ at http://localhost:$(WEB_PORT)
-	@if [ ! -f dist-characters/index.json ]; then echo "web: run 'make web-data WOW_DIR=...' first, or 'make web-demo'" >&2; exit 1; fi
-	ln -sfn "$(CURDIR)/dist-characters" web/characters
-	@echo "Serving at http://localhost:$(WEB_PORT)"
-	python3 -m http.server $(WEB_PORT) --directory web
-
-web-demo: ## Serve the viewer with the converter golden files in testdata/expected
-	ln -sfn "$(CURDIR)/testdata/expected" web/characters
-	@echo "Serving at http://localhost:$(WEB_PORT)"
-	python3 -m http.server $(WEB_PORT) --directory web
 
 web-assets: ## Copy the map art from MAP_SRC (a map art folder) into web/map/
 	@if [ ! -f "$(MAP_SRC)/assets/world.js" ]; then echo "web-assets: MAP_SRC must be a map-art checkout with assets/world.js, for example MAP_SRC=~/Code/map-art" >&2; exit 2; fi

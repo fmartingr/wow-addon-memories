@@ -15,6 +15,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"regexp"
 	"slices"
 	"strconv"
 	"strings"
@@ -158,7 +159,7 @@ func TestCharacterPageAfterAnUpload(t *testing.T) {
 	for _, want := range []string{
 		`<body data-entry="data/entry.json">`,
 		"<title>Ñandú — Brumamar — Memories</title>",
-		`href="/_/style.css"`, `src="/_/kinds.js"`, `src="/_/app.js"`,
+		`href="/_/style.css"`, `src="/_/kinds.js"`, `src="/_/app.mjs"`,
 	} {
 		if !strings.Contains(body, want) {
 			t.Errorf("page lacks %q", want)
@@ -299,7 +300,10 @@ func TestDeletedCharacterGivesTheNotFoundPage(t *testing.T) {
 
 func TestViewerAssetsAreServedFromTheWebFolder(t *testing.T) {
 	s := newSite(t)
-	for path, ct := range map[string]string{"/_/app.js": "text/javascript", "/_/kinds.js": "text/javascript", "/_/style.css": "text/css"} {
+	for path, ct := range map[string]string{
+		"/_/app.mjs": "text/javascript", "/_/lib/format.mjs": "text/javascript", "/_/kinds.js": "text/javascript",
+		"/_/style.css": "text/css", "/_/icon.png": "image/png",
+	} {
 		rec := s.get(path)
 		want, err := os.ReadFile(filepath.Join(realWebDir, strings.TrimPrefix(path, "/_/")))
 		if err != nil {
@@ -317,6 +321,39 @@ func TestViewerAssetsAreServedFromTheWebFolder(t *testing.T) {
 		if rec := s.get(path); !isNotFoundPage(rec) {
 			t.Errorf("GET %s = %d, want the 404 page", path, rec.Code)
 		}
+	}
+	for _, path := range []string{"/_/test/format.test.mjs", "/_/test/fixtures/nandu/entry.json", "/_/characters/x.json"} {
+		if rec := s.get(path); rec.Code != http.StatusNotFound {
+			t.Errorf("GET %s = %d, want 404: it is not a viewer file", path, rec.Code)
+		}
+	}
+}
+
+var assetRef = regexp.MustCompile(`(?:src|href)="([^"]+)"`)
+
+// The page of a character loads only the files of /_/, so that no relative or root path breaks behind the prefix.
+func TestCharacterPageReferencesOnlyViewerAssets(t *testing.T) {
+	s := newSite(t)
+	s.upload("eu-brumamar-nandu")
+	body := s.get(brumamar + "/").Body.String()
+	refs := assetRef.FindAllStringSubmatch(body, -1)
+	if len(refs) == 0 {
+		t.Fatal("the page references no file")
+	}
+	for _, m := range refs {
+		if !strings.HasPrefix(m[1], "/_/") {
+			t.Errorf("the page references %q, want a /_/ path", m[1])
+		}
+		path := strings.TrimPrefix(m[1], "/_/")
+		if strings.HasPrefix(path, "map/") {
+			continue
+		}
+		if rec := s.get(m[1]); rec.Code != http.StatusOK {
+			t.Errorf("GET %s = %d", m[1], rec.Code)
+		}
+	}
+	if strings.Contains(body, " style=") || strings.Contains(strings.ToLower(body), "<script>") {
+		t.Errorf("the page has an inline style attribute or script, which the policy blocks")
 	}
 }
 

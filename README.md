@@ -213,6 +213,11 @@ forms and no JavaScript, and it accepts only `localhost:<port>` and `127.0.0.1:<
 SSH tunnel. There the admin makes and revokes invite codes, approves, denies and revokes screenshots, revokes keys
 (with or without deleting their characters), deletes characters and moves a claim to another key.
 
+A character page `/<flavor>/<region>/<realm>/<name>/` shows the viewer of `web/` with three tabs: Summary, Journey map and
+Heatmaps. To see it while you work, run `make local-up`, then `make upload SITE=http://localhost:8080 LATEST=<latest folder>`,
+and open the character URL that the command prints. The page loads its files from `/_/`. A character page also loads the
+Wowhead tooltip script to name the gear; no other page loads a third-party script.
+
 The server keeps its data in `MEMORIES_DATA_DIR`: the SQLite database `memories.db` (keys, invite codes, claims and
 the nonces of signed requests). The upload API keeps the character files in `characters/`. The API accepts only requests that
 carry the 4 `Memories-*` signature headers of an Ed25519 key. `POST /api/v1/register` registers a key (with a
@@ -289,6 +294,8 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 | `make e2e` | Build the server, start it on a temporary folder and run `memories-upload` against it: upload, page, merge, screenshot approval and delete (needs `go`, `fvm`, `curl`, `jq` and `python3`; CI runs it). |
 | `make local-up` | Build the Docker image and run a test server on `http://localhost:8080` (admin page on `http://localhost:8081`, open registration, data in a Docker volume). `make local-down` deletes it; `make local-logs` follows its log. |
 | `make companion-local` | Run the companion app with `http://localhost:8080` as the default website. |
+| `make web-lint`, `make web-test` | Check the syntax of the viewer modules in `web/`, and run the `node --test` suite of the viewer logic with its coverage threshold (needs Node 24). |
+| `make web-assets MAP_SRC=...` | Copy the map art from a map-art checkout into `web/map/` (the art is not in git). |
 | `make clean` | Remove the coverage files and `app/build/`. |
 
 ## Layout

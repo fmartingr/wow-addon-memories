@@ -1,0 +1,33 @@
+{
+ "name": "<img src=x onerror=alert(1)>",
+ "surname": "\"quotes\"",
+ "level": 5,
+ "race": "NightElf",
+ "class": "HUNTER",
+ "faction": "Alliance",
+ "realm": "x",
+ "realmLabel": "&amp; <b>realm</b>",
+ "region": "EU",
+ "flags": {
+  "hardcore": true,
+  "selfFoundAllowed": true
+ },
+ "sessions": [
+  {
+   "start": 1000,
+   "last": 2000,
+   "played0": 0,
+   "played1": 900,
+   "how": "<img src=x onerror=alert(1)>"
+  }
+ ],
+ "addons": {
+  "Memories_Character": {
+   "snap": {
+    "5": {
+     "skills": "G<img src=x>:<img src=x onerror=alert(1)>=5/10"
+    }
+   }
+  }
+ }
+}

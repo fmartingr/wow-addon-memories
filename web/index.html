@@ -2,63 +2,37 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Memories Viewer</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Memories</title>
+<link rel="icon" href="/_/icon.png">
 <link rel="stylesheet" href="/_/style.css">
+<script src="/_/kinds.js"></script>
+<script type="module" src="/_/app.mjs"></script>
 </head>
 <body>
-<header class="bar">
-  <h1>Memories</h1>
-  <label class="sub" for="character">Character</label>
-  <select id="character" disabled><option>Loading…</option></select>
-  <span id="status" class="sub" role="status"></span>
-</header>
-
-<section id="card" class="card" hidden>
-  <div>
-    <h2 id="cName"></h2>
-    <p id="cLine" class="sub"></p>
-  </div>
-  <dl id="cStats" class="stats"></dl>
-</section>
-
-<nav class="tabs" id="tabs" hidden>
-  <button data-tab="journey" class="on">Journey</button>
-  <button data-tab="map">Trail</button>
-  <button data-tab="sessions">Sessions</button>
-  <button data-tab="counts">Counts</button>
-</nav>
-
-<main>
-  <section id="tab-journey">
-    <div class="filters">
-      <input id="search" type="search" placeholder="Search the journey" aria-label="Search the journey">
-      <div id="chips" class="chips"></div>
+<div class="frame">
+  <header class="frame-head">
+    <img class="crest" src="/_/icon.png" alt="" width="44" height="44">
+    <div class="head-text">
+      <h1 id="headName">Memories</h1>
+      <p id="headLine" class="sub"></p>
     </div>
-    <p id="feedInfo" class="sub"></p>
-    <ol id="feed" class="feed"></ol>
-  </section>
+  </header>
 
-  <section id="tab-map" hidden>
-    <div class="filters">
-      <label class="sub" for="mapSel">Map</label>
-      <select id="mapSel"></select>
-      <span id="mapInfo" class="sub"></span>
-    </div>
-    <canvas id="map" width="900" height="900" aria-label="Trail on the selected map"></canvas>
-  </section>
+  <nav class="tabs" role="tablist" aria-label="Character pages">
+    <button id="tab-summary" class="tab" role="tab" data-tab="summary" aria-controls="panel-summary" aria-selected="true">Summary</button>
+    <button id="tab-journey" class="tab" role="tab" data-tab="journey" aria-controls="panel-journey" aria-selected="false" tabindex="-1">Journey map</button>
+    <button id="tab-heatmaps" class="tab" role="tab" data-tab="heatmaps" aria-controls="panel-heatmaps" aria-selected="false" tabindex="-1">Heatmaps</button>
+  </nav>
 
-  <section id="tab-sessions" hidden>
-    <table id="sessions"></table>
-  </section>
+  <main class="panels">
+    <section id="panel-summary" class="tabpanel" role="tabpanel" aria-labelledby="tab-summary"></section>
+    <section id="panel-journey" class="tabpanel" role="tabpanel" aria-labelledby="tab-journey" hidden></section>
+    <section id="panel-heatmaps" class="tabpanel" role="tabpanel" aria-labelledby="tab-heatmaps" hidden></section>
+  </main>
 
-  <section id="tab-counts" hidden>
-    <div id="counts"></div>
-  </section>
-</main>
-
-<div id="shot" class="shot" hidden><img alt=""></div>
-<script src="/_/kinds.js"></script>
-<script src="/_/app.js"></script>
+  <p class="legal" id="legal"></p>
+  <div id="status" role="status"></div>
+</div>
 </body>
 </html>

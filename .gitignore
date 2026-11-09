@@ -7,7 +7,6 @@ luacov.*.out
 coverage.out
 server/coverage.out
 server/data/
-web/characters
 web/map/
 
 .fvm/

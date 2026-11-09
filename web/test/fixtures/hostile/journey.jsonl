@@ -1,0 +1,5 @@
+{"k": "zo", "t": 1100, "zone": "<img src=x onerror=alert(1)>"}
+{"k": "gu", "t": 1200, "guild": "<img src=x onerror=alert(1)>", "rank": "\"r\""}
+{"k": "rp", "t": 1300, "faction": "<img src=x onerror=alert(1)>", "standing": 5, "value": 4000, "label": "<img src=x onerror=alert(1)>"}
+{"k": "rk", "t": 1400, "title": "<img src=x onerror=alert(1)>"}
+{"k": "sk", "t": 1500, "name": "<img src=x onerror=alert(1)>", "rank": 3, "max": 9}
