@@ -173,7 +173,7 @@ local function onEncounterEnd(_, id, encounterName, _, _, success)
 		return
 	end
 	local seconds = pull and floor(GetTime() - pull) or nil
-	local last = won and ns.Bosses.Place(boss) ~= nil
+	local last = won and ns.Bosses.Place(id, boss) ~= nil
 	if won then
 		count(key(inst.itype, "bosses"))
 		count("kills:" .. boss)

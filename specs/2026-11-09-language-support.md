@@ -489,7 +489,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 4. Find the last boss by encounter ID
+### [x] 4. Find the last boss by encounter ID
 
 - **Outcome:** a dungeon or raid clear counts on every client language.
 - **Depends on:** None.

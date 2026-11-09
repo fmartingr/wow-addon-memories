@@ -13,12 +13,60 @@ describe("bosses", function()
 			n = n + 1
 		end
 		assert.equal(43, n)
-		assert.equal("Deadmines", ns.Bosses.Place("Edwin VanCleef"))
-		assert.equal("Naxxramas", ns.Bosses.Place("Kel'Thuzad"))
-		assert.is_nil(ns.Bosses.Place("Hogger"))
-		assert.is_nil(ns.Bosses.Place(nil))
+		assert.equal("Deadmines", ns.Bosses.Place(nil, "Edwin VanCleef"))
+		assert.equal("Naxxramas", ns.Bosses.Place(nil, "Kel'Thuzad"))
+		assert.is_nil(ns.Bosses.Place(nil, "Hogger"))
+		assert.is_nil(ns.Bosses.Place(nil, nil))
 		ns.Bosses.All()["Hogger"] = "Elwynn Forest"
-		assert.is_nil(ns.Bosses.Place("Hogger"))
+		assert.is_nil(ns.Bosses.Place(nil, "Hogger"))
+	end)
+
+	it("finds a place by encounter ID before the name", function()
+		assert.equal("Scholomance", ns.Bosses.Place(2801, "Maestro oscuro Gandling"))
+		assert.equal("Scholomance", ns.Bosses.Place(2801, nil))
+		assert.equal("Deadmines", ns.Bosses.Place(2747, "Hogger"))
+		assert.equal("Deadmines", ns.Bosses.Place(1, "Edwin VanCleef"))
+		assert.equal("Deadmines", ns.Bosses.Place("2747", "Edwin VanCleef"))
+		assert.is_nil(ns.Bosses.Place(1, "Maestro oscuro Gandling"))
+		assert.is_nil(ns.Bosses.Place(0, nil))
+		assert.is_nil(ns.Bosses.Place("2801", nil))
+	end)
+
+	it("finds no place for a known ID that shares the name of a last boss", function()
+		assert.is_nil(ns.Bosses.Place(3185, "Balnazzar"))
+		assert.equal("Stratholme", ns.Bosses.Place(478, "Balnazzar"))
+	end)
+
+	it("finds C'thun by the name the client reports", function()
+		assert.equal("Ahn'Qiraj Temple", ns.Bosses.Place(nil, "C'thun"))
+	end)
+
+	it("keeps the English name for each boss with no encounter ID", function()
+		for _, name in ipairs({
+			"Blazeroar",
+			"Durgen Dirgehammer",
+			"Lyn the Ignored",
+			"Shade of the Archmage",
+			"Nanaya",
+			"Rath'mael",
+			"Sonya Darkhallow",
+			"The Wild King",
+			"Relic Guardian",
+			"Scarlet Commander Mograine",
+		}) do
+			assert.is_truthy(ns.Bosses.Place(nil, name), name)
+		end
+	end)
+
+	it("gives each encounter ID a place that the last boss list knows", function()
+		local ids = ns.Bosses.AllIds()
+		assert.is_truthy(next(ids))
+		for id, place in pairs(ids) do
+			assert.is_number(id)
+			assert.is_true(ns.Bosses.KnownPlace(place), place)
+		end
+		ids[2747] = "Elwynn Forest"
+		assert.equal("Deadmines", ns.Bosses.Place(2747, nil))
 	end)
 
 	it("matches a place in lower case, before a colon, trimmed and without a leading the", function()
@@ -246,6 +294,42 @@ describe("dungeons", function()
 			})
 			wow.advance(5)
 			assert.equal(0, wow.shots)
+		end)
+
+		describe("on a client that is not English", function()
+			local GANDLING = { name = "Scholomance", type = "party", id = 289, difficulty = 1, size = 5 }
+
+			it("counts the clear of a boss with a translated name by its encounter ID", function()
+				boot({ locale = "esES" })
+				enter(GANDLING)
+				fight(2801, "Maestro oscuro Gandling", 1, 120)
+				assert.equal("bo|Maestro oscuro Gandling|2801|1|1|Scholomance|120", lines()[2])
+				assert.same({ 1, 1 }, { counts().bosses, counts().clears })
+				assert.equal("1", decoded("bo").last)
+			end)
+
+			it("counts a custom boss with no ID by its English name", function()
+				boot({ locale = "esES" })
+				enter({ name = "Prisión de Alcaz", type = "party", id = 99, difficulty = 1, size = 5 })
+				fight(9999, "Blazeroar", 1, 30)
+				assert.same({ 1, 1 }, { counts().bosses, counts().clears })
+				assert.equal("1", decoded("bo").last)
+			end)
+
+			it("counts no clear for an unknown ID and an unknown name", function()
+				boot({ locale = "esES" })
+				enter(GANDLING)
+				fight(9999, "Un jefe desconocido", 1, 30)
+				assert.same({ 1, nil }, { counts().bosses, counts().clears })
+				assert.is_nil(decoded("bo").last)
+			end)
+		end)
+
+		it("counts a clear when the encounter has no ID but the English name is known", function()
+			boot()
+			enter({ name = "Scholomance", type = "party", id = 289, difficulty = 1, size = 5 })
+			wow.fire("ENCOUNTER_END", nil, "Darkmaster Gandling", 1, 5, 1, {})
+			assert.equal(1, counts().clears)
 		end)
 
 		it("keeps the longest fight of a boss", function()

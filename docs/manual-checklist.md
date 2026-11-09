@@ -247,7 +247,7 @@ Check every kind again with "Enable all" after its row.
 | M3 | 9 | Reload inside | `/reload` inside a dungeon. | No new `dn` or `dx`. | not run |
 | M4 | 12 | Kill in a dungeon | Kill a creature in the dungeon, `/reload`. | `ki\|<name>\|\|\|\|<xp>\|\|party\|<1 or empty>`; `counts.kills` has `total` and `inst` 1 more. | not run |
 | M5 | 9 | Boss fight | Kill a dungeon boss, then wipe on another. | `bo\|<boss>\|<encounter id>\|1\|\|<dungeon>\|<seconds>` for the kill (`1` in the 4th field for the last boss), `bo\|<boss>\|<id>\|0\|\|<dungeon>\|<seconds>` for the wipe. | not run |
-| M6 | 9 | Last boss, no shot | Kill the last boss of a dungeon. | No screenshot and no `ss` line. The list of last bosses holds English names, so on the esES client a boss with a translated name is not a last boss (`last` stays empty). | not run |
+| M6 | 9 | Last boss, no shot | Kill the last boss of a dungeon. | No screenshot and no `ss` line. The last boss is found by its encounter ID, so on every client language it counts. A WoW Forever custom boss and Scarlet Commander Mograine have no known ID and count on an English client only. | not run |
 | M8 | 9 | Logout inside | Log out inside a dungeon, wait, log in outside after the instance reset. | `dx` with the time of the logout. | not run |
 
 ## N. Groups, guild and PvP
