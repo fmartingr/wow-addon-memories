@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="{{.Lang}}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -13,72 +13,76 @@
 <main class="landing">
 <header class="hero panel">
 <img class="crest" src="/_/icon.png" alt="" width="72" height="72">
-<p class="eyebrow">For World of Warcraft Forever</p>
+<p class="eyebrow">{{T "eyebrow"}}</p>
 <h1>{{.Name}}</h1>
-<p class="lead">Every character has a story. Memories writes it down while you play. WoW Journey turns it into a journey you can look at, keep and share.</p>
-{{if .ReleasesURL}}<p class="actions"><a class="btn primary" href="{{.ReleasesURL}}">Download the addons and the app</a> <a class="btn" href="{{.GitHubURL}}">The project on GitHub</a></p>
+<p class="lead">{{T "lead"}}</p>
+{{if .ReleasesURL}}<p class="actions"><a class="btn primary" href="{{.ReleasesURL}}">{{T "download"}}</a> <a class="btn" href="{{.GitHubURL}}">{{T "github"}}</a></p>
 {{end}}</header>
 
 <section>
-<h2 class="panel-title">What Memories records</h2>
-<p>Memories is a set of 6 addons. They write down what happens to each character: sessions, travel, deaths, progress, kills, gathering, loot, money, skills, groups and PvP. The data stays in the game's saved files on your computer until you choose to upload it.</p>
+<h2 class="panel-title">{{T "records.title"}}</h2>
+<p>{{T "records.intro"}}</p>
 <div class="cards">
 {{range .Addons}}<article class="card panel">
 <h3><code>{{.Name}}</code></h3>
-<p>{{.Records}}</p>
+<p>{{T (print "addon." .Name)}}</p>
 </article>
 {{end}}</div>
-<p>The core addon, Memories, is always needed. You can turn each other addon off in the AddOn list to stop its recording.</p>
+<p>{{T "records.outro"}}</p>
 </section>
 
 <section>
-<h2 class="panel-title">What WoW Journey does</h2>
-<p>WoW Journey is the companion app for Windows, macOS and Linux. It reads the saved files and keeps a backup. It builds a journey for each character: a timeline, a map of the trail and your screenshots. It can also upload a character to this website, so that you can send the link to a friend.</p>
+<h2 class="panel-title">{{T "journey.title"}}</h2>
+<p>{{T "journey.text"}}</p>
 </section>
 
 <section>
-<h2 class="panel-title">How to start</h2>
-<p>Follow these steps in order. The addons come first, the app comes second.</p>
+<h2 class="panel-title">{{T "start.title"}}</h2>
+<p>{{T "start.intro"}}</p>
 <ol class="steps">
 <li class="step"><div>
-<h3>Install the addons</h3>
-<p>Download the zip of the addons from the latest release. Unpack it into the <code>Interface/AddOns</code> folder of your game. The zip holds the 6 <code>Memories</code> folders. Start the game and turn on the addons in the AddOn list.</p>
+<h3>{{T "step.install"}}</h3>
+<p>{{H "step.install.html"}}</p>
 </div></li>
 <li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
 <li class="step"><div>
-<h3>Play</h3>
-<p>Play your characters as you always do. Memories records the journey in the background. The game writes the saved file when you log out or type <code>/reload</code>.</p>
+<h3>{{T "step.play"}}</h3>
+<p>{{H "step.play.html"}}</p>
 </div></li>
 <li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
 <li class="step"><div>
-<h3>Install the WoW Journey app</h3>
-<p>Download the app for your system from the same release. On the first start, a short wizard finds your WoW folder and sets a backup folder.</p>
+<h3>{{T "step.app"}}</h3>
+<p>{{T "step.app.text"}}</p>
 </div></li>
 <li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
 <li class="step"><div>
-<h3>Gather your journey</h3>
-<p>The app reads the saved files and builds the journey of each character on your computer. It does this again each time the game saves.</p>
+<h3>{{T "step.gather"}}</h3>
+<p>{{T "step.gather.text"}}</p>
 </div></li>
 <li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
 <li class="step"><div>
-<h3>Connect to this website</h3>
-{{if .OpenRegistration}}<p>Open the settings of the app and find the Website section. Press Register.</p>
-{{else}}<p>Ask the person who runs this website for an invite code. Open the settings of the app and find the Website section. Enter the code and press Register.</p>
+<h3>{{T "step.connect"}}</h3>
+{{if .OpenRegistration}}<p>{{T "step.connect.open"}}</p>
+{{else}}<p>{{T "step.connect.code"}}</p>
 {{end}}</div></li>
 <li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
 <li class="step"><div>
-<h3>Upload and share</h3>
-<p>Turn on the Upload switch, or press Upload now. The app shows a progress bar and then the link of each character. Press Copy link and send it to a friend.</p>
+<h3>{{T "step.upload"}}</h3>
+<p>{{T "step.upload.text"}}</p>
 </div></li>
 </ol>
-<p class="callout">A character page is unlisted: anybody with the link can open it, and nobody can find it on this site.</p>
+<p class="callout">{{T "unlisted"}}</p>
 </section>
 
 {{if .ReleasesURL}}<section class="closing panel">
-<h2 class="panel-title">Ready to begin?</h2>
-<p><a class="btn primary" href="{{.ReleasesURL}}">Download the addons and the app</a></p>
-<p><a href="{{.GitHubURL}}">The project on GitHub</a> has the source code and the documentation.</p>
+<h2 class="panel-title">{{T "closing.title"}}</h2>
+<p><a class="btn primary" href="{{.ReleasesURL}}">{{T "download"}}</a></p>
+<p><a href="{{.GitHubURL}}">{{T "github"}}</a> {{T "closing.after"}}</p>
 </section>
 {{end}}</main>
+<footer class="foot">
+<p class="cookie-note">{{T "cookie"}}</p>
+{{template "picker" .}}
+</footer>
 </body>
 </html>

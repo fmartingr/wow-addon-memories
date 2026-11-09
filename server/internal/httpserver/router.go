@@ -36,7 +36,8 @@ func NewPublic(cfg config.Config, s *site.Site, pages *site.Pages, st *store.Sto
 	pages.Routes(mux)
 	// The per-IP limit covers the API too, so that signed requests of unregistered keys and the unsigned API paths
 	// cannot flood the server; the API adds its own tighter limits per key and per registration.
-	limited := ratelimit.PerIP(ratelimit.New(cfg.RatePublicPerMinute, time.Minute), cfg.TrustedProxies, mux)
+	limited := ratelimit.PerIP(ratelimit.New(cfg.RatePublicPerMinute, time.Minute), cfg.TrustedProxies,
+		site.LangChoice(strings.HasPrefix(cfg.SiteURL, "https://"), mux))
 	// The viewer files are outside the limit: one visit of a map loads 100 to 300 tiles. Only fixed files and the two
 	// art folders are served there, with no directory listing.
 	outer := http.NewServeMux()

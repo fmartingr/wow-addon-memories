@@ -650,7 +650,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 7. Website server: language choice, picker, cookie and translated home and 404
+### [x] 7. Website server: language choice, picker, cookie and translated home and 404
 
 - **Outcome:** the server picks the page language (AC9 steps 1, 2, 4, 5), sets the cookie from the picker, serves home
   and 404 in that language, and marks the character page with the language and its source.

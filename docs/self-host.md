@@ -119,6 +119,20 @@ The image sets `MEMORIES_WEB_DIR`, `MEMORIES_DATA_DIR` and `MEMORIES_ADMIN_ADDR`
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |
 | `MEMORIES_RATE_PUBLIC_PER_MINUTE` | 600 | Requests a minute from one IP to the public listener. |
 
+## Language
+
+The home page, the 404 page and the character pages show in English, Deutsch, Français, Español, Italiano or
+Português. The server picks the language in this order: the `?lang=<code>` query, the `lang` cookie, on a character page
+the language of the character's game client, the `Accept-Language` header, English.
+
+- The picker in the footer links to `?lang=<code>`. The server sets the cookie `lang=<code>; Path=/; Max-Age=31536000;
+  SameSite=Lax` (and `Secure` when `MEMORIES_SITE_URL` starts with `https://`) and answers `303 See Other` to the same
+  URL without `lang`. A `#` part on the picker link stays across the redirect.
+- The cookie holds only a language code. It is not `HttpOnly`, because the character page reads it. The home page says
+  so in one sentence.
+- Home, 404 and character pages answer with `Vary: Cookie, Accept-Language`. A cache or CDN in front of the server must
+  keep one copy for each cookie and header value, or must not cache these pages.
+
 ## Map art
 
 The character page draws the world map from art that Blizzard owns. The art is not in git. Without it, the maps show a
