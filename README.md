@@ -94,16 +94,21 @@ Releases are cut as described in [`docs/releasing.md`](docs/releasing.md).
 
 - **First start:** a 3-step wizard. Step 1 finds the WoW folder (or opens a folder picker), step 2 sets the backup
   folder (default `<Documents>/WoW Journey`), step 3 has the Watch and Start at login switches (both on).
-- **Main screen:** the last gather time, a Gather now button, the counts (characters, journal lines, screenshots),
-  the characters, each problem in plain words with a fix button, the size of the backup folder, and Open backup
-  folder and Open latest data.
-- **Settings:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two switches,
-  the Website section and the version.
-- **Website:** the Website section of the settings has the website address (default `https://wowjourney.xyz`; only
+- **Look:** the app has the look of the website: a dark theme, gold double borders, Cinzel capitals and Alegreya Sans. The
+  tokens come from `web/base.css`; `make app-theme` writes them to `app/lib/src/theme/tokens.dart`, and `make
+  theme-check` compares the two themes (see `.claude/skills/theme-parity`).
+- **Main window:** a header and three tabs at the top: Overview, Website and Settings. A message about the settings
+  file shows above the tabs.
+- **Overview:** the last gather time, a Gather now button, the counts (characters, journal lines, screenshots), the
+  characters, each problem in plain words with a fix button, the size of the backup folder, and Open backup folder
+  and Open latest data.
+- **Settings tab:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two
+  switches and the version.
+- **Website tab:** the Registration panel has the website address (default `https://wowjourney.xyz`; only
   `https://`, or `http://` for `localhost`, `127.0.0.1` and `[::1]`), a Check button, the registration (an invite code,
   or one click on a website with open registration), the Upload switch (off by default, and it stays off until the key
   is registered), Request screenshots and the key fingerprint. With Upload on, the app sends the journey after each
-  gather. The main screen has a Website card with Upload now, the last result, and for each uploaded character its
+  gather. The Website panel above it has Upload now, the last result, and for each uploaded character its
   link with Copy link and Remove from website. A removed character is not uploaded again after a gather; Upload now
   sends every removed character again. Character pages are unlisted: anybody with the link can open them. The
   key is `upload-key.json` and the state `upload-state.json`, in the app support folder; after a reinstall the website

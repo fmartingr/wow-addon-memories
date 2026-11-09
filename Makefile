@@ -16,7 +16,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test
+.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test app-theme theme-check app-shots
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -31,7 +31,7 @@ deps: ## Install the Lua test and lint tools with luarocks
 	luarocks --lua-version=5.1 --local install luacov 0.17.0-1
 	luarocks --lua-version=5.1 --local install luacheck 1.2.0-1
 
-lint: lint-lua lint-no-go lint-actions server-lint web-lint dart-lint app-lint fmt-check ## Run all linters
+lint: lint-lua lint-no-go lint-actions server-lint web-lint theme-check dart-lint app-lint fmt-check ## Run all linters
 
 lint-lua: ## Run luacheck
 	luacheck .
@@ -52,6 +52,16 @@ web-lint: ## Check the syntax of each web/**/*.mjs file
 
 web-test: ## Run the node tests of the viewer logic with a coverage threshold (lines of web/lib/ at least 80 %)
 	node --test --experimental-test-coverage --test-coverage-lines=80 --test-coverage-include='web/lib/**' web/test/
+
+app-theme: ## Write app/lib/src/theme/tokens.dart from the website tokens (web/base.css)
+	node scripts/gen-app-theme.mjs
+
+theme-check: ## Check that the app tokens are up to date and that the website and app themes match (node only)
+	node scripts/gen-app-theme.mjs --check
+	node scripts/theme-parity.mjs
+
+app-shots: ## Write PNG pictures of the app screens to THEME_SHOTS (default build/theme-shots) for the theme review
+	cd app && THEME_PREVIEW_DIR="$(abspath $(or $(THEME_SHOTS),build/theme-shots))" fvm flutter test test/theme_preview_test.dart
 
 dart-lint: ## Analyze and check the format of the Dart core
 	cd $(CORE) && fvm dart pub get

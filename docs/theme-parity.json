@@ -1,0 +1,334 @@
+{
+  "about": "Maps each component of the website theme to the app theme. scripts/theme-parity.mjs checks it. Each value has a css form (found in the rule) and a dart form (found in the Dart file). A class of web/base.css that is not listed here fails the check, so a new web component is never forgotten in the app.",
+  "components": [
+    {
+      "name": "panel",
+      "css": {
+        "file": "web/base.css",
+        "selector": ".panel {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_theme.dart",
+        "symbol": "AkPanelBorder",
+        "use": "CardThemeData, DialogThemeData"
+      },
+      "values": [
+        {
+          "css": "#0d1213",
+          "dart": "0xFF0D1213"
+        },
+        {
+          "css": "#c0995820",
+          "dart": "0x20C09958"
+        },
+        {
+          "css": "border-radius: 5px",
+          "dart": "radius = 5"
+        }
+      ]
+    },
+    {
+      "name": "panel-title",
+      "css": {
+        "file": "web/base.css",
+        "selector": ".panel-title {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkPanelTitle"
+      },
+      "values": [
+        {
+          "css": "#423b2d",
+          "dart": "0xFF423B2D"
+        }
+      ]
+    },
+    {
+      "name": "btn",
+      "css": {
+        "file": "web/base.css",
+        "selector": ".btn {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_theme.dart",
+        "symbol": "_button(primary: false)",
+        "use": "OutlinedButton, ElevatedButton"
+      },
+      "values": [
+        {
+          "css": "#4a3818",
+          "dart": "0xFF4A3818"
+        },
+        {
+          "css": "#21170a",
+          "dart": "0xFF21170A"
+        },
+        {
+          "css": "min-height: 44px",
+          "dart": "Size(44, 44)"
+        },
+        {
+          "css": "border-radius: 3px",
+          "dart": "Radius.circular(3)"
+        }
+      ]
+    },
+    {
+      "name": "btn:hover",
+      "css": {
+        "file": "web/base.css",
+        "selector": ".btn:hover {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_theme.dart",
+        "symbol": "_button hover"
+      },
+      "values": [
+        {
+          "css": "#6a5022",
+          "dart": "0xFF6A5022"
+        },
+        {
+          "css": "#2c1f0d",
+          "dart": "0xFF2C1F0D"
+        }
+      ]
+    },
+    {
+      "name": "btn.primary",
+      "css": {
+        "file": "web/base.css",
+        "selector": ".btn.primary,"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_theme.dart",
+        "symbol": "_button(primary: true)",
+        "use": "FilledButton"
+      },
+      "values": [
+        {
+          "css": "#e7bb68",
+          "dart": "0xFFE7BB68"
+        },
+        {
+          "css": "#ae742b",
+          "dart": "0xFFAE742B"
+        },
+        {
+          "css": "#e3b76b",
+          "dart": "0xFFE3B76B"
+        },
+        {
+          "css": "#20180e",
+          "dart": "0xFF20180E"
+        }
+      ]
+    },
+    {
+      "name": "crest",
+      "css": {
+        "file": "web/base.css",
+        "selector": ".crest {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkHeader"
+      },
+      "values": [
+        {
+          "css": "#d5a64f33",
+          "dart": "0x33D5A64F"
+        }
+      ]
+    },
+    {
+      "name": "tab",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".tab {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkTabBar"
+      },
+      "values": [
+        {
+          "css": "#1b1f1f",
+          "dart": "0xFF1B1F1F"
+        },
+        {
+          "css": "#101516",
+          "dart": "0xFF101516"
+        }
+      ]
+    },
+    {
+      "name": "tab selected",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".tab[aria-selected='true'] {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkTabBar selected"
+      },
+      "values": [
+        {
+          "css": "#3a2d16",
+          "dart": "0xFF3A2D16"
+        },
+        {
+          "css": "#1a1409",
+          "dart": "0xFF1A1409"
+        }
+      ]
+    },
+    {
+      "name": "tag alliance",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".tag.alliance {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkTagKind.alliance"
+      },
+      "values": [
+        {
+          "css": "#7fb4ff",
+          "dart": "0xFF7FB4FF"
+        },
+        {
+          "css": "#3d5f96",
+          "dart": "0xFF3D5F96"
+        }
+      ]
+    },
+    {
+      "name": "tag horde",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".tag.horde {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkTagKind.horde"
+      },
+      "values": [
+        {
+          "css": "#ff7a6b",
+          "dart": "0xFFFF7A6B"
+        },
+        {
+          "css": "#8f3a31",
+          "dart": "0xFF8F3A31"
+        }
+      ]
+    },
+    {
+      "name": "tag hardcore",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".tag.hardcore {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkTagKind.hardcore"
+      },
+      "values": [
+        {
+          "css": "#ff5a43",
+          "dart": "0xFFFF5A43"
+        },
+        {
+          "css": "#8f2a1e",
+          "dart": "0xFF8F2A1E"
+        }
+      ]
+    },
+    {
+      "name": "tag selffound",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".tag.selffound {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_widgets.dart",
+        "symbol": "AkTagKind.selfFound"
+      },
+      "values": [
+        {
+          "css": "#1eff00",
+          "dart": "0xFF1EFF00"
+        },
+        {
+          "css": "#2b7a1e",
+          "dart": "0xFF2B7A1E"
+        }
+      ]
+    },
+    {
+      "name": "meter",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".meter {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_theme.dart",
+        "symbol": "progressIndicatorTheme"
+      },
+      "values": [
+        {
+          "css": "#080c0e",
+          "dart": "0xFF080C0E"
+        }
+      ]
+    },
+    {
+      "name": "tip and toast",
+      "css": {
+        "file": "web/style.css",
+        "selector": ".tip {"
+      },
+      "dart": {
+        "file": "app/lib/src/theme/ak_theme.dart",
+        "symbol": "snackBarTheme, tooltipTheme"
+      },
+      "values": [],
+      "note": "The tip edge is a one-off colour of the viewer; the app uses the gold-dim token. Listed so a change is looked at."
+    }
+  ],
+  "webOnly": [
+    {
+      "css": ".sub",
+      "reason": "A muted small line. The app uses the bodySmall style, which is the muted token."
+    },
+    {
+      "css": ".legal",
+      "reason": "The legal line of a web page. The app has no map art and no legal line."
+    },
+    {
+      "css": "code",
+      "reason": "Inline code in the landing text. The app has no code text."
+    }
+  ],
+  "appOnly": [
+    {
+      "dart": "InputDecorationTheme",
+      "reason": "Text fields of the Website tab. The website has no form. They use the surface and edge tokens."
+    },
+    {
+      "dart": "SwitchThemeData",
+      "reason": "The Upload, Watch and Start at login switches. They use the gold and gold-dim tokens."
+    },
+    {
+      "dart": "DialogThemeData",
+      "reason": "The Remove confirmation. It uses the panel border."
+    },
+    {
+      "dart": "SnackBarThemeData",
+      "reason": "Short messages. They use the tip colours."
+    }
+  ]
+}
