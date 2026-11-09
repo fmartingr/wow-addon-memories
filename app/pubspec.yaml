@@ -30,3 +30,16 @@ flutter:
   uses-material-design: true
   assets:
     - assets/tray/
+    - assets/crest.png
+    - assets/fonts/OFL.txt
+  fonts:
+    - family: Cinzel
+      fonts:
+        - asset: assets/fonts/Cinzel-Variable.ttf
+    - family: Alegreya Sans
+      fonts:
+        - asset: assets/fonts/AlegreyaSans-400.ttf
+        - asset: assets/fonts/AlegreyaSans-500.ttf
+          weight: 500
+        - asset: assets/fonts/AlegreyaSans-700.ttf
+          weight: 700

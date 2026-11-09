@@ -460,3 +460,9 @@ Future<void> tapVisible(WidgetTester tester, Finder finder) async {
 /// The issue [code] as a gather gives it.
 GatherIssue issue(GatherIssueCode code, {String? path, bool fatal = false}) =>
     GatherIssue(code, 'core text for $code', path: path, fatal: fatal);
+
+/// Opens the tab [label] of the main screen (Overview, Website or Settings).
+Future<void> openTab(WidgetTester tester, String label) async {
+  await tester.tap(find.byKey(ValueKey('tab-$label')));
+  await tester.pumpAndSettle();
+}

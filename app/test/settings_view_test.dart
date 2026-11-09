@@ -16,8 +16,7 @@ Future<Fakes> _openSettings(
     picker: picker,
   );
   await pumpApp(tester, fakes);
-  await tester.tap(find.byTooltip('Settings'));
-  await tester.pumpAndSettle();
+  await openTab(tester, 'Settings');
   return fakes;
 }
 
@@ -58,19 +57,16 @@ void main() {
     await tester.pumpAndSettle();
     await tester.pump(const Duration(seconds: 60));
     expect(fakes.signature.calls, hasLength(2));
-    await tester.pageBack();
-    await tester.pumpAndSettle();
+    await openTab(tester, 'Overview');
     expect(find.text(watchingText), findsNothing);
 
-    await tester.tap(find.byTooltip('Settings'));
-    await tester.pumpAndSettle();
+    await openTab(tester, 'Settings');
     await tester.tap(find.text('Watch'));
     await tester.pumpAndSettle();
     expect(fakes.signature.calls, hasLength(3));
     await tester.pump(const Duration(seconds: 10));
     expect(fakes.signature.calls, hasLength(4));
-    await tester.pageBack();
-    await tester.pumpAndSettle();
+    await openTab(tester, 'Overview');
     expect(find.text(watchingText), findsOneWidget);
   });
 
@@ -114,8 +110,7 @@ void main() {
       picker: FakeFolderPicker([readySettings.backupRoot, '/new/root']),
     );
     await pumpApp(tester, fakes);
-    await tester.tap(find.byTooltip('Settings'));
-    await tester.pumpAndSettle();
+    await openTab(tester, 'Settings');
     await tester.tap(_change('Change the backup folder'));
     await tester.pumpAndSettle();
     expect(fakes.store.saved.last.lastSignature, 'S0');

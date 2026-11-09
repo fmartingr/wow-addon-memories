@@ -1,5 +1,6 @@
-/// The main screen: the status, Gather now, the counts, the characters, the
-/// problems and the backup folder.
+/// The main screen: a header and three tabs. Overview has the status, Gather now,
+/// the counts, the characters, the problems and the backup folder. Website has the
+/// upload status and the registration. Settings has the folders and the switches.
 library;
 
 import 'package:flutter/material.dart';
@@ -9,12 +10,15 @@ import 'package:path/path.dart' as p;
 import '../gather/gather_controller.dart';
 import '../platform/services.dart';
 import '../settings/settings_controller.dart';
+import '../theme/ak_widgets.dart';
+import '../theme/tokens.dart';
 import '../upload/upload_controller.dart';
 import '../watch/watch_controller.dart';
 import 'folder_flow.dart';
 import 'messages.dart';
-import 'settings_page.dart';
+import 'settings_view.dart';
 import 'website_card.dart';
+import 'website_section.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({
@@ -43,6 +47,7 @@ class _HomePageState extends State<HomePage> {
   String? _checkedRoot;
   bool _wowGone = false;
   bool _started = false;
+  int _tab = 0;
 
   SettingsController get _settings => widget.settings;
   GatherController get _gather => widget.gather;
@@ -140,63 +145,91 @@ class _HomePageState extends State<HomePage> {
     IssueFix.tryAgain => _gatherNow(),
   };
 
-  void _openSettings() {
-    Navigator.of(context).push(
-      MaterialPageRoute<void>(
-        builder: (_) => SettingsPage(
-          services: widget.services,
-          settings: _settings,
-          upload: widget.upload,
+  static const _tabs = [
+    AkTab(label: 'Overview', icon: Icons.dashboard_outlined),
+    AkTab(label: 'Website', icon: Icons.cloud_outlined),
+    AkTab(label: 'Settings', icon: Icons.settings_outlined),
+  ];
+
+  /// A tab page: the content in a scrolling column of at most 720 pixels.
+  Widget _page(List<Widget> children) => Center(
+    child: ConstrainedBox(
+      constraints: const BoxConstraints(maxWidth: 720),
+      child: FocusTraversalGroup(
+        child: ListView(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          children: children,
         ),
       ),
-    );
-  }
+    ),
+  );
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('WoW Journey'),
-        actions: [
-          IconButton(
-            tooltip: 'Settings',
-            icon: const Icon(Icons.settings_outlined),
-            onPressed: _openSettings,
-          ),
-        ],
-      ),
       body: SafeArea(
-        child: ListenableBuilder(
-          listenable: Listenable.merge([_settings, _gather, widget.watch]),
-          builder: (context, _) => Center(
-            child: ConstrainedBox(
-              constraints: const BoxConstraints(maxWidth: 720),
-              child: FocusTraversalGroup(
-                child: ListView(
-                  padding: const EdgeInsets.all(16),
-                  children: [
-                    if (_settings.notice != null) _notice(context),
-                    if (_wowGone) _wowGoneCard(context),
-                    _statusCard(context),
-                    const SizedBox(height: 12),
-                    const _HintCard(),
-                    ..._issueCards(context),
-                    const SizedBox(height: 12),
-                    _counts(context),
-                    const SizedBox(height: 12),
-                    _characters(context),
-                    const SizedBox(height: 12),
-                    _backupCard(context),
-                    const SizedBox(height: 12),
-                    WebsiteCard(
-                      upload: widget.upload,
-                      settings: _settings,
-                      onOpenSettings: _openSettings,
-                      clock: widget.clock,
-                    ),
-                  ],
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16),
+          child: ListenableBuilder(
+            listenable: Listenable.merge([_settings, _gather, widget.watch]),
+            builder: (context, _) => Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const AkHeader(title: 'WoW Journey'),
+                AkTabBar(
+                  tabs: _tabs,
+                  selected: _tab,
+                  onSelected: (i) => setState(() => _tab = i),
                 ),
-              ),
+                if (_settings.notice != null)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12),
+                    child: _notice(context),
+                  ),
+                Expanded(
+                  child: IndexedStack(
+                    index: _tab,
+                    children: [
+                      _page([
+                        if (_wowGone) ...[
+                          _wowGoneCard(context),
+                          const SizedBox(height: 12),
+                        ],
+                        _statusCard(context),
+                        const SizedBox(height: 12),
+                        const _HintCard(),
+                        ..._issueCards(context),
+                        const SizedBox(height: 12),
+                        _counts(context),
+                        const SizedBox(height: 12),
+                        _characters(context),
+                        const SizedBox(height: 12),
+                        _backupCard(context),
+                      ]),
+                      _page([
+                        WebsiteCard(
+                          upload: widget.upload,
+                          settings: _settings,
+                          clock: widget.clock,
+                        ),
+                        const SizedBox(height: 12),
+                        Card(
+                          child: WebsiteSection(
+                            upload: widget.upload,
+                            settings: _settings,
+                          ),
+                        ),
+                      ]),
+                      _page([
+                        SettingsView(
+                          services: widget.services,
+                          settings: _settings,
+                        ),
+                      ]),
+                    ],
+                  ),
+                ),
+              ],
             ),
           ),
         ),
@@ -260,12 +293,9 @@ class _HomePageState extends State<HomePage> {
             ),
             if (widget.watch.watching) ...[
               const SizedBox(height: 4),
-              const Row(
-                children: [
-                  Icon(Icons.visibility_outlined, size: 18),
-                  SizedBox(width: 8),
-                  Expanded(child: Text(watchingText)),
-                ],
+              const Align(
+                alignment: Alignment.centerLeft,
+                child: AkTag(watchingText),
               ),
             ],
             const SizedBox(height: 12),
@@ -324,18 +354,14 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _characters(BuildContext context) {
-    final theme = Theme.of(context);
     final list = _gather.snapshot.characters;
     return Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8),
-            child: Semantics(
-              header: true,
-              child: Text('Characters', style: theme.textTheme.titleMedium),
-            ),
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
+            child: const AkPanelTitle('Characters'),
           ),
           if (list.isEmpty)
             const Padding(
@@ -346,25 +372,41 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.person_outline),
               title: Text(c.name),
-              subtitle: Text(_characterDetail(c)),
+              subtitle: _characterDetail(c),
             ),
         ],
       ),
     );
   }
 
-  String _characterDetail(CharacterSummary c) {
+  /// The realm, the level and the class of a character. The class has its game colour.
+  Widget _characterDetail(CharacterSummary c) {
+    final cls = c.className;
     final parts = [
       c.realm,
       if (c.level != null) 'Level ${c.level}',
-      if (c.className != null && c.className!.isNotEmpty)
-        className(c.className!),
-    ];
-    return parts.where((e) => e.isNotEmpty).join(' · ');
+    ].where((e) => e.isNotEmpty).toList();
+    final hasClass = cls != null && cls.isNotEmpty;
+    return Text.rich(
+      TextSpan(
+        children: [
+          TextSpan(text: parts.join(' · ')),
+          if (hasClass) ...[
+            if (parts.isNotEmpty) const TextSpan(text: ' · '),
+            TextSpan(
+              text: className(cls),
+              style: TextStyle(
+                color: classColours[cls.toUpperCase()] ?? Tokens.text,
+                fontWeight: FontWeight.w700,
+              ),
+            ),
+          ],
+        ],
+      ),
+    );
   }
 
   Widget _backupCard(BuildContext context) {
-    final theme = Theme.of(context);
     final root = _settings.settings.backupRoot;
     final size = formatSize(_gather.snapshot.sizeBytes);
     return Card(
@@ -373,11 +415,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Semantics(
-              header: true,
-              child: Text('Backup folder', style: theme.textTheme.titleMedium),
-            ),
-            const SizedBox(height: 8),
+            const AkPanelTitle('Backup folder'),
             Text(root ?? 'Not set'),
             const SizedBox(height: 4),
             Text('Size: $size'),

@@ -75,8 +75,7 @@ void main() {
     testWidgets('settings', (tester) async {
       useWindow(tester, width: 480, textScale: 1.5);
       await pumpApp(tester, _home());
-      await tester.tap(find.byTooltip('Settings'));
-      await tester.pumpAndSettle();
+      await openTab(tester, 'Settings');
       expect(tester.takeException(), isNull);
     });
   });
@@ -95,16 +94,26 @@ void main() {
     ]) {
       expect(tester.getSemantics(find.bySemanticsLabel(label)), button);
     }
-    for (final tip in ['Settings', 'Dismiss']) {
+    expect(
+      tester.getSemantics(find.byTooltip('Dismiss')),
+      isSemantics(tooltip: 'Dismiss', isButton: true, hasTapAction: true),
+    );
+    for (final tab in ['Overview', 'Website', 'Settings']) {
       expect(
-        tester.getSemantics(find.byTooltip(tip)),
-        isSemantics(tooltip: tip, isButton: true, hasTapAction: true),
+        tester.getSemantics(find.bySemanticsLabel(tab)),
+        isSemantics(
+          label: tab,
+          isButton: true,
+          hasTapAction: true,
+          hasSelectedState: true,
+          isSelected: tab == 'Overview',
+        ),
+        reason: tab,
       );
     }
     expect(find.bySemanticsLabel('Status: Never gathered'), findsOneWidget);
 
-    await tester.tap(find.byTooltip('Settings'));
-    await tester.pumpAndSettle();
+    await openTab(tester, 'Settings');
     for (final label in ['Change the WoW folder', 'Change the backup folder']) {
       expect(tester.getSemantics(find.bySemanticsLabel(label)), button);
     }

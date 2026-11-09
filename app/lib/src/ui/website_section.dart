@@ -1,10 +1,11 @@
-/// The Website section of the settings: the address, the registration, the
+/// The registration part of the Website tab: the address, the registration, the
 /// Upload switch and the screenshots.
 library;
 
 import 'package:flutter/material.dart';
 
 import '../settings/settings_controller.dart';
+import '../theme/ak_widgets.dart';
 import '../upload/upload_controller.dart';
 import 'messages.dart';
 
@@ -73,15 +74,11 @@ class _WebsiteSectionState extends State<WebsiteSection> {
         final open = info?.registration == 'open';
         final fingerprint = _upload.fingerprint;
         return Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          padding: const EdgeInsets.all(16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Semantics(
-                header: true,
-                child: Text(websiteTitle, style: theme.textTheme.titleMedium),
-              ),
-              const SizedBox(height: 8),
+              const AkPanelTitle(websiteRegistrationTitle),
               TextField(
                 controller: _address,
                 keyboardType: TextInputType.url,

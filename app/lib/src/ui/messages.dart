@@ -134,6 +134,9 @@ String className(String token) {
 /// The title of the Website section and card.
 const String websiteTitle = 'Website';
 
+/// The title of the registration panel of the Website tab.
+const String websiteRegistrationTitle = 'Registration';
+
 /// The line that says what a character link means.
 const String unlistedText =
     'Your character pages are unlisted: anybody with the link can open them.';
@@ -158,7 +161,6 @@ const String requestScreenshotsLabel = 'Request screenshots';
 const String copyLinkLabel = 'Copy link';
 const String removeFromWebsiteLabel = 'Remove from website';
 const String linkCopiedText = 'Link copied';
-const String openSettingsLabel = 'Open settings';
 const String cancelLabel = 'Cancel';
 const String removeLabel = 'Remove';
 
@@ -200,11 +202,11 @@ String screenshotsText(String state) => switch (state) {
 
 /// Shown on the card when the key is not registered.
 String cardNotRegisteredText(String site) =>
-    'You are not registered on ${siteLabel(site)}. Register in the settings '
-    'to share your journey.';
+    'You are not registered on ${siteLabel(site)}. Register below to share '
+    'your journey.';
 
 const String cardUploadOffText =
-    'Upload is off. Turn it on in the settings to send your journey.';
+    'Upload is off. Turn on the Upload switch below to send your journey.';
 
 /// The text under the progress bar of a running upload.
 String uploadProgressText(int done, int total) =>

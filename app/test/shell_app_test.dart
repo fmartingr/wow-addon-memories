@@ -127,8 +127,7 @@ void main() {
     testWidgets('follows the settings switch', (tester) async {
       final fakes = _ready();
       await pumpApp(tester, fakes);
-      await tester.tap(find.byTooltip('Settings'));
-      await tester.pumpAndSettle();
+      await openTab(tester, 'Settings');
       await tester.tap(find.text('Start at login'));
       await tester.pumpAndSettle();
       await tester.tap(find.text('Start at login'));

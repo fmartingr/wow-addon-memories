@@ -41,8 +41,7 @@ Fakes _fakes({
 Future<void> _openSettings(WidgetTester tester, Fakes fakes) async {
   useWindow(tester, height: 2400);
   await pumpApp(tester, fakes);
-  await tester.tap(find.byTooltip('Settings'));
-  await tester.pumpAndSettle();
+  await openTab(tester, 'Website');
 }
 
 Finder _field(String label) => find.widgetWithText(TextField, label);
@@ -59,12 +58,12 @@ SwitchListTile _uploadSwitch(WidgetTester tester) => tester
     .widget<SwitchListTile>(find.widgetWithText(SwitchListTile, 'Upload'));
 
 void main() {
-  group('settings, Website section', () {
+  group('Website tab, registration', () {
     testWidgets('shows the default address and asks for an invite code', (
       tester,
     ) async {
       await _openSettings(tester, _fakes());
-      expect(find.text(websiteTitle), findsOneWidget);
+      expect(find.text(websiteRegistrationTitle), findsOneWidget);
       expect(
         tester.widget<TextField>(_field(websiteAddressLabel)).controller!.text,
         defaultSite,
@@ -237,16 +236,18 @@ void main() {
     });
   });
 
-  group('main screen, Website card', () {
-    testWidgets('an unregistered key points to the settings', (tester) async {
+  group('Website tab, card', () {
+    testWidgets('an unregistered key points to the registration below', (
+      tester,
+    ) async {
       final fakes = _fakes();
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       expect(find.text(cardNotRegisteredText(site)), findsOneWidget);
       expect(find.text(uploadNowLabel), findsNothing);
-      await tester.tap(_button(openSettingsLabel));
-      await tester.pumpAndSettle();
       expect(find.text(websiteAddressLabel), findsOneWidget);
+      expect(find.text(registerLabel), findsOneWidget);
     });
 
     testWidgets('with Upload off, the card says so and has no Upload now', (
@@ -255,6 +256,7 @@ void main() {
       final fakes = _fakes(registered: true, characters: [nandu]);
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       expect(find.text(cardUploadOffText), findsOneWidget);
       expect(find.text(uploadNowLabel), findsNothing);
       expect(find.text(copyLinkLabel), findsOneWidget);
@@ -280,6 +282,7 @@ void main() {
       );
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       expect(find.text('Nothing uploaded yet.'), findsOneWidget);
 
       await tester.tap(find.text(uploadNowLabel));
@@ -302,6 +305,7 @@ void main() {
       fakes.upload.pendingSync = Completer<SyncReport>();
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(uploadNowLabel));
       await tester.pump();
 
@@ -338,6 +342,7 @@ void main() {
       );
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(uploadNowLabel));
       await tester.pumpAndSettle();
       expect(find.text(uploadPausedText), findsOneWidget);
@@ -362,6 +367,7 @@ void main() {
       );
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(uploadNowLabel));
       await tester.pumpAndSettle();
       expect(find.textContaining('clock of this computer'), findsOneWidget);
@@ -380,6 +386,7 @@ void main() {
       );
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(uploadNowLabel));
       await tester.pumpAndSettle();
       expect(find.text(keyRevokedText(site)), findsOneWidget);
@@ -433,6 +440,7 @@ void main() {
       final fakes = _fakes(registered: true, characters: [nandu]);
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(copyLinkLabel));
       await tester.pumpAndSettle();
       expect(copied, [nandu.url]);
@@ -445,6 +453,7 @@ void main() {
       final fakes = _fakes(registered: true, characters: [nandu]);
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(removeFromWebsiteLabel));
       await tester.pumpAndSettle();
       expect(
@@ -466,6 +475,7 @@ void main() {
       final fakes = _fakes(registered: true, characters: [nandu]);
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(removeFromWebsiteLabel));
       await tester.pumpAndSettle();
       await tester.tap(find.text(removeLabel));
@@ -486,6 +496,7 @@ void main() {
       );
       useWindow(tester, height: 2400);
       await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
       await tester.tap(find.text(removeFromWebsiteLabel));
       await tester.pumpAndSettle();
       await tester.tap(find.text(removeLabel));

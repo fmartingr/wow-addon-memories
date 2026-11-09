@@ -1,4 +1,4 @@
-/// The Website card of the main screen: the last upload, Upload now and the
+/// The Website card of the Website tab: the last upload, Upload now and the
 /// characters on the website.
 library;
 
@@ -7,6 +7,7 @@ import 'package:flutter/services.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
 
 import '../settings/settings_controller.dart';
+import '../theme/ak_widgets.dart';
 import '../upload/upload_controller.dart';
 import 'messages.dart';
 
@@ -15,13 +16,11 @@ class WebsiteCard extends StatelessWidget {
     super.key,
     required this.upload,
     required this.settings,
-    required this.onOpenSettings,
     this.clock = DateTime.now,
   });
 
   final UploadController upload;
   final SettingsController settings;
-  final VoidCallback onOpenSettings;
   final DateTime Function() clock;
 
   Future<void> _copy(BuildContext context, RemoteCharacter c) async {
@@ -76,29 +75,12 @@ class WebsiteCard extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Semantics(
-                  header: true,
-                  child: Text(
-                    '$websiteTitle: ${siteLabel(site)}',
-                    style: theme.textTheme.titleMedium,
-                  ),
-                ),
-                const SizedBox(height: 8),
+                AkPanelTitle('$websiteTitle: ${siteLabel(site)}'),
                 if (state == UploadState.unregistered) ...[
                   Text(cardNotRegisteredText(site)),
-                  const SizedBox(height: 12),
-                  OutlinedButton(
-                    onPressed: onOpenSettings,
-                    child: const Text(openSettingsLabel),
-                  ),
                 ] else ...[
                   if (state == UploadState.off) ...[
                     const Text(cardUploadOffText),
-                    const SizedBox(height: 12),
-                    OutlinedButton(
-                      onPressed: onOpenSettings,
-                      child: const Text(openSettingsLabel),
-                    ),
                   ] else ...[
                     Text(lastUploadText(upload.lastUpload, clock())),
                     if (state == UploadState.paused)

@@ -313,8 +313,7 @@ void main() {
 
   testWidgets('the Settings button opens the settings', (tester) async {
     await pumpApp(tester, _ready());
-    await tester.tap(find.byTooltip('Settings'));
-    await tester.pumpAndSettle();
+    await openTab(tester, 'Settings');
     expect(find.text('Start at login'), findsOneWidget);
   });
 

@@ -6,6 +6,7 @@ import 'gather/gather_controller.dart';
 import 'platform/services.dart';
 import 'settings/settings_controller.dart';
 import 'shell/shell_controller.dart';
+import 'theme/ak_theme.dart';
 import 'ui/home_page.dart';
 import 'upload/upload_controller.dart';
 import 'ui/wizard_page.dart';
@@ -101,19 +102,11 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
     super.dispose();
   }
 
-  ThemeData _theme(Brightness brightness) => ThemeData(
-    colorScheme: ColorScheme.fromSeed(
-      seedColor: const Color(0xFF8A6D3B),
-      brightness: brightness,
-    ),
-  );
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'WoW Journey',
-      theme: _theme(Brightness.light),
-      darkTheme: _theme(Brightness.dark),
+      theme: buildAkTheme(),
       home: ListenableBuilder(
         listenable: _settings,
         builder: (context, _) {
