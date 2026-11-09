@@ -65,6 +65,6 @@ export function formatHash({ tab, layer, params }) {
     const written = spec.write(v);
     if (spec.read(written) !== undefined) out.set(key, written);
   }
-  const query = out.toString().replaceAll('%2E', '.');
+  const query = out.toString();
   return '#' + t + (l ? '/' + l : '') + (query ? '?' + query : '');
 }

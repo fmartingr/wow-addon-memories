@@ -84,14 +84,23 @@ function deriveSkills(char, steps) {
   const known = new Map();
   for (const g of groups.values()) for (const [name, v] of g) known.set(name, v);
   const other = new Map();
+  // The snapshot is rewritten on each skill check, so only a record that is newer than it can change a rank.
+  const snapT = snap ? char?.addons?.Memories?.snap?.[snap.level]?.t : undefined;
   const latest = new Map();
-  for (const s of steps) if (s.k === 'sk' && typeof s.name === 'string') latest.set(s.name, s);
+  for (const s of steps) if (s.k === 'sk' && typeof s.name === 'string' && !(isNum(snapT) && s.t <= snapT)) latest.set(s.name, s);
   for (const [name, s] of latest) {
     const rank = isNum(s.rank) ? s.rank : 0;
     const max = isNum(s.max) ? s.max : rank;
+    // The addon writes rank 0 and max 0 for a skill that the character no longer has.
+    if (rank === 0 && max === 0) {
+      known.delete(name);
+      for (const g of groups.values()) g.delete(name);
+      continue;
+    }
     if (known.has(name)) Object.assign(known.get(name), { rank, max });
     else other.set(name, { rank, max });
   }
+  for (const [group, g] of groups) if (!g.size) groups.delete(group);
   if (other.size) groups.set('Other', other);
   return [...groups].map(([group, skills]) => ({
     group,
@@ -180,7 +189,7 @@ export function deriveSummary(char, steps) {
       selfFound: c.flags?.selfFoundAllowed === true,
       zone: zo?.zone ?? zoneSnap?.value ?? '',
       guild: gu && gu.guild ? { guild: gu.guild, rank: gu.rank ?? '' } : null,
-      pvp: rk?.title ?? pvpSnap?.value ?? '',
+      pvp: rk ? (rk.title ?? '') : (pvpSnap?.value ?? ''),
     },
     purse: derivePurse(c, list),
     skills: deriveSkills(c, list),

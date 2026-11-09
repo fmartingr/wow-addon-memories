@@ -200,3 +200,23 @@ test('paint sets colours and widths through the CSSOM', () => {
   paint(root);
   assert.deepEqual(set, [['--c', '#aad372'], ['--p', '50%']]);
 });
+
+test('a skill snapshot newer than an sk record wins, and an sk record newer than it wins', () => {
+  const char = { addons: { Memories: { snap: { 5: { t: 100 } } }, Memories_Character: { snap: { 5: { skills: 'W:Swords=100/100' } } } } };
+  const older = deriveSummary(char, [{ k: 'sk', name: 'Swords', rank: 92, max: 100, t: 90 }]).skills;
+  assert.equal(older[0].skills[0].rank, 100);
+  const newer = deriveSummary(char, [{ k: 'sk', name: 'Swords', rank: 101, max: 105, t: 110 }]).skills;
+  assert.deepEqual(newer[0].skills[0], { name: 'Swords', rank: 101, max: 105 });
+});
+
+test('an sk record with rank 0 and max 0 removes the skill', () => {
+  const char = { addons: { Memories_Character: { snap: { 5: { skills: 'P:Mining=10/75;P:Herbalism=5/75' } } } } };
+  const s = deriveSummary(char, [{ k: 'sk', name: 'Mining', rank: 0, max: 0, t: 5 }, { k: 'sk', name: 'Gone', rank: 0, max: 0, t: 5 }]).skills;
+  assert.deepEqual(s[0].skills.map((x) => x.name), ['Herbalism']);
+  assert.equal(s.length, 1);
+});
+
+test('a newer rank record with no title clears the pvp title', () => {
+  const char = { addons: { Memories_Social: { snap: { 58: { pvp: { title: 'Private' } } } } } };
+  assert.equal(deriveSummary(char, [{ k: 'rk', rank: 0, title: null, t: 1 }]).plate.pvp, '');
+});

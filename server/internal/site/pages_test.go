@@ -527,3 +527,20 @@ func TestETagCacheHashesOnceAndStaysBounded(t *testing.T) {
 		t.Errorf("the cache holds %d entries, the cap is %d", len(c.m), maxCachedETags)
 	}
 }
+
+func TestViewerFileNamesWithBracesDoNotBreakTheRoutes(t *testing.T) {
+	site, _ := New(Options{})
+	dir := writeWeb(t, testIndex)
+	if err := os.WriteFile(filepath.Join(dir, "x{1}.js"), []byte("1"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	p, err := NewPages(dir, nil, nil, site.NotFound(), slog.Default())
+	if err != nil {
+		t.Fatal(err)
+	}
+	rec := httptest.NewRecorder()
+	p.Assets().ServeHTTP(rec, httptest.NewRequest("GET", "/_/x%7B1%7D.js", nil))
+	if rec.Code != 200 || rec.Body.String() != "1" {
+		t.Errorf("GET /_/x{1}.js = %d %q", rec.Code, rec.Body)
+	}
+}

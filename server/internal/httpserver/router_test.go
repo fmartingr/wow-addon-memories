@@ -376,3 +376,16 @@ func TestLogsHoldNoQueryAndNoMemoriesHeader(t *testing.T) {
 		}
 	}
 }
+
+func TestViewerFilesAreLoggedOnlyWhenTheyFail(t *testing.T) {
+	var logs bytes.Buffer
+	public, _ := newHandlers(t, loadConfig(t, nil), &logs)
+	do(public, http.MethodGet, "/_/style.css")
+	if strings.Contains(logs.String(), "/_/style.css") {
+		t.Errorf("a successful viewer file request is logged: %s", logs.String())
+	}
+	do(public, http.MethodGet, "/_/map/tiles/99/0_0.webp")
+	if !strings.Contains(logs.String(), "/_/map/tiles/99/0_0.webp") || !strings.Contains(logs.String(), `"status":404`) {
+		t.Errorf("a failed viewer file request is not logged: %s", logs.String())
+	}
+}

@@ -139,12 +139,16 @@ func (p *Pages) loadAssets(read func(string) ([]byte, error)) error {
 		if d.IsDir() || !ok || !d.Type().IsRegular() {
 			return nil
 		}
-		b, err := read(rel)
+		info, err := d.Info()
 		if err != nil {
 			return err
 		}
-		if total += len(b); total > maxViewerBytes {
+		if total += int(info.Size()); total > maxViewerBytes {
 			return fmt.Errorf("the viewer files in %s are larger than %d MiB. Check MEMORIES_WEB_DIR", p.webDir, maxViewerBytes>>20)
+		}
+		b, err := read(rel)
+		if err != nil {
+			return err
 		}
 		p.assets[AssetPrefix+rel] = asset{body: b, contentType: ct, etag: etagOf(b)}
 		return nil
@@ -157,10 +161,15 @@ func (p *Pages) Assets() http.Handler {
 	mux := http.NewServeMux()
 	mux.Handle("GET "+AssetPrefix+"map/", NewStatic(AssetPrefix+"map/", filepath.Join(p.webDir, "map"), MapTypes))
 	mux.Handle("GET "+AssetPrefix+"fonts/", NewStatic(AssetPrefix+"fonts/", filepath.Join(p.webDir, "fonts"), FontTypes))
-	for path, a := range p.assets {
-		mux.Handle("GET "+path, serveBytes(a.contentType, a.etag, a.body))
-	}
-	mux.HandleFunc(AssetPrefix, http.NotFound)
+	// One handler looks the path up, because a file name with "{" would be a bad pattern for the mux.
+	mux.HandleFunc(AssetPrefix, func(w http.ResponseWriter, r *http.Request) {
+		a, ok := p.assets[r.URL.Path]
+		if !ok || r.Method != http.MethodGet && r.Method != http.MethodHead {
+			http.NotFound(w, r)
+			return
+		}
+		serveBytes(a.contentType, a.etag, a.body).ServeHTTP(w, r)
+	})
 	return mux
 }
 

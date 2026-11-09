@@ -5,6 +5,7 @@ import { className, raceName } from './lib/format.mjs';
 import { deriveGear } from './lib/gear.mjs';
 import { deriveSummary } from './lib/summary.mjs';
 import { mountShell } from './ui/shell.mjs';
+import { createJourneyTab } from './ui/journey.mjs';
 import { mountSummary } from './ui/summary.mjs';
 
 const REPLACE_EVERY_MS = 500;
@@ -62,13 +63,17 @@ async function main() {
   const shell = mountShell({
     onTab(tab) {
       if (tab === route.tab) return;
+      if (pending) {
+        clearTimeout(timer);
+        applyReplace();
+      }
       history.pushState(null, '', formatHash({ tab, layer: tab === 'heatmaps' ? route.layer : null, params: {} }));
       show();
     },
   });
   const tabs = {
     summary: mountSummary(shell.panel('summary'), summary, deriveGear(data.char, data.steps), ctx),
-    journey: stubTab(shell.panel('journey'), ctx),
+    journey: createJourneyTab(shell.panel('journey'), ctx),
     heatmaps: stubTab(shell.panel('heatmaps'), ctx),
   };
 
