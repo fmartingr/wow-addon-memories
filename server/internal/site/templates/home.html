@@ -5,24 +5,25 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{.Name}}</title>
 <link rel="icon" href="/_/icon.png">
+<link rel="stylesheet" href="{{.BaseCSS}}">
 <link rel="stylesheet" href="{{.CSS}}">
 </head>
 <body>
 <svg class="sprite" width="0" height="0" aria-hidden="true" focusable="false"><symbol id="print" viewBox="0 0 40 90"><ellipse cx="20" cy="19" rx="10" ry="15" fill="currentColor"/><ellipse cx="20" cy="63" rx="14" ry="25" fill="currentColor"/></symbol></svg>
 <main class="landing">
-<header class="hero">
+<header class="hero panel">
 <img class="crest" src="/_/icon.png" alt="" width="72" height="72">
 <p class="eyebrow">For World of Warcraft Forever</p>
 <h1>{{.Name}}</h1>
 <p class="lead">Every character has a story. Memories writes it down while you play. WoW Journey turns it into a journey you can look at, keep and share.</p>
-{{if .ReleasesURL}}<p class="actions"><a class="button" href="{{.ReleasesURL}}">Download the addons and the app</a> <a class="button secondary" href="{{.GitHubURL}}">The project on GitHub</a></p>
+{{if .ReleasesURL}}<p class="actions"><a class="btn primary" href="{{.ReleasesURL}}">Download the addons and the app</a> <a class="btn" href="{{.GitHubURL}}">The project on GitHub</a></p>
 {{end}}</header>
 
 <section>
-<h2>What Memories records</h2>
+<h2 class="panel-title">What Memories records</h2>
 <p>Memories is a set of 6 addons. They write down what happens to each character: sessions, travel, deaths, progress, kills, gathering, loot, money, skills, groups and PvP. The data stays in the game's saved files on your computer until you choose to upload it.</p>
 <div class="cards">
-{{range .Addons}}<article class="card">
+{{range .Addons}}<article class="card panel">
 <h3><code>{{.Name}}</code></h3>
 <p>{{.Records}}</p>
 </article>
@@ -31,12 +32,12 @@
 </section>
 
 <section>
-<h2>What WoW Journey does</h2>
+<h2 class="panel-title">What WoW Journey does</h2>
 <p>WoW Journey is the companion app for Windows, macOS and Linux. It reads the saved files and keeps a backup. It builds a journey for each character: a timeline, a map of the trail and your screenshots. It can also upload a character to this website, so that you can send the link to a friend.</p>
 </section>
 
 <section>
-<h2>How to start</h2>
+<h2 class="panel-title">How to start</h2>
 <p>Follow these steps in order. The addons come first, the app comes second.</p>
 <ol class="steps">
 <li class="step"><div>
@@ -70,12 +71,12 @@
 <p>Turn on the Upload switch, or press Upload now. The app shows a progress bar and then the link of each character. Press Copy link and send it to a friend.</p>
 </div></li>
 </ol>
-<p class="note">A character page is unlisted: anybody with the link can open it, and nobody can find it on this site.</p>
+<p class="callout">A character page is unlisted: anybody with the link can open it, and nobody can find it on this site.</p>
 </section>
 
-{{if .ReleasesURL}}<section class="closing">
-<h2>Ready to begin?</h2>
-<p><a class="button" href="{{.ReleasesURL}}">Download the addons and the app</a></p>
+{{if .ReleasesURL}}<section class="closing panel">
+<h2 class="panel-title">Ready to begin?</h2>
+<p><a class="btn primary" href="{{.ReleasesURL}}">Download the addons and the app</a></p>
 <p><a href="{{.GitHubURL}}">The project on GitHub</a> has the source code and the documentation.</p>
 </section>
 {{end}}</main>

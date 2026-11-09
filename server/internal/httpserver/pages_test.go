@@ -302,7 +302,7 @@ func TestViewerAssetsAreServedFromTheWebFolder(t *testing.T) {
 	s := newSite(t)
 	for path, ct := range map[string]string{
 		"/_/app.mjs": "text/javascript", "/_/lib/format.mjs": "text/javascript", "/_/kinds.js": "text/javascript",
-		"/_/style.css": "text/css", "/_/icon.png": "image/png",
+		"/_/style.css": "text/css", "/_/base.css": "text/css", "/_/icon.png": "image/png",
 	} {
 		rec := s.get(path)
 		want, err := os.ReadFile(filepath.Join(realWebDir, strings.TrimPrefix(path, "/_/")))

@@ -16,8 +16,12 @@ var templateFS embed.FS
 //go:embed static/site.css
 var siteCSS []byte
 
-// CSSPath is the URL of the style sheet of the home page and the 404 page.
-const CSSPath = "/assets/site.css"
+// CSSPath is the URL of the layout style sheet of the home page and the 404 page. BaseCSSPath is the shared style
+// sheet of the viewer folder (tokens, fonts and components), which the character page loads as well.
+const (
+	CSSPath     = "/assets/site.css"
+	BaseCSSPath = AssetPrefix + "base.css"
+)
 
 // Options holds what the pages show.
 type Options struct {
@@ -46,6 +50,7 @@ var Addons = []Addon{
 type pageData struct {
 	Name             string
 	CSS              string
+	BaseCSS          string
 	GitHubURL        string
 	ReleasesURL      string
 	OpenRegistration bool
@@ -64,7 +69,7 @@ func New(opt Options) (*Site, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse the page templates: %w", err)
 	}
-	data := pageData{Name: opt.Name, CSS: CSSPath, GitHubURL: opt.GitHubURL, OpenRegistration: opt.OpenRegistration, Addons: Addons}
+	data := pageData{Name: opt.Name, CSS: CSSPath, BaseCSS: BaseCSSPath, GitHubURL: opt.GitHubURL, OpenRegistration: opt.OpenRegistration, Addons: Addons}
 	if opt.GitHubURL != "" {
 		data.ReleasesURL = opt.GitHubURL + "/releases/latest"
 	}
