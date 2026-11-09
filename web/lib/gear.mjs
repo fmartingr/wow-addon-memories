@@ -1,5 +1,5 @@
 // The 19 gear slots and the item in each, derived from the gear snapshots and the equip records.
-import { t } from './i18n.mjs';
+import { LANGS, currentLang, t } from './i18n.mjs';
 
 // side: where the slot sits on the paper doll.
 export const SLOTS = [
@@ -75,6 +75,10 @@ export function deriveGear(char, steps) {
   });
 }
 
-export function wowheadUrl(id) {
-  return Number.isSafeInteger(id) && id > 0 ? 'https://www.wowhead.com/classic/item=' + id : null;
+// The Wowhead page of an item. English has the plain URL; the other languages have their code in the path, which the
+// tooltip script reads to show the translated item name. An unknown code gives the English URL.
+export function wowheadUrl(id, code = currentLang()) {
+  if (!Number.isSafeInteger(id) || id <= 0) return null;
+  const lang = code !== 'en' && LANGS.includes(code) ? code + '/' : '';
+  return `https://www.wowhead.com/classic/${lang}item=${id}`;
 }

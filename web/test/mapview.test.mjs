@@ -1,7 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { clampCamera, fitBounds, fitScale, fitWorld, levelName, MAX_S, nextZoom, pinchCamera, s2w, w2s, zoomAround, zoomSteps } from '../ui/mapview.mjs';
-import { H, W } from '../zones.mjs';
+import { clampCamera, fitBounds, fitScale, fitWorld, levelName, MAX_S, nextZoom, pinchCamera, s2w, w2s, zoneName, zoomAround, zoomSteps } from '../ui/mapview.mjs';
+import { H, W, ZONES } from '../zones.mjs';
+import zoneNames from '../i18n/zones.mjs';
 
 const near = (a, b, eps = 1e-6) => assert.ok(Math.abs(a - b) < eps, `${a} vs ${b}`);
 const v = { x: 300, y: 200, s: 2, w: 800, h: 600 };
@@ -90,4 +91,34 @@ test('pinch scales by the distance ratio around the midpoint', () => {
   near(moved.s, 2);
   assert.ok(moved.x < start.x);
   assert.ok(Number.isFinite(pinchCamera(start, 800, 600, [{ x: 1, y: 1 }, { x: 1, y: 1 }], to).s));
+});
+
+test('zoneName gives the official name in the page language', () => {
+  assert.equal(zoneName(1429, 'de'), 'Wald von Elwynn');
+  assert.equal(zoneName(1429, 'fr'), "Forêt d'Elwynn");
+  assert.equal(zoneName(1429, 'es'), 'Bosque de Elwynn');
+  assert.equal(zoneName(1429, 'en'), 'Elwynn Forest');
+  assert.equal(zoneName(1429), 'Elwynn Forest');
+});
+
+test('zoneName falls back to the English name', () => {
+  assert.equal(zoneName(1411, 'de'), 'Durotar');
+  assert.equal(zoneName(1429, 'ru'), 'Elwynn Forest');
+  assert.equal(zoneName(1429, '__proto__'), 'Elwynn Forest');
+  assert.equal(zoneName(1429, 'de', { 1429: { name: 'Custom' } }), 'Wald von Elwynn');
+  assert.equal(zoneName(99999, 'de'), '');
+  assert.equal(zoneName(1429, 'de', {}), '');
+  assert.equal(zoneName(99999, 'de', { 99999: { name: 'Custom zone' } }), 'Custom zone');
+  assert.equal(zoneName('__proto__', 'de'), '');
+});
+
+test('every zone name of the catalog is for a map of the zone table, in the 5 languages', () => {
+  assert.deepEqual(Object.keys(zoneNames).sort(), ['de', 'es', 'fr', 'it', 'pt']);
+  for (const [code, names] of Object.entries(zoneNames)) {
+    assert.ok(Object.keys(names).length > 20, code);
+    for (const [id, name] of Object.entries(names)) {
+      assert.ok(ZONES[id], `${code} ${id} is not a mapId of zones.mjs`);
+      assert.ok(typeof name === 'string' && name.trim() !== '' && name !== ZONES[id].name, `${code} ${id}`);
+    }
+  }
 });

@@ -56,8 +56,10 @@ export function plural(n, forms, code = lang) {
 
 const fill = (text, vars) => text.replace(/\{(\w+)\}/g, (m, name) => (vars && Object.hasOwn(vars, name) ? String(vars[name] ?? '') : m));
 
+// own reads a key of an object without its prototype chain, so "__proto__" or "toString" give undefined.
+export const own = (cat, key) => (Object.hasOwn(cat, key) ? cat[key] : undefined);
+
 // The entry of key: the language, then English, then undefined.
-const own = (cat, key) => (Object.hasOwn(cat, key) ? cat[key] : undefined);
 const entry = (key) => own(catalog, key) ?? own(en, key);
 
 // tr returns the text of key, or undefined when no catalog has it.

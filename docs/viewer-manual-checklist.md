@@ -46,3 +46,5 @@ browser at 360 × 740 and write "360 px" in the cell. Use a real character on `m
 | 39 | i18n | Choose each language of the picker on the home page and on a character page. `<html lang>` follows, and the longest texts (German) are not clipped on a phone and at 1440 px. | not run | not run |
 | 40 | i18n | Dates, numbers and the coin letters follow the language (German: `1.234`, `G S K`). One kill reads "1 kill". | not run | not run |
 | 41 | i18n | With the network blocking `/_/i18n/de.mjs`, a German page still opens in English with no error. | not run | not run |
+| 42 | i18n | On a German character page, hover a gear slot: the Wowhead tooltip shows the German item name, and the link points to `wowhead.com/classic/de/item=<id>`. English uses `wowhead.com/classic/item=<id>`. | not run | not run |
+| 43 | i18n | With `web/map/` renamed, the grid shows the zone names of the page language (German: "Wald von Elwynn"). A zone with no translation shows its English name. | not run | not run |

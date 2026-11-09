@@ -787,7 +787,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
         section).
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 9. Viewer: Wowhead links and map zone labels in the page language
+### [x] 9. Viewer: Wowhead links and map zone labels in the page language
 
 - **Outcome:** gear tooltips show translated item names and the map shows translated zone labels.
 - **Depends on:** Task 8 (the page language and `t()`).

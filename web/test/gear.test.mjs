@@ -1,6 +1,8 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { SLOTS, deriveGear, slotLabel, wowheadUrl } from '../lib/gear.mjs';
+import { setLang } from '../lib/i18n.mjs';
+import de from '../i18n/de.mjs';
 import { dollHtml, loadWidget, mountPaperDoll, paintDoll } from '../ui/gear.mjs';
 
 const ids = (...pairs) => {
@@ -153,4 +155,30 @@ test('paintDoll sets the quality colour through the CSSOM', () => {
   const el = (className) => ({ className, style: { setProperty: (k, v) => set.push([k, v]) } });
   paintDoll({ querySelectorAll: (sel) => (sel.startsWith('a.slot') ? [el('slot q4 selected'), el('slot')] : [el('q-name q2')]) });
   assert.deepEqual(set, [['--c', '#a335ee'], ['--c', '#1eff00']]);
+});
+
+test('wowheadUrl points at the Wowhead page in the page language', () => {
+  assert.equal(wowheadUrl(19019, 'en'), 'https://www.wowhead.com/classic/item=19019');
+  for (const code of ['de', 'fr', 'es', 'it', 'pt']) assert.equal(wowheadUrl(19019, code), `https://www.wowhead.com/classic/${code}/item=19019`);
+  assert.equal(wowheadUrl(19019), 'https://www.wowhead.com/classic/item=19019');
+});
+
+test('wowheadUrl gives the English URL for an unknown code and no link for a bad id', () => {
+  for (const bad of ['ru', 'xx', '', 'DE', 'de/../x', '"><img>', null, undefined, 5, {}, '__proto__']) {
+    assert.equal(wowheadUrl(19019, bad), 'https://www.wowhead.com/classic/item=19019', String(bad));
+  }
+  for (const bad of [0, -1, 1.5, NaN, '12', null, undefined]) assert.equal(wowheadUrl(bad, 'de'), null, String(bad));
+});
+
+test('the paper doll links to the Wowhead page of the page language', () => {
+  const gear = deriveGear({}, [{ k: 'ge', t: 1, ids: ids([5, 1380]) }]);
+  setLang('de', de);
+  try {
+    const html = dollHtml(gear, 5);
+    assert.equal((html.match(/href="https:\/\/www\.wowhead\.com\/classic\/de\/item=1380"/g) ?? []).length, 2);
+    assert.doesNotMatch(html, /classic\/item=/);
+  } finally {
+    setLang('en');
+  }
+  assert.match(dollHtml(gear, 5), /classic\/item=1380"/);
 });
