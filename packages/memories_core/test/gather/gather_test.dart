@@ -141,6 +141,39 @@ void main() {
     });
   });
 
+  group('client language', () {
+    String charFile() => p.join(
+      account(fx.wow),
+      'Brumamar',
+      'Ñandú',
+      'SavedVariables',
+      'Memories.lua',
+    );
+
+    test('passes the locale of the char table into character.json', () async {
+      final file = File(charFile());
+      final source = file.readAsStringSync();
+      expect(source, contains('["char"] = {'));
+      file.writeAsStringSync(
+        source.replaceFirst(
+          '["char"] = {',
+          '["char"] = {\n\t\t["locale"] = "deDE",',
+        ),
+      );
+      final r = await runOn(fx.wow, fx.dist);
+      expect(r.result.error, isNull, reason: r.out);
+      final char = readJson(p.join(fx.dist, mainId, 'character.json'))!;
+      expect(char['locale'], 'deDE');
+    });
+
+    test('writes no locale for a char table without one', () async {
+      final r = await runOn(fx.wow, fx.dist);
+      expect(r.result.error, isNull, reason: r.out);
+      final char = readJson(p.join(fx.dist, mainId, 'character.json'))!;
+      expect(char.containsKey('locale'), isFalse);
+    });
+  });
+
   group('reinstall', () {
     test('keeps the earlier records and adds the new one once', () async {
       expect((await runOn(fx.wow, fx.dist)).result.error, isNull);

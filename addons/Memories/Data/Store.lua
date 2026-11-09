@@ -120,6 +120,10 @@ local function coreChar(data)
 			char[key] = values[i]
 		end
 	end
+	local locale = GetLocale and GetLocale()
+	if type(locale) == "string" and locale ~= "" and #locale <= 8 then
+		char.locale = locale
+	end
 	if type(char.first) ~= "table" then
 		local m, x, y = ns.OutdoorPosition(ns.InInstance())
 		local played = Store.PlayedNow()

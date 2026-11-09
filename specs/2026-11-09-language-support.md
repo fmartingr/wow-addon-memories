@@ -451,7 +451,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 3. Record the client language of the character
+### [x] 3. Record the client language of the character
 
 - **Outcome:** `character.json` has `"locale": "<WoW locale>"` after a game session, a gather and an upload.
 - **Depends on:** None.

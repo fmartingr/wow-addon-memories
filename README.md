@@ -169,7 +169,8 @@ Output:
   "<text>"}`, 1-based) for values with no name or text in a numeric field. An `sn` note joins its `ss` record as
   `notes: [{source, note}]`; a matched file adds `screenshot: "screenshots/<file>"`.
 - `dist-characters/<id>/trail.jsonl` — one record per trail chunk: `{s, t, m, n, pts: [[time, x, y, flags], ...]}`.
-- `dist-characters/<id>/character.json` — the `char` table, `region`, `realm`, `realmLabel`, `flavor`, `sessions`,
+- `dist-characters/<id>/character.json` — the `char` table (including `locale`, the `GetLocale()` value of the game client
+  at the last login, when the addon recorded it), `region`, `realm`, `realmLabel`, `flavor`, `sessions`,
   `flags` and `addons: {<addon>: {counts, snap, schema, writtenBy}}`.
 - `dist-characters/<id>/screenshots/` — the matched screenshot files.
 

@@ -48,6 +48,27 @@ func runMutations(t *testing.T, tests []mutation) {
 	}
 }
 
+func TestCharacterLocale(t *testing.T) {
+	with := goodDoc(t)
+	character(with)["locale"] = "frFR"
+	up, problems := readJSON(t, marshal(t, with), testLimits())
+	if len(problems) > 0 || up == nil {
+		t.Fatalf("want a pass, got %+v", problems)
+	}
+	if got := up.Character["locale"]; got != "frFR" {
+		t.Fatalf("locale = %v, want frFR", got)
+	}
+	without := goodDoc(t)
+	delete(character(without), "locale")
+	up, problems = readJSON(t, marshal(t, without), testLimits())
+	if len(problems) > 0 || up == nil {
+		t.Fatalf("want a pass, got %+v", problems)
+	}
+	if _, ok := up.Character["locale"]; ok {
+		t.Fatal("a character without a locale gained one")
+	}
+}
+
 func set(m map[string]any, key string, v any) { m[key] = v }
 
 func TestCharacterRules(t *testing.T) {

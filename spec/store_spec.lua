@@ -54,6 +54,41 @@ describe("store", function()
 		assert.equal(1, MemoriesDB.schema)
 	end)
 
+	it("records the client locale in the core character data", function()
+		wow.boot({ locale = "deDE" })
+		assert.equal("deDE", MemoriesCharDB.char.locale)
+	end)
+
+	it("updates the locale when the client language changes", function()
+		wow.boot({ locale = "deDE" })
+		wow.reload()
+		assert.equal("deDE", MemoriesCharDB.char.locale)
+		wow.opts.locale = "frFR"
+		wow.reload()
+		assert.equal("frFR", MemoriesCharDB.char.locale)
+	end)
+
+	it("writes no locale when GetLocale is missing or returns no usable text", function()
+		for _, value in ipairs({ false, 5, "", "toolonglocale" }) do
+			wow.boot({ login = false })
+			wow.locale = value
+			wow.login()
+			assert.is_nil(MemoriesCharDB.char.locale)
+		end
+		wow.boot({ login = false })
+		local saved = _G.GetLocale
+		_G.GetLocale = nil
+		wow.login()
+		_G.GetLocale = saved
+		assert.is_nil(MemoriesCharDB.char.locale)
+	end)
+
+	it("keeps an older character without a locale working", function()
+		local saved = { MemoriesCharDB = { char = { guid = "Player-1234-0ABCDEF0", name = "Kaelys" } } }
+		wow.boot({ saved = saved, locale = "itIT" })
+		assert.equal("itIT", MemoriesCharDB.char.locale)
+	end)
+
 	it("keeps first and updates the level on a later login", function()
 		wow.boot()
 		local first = MemoriesCharDB.char.first
