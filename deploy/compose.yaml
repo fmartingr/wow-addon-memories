@@ -1,11 +1,8 @@
 # Run from this folder: cp .env.example .env, edit it, then docker compose up -d.
 services:
   server:
-    # Build it here, or replace `build` with the image of your registry.
-    build:
-      context: ..
-      dockerfile: server/Dockerfile
-    image: memories-server
+    # edge follows main. latest and v1.2.3 follow the release tags. Set MEMORIES_IMAGE_TAG in .env to pin one.
+    image: ghcr.io/fmartingr/wow-addon-memories-server:${MEMORIES_IMAGE_TAG:-latest}
     restart: unless-stopped
     env_file:
       - path: .env

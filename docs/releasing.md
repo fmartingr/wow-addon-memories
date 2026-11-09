@@ -26,6 +26,20 @@
 - **Re-run:** re-run the failed jobs in the Actions tab. When the release exists, the `publish` job replaces its files
   and does not fail.
 
+## Server image
+
+`.github/workflows/server-image.yml` builds the server image for `linux/amd64` and `linux/arm64` and pushes it to
+`ghcr.io/fmartingr/wow-addon-memories-server`.
+
+| Event | Tags |
+|---|---|
+| Push to `main` | `edge` |
+| Tag `v1.2.3` | `v1.2.3` and `latest` |
+| Tag `v1.2.3-rc.1` | `v1.2.3-rc.1` only |
+
+The package is private while the repository is private. A host pulls it after `docker login ghcr.io` with a token that
+has the `read:packages` scope. To make the package public, change its visibility in the package settings on GitHub.
+
 ## Release files
 
 | File | What it is |

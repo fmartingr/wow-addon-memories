@@ -13,7 +13,7 @@ address in the Website settings.
 - A disk with room for the data. One player's screenshots are about 1 MB each, and a key may hold 5 GiB of them by default.
 - A domain name with a DNS record that points to the host.
 - The ports 80 and 443 open to the internet. Caddy needs both to get and renew the certificate.
-- A copy of this repository on the host. The image is built from it.
+- The `deploy/` folder of this repository on the host. The image comes from `ghcr.io`: no build is needed.
 
 ## First start
 
@@ -29,7 +29,7 @@ address in the Website settings.
 3. Start it:
 
    ```sh
-   docker compose up -d --build
+   docker compose up -d
    ```
 
 4. Open `https://<your domain>/`. The home page shows. The first start takes a minute, because Caddy asks for the
@@ -99,6 +99,7 @@ The image sets `MEMORIES_WEB_DIR`, `MEMORIES_DATA_DIR` and `MEMORIES_ADMIN_ADDR`
 
 | Variable | Default | Meaning |
 |---|---|---|
+| `MEMORIES_IMAGE_TAG` | `latest` (compose) | The image tag to run. Read by compose, not by the server. |
 | `MEMORIES_DOMAIN` | `localhost` (compose) | The domain Caddy serves. Read by Caddy, not by the server. |
 | `MEMORIES_PUBLIC_ADDR` | `:8080` | Public listener. Caddy sends requests to port 8080 of the server, so keep it. |
 | `MEMORIES_ADMIN_ADDR` | `0.0.0.0:8081` (image) | Admin listener. Outside Docker the default is `127.0.0.1:8081`. |
@@ -148,7 +149,10 @@ To add the art:
 
 1. Get a map art folder: `assets/art/`, `assets/mini/`, `assets/tiles/` and `assets/world.js`, built from OpenMap.
 2. Run `make web-assets MAP_SRC=<path of the map art folder>` in this repository.
-3. Run `docker compose up -d --build`. The image copies the whole `web/` folder, `web/map/` included.
+3. Build an image with the art: `docker build -f server/Dockerfile -t memories-server:maps .` The image copies the whole
+   `web/` folder, `web/map/` included.
+4. Set `image: memories-server:maps` for the `server` service in `deploy/compose.yaml`, then run `docker compose up -d`.
+   The published images have no art.
 
 Do not publish an image that has the art in it.
 
@@ -251,8 +255,12 @@ approve the new key again. Each player's key is new, so each player needs an inv
 
 ## Update
 
-1. Pull the new version of the repository.
-2. Run `docker compose up -d --build` in `deploy/`.
+1. Run `docker compose pull` in `deploy/`.
+2. Run `docker compose up -d`.
+
+The image tags are `edge` (each push to `main`), `latest` (the newest release) and `v1.2.3` (one release). Set
+`MEMORIES_IMAGE_TAG` in `.env` to choose one. The default is `latest`. Pin a `v1.2.3` tag on a production host to
+control when it changes.
 
 **Deploy the server before you release an addon version that adds kinds.** The server accepts an unknown kind with a
 strict generic check, but only an updated server checks the new kind by its fields.
