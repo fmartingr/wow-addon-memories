@@ -9,6 +9,7 @@
 <button type="submit">Create invite</button>
 </form>
 <h3>All invites</h3>
+{{template "search" .}}
 {{if .Invites}}
 <table>
 <thead><tr><th>#</th><th>Note</th><th>Created</th><th>Expires</th><th>State</th><th>Action</th></tr></thead>
@@ -25,6 +26,7 @@
 <form method="post" action="/invites/revoke">
 <input type="hidden" name="csrf" value="{{$.CSRF}}">
 <input type="hidden" name="invite" value="{{.ID}}">
+<input type="hidden" name="return" value="{{$.Return}}">
 <button type="submit" class="danger">Revoke</button>
 </form>
 {{end}}
@@ -33,8 +35,10 @@
 {{end}}
 </tbody>
 </table>
-{{if .Truncated}}<p>This list shows the newest {{.Limit}} invites.</p>{{end}}
+{{else if .Query}}
+<p>No invite matches the search.</p>
 {{else}}
 <p>No invite exists yet.</p>
 {{end}}
+{{template "pager" .}}
 {{end}}

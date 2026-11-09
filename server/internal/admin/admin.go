@@ -36,8 +36,8 @@ const (
 	flashCookie = "memories_admin_flash"
 	// maxForm bounds the body of a POST: the forms hold a few short fields.
 	maxForm = 16 << 10
-	// listLimit bounds each list on a page.
-	listLimit = 500
+	// pageSize is the number of rows of one page of a list.
+	pageSize = 25
 
 	defaultInviteDays = 30
 	maxInviteDays     = 365
@@ -126,7 +126,6 @@ func (a *Admin) Handler() http.Handler {
 		"/requests/approve":  a.approve,
 		"/requests/deny":     a.deny,
 		"/keys/revoke":       a.revokeKey,
-		"/keys/revoke-clean": a.revokeKeyAndDelete,
 		"/keys/screenshots":  a.revokeScreenshots,
 		"/invites/create":    a.createInvite,
 		"/invites/revoke":    a.revokeInvite,
@@ -271,14 +270,23 @@ func (a *Admin) takeFlash(w http.ResponseWriter, r *http.Request) *flash {
 	return &f
 }
 
-// done answers a POST: it sets the message and redirects to the page (PRG).
-func (a *Admin) done(w http.ResponseWriter, r *http.Request, page string, query url.Values, f flash) {
+// done answers a POST: it sets the message and redirects to the list the form came from (PRG), with the same search
+// and page.
+func (a *Admin) done(w http.ResponseWriter, r *http.Request, page string, f flash) {
 	a.setFlash(w, f)
-	target := "/" + page
-	if len(query) > 0 {
-		target += "?" + query.Encode()
+	http.Redirect(w, r, returnTarget(r, page), http.StatusSeeOther)
+}
+
+// returnTarget is where a POST sends the admin back to. The form carries the address of its list in "return". Only
+// the path of the same list and its q and page parameters are used, and the address is built here, so a value like
+// "//host/x" or "https://host/" can never leave the admin.
+func returnTarget(r *http.Request, page string) string {
+	u, err := url.Parse(r.PostForm.Get("return"))
+	if err != nil || u.Scheme != "" || u.Host != "" || u.Opaque != "" || u.User != nil || u.Path != "/"+page {
+		return "/" + page
 	}
-	http.Redirect(w, r, target, http.StatusSeeOther)
+	q, n := listParams(&http.Request{URL: u})
+	return listURL(page, q, n)
 }
 
 func okMsg(format string, args ...any) flash { return flash{Text: fmt.Sprintf(format, args...)} }
@@ -286,9 +294,9 @@ func errMsg(format string, args ...any) flash {
 	return flash{Text: fmt.Sprintf(format, args...), Error: true}
 }
 
-func (a *Admin) internal(w http.ResponseWriter, r *http.Request, page string, query url.Values, what string, err error) {
+func (a *Admin) internal(w http.ResponseWriter, r *http.Request, page string, what string, err error) {
 	a.opt.Log.Error("admin action failed", "action", what, "err", err.Error())
-	a.done(w, r, page, query, errMsg("Could not %s. The server log has the details. Try again.", what))
+	a.done(w, r, page, errMsg("Could not %s. The server log has the details. Try again.", what))
 }
 
 // formKey reads the key id of a form and loads the key. It returns false when it has answered already.
@@ -301,11 +309,11 @@ func (a *Admin) formKey(w http.ResponseWriter, r *http.Request, page string) (st
 			return k, true
 		}
 		if !errors.Is(err, store.ErrNotFound) {
-			a.internal(w, r, page, nil, "read the key", err)
+			a.internal(w, r, page, "read the key", err)
 			return store.Key{}, false
 		}
 	}
-	a.done(w, r, page, nil, errMsg("That key does not exist. Reload the page and try again."))
+	a.done(w, r, page, errMsg("That key does not exist. Reload the page and try again."))
 	return store.Key{}, false
 }
 
@@ -333,52 +341,37 @@ func (a *Admin) decide(w http.ResponseWriter, r *http.Request, state string) {
 	}
 	changed, err := a.opt.Store.DecideScreenshots(r.Context(), k.ID, state)
 	if err != nil {
-		a.internal(w, r, "requests", nil, "save the decision", err)
+		a.internal(w, r, "requests", "save the decision", err)
 		return
 	}
 	if !changed {
-		a.done(w, r, "requests", nil, errMsg("Key %s has no pending request any more, so nothing changed.", k.Fingerprint()))
+		a.done(w, r, "requests", errMsg("Key %s has no pending request any more, so nothing changed.", k.Fingerprint()))
 		return
 	}
 	a.opt.Log.Info("admin action", "action", "screenshots "+state, "key", k.Fingerprint())
-	a.done(w, r, "requests", nil, okMsg("Screenshots %s for key %s.", state, k.Fingerprint()))
+	a.done(w, r, "requests", okMsg("Screenshots %s for key %s.", state, k.Fingerprint()))
 }
 
+// revokeKey blocks the key and then deletes its characters with their screenshots. The key is blocked first, so a
+// failed deletion never leaves a working key. It runs for a key that is revoked already, so that a failed run can be
+// repeated.
 func (a *Admin) revokeKey(w http.ResponseWriter, r *http.Request) {
 	k, ok := a.formKey(w, r, "keys")
 	if !ok {
 		return
 	}
-	if k.Revoked {
-		a.done(w, r, "keys", nil, okMsg("Key %s is already revoked.", k.Fingerprint()))
-		return
-	}
 	if err := a.opt.Store.RevokeKey(r.Context(), k.ID); err != nil {
-		a.internal(w, r, "keys", nil, "revoke the key", err)
-		return
-	}
-	a.opt.Log.Info("admin action", "action", "revoke key", "key", k.Fingerprint())
-	a.done(w, r, "keys", nil, okMsg("Key %s is revoked. Its characters stay on the site.", k.Fingerprint()))
-}
-
-// revokeKeyAndDelete runs even for a key that is revoked already, so that a failed run can be repeated.
-func (a *Admin) revokeKeyAndDelete(w http.ResponseWriter, r *http.Request) {
-	k, ok := a.formKey(w, r, "keys")
-	if !ok {
-		return
-	}
-	if err := a.opt.Store.RevokeKey(r.Context(), k.ID); err != nil {
-		a.internal(w, r, "keys", nil, "revoke the key", err)
+		a.internal(w, r, "keys", "revoke the key", err)
 		return
 	}
 	n, err := a.opt.Chars.DeleteAllOfKey(r.Context(), k.ID)
-	a.opt.Log.Info("admin action", "action", "revoke key and delete characters", "key", k.Fingerprint(), "deleted", n)
+	a.opt.Log.Info("admin action", "action", "revoke key", "key", k.Fingerprint(), "deleted", n)
 	if err != nil {
 		a.opt.Log.Error("admin action failed", "action", "delete the characters of a key", "key", k.Fingerprint(), "err", err.Error())
-		a.done(w, r, "keys", nil, errMsg("Key %s is revoked and %s deleted, but deleting the rest failed. The server log has the details. Run this action again.", k.Fingerprint(), count(n)))
+		a.done(w, r, "keys", errMsg("Key %s is revoked and %s deleted, but deleting the rest failed. The server log has the details. Revoke the key again to finish.", k.Fingerprint(), count(n)))
 		return
 	}
-	a.done(w, r, "keys", nil, okMsg("Key %s is revoked and %s deleted.", k.Fingerprint(), count(n)))
+	a.done(w, r, "keys", okMsg("Key %s is revoked and %s deleted, screenshots included.", k.Fingerprint(), count(n)))
 }
 
 func (a *Admin) revokeScreenshots(w http.ResponseWriter, r *http.Request) {
@@ -388,17 +381,17 @@ func (a *Admin) revokeScreenshots(w http.ResponseWriter, r *http.Request) {
 	}
 	// The state changes first, so a screenshot upload that starts now is refused while the files go.
 	if err := a.opt.Store.SetScreenshots(r.Context(), k.ID, store.ShotsDenied); err != nil {
-		a.internal(w, r, "keys", nil, "revoke the screenshots", err)
+		a.internal(w, r, "keys", "revoke the screenshots", err)
 		return
 	}
 	n, err := a.opt.Chars.StripScreenshots(r.Context(), k.ID)
 	a.opt.Log.Info("admin action", "action", "revoke screenshots", "key", k.Fingerprint(), "characters", n)
 	if err != nil {
 		a.opt.Log.Error("admin action failed", "action", "strip screenshots", "key", k.Fingerprint(), "err", err.Error())
-		a.done(w, r, "keys", nil, errMsg("Screenshots are denied for key %s and removed from %s, but removing them from every character failed. The server log has the details. Run this action again.", k.Fingerprint(), count(n)))
+		a.done(w, r, "keys", errMsg("Screenshots are denied for key %s and removed from %s, but removing them from every character failed. The server log has the details. Run this action again.", k.Fingerprint(), count(n)))
 		return
 	}
-	a.done(w, r, "keys", nil, okMsg("Screenshots are revoked for key %s. The images and their links are removed from %s.", k.Fingerprint(), count(n)))
+	a.done(w, r, "keys", okMsg("Screenshots are revoked for key %s. The images and their links are removed from %s.", k.Fingerprint(), count(n)))
 }
 
 func (a *Admin) createInvite(w http.ResponseWriter, r *http.Request) {
@@ -406,7 +399,7 @@ func (a *Admin) createInvite(w http.ResponseWriter, r *http.Request) {
 	if raw := strings.TrimSpace(r.PostForm.Get("days")); raw != "" {
 		n, err := strconv.Atoi(raw)
 		if err != nil || n < 1 || n > maxInviteDays {
-			a.done(w, r, "invites", nil, errMsg("Days valid must be a whole number from 1 to %d.", maxInviteDays))
+			a.done(w, r, "invites", errMsg("Days valid must be a whole number from 1 to %d.", maxInviteDays))
 			return
 		}
 		days = n
@@ -414,11 +407,11 @@ func (a *Admin) createInvite(w http.ResponseWriter, r *http.Request) {
 	note := cleanNote(r.PostForm.Get("note"))
 	id, code, err := a.opt.Store.CreateInvite(r.Context(), note, time.Duration(days)*24*time.Hour)
 	if err != nil {
-		a.internal(w, r, "invites", nil, "create the invite", err)
+		a.internal(w, r, "invites", "create the invite", err)
 		return
 	}
 	a.opt.Log.Info("admin action", "action", "create invite", "invite", id, "days", days)
-	a.done(w, r, "invites", nil, flash{
+	a.done(w, r, "invites", flash{
 		Text: fmt.Sprintf("Invite %d is ready and valid for %d days. This is the only time the code is shown. Copy it now.", id, days),
 		Code: groupCode(code),
 	})
@@ -456,76 +449,66 @@ func (a *Admin) revokeInvite(w http.ResponseWriter, r *http.Request) {
 	}
 	switch {
 	case errors.Is(err, store.ErrNotFound) || errors.Is(err, strconv.ErrSyntax) || errors.Is(err, strconv.ErrRange):
-		a.done(w, r, "invites", nil, errMsg("That invite does not exist. Reload the page and try again."))
+		a.done(w, r, "invites", errMsg("That invite does not exist. Reload the page and try again."))
 	case err != nil:
-		a.internal(w, r, "invites", nil, "revoke the invite", err)
+		a.internal(w, r, "invites", "revoke the invite", err)
 	default:
 		a.opt.Log.Info("admin action", "action", "revoke invite", "invite", id)
-		a.done(w, r, "invites", nil, okMsg("Invite %d is revoked. Its code no longer works.", id))
+		a.done(w, r, "invites", okMsg("Invite %d is revoked. Its code no longer works.", id))
 	}
-}
-
-// searchQuery keeps the search of the characters page across a change.
-func searchQuery(r *http.Request) url.Values {
-	if q := strings.TrimSpace(r.PostForm.Get("q")); q != "" {
-		return url.Values{"q": {q}}
-	}
-	return nil
 }
 
 func (a *Admin) deleteCharacter(w http.ResponseWriter, r *http.Request) {
-	q := searchQuery(r)
 	p, ok := formPath(r)
 	if !ok {
-		a.done(w, r, "characters", q, errMsg("That character path is not valid. Reload the page and try again."))
+		a.done(w, r, "characters", errMsg("That character path is not valid. Reload the page and try again."))
 		return
 	}
 	err := a.opt.Chars.Delete(r.Context(), p, 0)
 	switch {
 	case errors.Is(err, store.ErrNotFound):
-		a.done(w, r, "characters", q, errMsg("%s does not exist any more.", p))
+		a.done(w, r, "characters", errMsg("%s does not exist any more.", p))
 	case err != nil:
-		a.internal(w, r, "characters", q, "delete the character", err)
+		a.internal(w, r, "characters", "delete the character", err)
 	default:
 		a.opt.Log.Info("admin action", "action", "delete character", "path", p.String())
-		a.done(w, r, "characters", q, okMsg("%s is deleted. Its page gives a 404 and the path is free to claim.", p))
+		a.done(w, r, "characters", okMsg("%s is deleted. Its page gives a 404 and the path is free to claim.", p))
 	}
 }
 
 func (a *Admin) moveCharacter(w http.ResponseWriter, r *http.Request) {
-	q := searchQuery(r)
 	p, ok := formPath(r)
 	if !ok {
-		a.done(w, r, "characters", q, errMsg("That character path is not valid. Reload the page and try again."))
+		a.done(w, r, "characters", errMsg("That character path is not valid. Reload the page and try again."))
 		return
 	}
 	fp := strings.ToLower(strings.TrimSpace(r.PostForm.Get("to")))
 	noKey := errMsg("No key has the fingerprint %q. Copy the fingerprint from the Keys page.", fp)
 	if !fingerprintPattern.MatchString(fp) {
-		a.done(w, r, "characters", q, noKey)
+		a.done(w, r, "characters", noKey)
 		return
 	}
 	target, err := a.opt.Store.KeyByFingerprint(r.Context(), fp)
 	if errors.Is(err, store.ErrNotFound) {
-		a.done(w, r, "characters", q, noKey)
+		a.done(w, r, "characters", noKey)
 		return
 	}
 	if err != nil {
-		a.internal(w, r, "characters", q, "read the key", err)
+		a.internal(w, r, "characters", "read the key", err)
 		return
 	}
 	switch err := a.opt.Chars.Move(r.Context(), p, target.ID); {
 	case errors.Is(err, characters.ErrAlreadyOwner):
-		a.done(w, r, "characters", q, errMsg("Key %s owns %s already, so nothing changed.", target.Fingerprint(), p))
+		a.done(w, r, "characters", errMsg("Key %s owns %s already, so nothing changed.", target.Fingerprint(), p))
 	case errors.Is(err, store.ErrKeyRevoked):
-		a.done(w, r, "characters", q, errMsg("Key %s is revoked. Choose a key that is not revoked.", target.Fingerprint()))
+		a.done(w, r, "characters", errMsg("Key %s is revoked. Choose a key that is not revoked.", target.Fingerprint()))
 	case errors.Is(err, store.ErrNotFound):
-		a.done(w, r, "characters", q, errMsg("%s does not exist any more.", p))
+		a.done(w, r, "characters", errMsg("%s does not exist any more.", p))
 	case err != nil:
-		a.internal(w, r, "characters", q, "move the character", err)
+		a.internal(w, r, "characters", "move the character", err)
 	default:
 		a.opt.Log.Info("admin action", "action", "move claim", "path", p.String(), "to", target.Fingerprint())
-		a.done(w, r, "characters", q, okMsg("%s now belongs to key %s. The old key can no longer upload it.", p, target.Fingerprint()))
+		a.done(w, r, "characters", okMsg("%s now belongs to key %s. The old key can no longer upload it.", p, target.Fingerprint()))
 	}
 }
 

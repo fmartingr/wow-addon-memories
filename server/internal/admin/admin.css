@@ -29,3 +29,9 @@ label { display: inline-flex; flex-direction: column; gap: .2rem; font-size: .85
 .notice p { margin: .2rem 0; }
 .code code { font-size: 1.4rem; letter-spacing: .08em; user-select: all; }
 .tag { color: var(--danger); font-size: .8rem; }
+form.search { margin-bottom: .75rem; }
+form.search input[type="search"] { min-width: 18rem; }
+.hint { display: block; max-width: 16rem; margin-top: .25rem; font-size: .8rem; color: var(--danger); }
+.pager { display: flex; flex-wrap: wrap; align-items: center; gap: 1rem; margin: .75rem 0; }
+.pager a, .pager .off { padding: .15rem .6rem; border: 1px solid var(--line); border-radius: 4px; background: var(--card); text-decoration: none; }
+.pager .off { opacity: .5; }

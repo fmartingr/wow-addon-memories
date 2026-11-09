@@ -270,6 +270,15 @@ func (e *env) page(path string) int {
 	return rec.Code
 }
 
+func (e *env) invites() []store.InviteRow {
+	e.t.Helper()
+	l, err := e.st.ListInvites(bg, "", 1, 1000)
+	if err != nil {
+		e.t.Fatal(err)
+	}
+	return l.Rows
+}
+
 func (e *env) claim(path string) (store.Claim, error) {
 	s := strings.Split(path, "/")
 	return e.st.ClaimByPath(bg, s[0], s[1], s[2], s[3])
@@ -655,7 +664,11 @@ func TestKeysPageShowsTheKeyFigures(t *testing.T) {
 
 	page := e.browser().get("/keys").Body.String()
 	mustContain(t, page, c.fingerprint(), "for Ana", "none", `<a href="/characters?q=`+c.fingerprint()+`">1</a>`,
-		`action="/keys/revoke"`, `action="/keys/revoke-clean"`, `action="/keys/screenshots"`)
+		`action="/keys/revoke"`, `action="/keys/screenshots"`,
+		"This blocks the key and deletes all its characters and screenshots.")
+	if strings.Contains(page, "revoke-clean") {
+		t.Error("the page still offers the revoke that keeps the characters")
+	}
 	if !strings.Contains(page, "KiB") {
 		t.Errorf("the page shows no data size for %d bytes:\n%s", claim.DataBytes, page)
 	}
@@ -791,7 +804,7 @@ func TestRevokedKeyIsRefusedEverywhere(t *testing.T) {
 	br := e.browser()
 
 	msg := br.act("/keys/revoke", form("key", id(k)))
-	mustContain(t, msg, "Key "+c.fingerprint()+" is revoked", "Its characters stay")
+	mustContain(t, msg, "Key "+c.fingerprint()+" is revoked and 1 character deleted")
 
 	for name, rec := range map[string]*httptest.ResponseRecorder{
 		"upload":   e.upload(c, "eu-brumamar-nandu"),
@@ -805,16 +818,17 @@ func TestRevokedKeyIsRefusedEverywhere(t *testing.T) {
 			t.Errorf("%s by a revoked key = %d %s, want 403 key_revoked", name, rec.Code, rec.Body)
 		}
 	}
-	if _, err := e.claim(brumamar); err != nil {
-		t.Errorf("the character went away on a plain revoke: %v", err)
+	if _, err := e.claim(brumamar); !errors.Is(err, store.ErrNotFound) {
+		t.Errorf("the character stayed after the revoke: %v", err)
 	}
-	if e.page(brumamar) != http.StatusOK {
-		t.Error("the character page is not served after a plain revoke")
+	if e.page(brumamar) != http.StatusNotFound {
+		t.Error("the character page is still served after the revoke")
 	}
-
-	mustContain(t, br.act("/keys/revoke", form("key", id(k))), "already revoked")
 	if page := br.get("/keys").Body.String(); !strings.Contains(page, "revoked") || strings.Contains(page, `action="/keys/revoke"`) {
-		t.Error("the Keys page does not show the key as revoked, or still offers Revoke key")
+		t.Error("the Keys page does not show the key as revoked, or still offers Revoke key for a key with no characters")
+	}
+	if _, err := e.claim(brumamar); !errors.Is(err, store.ErrNotFound) {
+		t.Errorf("an upload by the revoked key made a claim: %v", err)
 	}
 }
 
@@ -862,7 +876,7 @@ func TestRevokeKeyAndDeleteItsCharacters(t *testing.T) {
 	zed, _ := e.claim("wow/eu/brumamar/zed")
 
 	br := e.browser()
-	msg := br.act("/keys/revoke-clean", form("key", id(kBad)))
+	msg := br.act("/keys/revoke", form("key", id(kBad)))
 	mustContain(t, msg, "Key "+bad.fingerprint()+" is revoked and 2 characters deleted")
 
 	if !e.row(bad).Revoked {
@@ -895,7 +909,33 @@ func TestRevokeKeyAndDeleteItsCharacters(t *testing.T) {
 	_ = kGood
 
 	// Run again on a revoked key with nothing left: it still works.
-	mustContain(t, br.act("/keys/revoke-clean", form("key", id(kBad))), "0 characters deleted")
+	mustContain(t, br.act("/keys/revoke", form("key", id(kBad))), "0 characters deleted")
+}
+
+func TestRevokeKeyDeletesTheScreenshotsToo(t *testing.T) {
+	e := newEnv(t)
+	c, k := e.registered(1)
+	e.signed(c, "POST", "/api/v1/screenshots/request", nil)
+	br := e.browser()
+	br.act("/requests/approve", form("key", id(k)))
+	e.mustUpload(c, "eu-brumamar-nandu")
+	if rec := e.putShot(c, brumamar, shotA); rec.Code != http.StatusCreated {
+		t.Fatalf("screenshot: %d %s", rec.Code, rec.Body)
+	}
+	claim, _ := e.claim(brumamar)
+	if !e.hasFile(claim, "screenshots/"+shotA) {
+		t.Fatal("the screenshot was not stored")
+	}
+	br.act("/keys/revoke", form("key", id(k)))
+	if e.hasFile(claim, "screenshots/"+shotA) {
+		t.Error("the screenshot file stayed")
+	}
+	if _, err := e.st.ShotOf(bg, claim.ID, shotA); !errors.Is(err, store.ErrNotFound) {
+		t.Errorf("the screenshot row stayed: %v", err)
+	}
+	if e.page(brumamar) != http.StatusNotFound {
+		t.Error("the character page is still served")
+	}
 }
 
 func TestAdminDeleteOfOneCharacterLeavesTheOthers(t *testing.T) {
@@ -1051,7 +1091,7 @@ func TestInviteStatesAndRevoke(t *testing.T) {
 	}
 	// The default is 30 days.
 	var expires int64
-	invs, _ := e.st.ListInvites(bg, 10)
+	invs := e.invites()
 	for _, i := range invs {
 		if i.Note == "one-used" {
 			expires = i.Expires - i.Created
@@ -1067,7 +1107,7 @@ func TestInviteStatesAndRevoke(t *testing.T) {
 			t.Fatal(err)
 		}
 	}
-	usedInv, _ := e.st.ListInvites(bg, 10)
+	usedInv := e.invites()
 	_ = usedInv
 	spend(strings.ReplaceAll(create("one-spent"), "-", ""), 5)
 	e.advance(2 * time.Hour)
@@ -1076,7 +1116,7 @@ func TestInviteStatesAndRevoke(t *testing.T) {
 	mustContain(t, page, "Used by key "+store.Fingerprint(bytes.Repeat([]byte{5}, 32)), "Expired", "Unused", "one-revoked")
 
 	var revokeID string
-	invs, _ = e.st.ListInvites(bg, 10)
+	invs = e.invites()
 	for _, i := range invs {
 		if i.Note == "one-revoked" {
 			revokeID = strconv.FormatInt(i.ID, 10)
@@ -1104,12 +1144,12 @@ func TestInviteInputIsChecked(t *testing.T) {
 	for _, days := range []string{"0", "-3", "366", "ten", "1.5"} {
 		mustContain(t, br.act("/invites/create", form("days", days)), "Days valid must be a whole number from 1 to 365")
 	}
-	if invs, _ := e.st.ListInvites(bg, 10); len(invs) != 0 {
+	if invs := e.invites(); len(invs) != 0 {
 		t.Errorf("a bad form made %d invites", len(invs))
 	}
 	long := strings.Repeat("a", 300) + "\x00\x07z"
 	br.act("/invites/create", form("note", long, "days", "365"))
-	invs, _ := e.st.ListInvites(bg, 10)
+	invs := e.invites()
 	if len(invs) != 1 || len([]rune(invs[0].Note)) != maxNoteRunes || strings.ContainsAny(invs[0].Note, "\x00\x07") {
 		t.Errorf("note = %q, want %d printable runes", invs[0].Note, maxNoteRunes)
 	}
@@ -1164,10 +1204,17 @@ func TestCharactersSearch(t *testing.T) {
 		t.Error("a long search text is not cut at a whole character")
 	}
 
-	// A change keeps the search.
-	rec := br.post("/characters/delete", form("path", "wow/eu/brumamar/zed", "q", "zed"))
-	if rec.Header().Get("Location") != "/characters?q=zed" {
-		t.Errorf("redirect = %q, want the search kept", rec.Header().Get("Location"))
+}
+
+func TestSearchBoxIsAPlainGetForm(t *testing.T) {
+	e := newEnv(t)
+	br := e.browser()
+	for _, p := range []string{"requests", "keys", "invites", "characters"} {
+		body := br.get("/" + p + "?q=ab%22c").Body.String()
+		mustContain(t, body, `<form method="get" action="/`+p+`"`, `name="q"`, `value="ab&#34;c"`, "Clear search")
+		if strings.Contains(body, "<script") || strings.Contains(body, "style=") {
+			t.Errorf("%s page has a script or an inline style", p)
+		}
 	}
 }
 
@@ -1298,7 +1345,13 @@ func TestDiskFailuresGiveAMessageAndKeepTheRecords(t *testing.T) {
 		t.Error("a failed write changed the stored records")
 	}
 	fb.write, fb.removeAll = false, true
-	mustContain(t, br.act("/keys/revoke-clean", form("key", id(k))), "deleting the rest failed", "Run this action again")
+	mustContain(t, br.act("/keys/revoke", form("key", id(k))), "deleting the rest failed", "Revoke the key again")
+	if !e.row(c).Revoked {
+		t.Error("a failed deletion left the key working")
+	}
+	if page := br.get("/keys").Body.String(); !strings.Contains(page, `action="/keys/revoke"`) {
+		t.Error("a revoked key with characters left has no Revoke key button to retry")
+	}
 	mustContain(t, br.act("/keys/screenshots", form("key", id(k))), "removing them from every character failed", "Run this action again")
 	mustContain(t, br.act("/characters/delete", form("path", brumamar)), "Could not delete the character")
 	if _, err := e.claim(brumamar); err != nil {
@@ -1311,7 +1364,7 @@ func TestDiskFailuresGiveAMessageAndKeepTheRecords(t *testing.T) {
 
 	fb.write = false
 	mustContain(t, br.act("/keys/screenshots", form("key", id(k))), "Screenshots are revoked")
-	mustContain(t, br.act("/keys/revoke-clean", form("key", id(k))), "1 character deleted")
+	mustContain(t, br.act("/keys/revoke", form("key", id(k))), "1 character deleted")
 }
 
 func TestStoreFailuresGiveAPlainMessage(t *testing.T) {
@@ -1330,7 +1383,6 @@ func TestStoreFailuresGiveAPlainMessage(t *testing.T) {
 	for path, f := range map[string]url.Values{
 		"/requests/approve":  form("key", id(k)),
 		"/keys/revoke":       form("key", id(k)),
-		"/keys/revoke-clean": form("key", id(k)),
 		"/keys/screenshots":  form("key", id(k)),
 		"/invites/create":    form("days", "3"),
 		"/invites/revoke":    form("invite", "1"),

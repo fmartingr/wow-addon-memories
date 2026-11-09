@@ -2,6 +2,7 @@
 {{define "content"}}
 <h2>Screenshot requests</h2>
 <p>These keys asked to upload screenshots. Approve a key only when you trust its owner: an approved key uploads images that anybody with the character link can see.</p>
+{{template "search" .}}
 {{if .Requests}}
 <table>
 <thead><tr><th>Key</th><th>Invite note</th><th>Created</th><th>Last seen</th><th>Characters</th><th>Decision</th></tr></thead>
@@ -17,11 +18,13 @@
 <form method="post" action="/requests/approve">
 <input type="hidden" name="csrf" value="{{$.CSRF}}">
 <input type="hidden" name="key" value="{{.ID}}">
+<input type="hidden" name="return" value="{{$.Return}}">
 <button type="submit">Approve</button>
 </form>
 <form method="post" action="/requests/deny">
 <input type="hidden" name="csrf" value="{{$.CSRF}}">
 <input type="hidden" name="key" value="{{.ID}}">
+<input type="hidden" name="return" value="{{$.Return}}">
 <button type="submit" class="danger">Deny</button>
 </form>
 </td>
@@ -29,8 +32,10 @@
 {{end}}
 </tbody>
 </table>
-{{if .Truncated}}<p>This list shows {{.Limit}} requests, oldest keys first. Decide these to see the others.</p>{{end}}
+{{else if .Query}}
+<p>No request matches the search.</p>
 {{else}}
 <p>No key waits for a decision.</p>
 {{end}}
+{{template "pager" .}}
 {{end}}

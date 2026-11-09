@@ -61,8 +61,14 @@ On the admin page you can:
 
 - **Invites:** make and revoke invite codes.
 - **Requests:** approve or deny the screenshot requests of keys.
-- **Keys:** revoke a key, revoke a key and delete its characters, or revoke only its screenshots.
-- **Characters:** search by path or GUID, delete a character, or move its claim to another key.
+- **Keys:** revoke a key, or revoke only its screenshots. **Revoke key** blocks the key and also deletes all its
+  characters and their screenshots, and this cannot be undone. If the deletion fails part way, the key stays revoked and
+  the button stays: press it again to finish.
+- **Characters:** search by path, GUID or key fingerprint, delete a character, or move its claim to another key.
+
+Every list has a search box and shows 25 rows a page, with Previous and Next links. Invites search by note and by state
+(unused, used, expired or revoked), Keys by fingerprint, invite note and screenshot state, and Requests by fingerprint and
+invite note. A search matches part of the text and ignores case; `%` and `_` are plain characters.
 
 ## Make the first invite
 
@@ -254,7 +260,7 @@ strict generic check, but only an updated server checks the new kind by its fiel
 ## A player lost or replaced their key
 
 A player who reinstalls or changes computer loses the private key, and cannot upload their characters any more. A player
-whose key you revoked, or whose key the site refuses, can make a new key with **Make a new key** in the Website tab of the
+whose key the site refuses, or whose key you revoked, can make a new key with **Make a new key** in the Website tab of the
 app. The app keeps the old key file as `upload-key.<UTC time>.json` next to the new one, so it can still be restored. To
 fix it:
 
@@ -263,7 +269,9 @@ fix it:
    find the new key on the Keys page of the admin page. The fingerprint is the first 16 characters of the key hash.
 3. Go to Characters, search the character path, and use Move claim with the new fingerprint. Do this for each character.
    A search for the old fingerprint lists every character of the old key.
-4. Revoke the old key if the player cannot find it again.
+4. Revoke the old key if the player cannot find it again. Do this last: revoking a key deletes every character it still
+   owns, so move the characters first.
 
-The player can then upload each character with the new key. Until you move a character, the site refuses it for the new
+The player can then upload each character with the new key. A character of a key that you revoked before moving it is
+deleted, and the new key uploads it as a new character. Until you move a character, the site refuses it for the new
 key as `claimed`, and the app says another player already uploaded it; the other characters upload as usual.

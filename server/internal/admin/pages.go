@@ -5,8 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"html/template"
+	"math"
 	"net/http"
+	"net/url"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
@@ -24,10 +27,18 @@ type view struct {
 	Keys       []keyView
 	Invites    []inviteView
 	Characters []characterView
-	Query      string
-	Limit      int
-	Truncated  bool
 	DefaultDay int
+
+	// Query, PageNo, Pages, Total and the links drive the search box and the pager of a list. Return is where the
+	// forms of the page send the admin back to after a change.
+	Query       string
+	Placeholder string
+	PageNo      int
+	Pages       int
+	Total       int
+	PrevURL     string
+	NextURL     string
+	Return      string
 }
 
 type keyView struct {
@@ -139,36 +150,83 @@ func toKeyViews(rows []store.KeyRow) []keyView {
 	return out
 }
 
-// limited trims rows fetched with listLimit+1 to listLimit and reports whether more rows exist.
-func limited[T any](v *view, rows []T) []T {
-	v.Limit = listLimit
-	if len(rows) > listLimit {
-		v.Truncated = true
-		return rows[:listLimit]
+// listURL is the address of a page of a list. It leaves out the defaults, so the first page of a list with no search
+// is the plain path.
+func listURL(page, q string, n int) string {
+	v := url.Values{}
+	if q != "" {
+		v.Set("q", q)
 	}
-	return rows
+	if n > 1 {
+		v.Set("page", strconv.Itoa(n))
+	}
+	if len(v) == 0 {
+		return "/" + page
+	}
+	return "/" + page + "?" + v.Encode()
+}
+
+// listParams reads the search text and the requested page of a list. A page that is not a number, or is below 1, is
+// page 1; a page too large for an integer is a very high page, which the store clamps to the last one.
+func listParams(r *http.Request) (q string, page int) {
+	q = strings.TrimSpace(r.URL.Query().Get("q"))
+	if rs := []rune(q); len(rs) > maxQueryRunes {
+		q = strings.TrimSpace(string(rs[:maxQueryRunes]))
+	}
+	raw := r.URL.Query().Get("page")
+	n, err := strconv.Atoi(raw)
+	switch {
+	case errors.Is(err, strconv.ErrRange) && !strings.HasPrefix(raw, "-"):
+		return q, math.MaxInt32
+	case err != nil || n < 1:
+		return q, 1
+	}
+	return q, n
+}
+
+// setPager fills the search box and the pager of v with the listing that the store returned.
+func setPager[T any](v *view, q, placeholder string, l store.Listing[T]) {
+	v.Query, v.Placeholder = q, placeholder
+	v.PageNo, v.Pages, v.Total = l.Page, l.Pages, l.Total
+	v.Return = listURL(v.Page, q, l.Page)
+	if l.Page > 1 {
+		v.PrevURL = listURL(v.Page, q, l.Page-1)
+	}
+	if l.Page < l.Pages {
+		v.NextURL = listURL(v.Page, q, l.Page+1)
+	}
 }
 
 func (a *Admin) requestsPage(r *http.Request, v *view) error {
-	rows, err := a.opt.Store.ListKeys(r.Context(), true, listLimit+1)
-	v.Requests = toKeyViews(limited(v, rows))
-	return err
-}
-
-func (a *Admin) keysPage(r *http.Request, v *view) error {
-	rows, err := a.opt.Store.ListKeys(r.Context(), false, listLimit+1)
-	v.Keys = toKeyViews(limited(v, rows))
-	return err
-}
-
-func (a *Admin) invitesPage(r *http.Request, v *view) error {
-	rows, err := a.opt.Store.ListInvites(r.Context(), listLimit+1)
+	q, page := listParams(r)
+	l, err := a.opt.Store.ListRequests(r.Context(), q, page, pageSize)
 	if err != nil {
 		return err
 	}
-	rows = limited(v, rows)
+	v.Requests = toKeyViews(l.Rows)
+	setPager(v, q, "Fingerprint or invite note", l)
+	return nil
+}
+
+func (a *Admin) keysPage(r *http.Request, v *view) error {
+	q, page := listParams(r)
+	l, err := a.opt.Store.ListKeys(r.Context(), q, page, pageSize)
+	if err != nil {
+		return err
+	}
+	v.Keys = toKeyViews(l.Rows)
+	setPager(v, q, "Fingerprint, invite note or screenshot state", l)
+	return nil
+}
+
+func (a *Admin) invitesPage(r *http.Request, v *view) error {
+	q, page := listParams(r)
+	l, err := a.opt.Store.ListInvites(r.Context(), q, page, pageSize)
+	if err != nil {
+		return err
+	}
 	now := a.opt.Store.Now().Unix()
-	for _, i := range rows {
+	for _, i := range l.Rows {
 		iv := inviteView{ID: i.ID, Note: i.Note, Created: time.Unix(i.Created, 0), Expires: time.Unix(i.Expires, 0)}
 		// A use comes first: a revoke sent from a page that was open before the use does not hide who used it.
 		switch {
@@ -184,6 +242,7 @@ func (a *Admin) invitesPage(r *http.Request, v *view) error {
 		v.Invites = append(v.Invites, iv)
 	}
 	v.DefaultDay = defaultInviteDays
+	setPager(v, q, "Note or state: unused, used, expired, revoked", l)
 	return nil
 }
 
@@ -192,32 +251,17 @@ var fingerprintPattern = regexp.MustCompile(`^[0-9a-f]{16}$`)
 const maxQueryRunes = 200
 
 func (a *Admin) charactersPage(r *http.Request, v *view) error {
-	q := strings.TrimSpace(r.URL.Query().Get("q"))
-	if rs := []rune(q); len(rs) > maxQueryRunes {
-		q = string(rs[:maxQueryRunes])
-	}
-	v.Query = q
-	// A key fingerprint lists the characters of that key.
-	var keyID int64
-	search := q
-	if fingerprintPattern.MatchString(strings.ToLower(q)) {
-		k, err := a.opt.Store.KeyByFingerprint(r.Context(), q)
-		switch {
-		case err == nil:
-			keyID, search = k.ID, ""
-		case !errors.Is(err, store.ErrNotFound):
-			return err
-		}
-	}
-	rows, err := a.opt.Store.SearchClaims(r.Context(), search, keyID, listLimit+1)
+	q, page := listParams(r)
+	l, err := a.opt.Store.SearchClaims(r.Context(), q, page, pageSize)
 	if err != nil {
 		return err
 	}
-	for _, c := range limited(v, rows) {
+	for _, c := range l.Rows {
 		v.Characters = append(v.Characters, characterView{
 			Path: c.Path(), GUID: c.GUID, Owner: store.Fingerprint(c.OwnerKey), Revoked: c.OwnerRevoked, Steps: c.Steps,
 			Updated: time.Unix(c.Updated, 0), DataBytes: c.DataBytes, ShotBytes: c.ShotBytes,
 		})
 	}
+	setPager(v, q, "Path, GUID or key fingerprint", l)
 	return nil
 }

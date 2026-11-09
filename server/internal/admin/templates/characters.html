@@ -1,10 +1,7 @@
 {{define "title"}}Characters{{end}}
 {{define "content"}}
 <h2>Characters</h2>
-<form method="get" action="/characters" class="inline">
-<label>Search <input type="search" name="q" value="{{.Query}}" placeholder="Path, GUID or key fingerprint"></label>
-<button type="submit">Search</button>
-</form>
+{{template "search" .}}
 {{if .Characters}}
 <table>
 <thead><tr><th>Character</th><th>GUID</th><th>Owner key</th><th>Records</th><th>Updated</th><th>Data</th><th>Screenshot data</th><th>Actions</th></tr></thead>
@@ -22,13 +19,13 @@
 <form method="post" action="/characters/delete">
 <input type="hidden" name="csrf" value="{{$.CSRF}}">
 <input type="hidden" name="path" value="{{.Path}}">
-<input type="hidden" name="q" value="{{$.Query}}">
+<input type="hidden" name="return" value="{{$.Return}}">
 <button type="submit" class="danger">Delete</button>
 </form>
 <form method="post" action="/characters/move">
 <input type="hidden" name="csrf" value="{{$.CSRF}}">
 <input type="hidden" name="path" value="{{.Path}}">
-<input type="hidden" name="q" value="{{$.Query}}">
+<input type="hidden" name="return" value="{{$.Return}}">
 <label>Move to key <input type="text" name="to" size="18" maxlength="16" placeholder="fingerprint" required></label>
 <button type="submit">Move claim</button>
 </form>
@@ -37,10 +34,10 @@
 {{end}}
 </tbody>
 </table>
-{{if .Truncated}}<p>This list shows the first {{.Limit}} characters. Narrow the search to see others.</p>{{end}}
 {{else}}
 <p>No character matches.</p>
 {{end}}
+{{template "pager" .}}
 <h3>What the actions do</h3>
 <ul>
 <li><strong>Delete</strong> removes the character and its files at once. Its page gives a 404, and anybody can claim the path again.</li>

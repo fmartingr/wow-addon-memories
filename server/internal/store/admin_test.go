@@ -2,6 +2,8 @@ package store
 
 import (
 	"errors"
+	"math"
+	"strings"
 	"testing"
 	"time"
 )
@@ -56,8 +58,9 @@ func TestListKeysAndLookups(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	all, err := s.ListKeys(ctx, false, 10)
-	if err != nil || len(all) != 3 || all[0].ID != k3.ID || all[2].ID != k1.ID {
+	list, err := s.ListKeys(ctx, "", 1, 10)
+	all := list.Rows
+	if err != nil || len(all) != 3 || list.Total != 3 || all[0].ID != k3.ID || all[2].ID != k1.ID {
 		t.Fatalf("ListKeys = %+v, %v; want 3 keys, newest first", all, err)
 	}
 	if r := all[2]; r.InviteNote != "for Ana" || r.Characters != 2 || r.DataBytes != 30 || r.ShotBytes != 12 || r.Screenshots != ShotsPending {
@@ -69,12 +72,43 @@ func TestListKeysAndLookups(t *testing.T) {
 	if !all[0].Revoked {
 		t.Error("the revoked flag is lost")
 	}
-	if one, _ := s.ListKeys(ctx, false, 1); len(one) != 1 {
-		t.Errorf("limit 1 gave %d rows", len(one))
+	if one, _ := s.ListKeys(ctx, "", 1, 1); len(one.Rows) != 1 || one.Total != 3 || one.Pages != 3 {
+		t.Errorf("size 1 gave %+v", one)
 	}
-	pending, err := s.ListKeys(ctx, true, 10)
-	if err != nil || len(pending) != 1 || pending[0].ID != k1.ID {
+	pending, err := s.ListRequests(ctx, "", 1, 10)
+	if err != nil || len(pending.Rows) != 1 || pending.Rows[0].ID != k1.ID {
 		t.Errorf("pending = %+v, %v; want only key 1 (key 3 is revoked)", pending, err)
+	}
+	for _, tc := range []struct {
+		q    string
+		want []int64
+	}{
+		{Fingerprint(pubKey(2)), []int64{k2.ID}},
+		{strings.ToUpper(Fingerprint(pubKey(2))[:6]), []int64{k2.ID}},
+		{"ana", []int64{k1.ID}},
+		{"pend", []int64{k3.ID, k1.ID}},
+		{"NONE", []int64{k2.ID}},
+		{"%", nil},
+		{"_", nil},
+		{`\`, nil},
+		{"nothing", nil},
+	} {
+		got, err := s.ListKeys(ctx, tc.q, 1, 10)
+		if err != nil || len(got.Rows) != len(tc.want) || got.Total != len(tc.want) {
+			t.Errorf("ListKeys(%q) = %d rows of %d, %v; want %d", tc.q, len(got.Rows), got.Total, err, len(tc.want))
+			continue
+		}
+		for i, r := range got.Rows {
+			if r.ID != tc.want[i] {
+				t.Errorf("ListKeys(%q)[%d] = key %d, want %d", tc.q, i, r.ID, tc.want[i])
+			}
+		}
+	}
+	if got, _ := s.ListRequests(ctx, "ana", 1, 10); len(got.Rows) != 1 {
+		t.Errorf("ListRequests by note = %d rows", len(got.Rows))
+	}
+	if got, _ := s.ListRequests(ctx, "pending", 1, 10); len(got.Rows) != 0 {
+		t.Error("ListRequests searches the screenshot state")
 	}
 
 	if got, err := s.KeyByID(ctx, k2.ID); err != nil || got.Fingerprint() != Fingerprint(pubKey(2)) {
@@ -128,7 +162,8 @@ func TestListInvitesStates(t *testing.T) {
 		t.Fatal(err)
 	}
 	clock.Advance(time.Minute)
-	rows, err := s.ListInvites(ctx, 10)
+	list, err := s.ListInvites(ctx, "", 1, 10)
+	rows := list.Rows
 	if err != nil || len(rows) != 3 || rows[0].Note != "open" {
 		t.Fatalf("ListInvites = %+v, %v", rows, err)
 	}
@@ -141,8 +176,21 @@ func TestListInvitesStates(t *testing.T) {
 	if r := rows[0]; r.Expires-r.Created != 3600 || r.UsedBy != "" {
 		t.Errorf("open invite = %+v", r)
 	}
-	if got, _ := s.ListInvites(ctx, 2); len(got) != 2 {
-		t.Errorf("limit 2 gave %d rows", len(got))
+	if got, _ := s.ListInvites(ctx, "", 1, 2); len(got.Rows) != 2 || got.Total != 3 {
+		t.Errorf("size 2 gave %+v", got)
+	}
+	s.CreateInvite(ctx, "50%_off", time.Second)
+	clock.Advance(time.Minute)
+	for _, tc := range []struct {
+		q    string
+		want int
+	}{
+		{"SPEN", 1}, {"unused", 1}, {"used", 1}, {"USED", 1}, {"revoked", 1}, {"expired", 1}, {"open", 1},
+		{"50%", 1}, {"%", 1}, {"_", 1}, {"0%_o", 1}, {"5_%", 0}, {"nothing", 0},
+	} {
+		if got, err := s.ListInvites(ctx, tc.q, 1, 10); err != nil || len(got.Rows) != tc.want {
+			t.Errorf("ListInvites(%q) = %d rows, %v; want %d", tc.q, len(got.Rows), err, tc.want)
+		}
 	}
 }
 
@@ -164,29 +212,30 @@ func TestSearchClaimsMoveAndClearShots(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	count := func(q string, key int64) int {
-		rows, err := s.SearchClaims(ctx, q, key, 10)
+	count := func(q string) int {
+		l, err := s.SearchClaims(ctx, q, 1, 10)
 		if err != nil {
 			t.Fatal(err)
 		}
-		return len(rows)
+		return len(l.Rows)
 	}
 	for _, tc := range []struct {
 		q    string
-		key  int64
 		want int
 	}{
-		{"", 0, 3}, {"brumamar", 0, 1}, {"WOW/EU", 0, 1}, {"player-1-0000abcd", 0, 1}, {"0000", 0, 3},
-		{"a_b", 0, 1}, {"_", 0, 1}, {"%", 0, 0}, {`\`, 0, 0}, {"nothing", 0, 0}, {"", k2.ID, 2}, {"x", k2.ID, 1}, {"nandu", k2.ID, 0},
+		{"", 3}, {"brumamar", 1}, {"WOW/EU", 1}, {"player-1-0000abcd", 1}, {"0000", 3},
+		{"a_b", 1}, {"_", 1}, {"%", 0}, {`\`, 0}, {"nothing", 0},
+		{Fingerprint(pubKey(2)), 2}, {Fingerprint(pubKey(1)), 1}, {strings.ToUpper(Fingerprint(pubKey(1))), 1},
 	} {
-		if got := count(tc.q, tc.key); got != tc.want {
-			t.Errorf("SearchClaims(%q, key %d) = %d rows, want %d", tc.q, tc.key, got, tc.want)
+		if got := count(tc.q); got != tc.want {
+			t.Errorf("SearchClaims(%q) = %d rows, want %d", tc.q, got, tc.want)
 		}
 	}
-	if rows, _ := s.SearchClaims(ctx, "", 0, 1); len(rows) != 1 {
-		t.Errorf("limit 1 gave %d rows", len(rows))
+	if l, _ := s.SearchClaims(ctx, "", 1, 1); len(l.Rows) != 1 || l.Total != 3 || l.Pages != 3 {
+		t.Errorf("size 1 gave %+v", l)
 	}
-	rows, _ := s.SearchClaims(ctx, "x", 0, 10)
+	l, _ := s.SearchClaims(ctx, "x", 1, 10)
+	rows := l.Rows
 	if len(rows) != 1 || !rows[0].OwnerRevoked || Fingerprint(rows[0].OwnerKey) != Fingerprint(pubKey(2)) || rows[0].Path() != "wow/us/a_b/x" {
 		t.Errorf("row = %+v", rows)
 	}
@@ -221,5 +270,35 @@ func TestSearchClaimsMoveAndClearShots(t *testing.T) {
 	}
 	if c, _ := s.ClaimByPath(ctx, "wow", "eu", "brumamar", "nandu"); c.ShotBytes != 0 {
 		t.Errorf("shot_bytes = %d", c.ShotBytes)
+	}
+}
+
+func TestListingsClampThePage(t *testing.T) {
+	for _, tc := range []struct {
+		total, page, size   int
+		wantPage, wantPages int
+		wantRows            int
+	}{
+		{0, 1, 25, 1, 1, 0},
+		{0, 7, 25, 1, 1, 0},
+		{25, 1, 25, 1, 1, 25},
+		{25, 2, 25, 1, 1, 25},
+		{26, 1, 25, 1, 2, 25},
+		{26, 2, 25, 2, 2, 1},
+		{26, 3, 25, 2, 2, 1},
+		{26, 0, 25, 1, 2, 25},
+		{26, -4, 25, 1, 2, 25},
+		{26, math.MaxInt32, 25, 2, 2, 1},
+	} {
+		s, _ := openTest(t)
+		for n := 0; n < tc.total; n++ {
+			if _, _, err := s.CreateInvite(ctx, "n", time.Hour); err != nil {
+				t.Fatal(err)
+			}
+		}
+		got, err := s.ListInvites(ctx, "", tc.page, tc.size)
+		if err != nil || got.Page != tc.wantPage || got.Pages != tc.wantPages || len(got.Rows) != tc.wantRows || got.Total != tc.total {
+			t.Errorf("%+v: got page %d of %d with %d rows of %d, %v", tc, got.Page, got.Pages, len(got.Rows), got.Total, err)
+		}
 	}
 }

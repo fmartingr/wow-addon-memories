@@ -28,3 +28,18 @@
 </main>
 </body>
 </html>
+{{define "search"}}
+<form method="get" action="/{{.Page}}" class="inline search" role="search">
+<label>Search <input type="search" name="q" value="{{.Query}}" maxlength="200" placeholder="{{.Placeholder}}"></label>
+<button type="submit">Search</button>
+{{if .Query}}<a href="/{{.Page}}">Clear search</a>{{end}}
+</form>
+{{end}}
+{{define "pager"}}
+<nav class="pager" aria-label="Pages">
+<span>{{if eq .Total 1}}1 result{{else}}{{.Total}} results{{end}}</span>
+<span>Page {{.PageNo}} of {{.Pages}}</span>
+{{if .PrevURL}}<a href="{{.PrevURL}}" rel="prev">Previous</a>{{else}}<span class="off">Previous</span>{{end}}
+{{if .NextURL}}<a href="{{.NextURL}}" rel="next">Next</a>{{else}}<span class="off">Next</span>{{end}}
+</nav>
+{{end}}

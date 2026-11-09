@@ -219,7 +219,8 @@ headers. Run it with `make server-run`, then open <http://localhost:8080/>. The 
 `MEMORIES_ADMIN_ADDR` (default `127.0.0.1:8081`; the log warns when the address is not loopback). It has plain HTML
 forms and no JavaScript, and it accepts only `localhost:<port>` and `127.0.0.1:<port>` as `Host`, so reach it with an
 SSH tunnel. There the admin makes and revokes invite codes, approves, denies and revokes screenshots, revokes keys
-(with or without deleting their characters), deletes characters and moves a claim to another key.
+(a revoked key loses all its characters and screenshots), deletes characters and moves a claim to another key. Every list
+searches (`?q=`) and shows 25 rows a page.
 
 A character page `/<flavor>/<region>/<realm>/<name>/` shows the viewer of `web/` with three tabs: Summary, Journey map and
 Heatmaps. To see it while you work, run `make local-up`, then `make upload SITE=http://localhost:8080 LATEST=<latest folder>`,
