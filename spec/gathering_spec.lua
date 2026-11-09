@@ -325,7 +325,10 @@ describe("gathering", function()
 			boot()
 			cast(2366, "Hojaplata")
 			wow.advance(1)
-			wow.open_loot({ autoLoot = true, slots = { { item = 765, name = "Hojaplata", quality = 1, source = HERB } } })
+			wow.open_loot({
+				autoLoot = true,
+				slots = { { item = 765, name = "Hojaplata", quality = 1, source = HERB } },
+			})
 			assert.same({ "ga|Herbalism|Hojaplata|1617|765|1||Hojaplata|first" }, lines())
 		end)
 
