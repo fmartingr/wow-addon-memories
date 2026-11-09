@@ -91,7 +91,51 @@
         <figure><img id="lightboxImg" alt=""><figcaption id="lightboxCap"></figcaption></figure>
       </div>
     </section>
-    <section id="panel-heatmaps" class="tabpanel" role="tabpanel" aria-labelledby="tab-heatmaps" hidden></section>
+    <section id="panel-heatmaps" class="tabpanel fill" role="tabpanel" aria-labelledby="tab-heatmaps" hidden>
+      <div class="heat">
+        <div class="map-wrap" id="heatWrap">
+          <div class="map-stage">
+            <canvas id="heatMap" aria-label="Heat map of where things happened"></canvas>
+            <div class="map-tools">
+              <button type="button" class="btn icon" id="hIn" aria-label="Zoom in">+</button>
+              <div class="zlevel" id="hLevel">World</div>
+              <button type="button" class="btn icon" id="hOut" aria-label="Zoom out">−</button>
+              <button type="button" class="btn" id="hWorld">World</button>
+            </div>
+            <div class="legend" id="legend">
+              <canvas id="legendRamp" width="160" height="10" aria-hidden="true"></canvas>
+              <div id="legendCount"></div>
+              <div id="legendUnplaced" class="sub"></div>
+              <div id="legendEmpty"></div>
+            </div>
+            <div class="tip" id="hTip" hidden></div>
+          </div>
+        </div>
+        <aside class="sheet" id="heatSheet" data-state="peek" aria-label="Layers">
+          <button type="button" class="sheet-handle" aria-label="Layers" aria-expanded="false"></button>
+          <div class="sheet-body">
+            <fieldset class="filters" id="layerPicker">
+              <legend>Layer</legend>
+              <label><input type="radio" name="heatLayer" value="presence" checked><i class="sw" data-c="#ffd100"></i>Presence</label>
+              <label><input type="radio" name="heatLayer" value="kills"><i class="sw" data-c="#ff5a43"></i>Kills</label>
+              <label><input type="radio" name="heatLayer" value="deaths"><i class="sw" data-c="#c58cff"></i>Deaths</label>
+              <label><input type="radio" name="heatLayer" value="gathering"><i class="sw" data-c="#35c9a0"></i>Gathering</label>
+              <label><input type="radio" name="heatLayer" value="fishing"><i class="sw" data-c="#4fa8e0"></i>Fishing</label>
+              <label><input type="radio" name="heatLayer" value="quests"><i class="sw" data-c="#f2a93b"></i>Quests</label>
+              <label><input type="radio" name="heatLayer" value="loot"><i class="sw" data-c="#9ad65f"></i>Loot</label>
+            </fieldset>
+            <fieldset class="filters" id="profPicker" hidden>
+              <legend>Profession</legend>
+              <label><input type="radio" name="heatProf" value="all" checked>All</label>
+              <label><input type="radio" name="heatProf" value="mining">Mining</label>
+              <label><input type="radio" name="heatProf" value="herbalism">Herbalism</label>
+              <label><input type="radio" name="heatProf" value="skinning">Skinning</label>
+              <label><input type="radio" name="heatProf" value="other">Other</label>
+            </fieldset>
+          </div>
+        </aside>
+      </div>
+    </section>
   </main>
 
   <p class="legal" id="legal"></p>

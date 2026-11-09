@@ -5,7 +5,7 @@ import { screenshotUrl } from '../lib/data.mjs';
 import { clamp, clock, coinsHtml, esc, fmtDate, fmtDay, moneyText } from '../lib/format.mjs';
 import { boundsOf } from '../lib/geo.mjs';
 import { EVENT_COLOURS, NOTE, noteOf, tipHtml } from '../lib/events.mjs';
-import { buildModel, CAT, FLAG, LANES } from '../lib/model.mjs';
+import { CAT, FLAG, LANES } from '../lib/model.mjs';
 import { advance, crossed, eventId, findEvent, goldAt, levelAt, placeAt, posAt, SPEEDS, spanAt } from '../lib/playback.mjs';
 import { ZONES } from '../zones.mjs';
 import { icon } from './icons.mjs';
@@ -599,7 +599,7 @@ export function createJourneyTab(panel, ctx) {
   }
 
   function init() {
-    model = buildModel(ctx.data.char, ctx.data.steps, ctx.data.trail);
+    model = ctx.model();
     bounds = chunkBounds(model.points);
     logEvents = model.events.filter((e) => CAT[e.k] && !(e.k === 'di' && !e.area));
     createSheet($('journeySheet'));

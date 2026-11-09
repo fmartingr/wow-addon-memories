@@ -5,17 +5,14 @@ import { className, raceName } from './lib/format.mjs';
 import { deriveGear } from './lib/gear.mjs';
 import { deriveSummary } from './lib/summary.mjs';
 import { mountShell } from './ui/shell.mjs';
+import { buildModel } from './lib/model.mjs';
+import { createHeatmapsTab } from './ui/heatmaps.mjs';
 import { createJourneyTab } from './ui/journey.mjs';
 import { mountSummary } from './ui/summary.mjs';
 
 const REPLACE_EVERY_MS = 500;
 const $ = (id) => document.getElementById(id);
 const status = $('status');
-
-function stubTab(panel) {
-  panel.textContent = 'This tab is not built yet.';
-  return { show() {}, hide() {} };
-}
 
 async function main() {
   const entry = document.body.dataset.entry;
@@ -58,7 +55,10 @@ async function main() {
     if (wait <= 0) applyReplace();
     else if (!timer) timer = setTimeout(applyReplace, wait);
   };
-  const ctx = { data, summary, setParams, status, legal: $('legal') };
+  let model = null;
+  // The map tabs share one model; it is built when the first of them opens.
+  const getModel = () => (model ??= buildModel(data.char, data.steps, data.trail));
+  const ctx = { data, summary, setParams, status, legal: $('legal'), model: getModel };
 
   const shell = mountShell({
     onTab(tab) {
@@ -74,7 +74,7 @@ async function main() {
   const tabs = {
     summary: mountSummary(shell.panel('summary'), summary, deriveGear(data.char, data.steps), ctx),
     journey: createJourneyTab(shell.panel('journey'), ctx),
-    heatmaps: stubTab(shell.panel('heatmaps'), ctx),
+    heatmaps: createHeatmapsTab(shell.panel('heatmaps'), ctx),
   };
 
   let shown = null;

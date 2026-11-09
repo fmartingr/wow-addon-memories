@@ -183,6 +183,14 @@ td { padding: 6px 8px; border-bottom: 1px solid #36372e; }
 .map-tools .btn.icon { font-size: 1.3rem; }
 .zlevel { text-align: center; font: 700 0.62rem var(--display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--gold); }
 
+/* heat maps */
+.legend { position: absolute; left: 12px; bottom: 12px; z-index: 3; display: grid; gap: 3px; padding: 8px 10px; background: #000b; border: 1px solid var(--edge); border-radius: 4px; font-size: 0.85rem; max-width: calc(100% - 120px); }
+.legend canvas { width: 160px; height: 10px; border: 1px solid #000; }
+.legend #legendEmpty { color: var(--gold-light); }
+.legend #legendEmpty:empty { display: none; }
+.heat .sheet-body { display: grid; gap: 12px; align-content: start; }
+.heat .map-notice { bottom: auto; top: 12px; }
+
 /* journey: transport, timeline, banner, toasts, tooltips, log */
 .journey-main > .map-wrap { flex: 1 1 0; }
 .journey-main { display: flex; flex-direction: column; gap: 8px; min-width: 0; min-height: 0; }
@@ -230,7 +238,7 @@ td { padding: 6px 8px; border-bottom: 1px solid #36372e; }
 .feed .empty { color: var(--muted); cursor: default; display: block; }
 .filters { border: 1px solid var(--edge); margin: 0; padding: 4px 10px 8px; display: grid; gap: 2px; min-width: 0; }
 .filters legend { font: 700 0.65rem var(--display); letter-spacing: 0.14em; text-transform: uppercase; color: var(--gold); padding: 0 4px; }
-.filters label { display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 36px; }
+.filters label { display: flex; align-items: center; gap: 8px; cursor: pointer; min-height: 44px; }
 .filters input { accent-color: var(--gold); width: 20px; height: 20px; margin: 0; }
 .sw { width: 12px; height: 12px; border-radius: 2px; background: var(--c, var(--gold)); border: 1px solid #000; flex: none; }
 
@@ -268,6 +276,8 @@ td { padding: 6px 8px; border-bottom: 1px solid #36372e; }
   .time { font-size: 1rem; }
   .track-wrap { height: 64px; }
   .toasts { top: 70px; }
+  .legend { bottom: 8px; left: 8px; font-size: 0.78rem; padding: 4px 8px; }
+  .heat .map-notice { top: 8px; left: 8px; max-width: calc(100% - 120px); }
   .summary-grid { grid-template-columns: minmax(0, 1fr); }
   .stats { grid-template-columns: minmax(0, 1fr); }
   .bars li { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }

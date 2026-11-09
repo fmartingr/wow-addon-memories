@@ -35,3 +35,9 @@ browser at 360 × 740 and write "360 px" in the cell. Use a real character on `m
 | 28 | 5 | A link `#journey?at=..&ev=..` opens paused at that point with the event selected. | not run | not run |
 | 29 | 5 | On a phone, the transport is one row, the timeline is 64 px high, and the log and the markers are in the bottom sheet (handle tap and drag). | not run | not run |
 | 30 | 5 | With "reduce motion" on, the banner and the toasts do not fade and the camera does not ease. | not run | not run |
+| 31 | 6 | Each layer (Presence, Kills, Deaths, Gathering, Fishing, Quests, Loot) shows. Each gathering filter (All, Mining, Herbalism, Skinning, Other) changes the map. | not run | not run |
+| 32 | 6 | The legend counts match the Summary numbers (kills, deaths, fish caught), and the instance count shows when there are records with no map position. | not run | not run |
+| 33 | 6 | Pan and zoom stay smooth on a phone with a large trail. | not run | not run |
+| 34 | 6 | A link `#heatmaps/fishing?x=..&y=..&z=..` opens that view. A layer change replaces the URL and does not add a history entry. | not run | not run |
+| 35 | 6 | The layer picker is in the bottom sheet on a phone. A tap on the map shows the weight of the cell. | not run | not run |
+| 36 | 6 | An empty layer shows "No records for this layer." | not run | not run |
