@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
 
+import '../../l10n/app_localizations.dart';
 import '../settings/settings_controller.dart';
 import '../theme/ak_widgets.dart';
 import '../upload/upload_controller.dart';
@@ -28,7 +29,9 @@ class WebsiteCard extends StatelessWidget {
     if (!context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(const SnackBar(content: Text(linkCopiedText)));
+      ..showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).linkCopiedText)),
+      );
   }
 
   Future<void> _remove(BuildContext context, RemoteCharacter c) async {
@@ -36,32 +39,38 @@ class WebsiteCard extends StatelessWidget {
     final site = settings.settings.site;
     final yes = await showDialog<bool>(
       context: context,
-      builder: (context) => AlertDialog(
-        title: const Text(removeFromWebsiteLabel),
-        content: Text(removeQuestionText(name, site)),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(false),
-            child: const Text(cancelLabel),
-          ),
-          FilledButton(
-            onPressed: () => Navigator.of(context).pop(true),
-            child: const Text(removeLabel),
-          ),
-        ],
-      ),
+      builder: (context) {
+        final l = AppLocalizations.of(context);
+        return AlertDialog(
+          title: Text(l.removeFromWebsiteLabel),
+          content: Text(l.removeQuestionText(name, siteLabel(site))),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(false),
+              child: Text(l.cancel),
+            ),
+            FilledButton(
+              onPressed: () => Navigator.of(context).pop(true),
+              child: Text(l.removeLabel),
+            ),
+          ],
+        );
+      },
     );
     if (yes != true) return;
     final gone = await upload.removeCharacter(c.path);
     if (!gone || !context.mounted) return;
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
-      ..showSnackBar(SnackBar(content: Text(removedText(name))));
+      ..showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).removedText(name))),
+      );
   }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -75,23 +84,24 @@ class WebsiteCard extends StatelessWidget {
             return Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                AkPanelTitle('$websiteTitle: ${siteLabel(site)}'),
+                AkPanelTitle(l.websiteCardTitle(siteLabel(site))),
                 if (state == UploadState.unregistered) ...[
-                  Text(cardNotRegisteredText(site)),
+                  Text(l.cardNotRegistered(siteLabel(site))),
                 ] else ...[
                   if (state == UploadState.off) ...[
-                    const Text(cardUploadOffText),
+                    Text(l.cardUploadOff),
                   ] else ...[
-                    Text(lastUploadText(upload.lastUpload, clock())),
+                    Text(lastUploadText(l, upload.lastUpload, clock())),
                     if (state == UploadState.paused)
-                      const Text(uploadPausedText)
+                      Text(l.uploadPausedText)
                     else if (report != null)
-                      Text(syncSummaryText(report)),
+                      Text(syncSummaryText(l, report)),
                     const SizedBox(height: 12),
                     if (state == UploadState.uploading) ...[
                       LinearProgressIndicator(
                         value: upload.progress,
                         semanticsLabel: uploadProgressText(
+                          l,
                           upload.progressCounts.done,
                           upload.progressCounts.total,
                         ),
@@ -99,6 +109,7 @@ class WebsiteCard extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         uploadProgressText(
+                          l,
                           upload.progressCounts.done,
                           upload.progressCounts.total,
                         ),
@@ -111,24 +122,24 @@ class WebsiteCard extends StatelessWidget {
                           : null,
                       icon: const Icon(Icons.cloud_upload_outlined),
                       label: state == UploadState.uploading
-                          ? const Text(
-                              uploadingLabel,
-                              semanticsLabel: 'Uploading, please wait',
+                          ? Text(
+                              l.uploadingLabel,
+                              semanticsLabel: l.uploadingSemantics,
                             )
-                          : const Text(uploadNowLabel),
+                          : Text(l.uploadNowLabel),
                     ),
                   ],
                   for (final issue in upload.issues)
                     Padding(
                       padding: const EdgeInsets.only(top: 8),
                       child: Text(
-                        issue,
+                        noticeText(l, issue),
                         style: TextStyle(color: theme.colorScheme.error),
                       ),
                     ),
                   for (final c in upload.characters) _character(context, c),
                   const SizedBox(height: 12),
-                  Text(unlistedText, style: theme.textTheme.bodySmall),
+                  Text(l.unlistedText, style: theme.textTheme.bodySmall),
                 ],
               ],
             );
@@ -139,6 +150,7 @@ class WebsiteCard extends StatelessWidget {
   }
 
   Widget _character(BuildContext context, RemoteCharacter c) {
+    final l = AppLocalizations.of(context);
     final who = upload.describe(c.path);
     return Padding(
       padding: const EdgeInsets.only(top: 12),
@@ -153,15 +165,15 @@ class WebsiteCard extends StatelessWidget {
               TextButton(
                 onPressed: () => _copy(context, c),
                 child: Text(
-                  copyLinkLabel,
-                  semanticsLabel: 'Copy link of ${who.name}',
+                  l.copyLinkLabel,
+                  semanticsLabel: l.copyLinkSemantics(who.name),
                 ),
               ),
               TextButton(
                 onPressed: upload.busy ? null : () => _remove(context, c),
                 child: Text(
-                  removeFromWebsiteLabel,
-                  semanticsLabel: 'Remove ${who.name} from website',
+                  l.removeFromWebsiteLabel,
+                  semanticsLabel: l.removeFromWebsiteSemantics(who.name),
                 ),
               ),
             ],

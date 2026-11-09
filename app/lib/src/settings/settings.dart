@@ -1,6 +1,8 @@
 /// The choices of the user, kept in `settings.json`.
 library;
 
+import '../l10n/app_locale.dart';
+
 /// The website that gets the uploads, unless the user chose another. A build
 /// can set it with `--dart-define=WOWJOURNEY_SITE=...`.
 const String defaultSite = String.fromEnvironment(
@@ -19,6 +21,7 @@ class Settings {
     this.lastSignature,
     this.site = defaultSite,
     this.upload = false,
+    this.language,
   });
 
   /// The flavor folder that a gather reads, such as `.../_retail_`.
@@ -46,6 +49,10 @@ class Settings {
   /// is registered on [site].
   final bool upload;
 
+  /// The language code of the app, or null to follow the system. A value
+  /// that is not a supported code is stored as null.
+  final String? language;
+
   Settings copyWith({
     String? flavorDir,
     String? backupRoot,
@@ -56,6 +63,8 @@ class Settings {
     bool clearLastSignature = false,
     String? site,
     bool? upload,
+    String? language,
+    bool clearLanguage = false,
   }) => Settings(
     flavorDir: flavorDir ?? this.flavorDir,
     backupRoot: backupRoot ?? this.backupRoot,
@@ -67,6 +76,9 @@ class Settings {
         : lastSignature ?? this.lastSignature,
     site: site ?? this.site,
     upload: upload ?? this.upload,
+    language: clearLanguage
+        ? null
+        : validLanguageCode(language) ?? this.language,
   );
 
   Map<String, Object?> toJson() => {
@@ -78,9 +90,11 @@ class Settings {
     'lastSignature': lastSignature,
     'site': site,
     'upload': upload,
+    'language': language,
   };
 
-  /// Reads [json] as [toJson] writes it. A missing key takes its default.
+  /// Reads [json] as [toJson] writes it. A missing key takes its default. A
+  /// `language` that is missing, of another type or not supported is null.
   /// Throws a [FormatException] when a value has the wrong type.
   factory Settings.fromJson(Object? json) {
     if (json is! Map<String, Object?>) {
@@ -102,6 +116,7 @@ class Settings {
       lastSignature: read<String>('lastSignature'),
       site: read<String>('site') ?? d.site,
       upload: read<bool>('upload') ?? d.upload,
+      language: validLanguageCode(json['language']),
     );
   }
 
@@ -115,7 +130,8 @@ class Settings {
       other.wizardDone == wizardDone &&
       other.lastSignature == lastSignature &&
       other.site == site &&
-      other.upload == upload;
+      other.upload == upload &&
+      other.language == language;
 
   @override
   int get hashCode => Object.hash(
@@ -127,6 +143,7 @@ class Settings {
     lastSignature,
     site,
     upload,
+    language,
   );
 
   @override

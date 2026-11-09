@@ -535,7 +535,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 5. App: localization setup, Language setting and English catalog
+### [x] 5. App: localization setup, Language setting and English catalog
 
 - **Outcome:** every user-visible string of the app comes from `AppLocalizations`. Settings has the Language row. The
   app is still English only, with no text change for an English user.
@@ -611,7 +611,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
         Language row).
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 6. App: the 5 translations and macOS languages
+### [x] 6. App: the 5 translations and macOS languages
 
 - **Outcome:** the app shows German, French, Spanish, Italian or Portuguese from the OS language or the setting.
 - **Depends on:** Task 5 (the English catalog, the Language setting and the code mapping).

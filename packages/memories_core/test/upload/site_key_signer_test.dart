@@ -55,6 +55,37 @@ void main() {
     });
   });
 
+  group('parseSite error codes', () {
+    test('each refusal has a stable code and keeps its English message', () {
+      final cases = {
+        'https://exa mple.com': SiteError.invalid,
+        'example.com': SiteError.needsHost,
+        '': SiteError.needsHost,
+        'ftp://example.com': SiteError.needsHttps,
+        'http://example.com': SiteError.httpLoopback,
+        'https://u:p@example.com': SiteError.userInfo,
+        'https://example.com?x=1': SiteError.query,
+        'https://example.com#top': SiteError.query,
+        'https://example.com/api': SiteError.path,
+      };
+      cases.forEach((input, code) {
+        expect(
+          () => parseSite(input),
+          throwsA(
+            isA<SiteFormatException>()
+                .having((e) => e.error, 'error', code)
+                .having((e) => e.message, 'message', isNotEmpty),
+          ),
+          reason: input,
+        );
+      });
+    });
+
+    test('a refusal is still a FormatException', () {
+      expect(() => parseSite('nope'), throwsFormatException);
+    });
+  });
+
   group('UploadKey', () {
     late Directory tmp;
     setUp(() => tmp = Directory.systemTemp.createTempSync('memories-key-'));

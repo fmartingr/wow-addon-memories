@@ -3,10 +3,9 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
-import 'package:wow_journey/src/shell/shell_controller.dart';
-import 'package:wow_journey/src/ui/messages.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 Fakes _ready({bool startAtLogin = true}) => Fakes(
   store: FakeSettingsStore((
@@ -40,10 +39,10 @@ void main() {
     await pumpApp(tester, fakes);
     expect(fakes.window.calls, ['init']);
     expect(fakes.tray.items.map((i) => i.label), [
-      TrayLabels.gatherNow,
-      TrayLabels.openWindow,
-      TrayLabels.openBackupFolder,
-      TrayLabels.quit,
+      enTray.gatherNow,
+      enTray.openWindow,
+      enTray.openBackupFolder,
+      enTray.quit,
     ]);
   });
 
@@ -53,7 +52,7 @@ void main() {
     expect(find.text(watchingText), findsOneWidget);
     expect(fakes.signature.calls, hasLength(1));
 
-    fakes.tray.select(TrayLabels.quit);
+    fakes.tray.select(enTray.quit);
     await tester.pumpAndSettle();
     expect(find.text(watchingText), findsNothing);
     expect(fakes.tray.disposed, isTrue);
@@ -65,7 +64,7 @@ void main() {
   testWidgets('Gather now from the tray gathers', (tester) async {
     final fakes = _ready();
     await pumpApp(tester, fakes);
-    fakes.tray.select(TrayLabels.gatherNow);
+    fakes.tray.select(enTray.gatherNow);
     await tester.pumpAndSettle();
     expect(fakes.gather.calls, [(retailDir, readySettings.backupRoot!)]);
     expect(find.textContaining('Up to date'), findsOneWidget);

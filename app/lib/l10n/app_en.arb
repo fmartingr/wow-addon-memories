@@ -1,0 +1,1109 @@
+{
+  "@@locale": "en",
+  "appTitle": "WoW Journey",
+  "@appTitle": {
+    "description": "The name of the app. Not translated."
+  },
+  "loadingSettings": "Loading your settings",
+  "@loadingSettings": {
+    "description": "Screen reader label of the spinner while the settings load."
+  },
+  "tabOverview": "Overview",
+  "@tabOverview": {
+    "description": "Name of the first tab."
+  },
+  "tabWebsite": "Website",
+  "@tabWebsite": {
+    "description": "Name of the second tab."
+  },
+  "tabSettings": "Settings",
+  "@tabSettings": {
+    "description": "Name of the third tab."
+  },
+  "noDataText": "No Memories data yet. Play with the Memories addons on, then log out.",
+  "@noDataText": {
+    "description": "Shown when the gather found no character with Memories data."
+  },
+  "wowFolderGoneText": "We cannot find your WoW folder any more. It may have moved, or its drive is not connected. Choose the folder again.",
+  "@wowFolderGoneText": {
+    "description": "Shown when the saved WoW folder is gone."
+  },
+  "saveHintText": "The game saves your journey when you log out or type /reload.",
+  "@saveHintText": {
+    "description": "Hint about when the game writes its files. /reload is a game command and stays as is."
+  },
+  "watchingText": "Watching for changes",
+  "@watchingText": {
+    "description": "Tag shown while Watch is on."
+  },
+  "issueNoWtf": "This folder has no WoW game files. Choose the folder of one game version, such as _retail_.",
+  "@issueNoWtf": {
+    "description": "Gather problem: the folder has no WTF folder. _retail_ is a folder name."
+  },
+  "issueDamagedFile": "A saved file could not be read, so we skipped it. Log in with that character, log out, then try again.",
+  "@issueDamagedFile": {
+    "description": "Gather problem: a saved file is damaged."
+  },
+  "issueAccountSkipped": "The Memories file of an account is missing or damaged, so we skipped its characters. Log in once, log out, then try again.",
+  "@issueAccountSkipped": {
+    "description": "Gather problem: the Memories file of an account is missing or damaged."
+  },
+  "issueCharacterFailed": "We could not update the data of one character, so we left it as it was. Check its folder in the latest data, then try again.",
+  "@issueCharacterFailed": {
+    "description": "Gather problem: one character could not be updated."
+  },
+  "issueOverlap": "The backup folder is inside the game files. Choose a backup folder outside the World of Warcraft folder.",
+  "@issueOverlap": {
+    "description": "Gather problem: the backup folder is inside the game folder."
+  },
+  "issueLockHeld": "Another gather is running on this backup folder. Wait until it ends, then try again.",
+  "@issueLockHeld": {
+    "description": "Gather problem: another gather holds the lock."
+  },
+  "issueNotWritable": "We cannot write to the backup folder. Check that its drive is connected and has free space, or choose another backup folder.",
+  "@issueNotWritable": {
+    "description": "Gather problem: the backup folder cannot be written."
+  },
+  "issueBadIndex": "The file index.json in the latest data is damaged. Move it out of the folder, then try again.",
+  "@issueBadIndex": {
+    "description": "Gather problem: index.json is damaged. index.json is a file name."
+  },
+  "issueBadDefault": "The first character to show is not in your data. Try again.",
+  "@issueBadDefault": {
+    "description": "Gather problem: the default character is not in the data."
+  },
+  "issueSkippedFile": "A saved file had no Memories data or belonged to another character, so we skipped it.",
+  "@issueSkippedFile": {
+    "description": "Gather note: a file was skipped."
+  },
+  "issueDuplicateGuid": "Two folders hold the same character. We kept the one you played last.",
+  "@issueDuplicateGuid": {
+    "description": "Gather note: two folders hold the same character."
+  },
+  "issueBackupFailed": "We could not copy a saved file into the backup folder. Check that its drive has free space, then try again.",
+  "@issueBackupFailed": {
+    "description": "Gather problem: a file could not be backed up."
+  },
+  "issueScreenshotFailed": "We could not copy a screenshot. Check that the drive has free space, then try again.",
+  "@issueScreenshotFailed": {
+    "description": "Gather problem: a screenshot could not be copied."
+  },
+  "issueIoError": "A file could not be read or written, so the gather stopped. Check that your drives are connected and have free space, then try again.",
+  "@issueIoError": {
+    "description": "Gather problem: a file error stopped the gather."
+  },
+  "fixChooseWowFolder": "Choose folder",
+  "@fixChooseWowFolder": {
+    "description": "Button that picks the WoW folder again."
+  },
+  "fixChooseBackupFolder": "Choose backup folder",
+  "@fixChooseBackupFolder": {
+    "description": "Button that picks the backup folder again."
+  },
+  "fixOpenLatest": "Open latest data",
+  "@fixOpenLatest": {
+    "description": "Button that opens the latest data folder."
+  },
+  "fixTryAgain": "Try again",
+  "@fixTryAgain": {
+    "description": "Button that runs the gather again."
+  },
+  "statusGathering": "Gathering your journey…",
+  "@statusGathering": {
+    "description": "Status line while a gather runs."
+  },
+  "statusFailed": "The last gather did not finish. See the problem below.",
+  "@statusFailed": {
+    "description": "Status line after a failed gather."
+  },
+  "statusDoneProblems": "Gathered with problems. Last gathered {when}",
+  "@statusDoneProblems": {
+    "description": "Status line after a gather with problems. {when} is a time.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "statusDone": "Up to date. Last gathered {when}",
+  "@statusDone": {
+    "description": "Status line after a good gather. {when} is a time.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "statusIdleLast": "Last gathered {when}",
+  "@statusIdleLast": {
+    "description": "Status line at rest after an earlier gather. {when} is a time.",
+    "placeholders": {
+      "when": {
+        "type": "String"
+      }
+    }
+  },
+  "statusNever": "Never gathered",
+  "@statusNever": {
+    "description": "Status line before the first gather."
+  },
+  "statusSemantics": "Status: {status}",
+  "@statusSemantics": {
+    "description": "Screen reader label of the status line.",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "gathering": "Gathering…",
+  "@gathering": {
+    "description": "Label of the Gather button while a gather runs."
+  },
+  "gatheringSemantics": "Gathering, please wait",
+  "@gatheringSemantics": {
+    "description": "Screen reader label of the Gather button while a gather runs."
+  },
+  "gatheringProgress": "Gathering",
+  "@gatheringProgress": {
+    "description": "Screen reader label of the gather progress bar."
+  },
+  "gatherNow": "Gather now",
+  "@gatherNow": {
+    "description": "Label of the Gather button."
+  },
+  "countCharacters": "Characters",
+  "@countCharacters": {
+    "description": "Label of the count of characters."
+  },
+  "countJournalLines": "Journal lines",
+  "@countJournalLines": {
+    "description": "Label of the count of journal lines."
+  },
+  "countScreenshots": "Screenshots",
+  "@countScreenshots": {
+    "description": "Label of the count of screenshots."
+  },
+  "countSemantics": "{label}: {value}",
+  "@countSemantics": {
+    "description": "Screen reader label of a count.",
+    "placeholders": {
+      "label": {
+        "type": "String"
+      },
+      "value": {
+        "type": "int"
+      }
+    }
+  },
+  "charactersTitle": "Characters",
+  "@charactersTitle": {
+    "description": "Title of the list of characters."
+  },
+  "noCharacters": "No characters yet. Click Gather now.",
+  "@noCharacters": {
+    "description": "Shown when the list of characters is empty."
+  },
+  "characterLevel": "Level {level}",
+  "@characterLevel": {
+    "description": "The level of a character.",
+    "placeholders": {
+      "level": {
+        "type": "int"
+      }
+    }
+  },
+  "backupFolderTitle": "Backup folder",
+  "@backupFolderTitle": {
+    "description": "Title of the backup folder card and row."
+  },
+  "notSet": "Not set",
+  "@notSet": {
+    "description": "Shown when a folder is not set."
+  },
+  "backupSize": "Size: {size}",
+  "@backupSize": {
+    "description": "The size of the backup folder. {size} is a size such as 1.5 MB.",
+    "placeholders": {
+      "size": {
+        "type": "String"
+      }
+    }
+  },
+  "openBackupFolder": "Open backup folder",
+  "@openBackupFolder": {
+    "description": "Button that opens the backup folder."
+  },
+  "openLatestData": "Open latest data",
+  "@openLatestData": {
+    "description": "Button that opens the latest data folder."
+  },
+  "openFolderFailed": "We could not open this folder. If you have not gathered yet, click Gather now first.",
+  "@openFolderFailed": {
+    "description": "Shown when a folder cannot be opened."
+  },
+  "dismiss": "Dismiss",
+  "@dismiss": {
+    "description": "Tooltip of the button that closes a notice."
+  },
+  "showWebsiteTab": "Show the Website tab",
+  "@showWebsiteTab": {
+    "description": "Button of an upload problem that opens the Website tab."
+  },
+  "andMore": "{count, plural, =1{and 1 more} other{and {count} more}}",
+  "@andMore": {
+    "description": "After 3 listed files: how many more there are.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sizeBytes": "{count, plural, other{{count} bytes}}",
+  "@sizeBytes": {
+    "description": "A size below 1 KB.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "sizeKb": "{value} KB",
+  "@sizeKb": {
+    "description": "A size in kilobytes. {value} is a formatted number.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sizeMb": "{value} MB",
+  "@sizeMb": {
+    "description": "A size in megabytes. {value} is a formatted number.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sizeGb": "{value} GB",
+  "@sizeGb": {
+    "description": "A size in gigabytes. {value} is a formatted number.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "sizeTb": "{value} TB",
+  "@sizeTb": {
+    "description": "A size in terabytes. {value} is a formatted number.",
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "classWarrior": "Warrior",
+  "@classWarrior": {
+    "description": "Name of the game class Warrior."
+  },
+  "classPaladin": "Paladin",
+  "@classPaladin": {
+    "description": "Name of the game class Paladin."
+  },
+  "classHunter": "Hunter",
+  "@classHunter": {
+    "description": "Name of the game class Hunter."
+  },
+  "classRogue": "Rogue",
+  "@classRogue": {
+    "description": "Name of the game class Rogue."
+  },
+  "classPriest": "Priest",
+  "@classPriest": {
+    "description": "Name of the game class Priest."
+  },
+  "classDeathKnight": "Death Knight",
+  "@classDeathKnight": {
+    "description": "Name of the game class Death Knight."
+  },
+  "classShaman": "Shaman",
+  "@classShaman": {
+    "description": "Name of the game class Shaman."
+  },
+  "classMage": "Mage",
+  "@classMage": {
+    "description": "Name of the game class Mage."
+  },
+  "classWarlock": "Warlock",
+  "@classWarlock": {
+    "description": "Name of the game class Warlock."
+  },
+  "classMonk": "Monk",
+  "@classMonk": {
+    "description": "Name of the game class Monk."
+  },
+  "classDruid": "Druid",
+  "@classDruid": {
+    "description": "Name of the game class Druid."
+  },
+  "classDemonHunter": "Demon Hunter",
+  "@classDemonHunter": {
+    "description": "Name of the game class Demon Hunter."
+  },
+  "classEvoker": "Evoker",
+  "@classEvoker": {
+    "description": "Name of the game class Evoker."
+  },
+  "settingsSaveFailed": "We could not save your settings. Check that your disk has free space, then change the setting again.",
+  "@settingsSaveFailed": {
+    "description": "Shown when the settings file cannot be written."
+  },
+  "settingsDamaged": "Your settings file was damaged, so the app started with the default settings. Check your folders and switches.",
+  "@settingsDamaged": {
+    "description": "Shown when the settings file cannot be read."
+  },
+  "wowFolderTitle": "WoW folder",
+  "@wowFolderTitle": {
+    "description": "Title of the WoW folder row."
+  },
+  "changeWowFolderSemantics": "Change the WoW folder",
+  "@changeWowFolderSemantics": {
+    "description": "Screen reader label of the Change button of the WoW folder."
+  },
+  "changeBackupFolderSemantics": "Change the backup folder",
+  "@changeBackupFolderSemantics": {
+    "description": "Screen reader label of the Change button of the backup folder."
+  },
+  "change": "Change",
+  "@change": {
+    "description": "Label of a button that changes a folder."
+  },
+  "watchTitle": "Watch",
+  "@watchTitle": {
+    "description": "Title of the Watch switch."
+  },
+  "watchSubtitle": "Gather on its own each time the game saves.",
+  "@watchSubtitle": {
+    "description": "Subtitle of the Watch switch."
+  },
+  "startAtLoginTitle": "Start at login",
+  "@startAtLoginTitle": {
+    "description": "Title of the Start at login switch."
+  },
+  "startAtLoginSubtitle": "Start the app hidden when you sign in.",
+  "@startAtLoginSubtitle": {
+    "description": "Subtitle of the Start at login switch."
+  },
+  "languageTitle": "Language",
+  "@languageTitle": {
+    "description": "Title of the Language row of the settings."
+  },
+  "languageSystem": "System",
+  "@languageSystem": {
+    "description": "Choice of the Language row that follows the language of the operating system."
+  },
+  "versionTitle": "Version",
+  "@versionTitle": {
+    "description": "Title of the Version row."
+  },
+  "versionText": "WoW Journey {version}, {core}",
+  "@versionText": {
+    "description": "The versions of the app and of its core. {core} is a technical text.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      },
+      "core": {
+        "type": "String"
+      }
+    }
+  },
+  "wizardTitle": "Welcome to WoW Journey",
+  "@wizardTitle": {
+    "description": "Title of the first-run wizard."
+  },
+  "wizardStep": "Step {step} of {total}",
+  "@wizardStep": {
+    "description": "Step counter of the wizard.",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "back": "Back",
+  "@back": {
+    "description": "Label of the Back button of the wizard."
+  },
+  "backSemantics": "Back to step {step}",
+  "@backSemantics": {
+    "description": "Screen reader label of the Back button.",
+    "placeholders": {
+      "step": {
+        "type": "int"
+      }
+    }
+  },
+  "next": "Next",
+  "@next": {
+    "description": "Label of the Next button of the wizard."
+  },
+  "nextSemantics": "Next step",
+  "@nextSemantics": {
+    "description": "Screen reader label of the Next button."
+  },
+  "finish": "Finish",
+  "@finish": {
+    "description": "Label of the last button of the wizard."
+  },
+  "finishSemantics": "Finish the setup",
+  "@finishSemantics": {
+    "description": "Screen reader label of the Finish button."
+  },
+  "wowStepTitle": "Your WoW folder",
+  "@wowStepTitle": {
+    "description": "Title of step 1 of the wizard."
+  },
+  "wowStepIntro": "We read the files that the Memories addons save in this folder. We never change them.",
+  "@wowStepIntro": {
+    "description": "Intro of step 1 of the wizard."
+  },
+  "lookingForWow": "Looking for World of Warcraft…",
+  "@lookingForWow": {
+    "description": "Shown while the app looks for the game folder."
+  },
+  "noWowFound": "We could not find World of Warcraft. Choose the folder of one game version, such as _retail_, inside your World of Warcraft folder.",
+  "@noWowFound": {
+    "description": "Shown when no game folder was found. _retail_ is a folder name."
+  },
+  "chooseFolder": "Choose folder",
+  "@chooseFolder": {
+    "description": "Label of the button that picks the WoW folder."
+  },
+  "chooseWowSemantics": "Choose the WoW folder",
+  "@chooseWowSemantics": {
+    "description": "Screen reader label of the Choose folder button."
+  },
+  "noMemoriesYet": "No Memories data yet.",
+  "@noMemoriesYet": {
+    "description": "Detail of a game folder that has no Memories data."
+  },
+  "wowFolderSemantics": "WoW folder: {path}",
+  "@wowFolderSemantics": {
+    "description": "Screen reader label of the chosen WoW folder.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "backupStepTitle": "Your backup folder",
+  "@backupStepTitle": {
+    "description": "Title of step 2 of the wizard."
+  },
+  "backupStepIntro": "We keep a copy of your game files and your screenshots here.",
+  "@backupStepIntro": {
+    "description": "Intro of step 2 of the wizard."
+  },
+  "backupFolderSemantics": "Backup folder: {path}",
+  "@backupFolderSemantics": {
+    "description": "Screen reader label of the chosen backup folder.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "backupFolderSemanticsNotSet": "Backup folder: not set",
+  "@backupFolderSemanticsNotSet": {
+    "description": "Screen reader label when no backup folder is chosen."
+  },
+  "chooseBackupPrompt": "Choose a backup folder.",
+  "@chooseBackupPrompt": {
+    "description": "Shown when no backup folder is chosen."
+  },
+  "switchStepTitle": "How the app runs",
+  "@switchStepTitle": {
+    "description": "Title of step 3 of the wizard."
+  },
+  "switchStepIntro": "You can change these later in Settings.",
+  "@switchStepIntro": {
+    "description": "Intro of step 3 of the wizard."
+  },
+  "useThisFolder": "Use this folder",
+  "@useThisFolder": {
+    "description": "Label of the confirm button of the folder picker and of a dialog."
+  },
+  "pickerFailed": "We could not open the folder picker. Try again, or restart the app.",
+  "@pickerFailed": {
+    "description": "Shown when the folder picker fails to open."
+  },
+  "checkFailed": "We could not check this folder. Try again, or choose another folder.",
+  "@checkFailed": {
+    "description": "Shown when the check of a picked folder fails."
+  },
+  "chooseGameVersion": "Choose a game version",
+  "@chooseGameVersion": {
+    "description": "Title of the dialog that asks for one game version."
+  },
+  "backupInsideWow": "This folder is inside your World of Warcraft folder, or holds it. Choose a backup folder outside the game folder.",
+  "@backupInsideWow": {
+    "description": "Shown when the backup folder overlaps the game folder."
+  },
+  "backupInsideWowFirst": "Your backup folder is inside this World of Warcraft folder, or holds it. Choose another backup folder first, then this WoW folder.",
+  "@backupInsideWowFirst": {
+    "description": "Shown when a new WoW folder overlaps the backup folder."
+  },
+  "useBackupTitle": "Use this backup folder?",
+  "@useBackupTitle": {
+    "description": "Title of the dialog that confirms a new backup folder."
+  },
+  "useBackupBody": "New gathers go to {path}. Your old backup folder stays as it is. We do not move or delete it.",
+  "@useBackupBody": {
+    "description": "Body of the dialog that confirms a new backup folder.",
+    "placeholders": {
+      "path": {
+        "type": "String"
+      }
+    }
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Label of a button that closes a dialog with no change."
+  },
+  "flavorReady": "This WoW folder is ready.",
+  "@flavorReady": {
+    "description": "Folder check: the folder is ready."
+  },
+  "flavorReadyNoData": "This WoW folder is ready, but it has no Memories data yet. Play with the Memories addons on. The game saves its files when you log out or type /reload.",
+  "@flavorReadyNoData": {
+    "description": "Folder check: the folder is ready but has no Memories data. /reload is a game command."
+  },
+  "flavorNoWtf": "This folder is not a WoW game folder. It has no WTF/Account folder. Pick the folder of one game version inside your World of Warcraft folder, such as _retail_.",
+  "@flavorNoWtf": {
+    "description": "Folder check: the folder is not a game folder. WTF/Account and _retail_ are folder names."
+  },
+  "flavorInstallFolder": "{count, plural, =1{This is the World of Warcraft folder. It holds one game version: {names}. Pick that folder.} other{This is the World of Warcraft folder. It holds {count} game versions: {names}. Pick one of them.}}",
+  "@flavorInstallFolder": {
+    "description": "Folder check: the folder is the install folder. {names} lists the game versions.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      },
+      "names": {
+        "type": "String"
+      }
+    }
+  },
+  "flavorNotADirectory": "This is not a folder, or it does not exist any more. Pick a folder.",
+  "@flavorNotADirectory": {
+    "description": "Folder check: the path is not a folder."
+  },
+  "flavorNotReadable": "This folder, or a folder in it, cannot be read. Check that your user may open it, then pick it again.",
+  "@flavorNotReadable": {
+    "description": "Folder check: the folder cannot be read."
+  },
+  "websiteTitle": "Website",
+  "@websiteTitle": {
+    "description": "Title of the Website section."
+  },
+  "websiteCardTitle": "Website: {site}",
+  "@websiteCardTitle": {
+    "description": "Title of the Website card. {site} is a web address.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "registrationTitle": "Registration",
+  "@registrationTitle": {
+    "description": "Title of the registration panel."
+  },
+  "unlistedText": "Your character pages are unlisted: anybody with the link can open them.",
+  "@unlistedText": {
+    "description": "Says what a character link means."
+  },
+  "lostKeyText": "If you reinstall the app, ask the website admin to move your characters to your new key.",
+  "@lostKeyText": {
+    "description": "What to do after a reinstall, which makes a new key."
+  },
+  "websiteAddressLabel": "Website address",
+  "@websiteAddressLabel": {
+    "description": "Label of the website address field."
+  },
+  "checkSiteLabel": "Check",
+  "@checkSiteLabel": {
+    "description": "Label of the button that checks the website."
+  },
+  "inviteCodeLabel": "Invite code",
+  "@inviteCodeLabel": {
+    "description": "Label of the invite code field."
+  },
+  "registerLabel": "Register",
+  "@registerLabel": {
+    "description": "Label of the Register button."
+  },
+  "uploadSwitchTitle": "Upload",
+  "@uploadSwitchTitle": {
+    "description": "Title of the Upload switch."
+  },
+  "uploadSwitchSubtitle": "Send your journey to the website after each gather.",
+  "@uploadSwitchSubtitle": {
+    "description": "Subtitle of the Upload switch."
+  },
+  "uploadNowLabel": "Upload now",
+  "@uploadNowLabel": {
+    "description": "Label of the Upload now button."
+  },
+  "uploadingLabel": "Uploading…",
+  "@uploadingLabel": {
+    "description": "Label of the upload button and the progress while an upload runs."
+  },
+  "uploadingSemantics": "Uploading, please wait",
+  "@uploadingSemantics": {
+    "description": "Screen reader label of the upload button while an upload runs."
+  },
+  "uploadPausedText": "Upload paused. It continues after the next gather.",
+  "@uploadPausedText": {
+    "description": "Shown when the website stayed busy."
+  },
+  "requestScreenshotsLabel": "Request screenshots",
+  "@requestScreenshotsLabel": {
+    "description": "Label of the button that asks the admin to approve screenshots."
+  },
+  "copyLinkLabel": "Copy link",
+  "@copyLinkLabel": {
+    "description": "Label of the button that copies a character link."
+  },
+  "copyLinkSemantics": "Copy link of {name}",
+  "@copyLinkSemantics": {
+    "description": "Screen reader label of the Copy link button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "removeFromWebsiteLabel": "Remove from website",
+  "@removeFromWebsiteLabel": {
+    "description": "Label of the button that removes a character, and title of its dialog."
+  },
+  "removeFromWebsiteSemantics": "Remove {name} from website",
+  "@removeFromWebsiteSemantics": {
+    "description": "Screen reader label of the Remove from website button.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "linkCopiedText": "Link copied",
+  "@linkCopiedText": {
+    "description": "Shown after a link was copied."
+  },
+  "removeLabel": "Remove",
+  "@removeLabel": {
+    "description": "Label of the button that confirms a removal."
+  },
+  "siteFoundOpen": "Found {name}. Anybody can register here.",
+  "@siteFoundOpen": {
+    "description": "Result of Check on a website with open registration.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "siteFoundInvite": "Found {name}. You need an invite code from the website admin to register.",
+  "@siteFoundInvite": {
+    "description": "Result of Check on a website that asks for an invite code.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "notAMemoriesSite": "This address does not look like a Memories website. Check the address.",
+  "@notAMemoriesSite": {
+    "description": "Shown when the website answered, but not as a Memories website."
+  },
+  "registeredText": "Registered on {site}.",
+  "@registeredText": {
+    "description": "The registration line of the settings.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "notRegisteredText": "Not registered on {site}. Register to upload your journey.",
+  "@notRegisteredText": {
+    "description": "The registration line of the settings.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "fingerprintText": "Your key: {fingerprint}",
+  "@fingerprintText": {
+    "description": "The fingerprint of the key of the app.",
+    "placeholders": {
+      "fingerprint": {
+        "type": "String"
+      }
+    }
+  },
+  "screenshotsNone": "Screenshots are not uploaded. Ask the website admin to approve them.",
+  "@screenshotsNone": {
+    "description": "Screenshot state: none."
+  },
+  "screenshotsPending": "Waiting for the website admin to approve your screenshots.",
+  "@screenshotsPending": {
+    "description": "Screenshot state: pending."
+  },
+  "screenshotsApproved": "Your screenshots are uploaded with your journey.",
+  "@screenshotsApproved": {
+    "description": "Screenshot state: approved."
+  },
+  "screenshotsDenied": "The website admin did not approve screenshots. You can ask again.",
+  "@screenshotsDenied": {
+    "description": "Screenshot state: denied."
+  },
+  "cardNotRegistered": "You are not registered on {site}. Register below to share your journey.",
+  "@cardNotRegistered": {
+    "description": "Shown on the Website card when the key is not registered.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "cardUploadOff": "Upload is off. Turn on the Upload switch below to send your journey.",
+  "@cardUploadOff": {
+    "description": "Shown on the Website card when Upload is off."
+  },
+  "uploadProgress": "Uploading {done} of {total}",
+  "@uploadProgress": {
+    "description": "Text under the progress bar of a running upload.",
+    "placeholders": {
+      "done": {
+        "type": "int"
+      },
+      "total": {
+        "type": "int"
+      }
+    }
+  },
+  "lastUploadNever": "Nothing uploaded yet.",
+  "@lastUploadNever": {
+    "description": "Shown before the first upload of this run."
+  },
+  "lastUpload": "Last upload {time}",
+  "@lastUpload": {
+    "description": "The time of the last upload.",
+    "placeholders": {
+      "time": {
+        "type": "String"
+      }
+    }
+  },
+  "syncUploaded": "{count, plural, =1{uploaded 1 character} other{uploaded {count} characters}}",
+  "@syncUploaded": {
+    "description": "Part of the upload summary. Starts with a lower case letter; the app capitalizes the first part.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncShots": "{count, plural, =1{sent 1 screenshot} other{sent {count} screenshots}}",
+  "@syncShots": {
+    "description": "Part of the upload summary. Starts with a lower case letter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncUpToDate": "everything is up to date",
+  "@syncUpToDate": {
+    "description": "Part of the upload summary when nothing changed. Starts with a lower case letter."
+  },
+  "syncRemoved": "{count, plural, =1{skipped 1 removed character (Upload now sends it again)} other{skipped {count} removed characters (Upload now sends them again)}}",
+  "@syncRemoved": {
+    "description": "Part of the upload summary. Starts with a lower case letter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncFailed": "{count, plural, =1{1 character failed} other{{count} characters failed}}",
+  "@syncFailed": {
+    "description": "Part of the upload summary. Starts with a lower case letter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "syncShotsFailed": "{count, plural, =1{1 screenshot failed} other{{count} screenshots failed}}",
+  "@syncShotsFailed": {
+    "description": "Part of the upload summary. Starts with a lower case letter.",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "errNetwork": "Could not reach {host}. Check the internet connection and the website address.",
+  "@errNetwork": {
+    "description": "Upload error: the network failed. {host} is a host name.",
+    "placeholders": {
+      "host": {
+        "type": "String"
+      }
+    }
+  },
+  "errBadResponse": "The website sent an answer that this program does not understand. Check the website address.",
+  "@errBadResponse": {
+    "description": "Upload error: the answer is not valid."
+  },
+  "errBadFiles": "A file of your journey is missing or cannot be read, so it was not uploaded. Gather again, then try again.",
+  "@errBadFiles": {
+    "description": "Upload error: a file to upload is missing."
+  },
+  "errNoIndex": "Could not read index.json of the latest data. Run the gather first, then try again.",
+  "@errNoIndex": {
+    "description": "Upload error: the index is missing. index.json is a file name."
+  },
+  "errBadKey": "The key file of the app cannot be read or written. Check its permissions and the free space of its folder.",
+  "@errBadKey": {
+    "description": "Upload error: the key file has a problem."
+  },
+  "errBadSite": "The website address is not valid. Write it like https://example.com.",
+  "@errBadSite": {
+    "description": "Upload error: the website address is not valid."
+  },
+  "errBadState": "The character was removed from the website, but the app could not save that, so the next gather may upload it again. Check that the app folder can be written to.",
+  "@errBadState": {
+    "description": "Upload error: the state file could not be written."
+  },
+  "errFailed": "The upload stopped because of a problem inside the app. Try again after the next gather.",
+  "@errFailed": {
+    "description": "Upload error: an internal failure."
+  },
+  "errHttp": "The website answered with status {status}. Try again later, and check the website address.",
+  "@errHttp": {
+    "description": "Upload error: an unexpected HTTP status.",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  },
+  "errKeyRevoked": "The website admin blocked this app's key. Uploads to {site} are off.",
+  "@errKeyRevoked": {
+    "description": "Upload error: the key is blocked.",
+    "placeholders": {
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "errNotRegistered": "The website does not know the key of this app yet. Register on the Website tab.",
+  "@errNotRegistered": {
+    "description": "Upload error: the key is not registered."
+  },
+  "errClaimed": "Another player already uploaded {name} on {realm}. Ask the website admin.",
+  "@errClaimed": {
+    "description": "Upload error: the character belongs to another key.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "realm": {
+        "type": "String"
+      }
+    }
+  },
+  "realmUnknown": "its realm",
+  "@realmUnknown": {
+    "description": "Stands for the realm of a character when the app does not know it. Used in 'Another player already uploaded NAME on its realm.'"
+  },
+  "errInvalid": "The website did not accept the data. Fix the saved files, then upload again.",
+  "@errInvalid": {
+    "description": "Upload error: the data is rejected."
+  },
+  "errInviteInvalid": "The invite code is not valid. Ask the website admin for a new one.",
+  "@errInviteInvalid": {
+    "description": "Upload error: the invite code is wrong."
+  },
+  "errBadSignature": "The website did not accept the signature of the app. Check that the clock of your computer is right, then try again.",
+  "@errBadSignature": {
+    "description": "Upload error: the signature failed."
+  },
+  "errRateLimited": "Too many requests. Wait a minute, then try again.",
+  "@errRateLimited": {
+    "description": "Upload error: the rate limit."
+  },
+  "errBusy": "The website is busy with other uploads. Try again in a few minutes.",
+  "@errBusy": {
+    "description": "Upload error: the server is busy."
+  },
+  "errQuota": "The website has no more room for your data. Ask the website admin.",
+  "@errQuota": {
+    "description": "Upload error: the quota is full."
+  },
+  "errTooLarge": "Your data is too large for this website. Ask the website admin to raise the limit.",
+  "@errTooLarge": {
+    "description": "Upload error: the data is too large."
+  },
+  "errInternal": "The website had a problem. Try again in a few minutes.",
+  "@errInternal": {
+    "description": "Upload error: the website failed."
+  },
+  "errBadRequest": "The website could not read the request. Try again, and update the app if it keeps happening.",
+  "@errBadRequest": {
+    "description": "Upload error: the request is not valid."
+  },
+  "errNotFound": "This website has no such character for this key.",
+  "@errNotFound": {
+    "description": "Upload error: no such character."
+  },
+  "errScreenshotsNotApproved": "The website admin has not approved your screenshots yet.",
+  "@errScreenshotsNotApproved": {
+    "description": "Upload error: screenshots are not approved."
+  },
+  "errUnsupportedImage": "The website did not accept a screenshot because its image type is not supported.",
+  "@errUnsupportedImage": {
+    "description": "Upload error: the image type is not supported."
+  },
+  "errNotReferenced": "A screenshot does not belong to any journal line, so the website did not keep it.",
+  "@errNotReferenced": {
+    "description": "Upload error: the screenshot is not used by the journal."
+  },
+  "errGuidMismatch": "This character name already belongs to another character on the website. Ask the website admin.",
+  "@errGuidMismatch": {
+    "description": "Upload error: the character id does not match."
+  },
+  "errGzipRequired": "The upload was not compressed as the website needs. Update the app, then try again.",
+  "@errGzipRequired": {
+    "description": "Upload error: the upload is not compressed."
+  },
+  "namedError": "{name}: {text}",
+  "@namedError": {
+    "description": "An upload error for one character.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "text": {
+        "type": "String"
+      }
+    }
+  },
+  "rejectedText": "The website did not accept the data of {name}: {problems}{more, plural, =0{} =1{ And 1 more problem.} other{ And {more} more problems.}} Fix the saved files, then upload again.",
+  "@rejectedText": {
+    "description": "A rejected upload. {problems} is the first 3 problems from the website, in English, ending with a full stop.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "problems": {
+        "type": "String"
+      },
+      "more": {
+        "type": "int"
+      }
+    }
+  },
+  "siteInvalid": "The website address is not valid. Write it like https://example.com.",
+  "@siteInvalid": {
+    "description": "Address check: not valid."
+  },
+  "siteNeedsHost": "The website address needs a scheme and a host, like https://example.com.",
+  "@siteNeedsHost": {
+    "description": "Address check: no scheme or host."
+  },
+  "siteNeedsHttps": "The website address must start with https://.",
+  "@siteNeedsHttps": {
+    "description": "Address check: another scheme."
+  },
+  "siteHttpLoopback": "The website address must start with https://. Plain http:// is only allowed for localhost, 127.0.0.1 and [::1].",
+  "@siteHttpLoopback": {
+    "description": "Address check: http on a non-local host."
+  },
+  "siteUserInfo": "The website address may not hold a user name or a password.",
+  "@siteUserInfo": {
+    "description": "Address check: user name or password."
+  },
+  "siteQuery": "The website address may not hold a query or a fragment.",
+  "@siteQuery": {
+    "description": "Address check: query or fragment."
+  },
+  "sitePath": "The website address may not hold a path. Use the address of the site itself, like https://example.com.",
+  "@sitePath": {
+    "description": "Address check: a path."
+  },
+  "removeQuestionText": "Remove {name} from {site}? The page and its data are deleted.",
+  "@removeQuestionText": {
+    "description": "The question before a character leaves the website.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      },
+      "site": {
+        "type": "String"
+      }
+    }
+  },
+  "removedText": "{name} was removed from the website. Gathers do not upload it again; Upload now does.",
+  "@removedText": {
+    "description": "Shown after a character was removed from the website.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "busyText": "The app is busy with the website. Try again when the upload ends.",
+  "@busyText": {
+    "description": "Shown when an action starts while an upload runs."
+  },
+  "genericFailureText": "Something went wrong with the website. Try again in a few minutes.",
+  "@genericFailureText": {
+    "description": "Shown when an action failed for an unforeseen reason."
+  },
+  "notAnswering": "WoW Journey is already running, but it did not answer. Quit it from its tray icon menu, or end it in the task manager, then start it again.",
+  "@notAnswering": {
+    "description": "Shown when another copy runs but did not answer."
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Label of the button that closes the app."
+  },
+  "trayGatherNow": "Gather now",
+  "@trayGatherNow": {
+    "description": "Tray menu item."
+  },
+  "trayOpenWindow": "Open window",
+  "@trayOpenWindow": {
+    "description": "Tray menu item."
+  },
+  "trayOpenBackupFolder": "Open backup folder",
+  "@trayOpenBackupFolder": {
+    "description": "Tray menu item."
+  },
+  "trayQuit": "Quit",
+  "@trayQuit": {
+    "description": "Tray menu item."
+  }
+}

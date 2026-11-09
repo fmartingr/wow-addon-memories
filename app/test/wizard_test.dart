@@ -3,9 +3,9 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_store.dart';
-import 'package:wow_journey/src/ui/messages.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 Finder _next() => find.widgetWithText(FilledButton, 'Next');
 Finder _finish() => find.widgetWithText(FilledButton, 'Finish');
@@ -238,12 +238,12 @@ void main() {
     final fakes = Fakes(
       store: FakeSettingsStore((
         settings: const Settings(),
-        notice: damagedSettingsNotice,
+        notice: SettingsNotice.damaged,
       )),
       discovery: FakeDiscovery(found: [retail]),
     );
     await pumpApp(tester, fakes);
-    expect(find.text(damagedSettingsNotice), findsOneWidget);
+    expect(find.text(en.settingsDamaged), findsOneWidget);
   });
 
   testWidgets('saved settings skip the wizard', (tester) async {

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
-import 'package:wow_journey/src/ui/messages.dart';
 import 'package:wow_journey/src/version.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 Future<Fakes> _openSettings(
   WidgetTester tester, {
@@ -45,6 +45,106 @@ void main() {
       (false, true),
       (false, false),
     ]);
+  });
+
+  group('the Language row', () {
+    Finder dropdown() => find.byKey(const ValueKey('language'));
+    Locale? appLocale(WidgetTester tester) =>
+        tester.widget<MaterialApp>(find.byType(MaterialApp)).locale;
+
+    Future<void> choose(WidgetTester tester, String name) async {
+      await tester.ensureVisible(dropdown());
+      await tester.tap(dropdown());
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(name).last);
+      await tester.pumpAndSettle();
+    }
+
+    testWidgets('shows System, and the app follows the system', (tester) async {
+      useWindow(tester, height: 1600);
+      await _openSettings(tester);
+      expect(find.text('Language'), findsOneWidget);
+      expect(
+        find.descendant(of: dropdown(), matching: find.text('System')),
+        findsOneWidget,
+      );
+      expect(appLocale(tester), isNull);
+    });
+
+    testWidgets('lists System and the 6 languages by their own names', (
+      tester,
+    ) async {
+      useWindow(tester, height: 1600);
+      await _openSettings(tester);
+      await tester.ensureVisible(dropdown());
+      await tester.tap(dropdown());
+      await tester.pumpAndSettle();
+      for (final name in [
+        'System',
+        'English',
+        'Deutsch',
+        'Français',
+        'Español',
+        'Italiano',
+        'Português',
+      ]) {
+        expect(find.text(name), findsWidgets, reason: name);
+      }
+    });
+
+    testWidgets('Deutsch saves de at once and sets the locale', (tester) async {
+      useWindow(tester, height: 1600);
+      final fakes = await _openSettings(tester);
+      await choose(tester, 'Deutsch');
+      expect(fakes.store.saved.last.language, 'de');
+      expect(appLocale(tester), const Locale('de'));
+      expect(
+        find.descendant(of: dropdown(), matching: find.text('Deutsch')),
+        findsOneWidget,
+      );
+    });
+
+    testWidgets('System after a language saves null', (tester) async {
+      useWindow(tester, height: 1600);
+      final fakes = await _openSettings(tester);
+      await choose(tester, 'Français');
+      expect(fakes.store.saved.last.language, 'fr');
+      await choose(tester, 'Système');
+      expect(fakes.store.saved.last.language, isNull);
+      expect(appLocale(tester), isNull);
+    });
+
+    testWidgets('a saved language is used at the next start', (tester) async {
+      useWindow(tester, height: 1600);
+      final fakes = Fakes(
+        store: FakeSettingsStore((
+          settings: readySettings.copyWith(language: 'it'),
+          notice: null,
+        )),
+        discovery: FakeDiscovery(checks: {retailDir: const Valid(retail)}),
+      );
+      await pumpApp(tester, fakes);
+      expect(appLocale(tester), const Locale('it'));
+    });
+
+    testWidgets('System follows the language of the operating system', (
+      tester,
+    ) async {
+      tester.platformDispatcher.localesTestValue = const [Locale('pt', 'PT')];
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      await _openSettings(tester);
+      final context = tester.element(find.byType(Scaffold).first);
+      expect(Localizations.localeOf(context), const Locale('pt'));
+    });
+
+    testWidgets('an unsupported system language gives English', (tester) async {
+      tester.platformDispatcher.localesTestValue = const [Locale('ru', 'RU')];
+      addTearDown(tester.platformDispatcher.clearLocalesTestValue);
+      await _openSettings(tester);
+      final context = tester.element(find.byType(Scaffold).first);
+      expect(Localizations.localeOf(context), const Locale('en'));
+      expect(find.text('Language'), findsOneWidget);
+    });
   });
 
   testWidgets('the Watch switch stops and starts Watch', (tester) async {

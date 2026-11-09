@@ -6,11 +6,6 @@ import 'package:flutter/foundation.dart';
 import 'settings.dart';
 import 'settings_store.dart';
 
-/// The text the app shows when it could not save the settings.
-const String saveFailedText =
-    'We could not save your settings. Check that your disk has free space, '
-    'then change the setting again.';
-
 /// The settings of the app, loaded once and saved on each [update].
 class SettingsController extends ChangeNotifier {
   SettingsController(this.store);
@@ -19,7 +14,7 @@ class SettingsController extends ChangeNotifier {
 
   Settings _settings = const Settings();
   bool _loaded = false;
-  String? _notice;
+  SettingsNotice? _notice;
 
   Settings get settings => _settings;
 
@@ -27,7 +22,7 @@ class SettingsController extends ChangeNotifier {
   bool get loaded => _loaded;
 
   /// A message for the user about the settings file, or null.
-  String? get notice => _notice;
+  SettingsNotice? get notice => _notice;
 
   Future<void> load() async {
     final loaded = await store.load();
@@ -58,7 +53,7 @@ class SettingsController extends ChangeNotifier {
     } on Exception {
       saved = false;
     }
-    final notice = saved ? null : saveFailedText;
+    final notice = saved ? null : SettingsNotice.saveFailed;
     if (notice != _notice) {
       _notice = notice;
       notifyListeners();

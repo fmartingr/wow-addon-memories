@@ -8,54 +8,81 @@ final RegExp _hostPattern = RegExp(
 
 const Set<String> _loopbackHosts = {'localhost', '127.0.0.1', '::1'};
 
+/// Why [parseSite] refused an address. A UI maps it to its own text.
+enum SiteError {
+  invalid,
+  needsHost,
+  needsHttps,
+  httpLoopback,
+  userInfo,
+  query,
+  path,
+}
+
+/// A refused website address. [message] is plain English; [error] is stable.
+class SiteFormatException extends FormatException {
+  const SiteFormatException(this.error, String message) : super(message);
+
+  final SiteError error;
+}
+
 /// Reads a website address: `https://host[:port]`, or `http://` for
 /// `localhost`, `127.0.0.1` and `[::1]` only. A trailing "/" is dropped.
-/// Throws a [FormatException] with a plain message for any other address.
+/// Throws a [SiteFormatException] with a plain message and a [SiteError] for
+/// any other address.
 Uri parseSite(String text) {
   final trimmed = text.trim();
   final Uri uri;
   try {
     uri = Uri.parse(trimmed);
   } on FormatException {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.invalid,
       'The website address is not valid. Write it like https://example.com.',
     );
   }
   if (!uri.hasScheme || uri.host.isEmpty) {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.needsHost,
       'The website address needs a scheme and a host, like https://example.com.',
     );
   }
   if (!_hostPattern.hasMatch(uri.host.toLowerCase())) {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.invalid,
       'The website address is not valid. Write it like https://example.com.',
     );
   }
   final scheme = uri.scheme.toLowerCase();
   if (scheme != 'https' && scheme != 'http') {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.needsHttps,
       'The website address must start with https://.',
     );
   }
   final host = uri.host.toLowerCase();
   if (scheme == 'http' && !_loopbackHosts.contains(host)) {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.httpLoopback,
       'The website address must start with https://. Plain http:// is only '
       'allowed for localhost, 127.0.0.1 and [::1].',
     );
   }
   if (uri.userInfo.isNotEmpty) {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.userInfo,
       'The website address may not hold a user name or a password.',
     );
   }
   if (uri.hasQuery || uri.hasFragment) {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.query,
       'The website address may not hold a query or a fragment.',
     );
   }
   if (uri.path.isNotEmpty && uri.path != '/') {
-    throw const FormatException(
+    throw const SiteFormatException(
+      SiteError.path,
       'The website address may not hold a path. Use the address of the site '
       'itself, like https://example.com.',
     );

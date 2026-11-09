@@ -4,7 +4,11 @@ library;
 
 import 'dart:async';
 
+import 'dart:ui';
+
+import '../../l10n/app_localizations.dart';
 import '../gather/gather_controller.dart';
+import '../l10n/app_locale.dart';
 import '../platform/folder_opener.dart';
 import '../platform/startup_service.dart';
 import '../platform/tray_service.dart';
@@ -16,12 +20,18 @@ import '../watch/watch_controller.dart';
 /// does.
 bool startsHidden(List<String> args) => args.contains(hiddenArgument);
 
-/// The labels of the tray menu, in order.
-abstract final class TrayLabels {
-  static const String gatherNow = 'Gather now';
-  static const String openWindow = 'Open window';
-  static const String openBackupFolder = 'Open backup folder';
-  static const String quit = 'Quit';
+/// The labels of the tray menu, in order, in the language of [l].
+class TrayLabels {
+  TrayLabels(AppLocalizations l)
+    : gatherNow = l.trayGatherNow,
+      openWindow = l.trayOpenWindow,
+      openBackupFolder = l.trayOpenBackupFolder,
+      quit = l.trayQuit;
+
+  final String gatherNow;
+  final String openWindow;
+  final String openBackupFolder;
+  final String quit;
 }
 
 /// Ties the tray, the window and the login entry to the settings, Gather
@@ -36,7 +46,9 @@ class ShellController {
     required this.startup,
     required this.opener,
     this.startHidden = false,
-  });
+    Iterable<Locale> Function()? systemLocales,
+  }) : _systemLocales =
+           systemLocales ?? (() => PlatformDispatcher.instance.locales);
 
   final SettingsController settings;
   final GatherController gather;
@@ -49,6 +61,11 @@ class ShellController {
   /// Whether the app started with [hiddenArgument]; the runner then left the
   /// window hidden.
   final bool startHidden;
+
+  final Iterable<Locale> Function() _systemLocales;
+
+  /// The language of the labels that the tray shows now.
+  Locale? _trayLocale;
 
   bool _trayStarted = false;
   bool _shownAtStart = false;
@@ -64,21 +81,40 @@ class ShellController {
     settings.addListener(_onSettings);
     _onSettings();
     await window.init(onCloseRequested: onCloseRequested);
-    await tray.start([
-      TrayItem(TrayLabels.gatherNow, () => unawaited(gatherNow())),
-      TrayItem(TrayLabels.openWindow, () => unawaited(openWindow())),
-      TrayItem(
-        TrayLabels.openBackupFolder,
-        () => unawaited(openBackupFolder()),
-      ),
-      TrayItem(TrayLabels.quit, () => unawaited(quit())),
-    ]);
+    _trayLocale = _locale();
+    final texts = textsFor(_trayLocale!);
+    await tray.start(_trayItems(texts), tooltip: texts.appTitle);
     _trayStarted = true;
     _onSettings();
   }
 
+  Locale _locale() =>
+      effectiveLocale(settings.settings.language, _systemLocales());
+
+  List<TrayItem> _trayItems(AppLocalizations texts) {
+    final labels = TrayLabels(texts);
+    return [
+      TrayItem(labels.gatherNow, () => unawaited(gatherNow())),
+      TrayItem(labels.openWindow, () => unawaited(openWindow())),
+      TrayItem(labels.openBackupFolder, () => unawaited(openBackupFolder())),
+      TrayItem(labels.quit, () => unawaited(quit())),
+    ];
+  }
+
+  /// Rebuilds the tray menu when the language changed: after a change of the
+  /// setting, or of the system language while the setting follows it.
+  void refreshLanguage() {
+    if (!_trayStarted || !settings.loaded) return;
+    final locale = _locale();
+    if (locale == _trayLocale) return;
+    _trayLocale = locale;
+    final texts = textsFor(locale);
+    unawaited(tray.update(_trayItems(texts), tooltip: texts.appTitle));
+  }
+
   void _onSettings() {
     if (!settings.loaded) return;
+    refreshLanguage();
     final s = settings.settings;
     if (_trayStarted && startHidden && !_shownAtStart) {
       _shownAtStart = true;

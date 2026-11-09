@@ -2,7 +2,9 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
 import 'gather/gather_controller.dart';
+import 'l10n/app_locale.dart';
 import 'platform/services.dart';
 import 'settings/settings_controller.dart';
 import 'shell/shell_controller.dart';
@@ -33,7 +35,8 @@ class WowJourneyApp extends StatefulWidget {
   State<WowJourneyApp> createState() => _WowJourneyAppState();
 }
 
-class _WowJourneyAppState extends State<WowJourneyApp> {
+class _WowJourneyAppState extends State<WowJourneyApp>
+    with WidgetsBindingObserver {
   late final SettingsController _settings = SettingsController(
     widget.services.store,
   );
@@ -64,16 +67,23 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
   );
   StreamSubscription<void>? _showRequests;
 
+  // MaterialApp rebuilds on each settings save, so the theme is built once.
+  final ThemeData _theme = buildAkTheme();
+
   @override
   void initState() {
     super.initState();
     // Made now, not on first use, so it sees every gather and settings load.
     _upload;
+    WidgetsBinding.instance.addObserver(this);
     _settings.addListener(_syncWatch);
     _settings.load();
     _shell.start();
     _showRequests = widget.showRequests?.listen((_) => _shell.openWindow());
   }
+
+  @override
+  void didChangeLocales(List<Locale>? locales) => _shell.refreshLanguage();
 
   /// Watch runs while its switch is on and both folders are set: from the
   /// app start, the wizard Finish, or the switch.
@@ -92,6 +102,7 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _showRequests?.cancel();
     _shell.dispose();
     _settings.removeListener(_syncWatch);
@@ -104,38 +115,50 @@ class _WowJourneyAppState extends State<WowJourneyApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'WoW Journey',
-      theme: buildAkTheme(),
-      home: ListenableBuilder(
-        listenable: _settings,
-        builder: (context, _) {
-          if (!_settings.loaded) {
-            return const Scaffold(
-              body: Center(
-                child: CircularProgressIndicator(
-                  semanticsLabel: 'Loading your settings',
-                ),
-              ),
-            );
-          }
-          if (!_settings.settings.wizardDone) {
-            return WizardPage(
-              services: widget.services,
-              initial: _settings.settings,
-              notice: _settings.notice,
-              onFinish: _settings.update,
-            );
-          }
-          return HomePage(
-            services: widget.services,
-            settings: _settings,
-            gather: _gather,
-            watch: _watch,
-            upload: _upload,
-          );
-        },
+    return ListenableBuilder(
+      listenable: _settings,
+      builder: (context, _) => MaterialApp(
+        onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+        theme: _theme,
+        locale: settingLocale(_settings.settings.language),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
+        localeListResolutionCallback: (locales, _) =>
+            resolveAppLocale(locales ?? const []),
+        home: _home(),
       ),
+    );
+  }
+
+  Widget _home() {
+    return ListenableBuilder(
+      listenable: _settings,
+      builder: (context, _) {
+        if (!_settings.loaded) {
+          return Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(
+                semanticsLabel: AppLocalizations.of(context).loadingSettings,
+              ),
+            ),
+          );
+        }
+        if (!_settings.settings.wizardDone) {
+          return WizardPage(
+            services: widget.services,
+            initial: _settings.settings,
+            notice: _settings.notice,
+            onFinish: _settings.update,
+          );
+        }
+        return HomePage(
+          services: widget.services,
+          settings: _settings,
+          gather: _gather,
+          watch: _watch,
+          upload: _upload,
+        );
+      },
     );
   }
 }

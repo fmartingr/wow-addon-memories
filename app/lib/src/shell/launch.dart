@@ -3,14 +3,11 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../l10n/app_locale.dart';
 import '../platform/single_instance.dart';
 import '../platform/window_service.dart';
 import 'shell_controller.dart';
-
-/// Shown when another copy runs but did not answer.
-const String notAnsweringText =
-    'WoW Journey is already running, but it did not answer. Quit it from its '
-    'tray icon menu, or end it in the task manager, then start it again.';
 
 /// Builds the app of the first copy.
 typedef AppBuilder = Widget Function({
@@ -25,6 +22,7 @@ Future<Widget?> launch({
   required SingleInstance instance,
   required WindowService window,
   required AppBuilder app,
+  Future<String?> Function()? language,
 }) async {
   final hidden = startsHidden(args);
   InstanceClaim? claim;
@@ -40,7 +38,10 @@ Future<Widget?> launch({
       return null;
     case OtherInstance(answered: false):
       if (hidden) await window.show();
-      return AlreadyRunningApp(onClose: window.quit);
+      return AlreadyRunningApp(
+        onClose: window.quit,
+        language: await _savedLanguage(language),
+      );
     case FirstInstance(:final showRequests):
       return app(startHidden: hidden, showRequests: showRequests);
     case null:
@@ -48,29 +49,52 @@ Future<Widget?> launch({
   }
 }
 
-/// The screen of a copy whose first copy did not answer.
+/// The language that the user chose in the settings, or null. The settings
+/// file is not needed to show the error, so a failed read gives null.
+Future<String?> _savedLanguage(Future<String?> Function()? language) async {
+  if (language == null) return null;
+  try {
+    return await language().timeout(const Duration(seconds: 2));
+  } on Object {
+    return null;
+  }
+}
+
+/// The screen of a copy whose first copy did not answer. [language] is the
+/// code from the settings, or null to follow the system.
 class AlreadyRunningApp extends StatelessWidget {
-  const AlreadyRunningApp({super.key, required this.onClose});
+  const AlreadyRunningApp({super.key, required this.onClose, this.language});
 
   final VoidCallback onClose;
+  final String? language;
 
   @override
   Widget build(BuildContext context) => MaterialApp(
-    title: 'WoW Journey',
-    home: Scaffold(
-      body: Center(
-        child: Padding(
-          padding: const EdgeInsets.all(24),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              const Text(notAnsweringText, textAlign: TextAlign.center),
-              const SizedBox(height: 16),
-              FilledButton(onPressed: onClose, child: const Text('Close')),
-            ],
+    onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
+    locale: settingLocale(language),
+    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    supportedLocales: AppLocalizations.supportedLocales,
+    localeListResolutionCallback: (locales, _) =>
+        resolveAppLocale(locales ?? const []),
+    home: Builder(
+      builder: (context) {
+        final l = AppLocalizations.of(context);
+        return Scaffold(
+          body: Center(
+            child: Padding(
+              padding: const EdgeInsets.all(24),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Text(l.notAnswering, textAlign: TextAlign.center),
+                  const SizedBox(height: 16),
+                  FilledButton(onPressed: onClose, child: Text(l.close)),
+                ],
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     ),
   );
 }

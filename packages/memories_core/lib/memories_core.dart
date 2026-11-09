@@ -12,7 +12,7 @@ export 'src/savedvars/parser.dart'
 export 'src/upload/client.dart';
 export 'src/upload/key.dart' show UploadKey, UploadKeyException;
 export 'src/upload/signer.dart' show signRequest;
-export 'src/upload/site.dart' show parseSite;
+export 'src/upload/site.dart' show SiteError, SiteFormatException, parseSite;
 export 'src/upload/state.dart';
 export 'src/upload/sync.dart';
 export 'src/watch/signature.dart';

@@ -18,8 +18,14 @@ class TrayItem {
 
 /// Shows the icon of the app in the system tray, with a menu.
 abstract interface class TrayService {
-  /// Shows the icon with a menu of [items]. Returns [available].
-  Future<bool> start(List<TrayItem> items);
+  /// Shows the icon with a menu of [items] and the hover text [tooltip].
+  /// Returns [available].
+  Future<bool> start(List<TrayItem> items, {required String tooltip});
+
+  /// Replaces the menu and the hover text of the icon that shows, such as
+  /// after a change of language. The icon stays, and [available] does not
+  /// change.
+  Future<void> update(List<TrayItem> items, {required String tooltip});
 
   /// Whether the icon shows, so that the user can open a hidden window again.
   bool get available;
@@ -95,15 +101,16 @@ class SystemTrayService implements TrayService {
 
   TrayIcon? _icon;
   // The native menu and its items call back into Dart, so they stay
-  // reachable while the icon shows.
-  final List<Object> _menu = [];
+  // reachable while the icon shows. The menu before the last update stays
+  // too, in case it is still open.
+  final List<List<Object>> _menus = [];
   bool _available = false;
 
   @override
   bool get available => _available;
 
   @override
-  Future<bool> start(List<TrayItem> items) async {
+  Future<bool> start(List<TrayItem> items, {required String tooltip}) async {
     try {
       if (Platform.isLinux && !await hostCheck()) return _available = false;
       if (!TrayManager.instance.isSupported()) return _available = false;
@@ -113,39 +120,61 @@ class SystemTrayService implements TrayService {
             ? 'assets/tray/tray_icon_template.png'
             : 'assets/tray/tray_icon.png',
       );
-      final menu = Menu.create();
-      if (icon == null || image == null || menu == null) {
-        return _available = false;
-      }
+      if (icon == null || image == null) return _available = false;
       icon.icon = image;
       if (Platform.isMacOS) icon.isIconTemplate = true;
-      icon.setTooltip('WoW Journey');
-      for (final item in items) {
-        final entry = MenuItem.createWithLabelAndType(
-          item.label,
-          MenuItemType.normal,
-        );
-        if (entry == null) return _available = false;
-        entry.addListener((event) {
-          if (event is MenuItemClickedEvent) item.onSelected();
-        });
-        menu.addItem(entry);
-        _menu.add(entry);
-      }
-      icon.setContextMenu(menu);
-      // Linux panels open the menu on their own and report no clicks; on
-      // Windows the menu is on the right button, as for other tray icons.
-      icon.setContextMenuTrigger(
-        Platform.isWindows
-            ? ContextMenuTrigger.rightClicked
-            : ContextMenuTrigger.clicked,
-      );
+      icon.setTooltip(tooltip);
+      if (!_setMenu(icon, items)) return _available = false;
       _icon = icon;
-      _menu.add(menu);
       return _available = icon.setVisible(true);
     } on Object catch (e) {
       debugPrint('tray_manager: $e');
       return _available = false;
+    }
+  }
+
+  /// Builds a menu of [items] and gives it to [icon]. Returns false when the
+  /// native side could not build it; the old menu then stays.
+  bool _setMenu(TrayIcon icon, List<TrayItem> items) {
+    final menu = Menu.create();
+    if (menu == null) return false;
+    final keep = <Object>[menu];
+    for (final item in items) {
+      final entry = MenuItem.createWithLabelAndType(
+        item.label,
+        MenuItemType.normal,
+      );
+      if (entry == null) return false;
+      entry.addListener((event) {
+        if (event is MenuItemClickedEvent) item.onSelected();
+      });
+      menu.addItem(entry);
+      keep.add(entry);
+    }
+    icon.setContextMenu(menu);
+    // Linux panels open the menu on their own and report no clicks; on
+    // Windows the menu is on the right button, as for other tray icons.
+    icon.setContextMenuTrigger(
+      Platform.isWindows
+          ? ContextMenuTrigger.rightClicked
+          : ContextMenuTrigger.clicked,
+    );
+    _menus.add(keep);
+    if (_menus.length > 2) _menus.removeAt(0);
+    return true;
+  }
+
+  @override
+  Future<void> update(List<TrayItem> items, {required String tooltip}) async {
+    final icon = _icon;
+    if (!_available || icon == null) return;
+    try {
+      icon.setTooltip(tooltip);
+      if (!_setMenu(icon, items)) {
+        debugPrint('tray_manager: the new menu could not be built');
+      }
+    } on Object catch (e) {
+      debugPrint('tray_manager: $e');
     }
   }
 
@@ -158,6 +187,6 @@ class SystemTrayService implements TrayService {
       debugPrint('tray_manager: $e');
     }
     _icon = null;
-    _menu.clear();
+    _menus.clear();
   }
 }

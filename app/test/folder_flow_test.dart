@@ -5,6 +5,7 @@ import 'package:wow_journey/src/platform/folder_picker.dart';
 import 'package:wow_journey/src/ui/folder_flow.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 class _BrokenPicker implements FolderPicker {
   @override
@@ -24,18 +25,25 @@ class _BrokenDiscovery implements Discovery {
 void main() {
   group('pickWowFolder', () {
     test('a picker that fails says the picker could not open', () async {
-      final pick = await pickWowFolder(_BrokenPicker(), FakeDiscovery());
+      final pick = await pickWowFolder(
+        _BrokenPicker(),
+        FakeDiscovery(),
+        confirmText: en.useThisFolder,
+      );
       expect(pick, isA<WowPickRefused>());
-      expect((pick as WowPickRefused).message, pickerFailedText);
+      expect((pick as WowPickRefused).reason, PickRefusal.pickerFailed);
+      expect(pickText(en, pick), en.pickerFailed);
     });
 
     test('a check that fails says the folder could not be checked', () async {
       final pick = await pickWowFolder(
         FakeFolderPicker([retailDir]),
         _BrokenDiscovery(),
+        confirmText: en.useThisFolder,
       );
       expect(pick, isA<WowPickRefused>());
-      expect((pick as WowPickRefused).message, checkFailedText);
+      expect((pick as WowPickRefused).reason, PickRefusal.checkFailed);
+      expect(pickText(en, pick), en.checkFailed);
     });
   });
 }

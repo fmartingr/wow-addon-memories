@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:path/path.dart' as p;
 
+import '../../l10n/app_localizations.dart';
 import '../gather/gather_controller.dart';
 import '../platform/services.dart';
 import '../settings/settings_controller.dart';
@@ -106,12 +107,7 @@ class _HomePageState extends State<HomePage> {
     ScaffoldMessenger.of(context)
       ..hideCurrentSnackBar()
       ..showSnackBar(
-        const SnackBar(
-          content: Text(
-            'We could not open this folder. If you have not gathered yet, '
-            'click Gather now first.',
-          ),
-        ),
+        SnackBar(content: Text(AppLocalizations.of(context).openFolderFailed)),
       );
   }
 
@@ -145,10 +141,10 @@ class _HomePageState extends State<HomePage> {
     IssueFix.tryAgain => _gatherNow(),
   };
 
-  static const _tabs = [
-    AkTab(label: 'Overview', icon: Icons.dashboard_outlined),
-    AkTab(label: 'Website', icon: Icons.cloud_outlined),
-    AkTab(label: 'Settings', icon: Icons.settings_outlined),
+  List<AkTab> _tabs(AppLocalizations l) => [
+    AkTab(id: 'Overview', label: l.tabOverview, icon: Icons.dashboard_outlined),
+    AkTab(id: 'Website', label: l.tabWebsite, icon: Icons.cloud_outlined),
+    AkTab(id: 'Settings', label: l.tabSettings, icon: Icons.settings_outlined),
   ];
 
   /// A tab page: the content in a scrolling column of at most 720 pixels.
@@ -173,6 +169,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
     return Scaffold(
       body: SafeArea(
         child: Padding(
@@ -182,9 +179,9 @@ class _HomePageState extends State<HomePage> {
             builder: (context, _) => Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                const AkHeader(title: 'WoW Journey'),
+                AkHeader(title: l.appTitle),
                 AkTabBar(
-                  tabs: _tabs,
+                  tabs: _tabs(l),
                   selected: _tab,
                   onSelected: (i) => setState(() => _tab = i),
                 ),
@@ -259,7 +256,7 @@ class _HomePageState extends State<HomePage> {
                   Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
-                      issue,
+                      noticeText(AppLocalizations.of(context), issue),
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.onErrorContainer,
                       ),
@@ -267,7 +264,7 @@ class _HomePageState extends State<HomePage> {
                   ),
                 TextButton(
                   onPressed: () => setState(() => _tab = 1),
-                  child: const Text(showWebsiteLabel),
+                  child: Text(AppLocalizations.of(context).showWebsiteTab),
                 ),
               ],
             ),
@@ -281,9 +278,11 @@ class _HomePageState extends State<HomePage> {
     color: Theme.of(context).colorScheme.secondaryContainer,
     child: ListTile(
       leading: const Icon(Icons.info_outline),
-      title: Text(_settings.notice!),
+      title: Text(
+        settingsNoticeText(AppLocalizations.of(context), _settings.notice!),
+      ),
       trailing: IconButton(
-        tooltip: 'Dismiss',
+        tooltip: AppLocalizations.of(context).dismiss,
         icon: const Icon(Icons.close),
         onPressed: _settings.dismissNotice,
       ),
@@ -291,33 +290,34 @@ class _HomePageState extends State<HomePage> {
   );
 
   Widget _wowGoneCard(BuildContext context) => _ProblemCard(
-    text: wowFolderGoneText,
+    text: AppLocalizations.of(context).wowFolderGoneText,
     paths: [?_settings.settings.flavorDir],
     fix: IssueFix.chooseWowFolder,
     onFix: _fix,
   );
 
-  String _statusText() {
+  String _statusText(AppLocalizations l) {
     final last = _gather.lastGathered;
-    final when = last == null ? null : formatTime(last, widget.clock());
+    final when = last == null ? null : formatTime(l, last, widget.clock());
     return switch (_gather.state) {
-      GatherState.running => 'Gathering your journey…',
-      GatherState.failed =>
-        'The last gather did not finish. See the problem below.',
-      GatherState.done when _gather.issues.isNotEmpty =>
-        'Gathered with problems. Last gathered $when',
-      GatherState.done => 'Up to date. Last gathered $when',
-      GatherState.idle when when != null => 'Last gathered $when',
-      GatherState.idle => 'Never gathered',
+      GatherState.running => l.statusGathering,
+      GatherState.failed => l.statusFailed,
+      GatherState.done when _gather.issues.isNotEmpty => l.statusDoneProblems(
+        when!,
+      ),
+      GatherState.done => l.statusDone(when!),
+      GatherState.idle when when != null => l.statusIdleLast(when),
+      GatherState.idle => l.statusNever,
     };
   }
 
   Widget _statusCard(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final s = _settings.settings;
     final canGather =
         !_gather.running && s.flavorDir != null && s.backupRoot != null;
-    final status = _statusText();
+    final status = _statusText(l);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -326,32 +326,29 @@ class _HomePageState extends State<HomePage> {
           children: [
             Semantics(
               liveRegion: true,
-              label: 'Status: $status',
+              label: l.statusSemantics(status),
               excludeSemantics: true,
               container: true,
               child: Text(status, style: theme.textTheme.titleMedium),
             ),
             if (widget.watch.watching) ...[
               const SizedBox(height: 4),
-              const Align(
+              Align(
                 alignment: Alignment.centerLeft,
-                child: AkTag(watchingText),
+                child: AkTag(l.watchingText),
               ),
             ],
             const SizedBox(height: 12),
             if (_gather.running) ...[
-              const LinearProgressIndicator(semanticsLabel: 'Gathering'),
+              LinearProgressIndicator(semanticsLabel: l.gatheringProgress),
               const SizedBox(height: 12),
             ],
             FilledButton.icon(
               onPressed: canGather ? _gatherNow : null,
               icon: const Icon(Icons.sync),
               label: _gather.running
-                  ? const Text(
-                      'Gathering…',
-                      semanticsLabel: 'Gathering, please wait',
-                    )
-                  : const Text('Gather now'),
+                  ? Text(l.gathering, semanticsLabel: l.gatheringSemantics)
+                  : Text(l.gatherNow),
             ),
           ],
         ),
@@ -360,6 +357,7 @@ class _HomePageState extends State<HomePage> {
   }
 
   List<Widget> _issueCards(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final byCode = <GatherIssueCode, List<GatherIssue>>{};
     for (final i in _gather.issues) {
       byCode.putIfAbsent(i.code, () => []).add(i);
@@ -369,7 +367,7 @@ class _HomePageState extends State<HomePage> {
         Padding(
           padding: const EdgeInsets.only(top: 12),
           child: _ProblemCard(
-            text: issueText(code),
+            text: issueText(l, code),
             paths: [for (final i in issues) ?i.path],
             fix: issueFix(code),
             onFix: _fix,
@@ -381,19 +379,21 @@ class _HomePageState extends State<HomePage> {
   // The counts come from index.json, like the list below them: it also keeps
   // the characters that this gather did not write.
   Widget _counts(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final snap = _gather.snapshot;
     return Wrap(
       spacing: 12,
       runSpacing: 12,
       children: [
-        _Count(label: 'Characters', value: snap.characters.length),
-        _Count(label: 'Journal lines', value: snap.lines),
-        _Count(label: 'Screenshots', value: snap.screenshots),
+        _Count(label: l.countCharacters, value: snap.characters.length),
+        _Count(label: l.countJournalLines, value: snap.lines),
+        _Count(label: l.countScreenshots, value: snap.screenshots),
       ],
     );
   }
 
   Widget _characters(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final list = _gather.snapshot.characters;
     return Card(
       child: Column(
@@ -401,18 +401,18 @@ class _HomePageState extends State<HomePage> {
         children: [
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 0),
-            child: const AkPanelTitle('Characters'),
+            child: AkPanelTitle(l.charactersTitle),
           ),
           if (list.isEmpty)
-            const Padding(
-              padding: EdgeInsets.fromLTRB(16, 0, 16, 16),
-              child: Text('No characters yet. Click Gather now.'),
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+              child: Text(l.noCharacters),
             ),
           for (final c in list)
             ListTile(
               leading: const Icon(Icons.person_outline),
               title: Text(c.name),
-              subtitle: _characterDetail(c),
+              subtitle: _characterDetail(c, l),
             ),
         ],
       ),
@@ -420,11 +420,11 @@ class _HomePageState extends State<HomePage> {
   }
 
   /// The realm, the level and the class of a character. The class has its game colour.
-  Widget _characterDetail(CharacterSummary c) {
+  Widget _characterDetail(CharacterSummary c, AppLocalizations l) {
     final cls = c.className;
     final parts = [
       c.realm,
-      if (c.level != null) 'Level ${c.level}',
+      if (c.level != null) l.characterLevel(c.level!),
     ].where((e) => e.isNotEmpty).toList();
     final hasClass = cls != null && cls.isNotEmpty;
     return Text.rich(
@@ -434,7 +434,7 @@ class _HomePageState extends State<HomePage> {
           if (hasClass) ...[
             if (parts.isNotEmpty) const TextSpan(text: ' · '),
             TextSpan(
-              text: className(cls),
+              text: className(l, cls),
               style: TextStyle(
                 color: classColours[cls.toUpperCase()] ?? Tokens.text,
                 fontWeight: FontWeight.w700,
@@ -447,18 +447,19 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _backupCard(BuildContext context) {
+    final l = AppLocalizations.of(context);
     final root = _settings.settings.backupRoot;
-    final size = formatSize(_gather.snapshot.sizeBytes);
+    final size = formatSize(l, _gather.snapshot.sizeBytes);
     return Card(
       child: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const AkPanelTitle('Backup folder'),
-            Text(root ?? 'Not set'),
+            AkPanelTitle(l.backupFolderTitle),
+            Text(root ?? l.notSet),
             const SizedBox(height: 4),
-            Text('Size: $size'),
+            Text(l.backupSize(size)),
             const SizedBox(height: 12),
             Wrap(
               spacing: 12,
@@ -467,12 +468,12 @@ class _HomePageState extends State<HomePage> {
                 OutlinedButton.icon(
                   onPressed: () => _open(root),
                   icon: const Icon(Icons.folder_open_outlined),
-                  label: const Text('Open backup folder'),
+                  label: Text(l.openBackupFolder),
                 ),
                 OutlinedButton.icon(
                   onPressed: () => _open(_latest),
                   icon: const Icon(Icons.folder_special_outlined),
-                  label: const Text('Open latest data'),
+                  label: Text(l.openLatestData),
                 ),
               ],
             ),
@@ -489,9 +490,9 @@ class _HintCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) => Card(
     color: Theme.of(context).colorScheme.surfaceContainerHighest,
-    child: const ListTile(
-      leading: Icon(Icons.lightbulb_outline),
-      title: Text(saveHintText),
+    child: ListTile(
+      leading: const Icon(Icons.lightbulb_outline),
+      title: Text(AppLocalizations.of(context).saveHintText),
     ),
   );
 }
@@ -506,7 +507,7 @@ class _Count extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     return Semantics(
-      label: '$label: $value',
+      label: AppLocalizations.of(context).countSemantics(label, value),
       excludeSemantics: true,
       container: true,
       child: ConstrainedBox(
@@ -549,6 +550,7 @@ class _ProblemCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final unique = paths.toSet().toList();
     final more = unique.length - _shownPaths;
     return Card(
@@ -582,10 +584,7 @@ class _ProblemCard extends StatelessWidget {
             if (more > 0)
               Padding(
                 padding: const EdgeInsets.only(top: 4, left: 36),
-                child: Text(
-                  more == 1 ? 'and 1 more' : 'and $more more',
-                  style: theme.textTheme.bodySmall,
-                ),
+                child: Text(l.andMore(more), style: theme.textTheme.bodySmall),
               ),
             if (fix != null) ...[
               const SizedBox(height: 12),
@@ -593,7 +592,7 @@ class _ProblemCard extends StatelessWidget {
                 padding: const EdgeInsets.only(left: 36),
                 child: FilledButton.tonal(
                   onPressed: () => onFix(fix!),
-                  child: Text(fix!.label),
+                  child: Text(fix!.label(l)),
                 ),
               ),
             ],

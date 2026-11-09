@@ -2,12 +2,17 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
+import 'package:wow_journey/src/settings/settings_store.dart';
 import 'package:wow_journey/src/gather/gather_controller.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 Fakes _home() => Fakes(
-  store: FakeSettingsStore((settings: readySettings, notice: 'A notice.')),
+  store: FakeSettingsStore((
+    settings: readySettings,
+    notice: SettingsNotice.damaged,
+  )),
   discovery: FakeDiscovery(checks: {retailDir: const Valid(retail)}),
   gather:
       FakeGatherService(
@@ -89,7 +94,7 @@ void main() {
     for (final tab in ['Website', 'Settings', 'Overview']) {
       await openTab(tester, tab);
       expect(tester.takeException(), isNull, reason: tab);
-      expect(find.text('A notice.'), findsOneWidget, reason: tab);
+      expect(find.text(en.settingsDamaged), findsOneWidget, reason: tab);
     }
   });
 

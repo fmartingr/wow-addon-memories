@@ -1,80 +1,47 @@
-/// The plain English text of each gather problem and the fix it offers, and
-/// of the website upload.
+/// Turns the codes of the gather, the folder checks and the upload into text
+/// in the language of the app.
 library;
 
+import 'package:intl/intl.dart';
 import 'package:memories_core/memories_core.dart';
+
+import '../../l10n/app_localizations.dart';
+import '../settings/settings_store.dart';
+import '../upload/notice.dart';
 
 /// A button that a problem offers to fix it.
 enum IssueFix {
-  chooseWowFolder('Choose folder'),
-  chooseBackupFolder('Choose backup folder'),
-  openLatest('Open latest data'),
-  tryAgain('Try again');
+  chooseWowFolder,
+  chooseBackupFolder,
+  openLatest,
+  tryAgain;
 
-  const IssueFix(this.label);
-
-  final String label;
+  /// The label of the button.
+  String label(AppLocalizations l) => switch (this) {
+    chooseWowFolder => l.fixChooseWowFolder,
+    chooseBackupFolder => l.fixChooseBackupFolder,
+    openLatest => l.fixOpenLatest,
+    tryAgain => l.fixTryAgain,
+  };
 }
 
-/// Shown when the gather found no character with Memories data.
-const String noDataText =
-    'No Memories data yet. Play with the Memories addons on, then log out.';
-
-/// Shown when the saved WoW folder is gone.
-const String wowFolderGoneText =
-    'We cannot find your WoW folder any more. It may have moved, or its drive '
-    'is not connected. Choose the folder again.';
-
-/// The hint about when the game writes its files.
-const String saveHintText =
-    'The game saves your journey when you log out or type /reload.';
-
-/// The status line while Watch is on.
-const String watchingText = 'Watching for changes';
-
 /// What happened and what to do, for [code].
-String issueText(GatherIssueCode code) => switch (code) {
-  GatherIssueCode.noWtf =>
-    'This folder has no WoW game files. Choose the folder of one game '
-        'version, such as _retail_.',
-  GatherIssueCode.noData => noDataText,
-  GatherIssueCode.damagedFile =>
-    'A saved file could not be read, so we skipped it. Log in with that '
-        'character, log out, then try again.',
-  GatherIssueCode.accountSkipped =>
-    'The Memories file of an account is missing or damaged, so we skipped '
-        'its characters. Log in once, log out, then try again.',
-  GatherIssueCode.characterFailed =>
-    'We could not update the data of one character, so we left it as it '
-        'was. Check its folder in the latest data, then try again.',
-  GatherIssueCode.overlap =>
-    'The backup folder is inside the game files. Choose a backup folder '
-        'outside the World of Warcraft folder.',
-  GatherIssueCode.lockHeld =>
-    'Another gather is running on this backup folder. Wait until it ends, '
-        'then try again.',
-  GatherIssueCode.notWritable =>
-    'We cannot write to the backup folder. Check that its drive is connected '
-        'and has free space, or choose another backup folder.',
-  GatherIssueCode.badIndex =>
-    'The file index.json in the latest data is damaged. Move it out of the '
-        'folder, then try again.',
-  GatherIssueCode.badDefault =>
-    'The first character to show is not in your data. Try again.',
-  GatherIssueCode.skippedFile =>
-    'A saved file had no Memories data or belonged to another character, so '
-        'we skipped it.',
-  GatherIssueCode.duplicateGuid =>
-    'Two folders hold the same character. We kept the one you played last.',
-  GatherIssueCode.backupFailed =>
-    'We could not copy a saved file into the backup folder. Check that its '
-        'drive has free space, then try again.',
-  GatherIssueCode.screenshotFailed =>
-    'We could not copy a screenshot. Check that the drive has free space, '
-        'then try again.',
-  GatherIssueCode.ioError =>
-    'A file could not be read or written, so the gather stopped. Check that '
-        'your drives are connected and have free space, then try again.',
+String issueText(AppLocalizations l, GatherIssueCode code) => switch (code) {
+  GatherIssueCode.noWtf => l.issueNoWtf,
+  GatherIssueCode.noData => l.noDataText,
+  GatherIssueCode.damagedFile => l.issueDamagedFile,
+  GatherIssueCode.accountSkipped => l.issueAccountSkipped,
+  GatherIssueCode.characterFailed => l.issueCharacterFailed,
+  GatherIssueCode.overlap => l.issueOverlap,
+  GatherIssueCode.lockHeld => l.issueLockHeld,
+  GatherIssueCode.notWritable => l.issueNotWritable,
+  GatherIssueCode.badIndex => l.issueBadIndex,
+  GatherIssueCode.badDefault => l.issueBadDefault,
+  GatherIssueCode.skippedFile => l.issueSkippedFile,
+  GatherIssueCode.duplicateGuid => l.issueDuplicateGuid,
+  GatherIssueCode.backupFailed => l.issueBackupFailed,
+  GatherIssueCode.screenshotFailed => l.issueScreenshotFailed,
+  GatherIssueCode.ioError => l.issueIoError,
 };
 
 /// The fix that [code] offers, or null when there is nothing to do.
@@ -96,132 +63,114 @@ IssueFix? issueFix(GatherIssueCode code) => switch (code) {
   GatherIssueCode.duplicateGuid => null,
 };
 
+/// The text of a check of a folder that the user picked.
+String flavorCheckText(AppLocalizations l, FlavorCheck check) =>
+    switch (check) {
+      Valid(:final folder) =>
+        folder.hasMemoriesData ? l.flavorReady : l.flavorReadyNoData,
+      NoWtf() => l.flavorNoWtf,
+      IsInstallFolder(:final flavors) => l.flavorInstallFolder(
+        flavors.length,
+        flavors.map((f) => f.flavor).join(', '),
+      ),
+      NotADirectory() => l.flavorNotADirectory,
+      NotReadable() => l.flavorNotReadable,
+    };
+
+/// The text of a message about the settings file.
+String settingsNoticeText(AppLocalizations l, SettingsNotice notice) =>
+    switch (notice) {
+      SettingsNotice.damaged => l.settingsDamaged,
+      SettingsNotice.saveFailed => l.settingsSaveFailed,
+    };
+
 /// [bytes] as a short size, such as `12.3 MB`.
-String formatSize(int bytes) {
-  const units = ['bytes', 'KB', 'MB', 'GB', 'TB'];
-  var v = bytes.toDouble();
+String formatSize(AppLocalizations l, int bytes) {
+  if (bytes < 1024) return l.sizeBytes(bytes);
+  final units = [l.sizeKb, l.sizeMb, l.sizeGb, l.sizeTb];
+  var v = bytes / 1024;
   var i = 0;
   while (v >= 1024 && i < units.length - 1) {
     v /= 1024;
     i++;
   }
-  return i == 0 ? '$bytes bytes' : '${v.toStringAsFixed(1)} ${units[i]}';
+  final number = NumberFormat('0.0', l.localeName).format(v);
+  return units[i](number);
 }
 
 /// [t] as `14:32` when it is on the day of [now], else `2026-11-07 14:32`.
-String formatTime(DateTime t, DateTime now) {
-  String two(int n) => n.toString().padLeft(2, '0');
-  final time = '${two(t.hour)}:${two(t.minute)}';
-  if (t.year == now.year && t.month == now.month && t.day == now.day) {
-    return time;
-  }
-  return '${t.year}-${two(t.month)}-${two(t.day)} $time';
+/// The digits are the same in every language of the app.
+String formatTime(AppLocalizations l, DateTime t, DateTime now) {
+  final sameDay =
+      t.year == now.year && t.month == now.month && t.day == now.day;
+  return DateFormat(
+    sameDay ? 'HH:mm' : 'yyyy-MM-dd HH:mm',
+    l.localeName,
+  ).format(t);
 }
 
-const Map<String, String> _classNames = {
-  'DEATHKNIGHT': 'Death Knight',
-  'DEMONHUNTER': 'Demon Hunter',
-};
-
-/// The game class token [token], such as `HUNTER`, as `Hunter`.
-String className(String token) {
-  final known = _classNames[token.toUpperCase()];
+/// The game class token [token], such as `HUNTER`, in the language of the
+/// app. An unknown token shows capitalized.
+String className(AppLocalizations l, String token) {
+  final known = switch (token.toUpperCase()) {
+    'WARRIOR' => l.classWarrior,
+    'PALADIN' => l.classPaladin,
+    'HUNTER' => l.classHunter,
+    'ROGUE' => l.classRogue,
+    'PRIEST' => l.classPriest,
+    'DEATHKNIGHT' => l.classDeathKnight,
+    'SHAMAN' => l.classShaman,
+    'MAGE' => l.classMage,
+    'WARLOCK' => l.classWarlock,
+    'MONK' => l.classMonk,
+    'DRUID' => l.classDruid,
+    'DEMONHUNTER' => l.classDemonHunter,
+    'EVOKER' => l.classEvoker,
+    _ => null,
+  };
   if (known != null) return known;
   if (token.isEmpty) return token;
   return token[0].toUpperCase() + token.substring(1).toLowerCase();
 }
 
-/// The title of the Website section and card.
-const String websiteTitle = 'Website';
-
-/// The title of the registration panel of the Website tab.
-const String websiteRegistrationTitle = 'Registration';
-
-/// The line that says what a character link means.
-const String unlistedText =
-    'Your character pages are unlisted: anybody with the link can open them.';
-
-/// What to do after a reinstall, which makes a new key.
-const String lostKeyText =
-    'If you reinstall the app, ask the website admin to move your characters '
-    'to your new key.';
-
-const String websiteAddressLabel = 'Website address';
-const String checkSiteLabel = 'Check';
-const String inviteCodeLabel = 'Invite code';
-const String registerLabel = 'Register';
-const String uploadSwitchTitle = 'Upload';
-const String uploadSwitchSubtitle =
-    'Send your journey to the website after each gather.';
-const String uploadNowLabel = 'Upload now';
-const String uploadingLabel = 'Uploading…';
-const String uploadPausedText =
-    'Upload paused. It continues after the next gather.';
-const String requestScreenshotsLabel = 'Request screenshots';
-const String copyLinkLabel = 'Copy link';
-const String removeFromWebsiteLabel = 'Remove from website';
-const String linkCopiedText = 'Link copied';
-const String cancelLabel = 'Cancel';
-
-/// The button of an upload problem on the Overview tab that opens the Website tab.
-const String showWebsiteLabel = 'Show the Website tab';
-const String removeLabel = 'Remove';
-
 /// The site as people read it: `example.com`, or `localhost:8080`.
-String siteLabel(String site) {
+String siteLabel(String site) => _sitePart(site, (uri) => uri.authority);
+
+String _siteHost(String site) => _sitePart(site, (uri) => uri.host);
+
+/// [part] of the parsed [site], or [site] as it is when it does not parse.
+String _sitePart(String site, String Function(Uri uri) part) {
   try {
-    return parseSite(site).authority;
+    return part(parseSite(site));
   } on FormatException {
     return site;
   }
 }
 
 /// What a successful check of the website shows.
-String siteFoundText(SiteInfo info) => info.registration == 'open'
-    ? 'Found ${info.name}. Anybody can register here.'
-    : 'Found ${info.name}. You need an invite code from the website admin to '
-          'register.';
-
-/// Shown when the website answered, but not as a Memories website.
-const String notAMemoriesSiteText =
-    'This address does not look like a Memories website. Check the address.';
-
-/// The registration line of the settings.
-String registeredText(String site) => 'Registered on ${siteLabel(site)}.';
-
-String notRegisteredText(String site) =>
-    'Not registered on ${siteLabel(site)}. Register to upload your journey.';
-
-String fingerprintText(String fingerprint) => 'Your key: $fingerprint';
+String siteFoundText(AppLocalizations l, SiteInfo info) =>
+    info.registration == 'open'
+    ? l.siteFoundOpen(info.name)
+    : l.siteFoundInvite(info.name);
 
 /// The text of the screenshot state of the key.
-String screenshotsText(String state) => switch (state) {
-  'pending' => 'Waiting for the website admin to approve your screenshots.',
-  'approved' => 'Your screenshots are uploaded with your journey.',
-  'denied' =>
-    'The website admin did not approve screenshots. You can ask again.',
-  _ => 'Screenshots are not uploaded. Ask the website admin to approve them.',
+String screenshotsText(AppLocalizations l, String state) => switch (state) {
+  'pending' => l.screenshotsPending,
+  'approved' => l.screenshotsApproved,
+  'denied' => l.screenshotsDenied,
+  _ => l.screenshotsNone,
 };
 
-/// Shown on the card when the key is not registered.
-String cardNotRegisteredText(String site) =>
-    'You are not registered on ${siteLabel(site)}. Register below to share '
-    'your journey.';
-
-const String cardUploadOffText =
-    'Upload is off. Turn on the Upload switch below to send your journey.';
-
 /// The text under the progress bar of a running upload.
-String uploadProgressText(int done, int total) =>
-    total <= 0 ? uploadingLabel : 'Uploading $done of $total';
+String uploadProgressText(AppLocalizations l, int done, int total) =>
+    total <= 0 ? l.uploadingLabel : l.uploadProgress(done, total);
 
 /// The line about the last upload of this run.
-String lastUploadText(DateTime? time, DateTime now) => time == null
-    ? 'Nothing uploaded yet.'
-    : 'Last upload ${formatTime(time, now)}';
+String lastUploadText(AppLocalizations l, DateTime? time, DateTime now) =>
+    time == null ? l.lastUploadNever : l.lastUpload(formatTime(l, time, now));
 
 /// The result of one upload, in a sentence.
-String syncSummaryText(SyncReport report) {
+String syncSummaryText(AppLocalizations l, SyncReport report) {
   var sent = 0;
   var failed = 0;
   var shots = 0;
@@ -242,67 +191,96 @@ String syncSummaryText(SyncReport report) {
     shotsFailed += c.shots.errors.length;
   }
   final parts = [
-    if (sent > 0) 'Uploaded ${_count(sent, '1 character', 'characters')}',
-    if (shots > 0) 'sent ${_count(shots, '1 screenshot', 'screenshots')}',
+    if (sent > 0) l.syncUploaded(sent),
+    if (shots > 0) l.syncShots(shots),
     if (sent == 0 && shots == 0 && failed == 0 && shotsFailed == 0)
-      'Everything is up to date',
-    if (removed > 0)
-      'skipped ${_count(removed, '1 removed character', 'removed characters')} '
-          '(Upload now sends ${removed == 1 ? 'it' : 'them'} again)',
-    if (failed > 0) '${_count(failed, '1 character', 'characters')} failed',
-    if (shotsFailed > 0)
-      '${_count(shotsFailed, '1 screenshot', 'screenshots')} failed',
+      l.syncUpToDate,
+    if (removed > 0) l.syncRemoved(removed),
+    if (failed > 0) l.syncFailed(failed),
+    if (shotsFailed > 0) l.syncShotsFailed(shotsFailed),
   ];
   final text = parts.join(', ');
   return '${text[0].toUpperCase()}${text.substring(1)}.';
 }
 
-String _count(int n, String one, String many) => n == 1 ? one : '$n $many';
-
-/// A failure of the upload, such as a lost network, in plain words. The
-/// message of the core already says what happened and what to do.
-String uploadErrorText(UploadException e, String site) => switch (e.code) {
-  'key_revoked' => keyRevokedText(site),
-  'not_registered' => '${e.message} Register in the settings.',
-  _ => e.message,
+/// A failure of the upload, in plain words. A known code has a text in the
+/// language of the app; an unknown code shows the message of the server.
+String uploadErrorText(
+  AppLocalizations l,
+  String code,
+  String message,
+  String site,
+) => switch (code) {
+  'network' => l.errNetwork(_siteHost(site)),
+  'bad_response' => l.errBadResponse,
+  'bad_files' => l.errBadFiles,
+  'no_index' => l.errNoIndex,
+  'bad_key' => l.errBadKey,
+  'bad_site' => _badSiteText(l, site),
+  'bad_state' => l.errBadState,
+  'failed' => l.errFailed,
+  'key_revoked' => l.errKeyRevoked(siteLabel(site)),
+  'not_registered' => l.errNotRegistered,
+  'invalid' => l.errInvalid,
+  'invite_invalid' => l.errInviteInvalid,
+  'bad_signature' => l.errBadSignature,
+  'rate_limited' => l.errRateLimited,
+  'busy' => l.errBusy,
+  'quota' => l.errQuota,
+  'too_large' => l.errTooLarge,
+  'internal' => l.errInternal,
+  'bad_request' => l.errBadRequest,
+  'not_found' => l.errNotFound,
+  'screenshots_not_approved' => l.errScreenshotsNotApproved,
+  'unsupported_image' => l.errUnsupportedImage,
+  'not_referenced' => l.errNotReferenced,
+  'guid_mismatch' => l.errGuidMismatch,
+  'gzip_required' => l.errGzipRequired,
+  _ when code.startsWith('http_') && int.tryParse(code.substring(5)) != null =>
+    l.errHttp(code.substring(5)),
+  _ => message,
 };
 
-/// Shown when the website admin blocked the key.
-String keyRevokedText(String site) =>
-    "The website admin blocked this app's key. Uploads to ${siteLabel(site)} "
-    'are off.';
-
-/// A character that another key already owns.
-String claimedText(String name, String realm) =>
-    'Another player already uploaded $name on $realm. Ask the website admin.';
-
-/// A rejected upload: the first 3 problems, in plain words.
-String rejectedText(String name, List<UploadProblem> problems) {
-  final shown = problems.take(3).map((p) => p.toString()).join('; ');
-  final more = problems.length - 3;
-  final tail = more <= 0
-      ? ''
-      : ' And ${_count(more, '1 more problem', 'more problems')}.';
-  return 'The website did not accept the data of $name: '
-      '${shown.endsWith('.') ? shown : '$shown.'}$tail Fix the saved files, '
-      'then upload again.';
+/// Why [site] is refused: `bad_site` is the upload service failing to parse
+/// the same address, so parsing it again gives the exact [SiteError].
+String _badSiteText(AppLocalizations l, String site) {
+  try {
+    parseSite(site);
+  } on SiteFormatException catch (e) {
+    return siteErrorText(l, e.error);
+  }
+  return l.errBadSite;
 }
 
-/// The question before a character leaves the website.
-String removeQuestionText(String name, String site) =>
-    'Remove $name from ${siteLabel(site)}? The page and its data are deleted.';
+/// The text of an address that [parseSite] refused.
+String siteErrorText(AppLocalizations l, SiteError error) => switch (error) {
+  SiteError.invalid => l.siteInvalid,
+  SiteError.needsHost => l.siteNeedsHost,
+  SiteError.needsHttps => l.siteNeedsHttps,
+  SiteError.httpLoopback => l.siteHttpLoopback,
+  SiteError.userInfo => l.siteUserInfo,
+  SiteError.query => l.siteQuery,
+  SiteError.path => l.sitePath,
+};
 
-/// Shown when a character was removed from the website.
-/// It says the rule: a gather never uploads a removed character again, and
-/// Upload now sends every removed character again.
-String removedText(String name) =>
-    '$name was removed from the website. Gathers do not upload it again; '
-    'Upload now does.';
-
-/// Shown when Remove is confirmed while an upload or another action runs.
-const String busyText =
-    'The app is busy with the website. Try again when the upload ends.';
-
-/// Shown when an action failed for a reason that the app did not foresee.
-const String genericFailureText =
-    'Something went wrong with the website. Try again in a few minutes.';
+/// The text of [notice] in the language of the app.
+String noticeText(AppLocalizations l, Notice notice) => switch (notice) {
+  UploadErrorNotice(:final code, :final message, :final site, :final who) =>
+    who == null
+        ? uploadErrorText(l, code, message, site)
+        : l.namedError(who, uploadErrorText(l, code, message, site)),
+  ClaimedNotice(:final name, :final realm) => l.errClaimed(
+    name,
+    realm ?? l.realmUnknown,
+  ),
+  RejectedNotice(:final name, :final problems, :final more) => l.rejectedText(
+    name,
+    problems,
+    more,
+  ),
+  TextNotice(:final text) => text,
+  SiteAddressNotice(:final error) => siteErrorText(l, error),
+  NotAMemoriesSiteNotice() => l.notAMemoriesSite,
+  BusyNotice() => l.busyText,
+  GenericFailureNotice() => l.genericFailureText,
+};

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:ui';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
@@ -9,6 +10,7 @@ import 'package:wow_journey/src/shell/shell_controller.dart';
 import 'package:wow_journey/src/watch/watch_controller.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 class _Timer implements Timer {
   bool cancelled = false;
@@ -41,8 +43,12 @@ class _Shell {
       startup: startup,
       opener: opener,
       startHidden: startHidden,
+      systemLocales: () => systemLocales,
     );
   }
+
+  /// The languages of the fake system, first choice first.
+  List<Locale> systemLocales = const [Locale('en', 'US')];
 
   final FakeSettingsStore store;
   final FakeGatherService service = FakeGatherService();
@@ -97,6 +103,87 @@ void main() {
     });
   });
 
+  group('the tray language', () {
+    test('a change of the Language setting rebuilds the menu', () async {
+      final h = _Shell();
+      await h.start();
+      expect(h.tray.updates, 0);
+      await h.settings.update(readySettings.copyWith(language: 'de'));
+      await pumpEventQueue();
+      expect(h.tray.updates, 1);
+      await h.settings.update(readySettings.copyWith(language: 'fr'));
+      await pumpEventQueue();
+      expect(h.tray.updates, 2);
+    });
+
+    test('the new menu has the labels of the new language', () async {
+      final h = _Shell();
+      await h.start();
+      await h.settings.update(readySettings.copyWith(language: 'de'));
+      await pumpEventQueue();
+      expect(h.tray.items.map((i) => i.label), [
+        'Jetzt sammeln',
+        'Fenster öffnen',
+        'Sicherungsordner öffnen',
+        'Beenden',
+      ]);
+      expect(h.tray.tooltip, 'WoW Journey');
+    });
+
+    test('the tray starts in the language of the system', () async {
+      final h = _Shell();
+      h.systemLocales = const [Locale('pt', 'PT')];
+      await h.start();
+      expect(h.tray.items.first.label, 'Coletar agora');
+    });
+
+    test(
+      'a setting that resolves to the same language changes nothing',
+      () async {
+        final h = _Shell();
+        await h.start();
+        await h.settings.update(readySettings.copyWith(language: 'en'));
+        await h.settings.update(readySettings.copyWith(clearLanguage: true));
+        await pumpEventQueue();
+        expect(h.tray.updates, 0);
+      },
+    );
+
+    test(
+      'a change of the system language rebuilds the menu on System',
+      () async {
+        final h = _Shell();
+        await h.start();
+        h.systemLocales = const [Locale('de', 'AT')];
+        h.shell.refreshLanguage();
+        await pumpEventQueue();
+        expect(h.tray.updates, 1);
+      },
+    );
+
+    test(
+      'a change of the system language is ignored with a chosen language',
+      () async {
+        final h = _Shell(settings: readySettings.copyWith(language: 'es'));
+        await h.start();
+        h.systemLocales = const [Locale('de')];
+        h.shell.refreshLanguage();
+        await pumpEventQueue();
+        expect(h.tray.updates, 0);
+      },
+    );
+
+    test('the menu keeps working after it was rebuilt', () async {
+      final h = _Shell();
+      await h.start();
+      await h.settings.update(readySettings.copyWith(language: 'de'));
+      await pumpEventQueue();
+      h.tray.select(h.tray.items[0].label);
+      await pumpEventQueue();
+      expect(h.service.calls, hasLength(1));
+    });
+  });
+
   group('the tray menu', () {
     test('has the four items in order', () async {
       final h = _Shell();
@@ -107,13 +194,14 @@ void main() {
         'Open backup folder',
         'Quit',
       ]);
+      expect(h.tray.tooltip, 'WoW Journey');
     });
 
     test('Gather now gathers and leaves a hidden window hidden', () async {
       final h = _Shell(startHidden: true);
       await h.start();
       h.service.pending = Completer();
-      h.tray.select(TrayLabels.gatherNow);
+      h.tray.select(enTray.gatherNow);
       await pumpEventQueue();
       expect(h.service.calls, [(retailDir, readySettings.backupRoot!)]);
       expect(h.gather.running, isTrue);
@@ -130,7 +218,7 @@ void main() {
       final h = _Shell(settings: const Settings());
       await h.start();
       h.window.calls.clear();
-      h.tray.select(TrayLabels.gatherNow);
+      h.tray.select(enTray.gatherNow);
       await pumpEventQueue();
       expect(h.service.calls, isEmpty);
       expect(h.window.calls, ['show']);
@@ -139,7 +227,7 @@ void main() {
     test('Open window shows the window', () async {
       final h = _Shell();
       await h.start();
-      h.tray.select(TrayLabels.openWindow);
+      h.tray.select(enTray.openWindow);
       await pumpEventQueue();
       expect(h.window.calls, ['init', 'show']);
     });
@@ -147,7 +235,7 @@ void main() {
     test('Open backup folder opens the backup root', () async {
       final h = _Shell();
       await h.start();
-      h.tray.select(TrayLabels.openBackupFolder);
+      h.tray.select(enTray.openBackupFolder);
       await pumpEventQueue();
       expect(h.opener.opened, [readySettings.backupRoot]);
       expect(h.window.calls, ['init']);
@@ -157,7 +245,7 @@ void main() {
       final h = _Shell();
       await h.start();
       h.opener.result = false;
-      h.tray.select(TrayLabels.openBackupFolder);
+      h.tray.select(enTray.openBackupFolder);
       await pumpEventQueue();
       expect(h.window.calls, ['init', 'show']);
     });
@@ -167,7 +255,7 @@ void main() {
       await h.start();
       h.watch.start();
       expect(h.watch.watching, isTrue);
-      h.tray.select(TrayLabels.quit);
+      h.tray.select(enTray.quit);
       await pumpEventQueue();
       expect(h.watch.watching, isFalse);
       expect(h.timer.cancelled, isTrue);

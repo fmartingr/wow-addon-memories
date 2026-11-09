@@ -4,8 +4,10 @@ library;
 
 import 'package:flutter/material.dart';
 
+import '../../l10n/app_localizations.dart';
 import '../settings/settings_controller.dart';
 import '../theme/ak_widgets.dart';
+import '../upload/notice.dart';
 import '../upload/upload_controller.dart';
 import 'messages.dart';
 
@@ -28,7 +30,7 @@ class _WebsiteSectionState extends State<WebsiteSection> {
     text: widget.settings.settings.site,
   );
   final TextEditingController _invite = TextEditingController();
-  String? _addressError;
+  Notice? _addressError;
 
   UploadController get _upload => widget.upload;
 
@@ -64,6 +66,7 @@ class _WebsiteSectionState extends State<WebsiteSection> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     final errorStyle = TextStyle(color: theme.colorScheme.error);
     return ListenableBuilder(
       // The controller passes on each change of the settings.
@@ -78,14 +81,16 @@ class _WebsiteSectionState extends State<WebsiteSection> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const AkPanelTitle(websiteRegistrationTitle),
+              AkPanelTitle(l.registrationTitle),
               TextField(
                 controller: _address,
                 keyboardType: TextInputType.url,
                 autocorrect: false,
                 decoration: InputDecoration(
-                  labelText: websiteAddressLabel,
-                  errorText: _addressError,
+                  labelText: l.websiteAddressLabel,
+                  errorText: _addressError == null
+                      ? null
+                      : noticeText(l, _addressError!),
                   border: const OutlineInputBorder(),
                 ),
                 onSubmitted: (_) => _check(),
@@ -95,24 +100,29 @@ class _WebsiteSectionState extends State<WebsiteSection> {
                 alignment: Alignment.centerLeft,
                 child: OutlinedButton(
                   onPressed: _upload.checking ? null : _check,
-                  child: const Text(checkSiteLabel),
+                  child: Text(l.checkSiteLabel),
                 ),
               ),
               if (info != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(siteFoundText(info)),
+                  child: Text(siteFoundText(l, info)),
                 ),
               if (_upload.siteError != null)
                 Padding(
                   padding: const EdgeInsets.only(top: 8),
-                  child: Text(_upload.siteError!, style: errorStyle),
+                  child: Text(
+                    noticeText(l, _upload.siteError!),
+                    style: errorStyle,
+                  ),
                 ),
               const SizedBox(height: 16),
               Text(
                 registered
-                    ? registeredText(widget.settings.settings.site)
-                    : notRegisteredText(widget.settings.settings.site),
+                    ? l.registeredText(siteLabel(widget.settings.settings.site))
+                    : l.notRegisteredText(
+                        siteLabel(widget.settings.settings.site),
+                      ),
               ),
               if (!registered) ...[
                 if (!open) ...[
@@ -120,9 +130,9 @@ class _WebsiteSectionState extends State<WebsiteSection> {
                   TextField(
                     controller: _invite,
                     autocorrect: false,
-                    decoration: const InputDecoration(
-                      labelText: inviteCodeLabel,
-                      border: OutlineInputBorder(),
+                    decoration: InputDecoration(
+                      labelText: l.inviteCodeLabel,
+                      border: const OutlineInputBorder(),
                     ),
                     onSubmitted: (_) => _register(),
                   ),
@@ -132,19 +142,22 @@ class _WebsiteSectionState extends State<WebsiteSection> {
                   alignment: Alignment.centerLeft,
                   child: FilledButton(
                     onPressed: _upload.registering ? null : _register,
-                    child: const Text(registerLabel),
+                    child: Text(l.registerLabel),
                   ),
                 ),
                 if (_upload.registerError != null)
                   Padding(
                     padding: const EdgeInsets.only(top: 8),
-                    child: Text(_upload.registerError!, style: errorStyle),
+                    child: Text(
+                      noticeText(l, _upload.registerError!),
+                      style: errorStyle,
+                    ),
                   ),
               ],
               SwitchListTile(
                 contentPadding: EdgeInsets.zero,
-                title: const Text(uploadSwitchTitle),
-                subtitle: const Text(uploadSwitchSubtitle),
+                title: Text(l.uploadSwitchTitle),
+                subtitle: Text(l.uploadSwitchSubtitle),
                 value: widget.settings.settings.upload,
                 onChanged: registered
                     ? (v) => widget.settings.update(
@@ -153,7 +166,7 @@ class _WebsiteSectionState extends State<WebsiteSection> {
                     : null,
               ),
               if (registered) ...[
-                Text(screenshotsText(_upload.screenshots)),
+                Text(screenshotsText(l, _upload.screenshots)),
                 const SizedBox(height: 8),
                 Align(
                   alignment: Alignment.centerLeft,
@@ -161,15 +174,15 @@ class _WebsiteSectionState extends State<WebsiteSection> {
                     onPressed: _upload.canRequestScreenshots
                         ? _upload.requestScreenshots
                         : null,
-                    child: const Text(requestScreenshotsLabel),
+                    child: Text(l.requestScreenshotsLabel),
                   ),
                 ),
               ],
               if (fingerprint != null) ...[
                 const SizedBox(height: 16),
-                Text(fingerprintText(fingerprint)),
+                Text(l.fingerprintText(fingerprint)),
                 const SizedBox(height: 4),
-                Text(lostKeyText, style: theme.textTheme.bodySmall),
+                Text(l.lostKeyText, style: theme.textTheme.bodySmall),
               ],
             ],
           ),

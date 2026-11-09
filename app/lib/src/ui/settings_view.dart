@@ -1,9 +1,11 @@
-/// The settings: the folders, the switches and the version.
+/// The settings: the folders, the switches, the language and the version.
 library;
 
 import 'package:flutter/material.dart';
 import 'package:memories_core/memories_core.dart';
 
+import '../../l10n/app_localizations.dart';
+import '../l10n/app_locale.dart';
 import '../platform/services.dart';
 import '../settings/settings_controller.dart';
 import '../version.dart';
@@ -23,6 +25,7 @@ class SettingsView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l = AppLocalizations.of(context);
     return ListenableBuilder(
       listenable: settings,
       builder: (context, _) {
@@ -34,9 +37,9 @@ class SettingsView extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 _FolderTile(
-                  title: 'WoW folder',
+                  title: l.wowFolderTitle,
                   path: s.flavorDir,
-                  semantics: 'Change the WoW folder',
+                  semantics: l.changeWowFolderSemantics,
                   onChange: () => changeWowFolder(
                     context,
                     settings: settings,
@@ -45,9 +48,9 @@ class SettingsView extends StatelessWidget {
                   ),
                 ),
                 _FolderTile(
-                  title: 'Backup folder',
+                  title: l.backupFolderTitle,
                   path: s.backupRoot,
-                  semantics: 'Change the backup folder',
+                  semantics: l.changeBackupFolderSemantics,
                   onChange: () => changeBackupFolder(
                     context,
                     settings: settings,
@@ -66,11 +69,35 @@ class SettingsView extends StatelessWidget {
                     settings.settings.copyWith(startAtLogin: v),
                   ),
                 ),
+                ListTile(
+                  title: Text(l.languageTitle),
+                  trailing: DropdownButton<String?>(
+                    key: const ValueKey('language'),
+                    value: s.language,
+                    onChanged: (code) => settings.update(
+                      settings.settings.copyWith(
+                        language: code,
+                        clearLanguage: code == null,
+                      ),
+                    ),
+                    items: [
+                      DropdownMenuItem(
+                        value: null,
+                        child: Text(l.languageSystem),
+                      ),
+                      for (final code in appLanguageCodes)
+                        DropdownMenuItem(
+                          value: code,
+                          child: Text(appLanguageNames[code]!),
+                        ),
+                    ],
+                  ),
+                ),
                 const Divider(),
                 ListTile(
-                  title: const Text('Version'),
+                  title: Text(l.versionTitle),
                   subtitle: Text(
-                    'WoW Journey $appVersion, ${describeCore()}',
+                    l.versionText(appVersion, describeCore()),
                     style: theme.textTheme.bodyMedium,
                   ),
                 ),
@@ -97,20 +124,23 @@ class _FolderTile extends StatelessWidget {
   final VoidCallback onChange;
 
   @override
-  Widget build(BuildContext context) => Padding(
-    padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-    child: Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(title, style: Theme.of(context).textTheme.titleMedium),
-        const SizedBox(height: 4),
-        Text(path ?? 'Not set'),
-        const SizedBox(height: 8),
-        OutlinedButton(
-          onPressed: onChange,
-          child: Text('Change', semanticsLabel: semantics),
-        ),
-      ],
-    ),
-  );
+  Widget build(BuildContext context) {
+    final l = AppLocalizations.of(context);
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(title, style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 4),
+          Text(path ?? l.notSet),
+          const SizedBox(height: 8),
+          OutlinedButton(
+            onPressed: onChange,
+            child: Text(l.change, semanticsLabel: semantics),
+          ),
+        ],
+      ),
+    );
+  }
 }

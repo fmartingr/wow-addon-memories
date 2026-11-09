@@ -5,9 +5,9 @@ import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
 import 'package:wow_journey/src/settings/settings.dart';
-import 'package:wow_journey/src/ui/messages.dart';
 
 import 'support/fakes.dart';
+import 'support/texts.dart';
 
 const String site = 'https://wowjourney.xyz';
 
@@ -63,7 +63,7 @@ void main() {
       tester,
     ) async {
       await _openSettings(tester, _fakes());
-      expect(find.text(websiteRegistrationTitle), findsOneWidget);
+      expect(find.text(en.registrationTitle), findsOneWidget);
       expect(
         tester.widget<TextField>(_field(websiteAddressLabel)).controller!.text,
         defaultSite,
@@ -141,12 +141,7 @@ void main() {
       await tester.enterText(_field(inviteCodeLabel), 'nope');
       await tester.tap(_button(registerLabel));
       await tester.pumpAndSettle();
-      expect(
-        find.text(
-          'This invite code is not valid. Ask the website admin for a new one.',
-        ),
-        findsOneWidget,
-      );
+      expect(find.text(en.errInviteInvalid), findsOneWidget);
       expect(_uploadSwitch(tester).onChanged, isNull);
     });
 
@@ -216,11 +211,11 @@ void main() {
     ) async {
       final fakes = _fakes(registered: true);
       await _openSettings(tester, fakes);
-      expect(find.text(screenshotsText('none')), findsOneWidget);
+      expect(find.text(screenshotsLine('none')), findsOneWidget);
       await tester.tap(_button(requestScreenshotsLabel));
       await tester.pumpAndSettle();
       expect(fakes.upload.calls, contains('requestScreenshots $site'));
-      expect(find.text(screenshotsText('pending')), findsOneWidget);
+      expect(find.text(screenshotsLine('pending')), findsOneWidget);
       expect(_enabled(tester, _button(requestScreenshotsLabel)), isFalse);
     });
 
@@ -231,7 +226,7 @@ void main() {
         tester,
         _fakes(registered: true, screenshots: 'approved'),
       );
-      expect(find.text(screenshotsText('approved')), findsOneWidget);
+      expect(find.text(screenshotsLine('approved')), findsOneWidget);
       expect(_enabled(tester, _button(requestScreenshotsLabel)), isFalse);
     });
   });
@@ -370,7 +365,7 @@ void main() {
       await openTab(tester, 'Website');
       await tester.tap(find.text(uploadNowLabel));
       await tester.pumpAndSettle();
-      expect(find.textContaining('clock of this computer'), findsOneWidget);
+      expect(find.textContaining('clock of your computer'), findsOneWidget);
       expect(find.textContaining('Exception'), findsNothing);
     });
 
@@ -392,7 +387,10 @@ void main() {
       await tester.tap(find.text(uploadNowLabel));
       await tester.pumpAndSettle();
       await openTab(tester, 'Overview');
-      expect(find.textContaining('did not accept the request'), findsOneWidget);
+      expect(
+        find.textContaining('did not accept the signature'),
+        findsOneWidget,
+      );
       await tester.tap(find.text(showWebsiteLabel));
       await tester.pumpAndSettle();
       expect(find.text(uploadNowLabel), findsOneWidget);

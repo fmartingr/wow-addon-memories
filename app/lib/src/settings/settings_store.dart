@@ -9,14 +9,19 @@ import 'package:path/path.dart' as p;
 
 import 'settings.dart';
 
-/// The text the app shows when it could not read the settings file.
-const String damagedSettingsNotice =
-    'Your settings file was damaged, so the app started with the default '
-    'settings. Check your folders and switches.';
+/// A message about the settings file. The screens turn it into text in the
+/// language of the app.
+enum SettingsNotice {
+  /// The file could not be read, so the app started with the defaults.
+  damaged,
+
+  /// The file could not be written.
+  saveFailed,
+}
 
 /// The settings that [SettingsStore.load] read, and a notice for the user
 /// when the file could not be used.
-typedef LoadedSettings = ({Settings settings, String? notice});
+typedef LoadedSettings = ({Settings settings, SettingsNotice? notice});
 
 /// Where the settings live.
 abstract interface class SettingsStore {
@@ -47,13 +52,13 @@ class FileSettingsStore implements SettingsStore {
       final file = await _file();
       if (await file.exists()) text = await file.readAsString();
     } on Exception {
-      return (settings: const Settings(), notice: damagedSettingsNotice);
+      return (settings: const Settings(), notice: SettingsNotice.damaged);
     }
     if (text == null) return (settings: const Settings(), notice: null);
     try {
       return (settings: Settings.fromJson(jsonDecode(text)), notice: null);
     } on FormatException {
-      return (settings: const Settings(), notice: damagedSettingsNotice);
+      return (settings: const Settings(), notice: SettingsNotice.damaged);
     }
   }
 
