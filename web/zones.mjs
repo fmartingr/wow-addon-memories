@@ -1,6 +1,6 @@
 // Zone geometry of the world map: W and H are the size of the world picture in world units, ZONES holds the zone
 // rectangles [x0, x1, y0, y1] of the game's UiMapAssignment table (from OpenMap), and CONT the rectangles of the two
-// continents. Made by map-art/tools/build_map.py. A zone's local 0..10000 coordinates map linearly onto its
+// continents. Made by the map art build from OpenMap. A zone's local 0..10000 coordinates map linearly onto its
 // rectangle. This file is tracked so that the viewer places points without the map art.
 export const W = 1002;
 export const H = 668;

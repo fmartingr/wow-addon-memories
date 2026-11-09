@@ -8,8 +8,7 @@ JSONL files for a website. Both run the same gather of the Dart core `packages/m
 The full design is in [`specs/2026-11-06-memories-addon-set.md`](specs/2026-11-06-memories-addon-set.md). Every kind
 of journal line and its fields are in [`docs/kinds.md`](docs/kinds.md).
 
-> Memories takes no screenshots of its own; use
-> Paparazzi for that.
+> Memories takes no screenshots of its own; use Paparazzi for that.
 
 ## The addons
 
@@ -304,7 +303,7 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 | `make local-up` | Build the Docker image and run a test server on `http://localhost:8080` (admin page on `http://localhost:8081`, open registration, data in a Docker volume). `make local-down` deletes it; `make local-logs` follows its log. |
 | `make companion-local` | Run the companion app with `http://localhost:8080` as the default website. |
 | `make web-lint`, `make web-test` | Check the syntax of the viewer modules in `web/`, and run the `node --test` suite of the viewer logic with its coverage threshold (needs Node 24). |
-| `make web-assets MAP_SRC=...` | Copy the map art from a map-art checkout into `web/map/` (the art is not in git). |
+| `make web-assets MAP_SRC=...` | Copy the map art from a map art folder into `web/map/` (the art is not in git). |
 | `make clean` | Remove the coverage files and `app/build/`. |
 
 ## Layout

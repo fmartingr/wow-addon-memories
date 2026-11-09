@@ -186,8 +186,8 @@ install: ## Copy each addon folder into WOW_DIR (a flavor folder)
 clean: ## Remove build output
 	rm -rf luacov.*.out $(CORE)/coverage app/build app/coverage server/coverage.out build/memories-server
 
-web-assets: ## Copy the map art from MAP_SRC (a map art folder) into web/map/
-	@if [ ! -f "$(MAP_SRC)/assets/world.js" ]; then echo "web-assets: MAP_SRC must be a map-art checkout with assets/world.js, for example MAP_SRC=~/Code/map-art" >&2; exit 2; fi
+web-assets: ## Copy the map art from MAP_SRC (a map art folder with assets/world.js) into web/map/
+	@if [ ! -f "$(MAP_SRC)/assets/world.js" ]; then echo "web-assets: MAP_SRC must be a map art folder with assets/world.js, for example MAP_SRC=~/Code/map-art" >&2; exit 2; fi
 	rm -rf web/map
 	mkdir -p web/map
 	cp -R "$(MAP_SRC)/assets/art" "$(MAP_SRC)/assets/mini" "$(MAP_SRC)/assets/tiles" "$(MAP_SRC)/assets/world.js" web/map/

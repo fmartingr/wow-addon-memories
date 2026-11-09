@@ -86,7 +86,7 @@ The deliverable is a new viewer in `web/`, served by the Go server, with the map
 |---|---|
 | Port the map engine of `stash@{0}` (commit `3f811e4`, `web/app.js`, `web/style.css`, `web/index.html`) into modules. | The user asked for the map "like the other we have"; it already has tiles, camera, playback and timeline. |
 | Bake the map art into the Docker image with one `COPY web/ /app/web/`. | User choice. One `COPY` of the folder does not fail when the art is absent. |
-| `make web-assets MAP_SRC=<map-art checkout>` copies `assets/{art,mini,tiles,world.js}` into `web/map/`. | The art comes from `~/Code/map-art/assets/` (built from OpenMap by its `tools/build_map.py` and `tools/build_layers.py`). |
+| `make web-assets MAP_SRC=<map art folder>` copies `assets/{art,mini,tiles,world.js}` into `web/map/`. | The art comes from `~/Code/map-art/assets/` (built from OpenMap by its `tools/build_map.py` and `tools/build_layers.py`). |
 | Track the zone geometry (`zones`, `cont`, `W`, `H`) in `web/zones.mjs`; `web/map/world.js` stays the untracked tile manifest. | Coordinates must work without the art (fallback grid, heatmap binning, tests). |
 | Server only: remove the `index.json` mode and the `make web*` targets. | User choice. One mode is simpler to build and to test. |
 | Dev loop: `make local-up` then `make upload SITE=http://localhost:8080 LATEST=...`. | User choice. Uses the existing Docker test server. |
@@ -338,7 +338,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
     hundreds of lines); keep it for errors. Write a comment that says why.
   - `make web-assets`: needs `MAP_SRC`; fail with a message when `$(MAP_SRC)/assets/world.js` is missing; `rm -rf
     web/map`, `mkdir -p web/map`, copy `$(MAP_SRC)/assets/{art,mini,tiles,world.js}` into `web/map/`. Help text:
-    "Copy the map art from MAP_SRC (a map art folder) into web/map/".
+    "Copy the map art from MAP_SRC (a map art folder with assets/world.js) into web/map/".
   - Docs: `docs/self-host.md` "Map art": the art is Blizzard's, it is not in git, run `make web-assets
     MAP_SRC=<path>` before `docker compose up -d --build`, and without it the maps show a plain grid. Do not publish the
     image.
@@ -597,7 +597,7 @@ Commit each task on its own with the repository's commit convention (Conventiona
   - `zones.mjs`: `export const W = 1002, H = 668; export const ZONES = {...}; export const CONT = {...}` with the
     `zones` and `cont` objects copied from the current `web/map/world.js` (Current State lists them). Write a header
     comment: the data is the zone rectangles of the game's UiMapAssignment table, from OpenMap, by
-    `map-art/tools/build_map.py`.
+    the map art build (`tools/build_map.py`).
   - `lib/geo.mjs`: `toWorld(m, x, y)` as the stash (`r[0] + x / 10000 * (r[1] - r[0])`, same for y); null for an
     unknown map or a null coordinate. `zoneAt(wx, wy)` (smallest zone rect that holds the point, type 3 first).
   - `lib/model.mjs` `buildModel(char, steps, trail)`: port `buildModel` of the stash without the purse. The played

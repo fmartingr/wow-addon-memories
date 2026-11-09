@@ -146,8 +146,8 @@ plain grid with the zone outlines and the notice "Map art is not installed on th
 
 To add the art:
 
-1. Check out `map-art` and build its map art (see its README, "Build the map art").
-2. Run `make web-assets MAP_SRC=<path of the map-art checkout>` in this repository.
+1. Get a map art folder: `assets/art/`, `assets/mini/`, `assets/tiles/` and `assets/world.js`, built from OpenMap.
+2. Run `make web-assets MAP_SRC=<path of the map art folder>` in this repository.
 3. Run `docker compose up -d --build`. The image copies the whole `web/` folder, `web/map/` included.
 
 Do not publish an image that has the art in it.
