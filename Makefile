@@ -159,12 +159,12 @@ export: ## Run the converter on WOW_DIR (a flavor folder); DIST, BACKUP and DEFA
 	fvm dart run $(CORE)/bin/memories_export.dart --wow-dir "$(WOW_DIR)" \
 		$(if $(DIST),--dist "$(DIST)") $(if $(BACKUP),--backup "$(BACKUP)") $(if $(DEFAULT),--default "$(DEFAULT)")
 
-upload: ## Run memories-upload for SITE; LATEST, KEY, STATE, INVITE, DELETE and REQUEST_SCREENSHOTS=1 are optional
+upload: ## Run memories-upload for SITE; LATEST, KEY, STATE, INVITE, DELETE, ONLY (paths separated by spaces) and REQUEST_SCREENSHOTS=1 are optional
 	@if [ -z "$${SITE:-}" ]; then echo "SITE is required, for example https://wowjourney.xyz" >&2; exit 2; fi
 	@fvm dart pub get --directory=$(CORE) >/dev/null
 	fvm dart run $(CORE)/bin/memories_upload.dart --site "$(SITE)" \
 		$(if $(LATEST),--latest "$(LATEST)") $(if $(KEY),--key "$(KEY)") $(if $(STATE),--state "$(STATE)") \
-		$(if $(INVITE),--invite "$(INVITE)") $(if $(DELETE),--delete "$(DELETE)") $(if $(filter 1,$(REQUEST_SCREENSHOTS)),--request-screenshots)
+		$(if $(INVITE),--invite "$(INVITE)") $(if $(DELETE),--delete "$(DELETE)") $(foreach path,$(ONLY),--only "$(path)") $(if $(filter 1,$(REQUEST_SCREENSHOTS)),--request-screenshots)
 
 e2e: ## Build the server and run memories-upload against it (needs go, fvm, curl, jq, python3)
 	bash scripts/e2e-upload.sh

@@ -51,30 +51,38 @@ void main() {
     expect(site.shots, isEmpty);
   });
 
-  test('the removed set round trips, sorted, and markRemoved forgets', () {
-    final s = UploadState.empty();
-    s.site(a)
+  test('unselect forgets what was sent and drops the selection', () {
+    final site = UploadState.empty().site(a)
+      ..select(['wow/eu/r/a', 'wow/eu/r/z'])
       ..sent['wow/eu/r/z'] = '1'
-      ..shots['wow/eu/r/z'] = {'f': 'g'}
-      ..markRemoved('wow/eu/r/z')
-      ..markRemoved('wow/eu/r/a');
-    expect(s.site(a).sent, isEmpty);
-    expect(s.site(a).shots, isEmpty);
+      ..shots['wow/eu/r/z'] = {'f': 'g'};
+    site.unselect('wow/eu/r/z');
+    expect(site.sent, isEmpty);
+    expect(site.shots, isEmpty);
+    expect(site.selected, {'wow/eu/r/a'});
+  });
+
+  test('the selection round trips, sorted, even when it is empty', () {
+    final s = UploadState.empty();
+    s.site(a).select(['wow/eu/r/z', 'wow/eu/r/a']);
+    s.site(b).select([]);
     s.save(file);
-    final json = jsonDecode(file.readAsStringSync()) as Map;
-    expect((json['sites'] as Map)['https://a.example']['removed'], [
+    final sites = (jsonDecode(file.readAsStringSync()) as Map)['sites'] as Map;
+    expect(sites['https://a.example']['selected'], [
       'wow/eu/r/a',
       'wow/eu/r/z',
     ]);
-    expect(UploadState.load(file).site(a).removed, {
-      'wow/eu/r/a',
-      'wow/eu/r/z',
-    });
+    expect(sites['https://b.example']['selected'], <String>[]);
+    final back = UploadState.load(file);
+    expect(back.site(a).selected, {'wow/eu/r/a', 'wow/eu/r/z'});
+    expect(back.site(b).selected, isEmpty);
+    expect(back.site(b).selectionSet, isTrue);
   });
 
-  test('an empty removed set is not written, and old files load', () {
+  test('a site that never had a selection writes none', () {
     final s = UploadState.empty();
     s.site(a).registered = true;
+    expect(s.site(a).selected, isEmpty);
     s.save(file);
     final json = jsonDecode(file.readAsStringSync()) as Map;
     expect((json['sites'] as Map)['https://a.example'], {
@@ -83,7 +91,44 @@ void main() {
       'sent': <String, Object?>{},
       'shots': <String, Object?>{},
     });
-    expect(UploadState.load(file).site(a).removed, isEmpty);
+  });
+
+  test('a file with no selection selects the characters it already sent', () {
+    file.writeAsStringSync(
+      jsonEncode({
+        'v': 1,
+        'sites': {
+          'https://a.example': {
+            'registered': true,
+            'screenshotsApproved': false,
+            'sent': {'wow/eu/r/a': '1', 'wow/eu/r/b': '2'},
+            'shots': <String, Object?>{},
+          },
+          'https://b.example': {'registered': true},
+        },
+      }),
+    );
+    final s = UploadState.load(file);
+    expect(s.site(a).selected, {'wow/eu/r/a', 'wow/eu/r/b'});
+    expect(s.site(b).selected, isEmpty);
+    s.save(file);
+    final back = UploadState.load(file);
+    expect(back.site(a).selected, {'wow/eu/r/a', 'wow/eu/r/b'});
+  });
+
+  test('a stored selection is not widened by what was sent', () {
+    file.writeAsStringSync(
+      jsonEncode({
+        'v': 1,
+        'sites': {
+          'https://a.example': {
+            'sent': {'wow/eu/r/a': '1', 'wow/eu/r/b': '2'},
+            'selected': ['wow/eu/r/a'],
+          },
+        },
+      }),
+    );
+    expect(UploadState.load(file).site(a).selected, {'wow/eu/r/a'});
   });
 
   test('a damaged file starts fresh with a warning', () {
@@ -103,7 +148,7 @@ void main() {
           'https://a.example': {
             'registered': 'yes',
             'sent': {'x': 1, 'y': 'ok'},
-            'removed': ['wow/eu/r/n', 3],
+            'selected': ['wow/eu/r/n', 3],
             'shots': {
               'x': 5,
               'z': {'f': 'g', 'h': 2},
@@ -121,21 +166,42 @@ void main() {
       'x': <String, String>{},
       'z': {'f': 'g'},
     });
-    expect(s.site(a).removed, {'wow/eu/r/n'});
+    expect(s.site(a).selected, {'wow/eu/r/n'});
     expect(s.site(b).registered, isFalse);
-    expect(s.site(b).removed, isEmpty);
+    expect(s.site(b).selected, isEmpty);
   });
 
-  test('a removed field that is not a list is an empty set', () {
+  test('a selected field that is not a list counts as no selection', () {
     file.writeAsStringSync(
       jsonEncode({
         'v': 1,
         'sites': {
-          'https://a.example': {'removed': 'wow/eu/r/n'},
+          'https://a.example': {
+            'selected': 'wow/eu/r/n',
+            'sent': {'wow/eu/r/m': '1'},
+          },
         },
       }),
     );
-    expect(UploadState.load(file).site(a).removed, isEmpty);
+    expect(UploadState.load(file).site(a).selected, {'wow/eu/r/m'});
+  });
+
+  test('the removed field of the earlier format is ignored', () {
+    file.writeAsStringSync(
+      jsonEncode({
+        'v': 1,
+        'sites': {
+          'https://a.example': {
+            'removed': ['wow/eu/r/n'],
+            'sent': {'wow/eu/r/m': '1'},
+          },
+        },
+      }),
+    );
+    final s = UploadState.load(file);
+    expect(s.site(a).selected, {'wow/eu/r/m'});
+    s.save(file);
+    expect(file.readAsStringSync(), isNot(contains('removed')));
   });
 
   test('a file that is not UTF-8 text starts fresh with a warning', () {
@@ -145,7 +211,7 @@ void main() {
     expect(s.site(a).sent, isEmpty);
   });
 
-  test('forgetKey unregisters every site and keeps the removed set', () {
+  test('forgetKey unregisters every site and keeps the selection', () {
     final s = UploadState.empty();
     for (final site in [a, b]) {
       s.site(site)
@@ -153,7 +219,7 @@ void main() {
         ..screenshotsApproved = true
         ..sent['wow/eu/r/n'] = 'abc'
         ..shots['wow/eu/r/n'] = {'f.jpg': 'def'}
-        ..markRemoved('wow/eu/r/z');
+        ..select(['wow/eu/r/z']);
     }
     s.forgetKey();
     s.save(file);
@@ -163,7 +229,7 @@ void main() {
       expect(back.site(site).screenshotsApproved, isFalse);
       expect(back.site(site).sent, isEmpty);
       expect(back.site(site).shots, isEmpty);
-      expect(back.site(site).removed, {'wow/eu/r/z'});
+      expect(back.site(site).selected, {'wow/eu/r/z'});
     }
   });
 }

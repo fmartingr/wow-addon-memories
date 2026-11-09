@@ -314,8 +314,17 @@ class FakeUploadService implements UploadService {
   final List<String> calls = [];
   final List<(String, String)> syncs = [];
 
-  /// The `resendRemoved` argument of each sync.
-  final List<bool> resends = [];
+  /// The selection of each sync.
+  final List<Set<String>> syncSelections = [];
+
+  /// The character paths chosen for each site, as the state file keeps them.
+  final Map<String, Set<String>> selections = {};
+
+  /// Every selection that [setSelected] saved, in order.
+  final List<Set<String>> savedSelections = [];
+
+  /// A save of the selection that fails with this error.
+  Object? selectError;
   final List<(String, String?)> registrations = [];
   final List<(String, String)> deletions = [];
 
@@ -325,6 +334,7 @@ class FakeUploadService implements UploadService {
     return (
       registered: registeredSites.contains(site),
       fingerprint: fingerprint,
+      selected: {...?selections[site]},
     );
   }
 
@@ -354,14 +364,14 @@ class FakeUploadService implements UploadService {
   @override
   Future<SyncReport> sync(
     String site,
-    String latestDir, {
-    bool resendRemoved = false,
+    String latestDir,
+    Set<String> selected, {
     void Function(int done, int total)? onProgress,
   }) {
     this.onProgress = onProgress;
     calls.add('sync $site');
     syncs.add((site, latestDir));
-    resends.add(resendRemoved);
+    syncSelections.add({...selected});
     if (syncError != null) return Future.error(syncError!);
     if (pendingSync != null) return pendingSync!.future;
     return Future.value(
@@ -370,10 +380,19 @@ class FakeUploadService implements UploadService {
   }
 
   @override
+  Future<void> setSelected(String site, Set<String> selected) async {
+    calls.add('setSelected $site');
+    if (selectError != null) throw selectError!;
+    selections[site] = {...selected};
+    savedSelections.add({...selected});
+  }
+
+  @override
   Future<void> delete(String site, String path) async {
     calls.add('delete $site $path');
     deletions.add((site, path));
     if (deleteError != null) throw deleteError!;
+    selections[site]?.remove(path);
     meInfo = MeInfo(
       screenshots: meInfo.screenshots,
       characters: [

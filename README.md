@@ -108,14 +108,17 @@ Releases are cut as described in [`docs/releasing.md`](docs/releasing.md).
 - **Website tab:** the Registration panel has the website address (default `https://wowjourney.xyz`; only
   `https://`, or `http://` for `localhost`, `127.0.0.1` and `[::1]`), a Check button, the registration (an invite code,
   or one click on a website with open registration), the Upload switch (off by default, and it stays off until the key
-  is registered), Request screenshots, and the key fingerprint with a Copy button and Make a new key. With Upload on, the app sends the journey after each
-  gather. The Website panel above it has Upload now, the last result, and for each uploaded character its
-  link with Copy link and Remove from website. A removed character is not uploaded again after a gather; Upload now
-  sends every removed character again. Character pages are unlisted: anybody with the link can open them. The
+  is registered), Request screenshots, and the key fingerprint with a Copy button and Make a new key. With Upload on, the app sends the journey of the ticked characters after each
+  gather. The Website panel above it lists every character of the backup folder with a box: you choose which
+  characters to upload (Select all and Select none help), and until you tick one the card says "Choose the characters
+  to upload." and Upload now is disabled. A character gathered later is not uploaded until you tick it. The choice is
+  kept for each website in `upload-state.json`. Unticking a character only stops later uploads; the page stays on the
+  website. Each uploaded character shows its link with Copy link and Remove from website, which deletes the page and
+  unticks the character. Character pages are unlisted: anybody with the link can open them. The
   key is `upload-key.json` and the state `upload-state.json`, in the app support folder; after a reinstall the website
   admin moves your characters to the new key. Make a new key is for a key that the website blocked or refused: it
   keeps the old key as `upload-key.<UTC time>.json` next to it, makes a new one, turns Upload off and forgets every
-  registration, so you register again and the app sends everything again. A build can set another default address with
+  registration, so you register again and the app sends the ticked characters again. A build can set another default address with
   `--dart-define=WOWJOURNEY_SITE=http://localhost:8080`.
 - **Tray:** the tray icon has the menu Gather now, Open window, Open backup folder and Quit. Closing the window hides
   it to the tray; Quit stops Watch and ends the app. A gather from the tray leaves a hidden window hidden. When there
@@ -189,7 +192,7 @@ API of [the server](#the-server). It is pure Dart, so it needs no Flutter.
 ```sh
 make upload SITE=https://wowjourney.xyz LATEST=dist-characters [INVITE=CODE] [KEY=FILE] [STATE=FILE] [DELETE=PATH] [REQUEST_SCREENSHOTS=1]
 # or
-fvm dart run packages/memories_core/bin/memories_upload.dart --site https://wowjourney.xyz --latest dist-characters [--invite CODE] [--key FILE] [--state FILE] [--delete PATH] [--request-screenshots]
+fvm dart run packages/memories_core/bin/memories_upload.dart --site https://wowjourney.xyz --latest dist-characters [--invite CODE] [--key FILE] [--state FILE] [--delete PATH] [--only PATH]... [--request-screenshots]
 ```
 
 - `--site` (required) is `https://host[:port]`. Plain `http://` works for `localhost`, `127.0.0.1` and `[::1]` only.
@@ -197,12 +200,17 @@ fvm dart run packages/memories_core/bin/memories_upload.dart --site https://wowj
   missing, with mode 600 on Linux and macOS. Keep it: without it the characters you uploaded stay with the old key.
   A damaged key file stops the run and is never overwritten.
 - `--state` (default `./upload-state.json`) remembers, for each website, whether the key is registered and what was
-  sent. A damaged state file gives a warning and a fresh start.
+  sent. A damaged state file gives a warning and a fresh start. The app also keeps there the characters that the
+  player chose to upload (`selected`); a file with no such list, from before the choice existed, counts the characters
+  it already sent as chosen.
 - The tool runs these steps in this order: register (when the state says the key is not registered, or when
   `--invite` is given), upload `--latest`, `--delete PATH` (for example `wow/eu/brumamar/nandu`), and
   `--request-screenshots`. A run with no step but `--site` registers the key when the state says it is not
   registered, and otherwise does nothing.
-- `--latest` uploads each character whose data changed since the last run and reports the others as `unchanged`. When
+- `--latest` uploads each character whose data changed since the last run and reports the others as `unchanged`. It
+  sends every character of the folder unless `--only PATH` (repeat it for more characters, for example
+  `--only wow/eu/brumamar/nandu`) names some: the others are skipped, and a path that matches no character fails the
+  run. The tool ignores the selection that the app keeps in the same state file. When
   the website has approved screenshots for the key, it also uploads each screenshot that a record names. An approval
   that comes after the first upload sends each character once more, so the website stores the screenshot links.
 - The tool keeps to about 25 signed requests a minute (the server allows 30). A `429` or `503` is waited out with its
@@ -300,7 +308,7 @@ GPL-3.0-or-later. See [`LICENSE`](LICENSE).
 | `make install WOW_DIR=...` | Copy each addon folder into the game. |
 | `make link WOW_DIR=...` | Link each addon folder into the game. |
 | `make export WOW_DIR=...` | Run `memories-export`; `DIST`, `BACKUP` and `DEFAULT` set `--dist`, `--backup` and `--default`. |
-| `make upload SITE=...` | Run `memories-upload`; `LATEST`, `KEY`, `STATE`, `INVITE`, `DELETE` and `REQUEST_SCREENSHOTS=1` set the matching flags. |
+| `make upload SITE=...` | Run `memories-upload`; `LATEST`, `KEY`, `STATE`, `INVITE`, `DELETE`, `ONLY` (paths separated by spaces) and `REQUEST_SCREENSHOTS=1` set the matching flags. |
 | `make e2e` | Build the server, start it on a temporary folder and run `memories-upload` against it: upload, page, merge, screenshot approval and delete (needs `go`, `fvm`, `curl`, `jq` and `python3`; CI runs it). |
 | `make local-up` | Build the Docker image and run a test server on `http://localhost:8080` (admin page on `http://localhost:8081`, open registration, data in a Docker volume). `make local-down` deletes it; `make local-logs` follows its log. |
 | `make companion-local` | Run the companion app with `http://localhost:8080` as the default website. |

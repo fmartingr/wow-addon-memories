@@ -185,6 +185,36 @@ bool isCharacterPath(String path) {
 UploadException _badFiles(String message) =>
     UploadException('bad_files', message);
 
+/// Reads `character.json` of the character folder [dir]: its text and its
+/// object. Throws an [UploadException] with code `bad_files` when it cannot be
+/// read or is not a JSON object.
+({String text, Map<String, Object?> json}) _readCharacter(Directory dir) {
+  final file = File(p.join(dir.path, 'character.json'));
+  final String text;
+  try {
+    text = utf8.decode(file.readAsBytesSync()).trim();
+  } on FileSystemException {
+    throw _badFiles('${file.path} is missing or cannot be read.');
+  } on FormatException {
+    throw _badFiles('${file.path} is not valid UTF-8 text.');
+  }
+  final Object? json;
+  try {
+    json = jsonDecode(text);
+  } on FormatException {
+    throw _badFiles('${file.path} is not valid JSON.');
+  }
+  if (json is! Map<String, Object?>) {
+    throw _badFiles('${file.path} does not hold a JSON object.');
+  }
+  return (text: text, json: json);
+}
+
+/// The web path `<flavor>/<region>/<realm>/<name>` of the character folder
+/// [dir], from its `character.json` alone. Throws like [prepareCharacter].
+String characterPathOf(Directory dir) =>
+    _characterPath(_readCharacter(dir).json, dir);
+
 /// Reads the 3 files of the character folder [dir] and builds the upload body.
 /// Throws an [UploadException] with code `bad_files` when a file is missing or
 /// is not valid JSON.
@@ -200,18 +230,7 @@ PreparedCharacter prepareCharacter(Directory dir) {
     }
   }
 
-  final characterText = read('character.json').trim();
-  final Object? character;
-  try {
-    character = jsonDecode(characterText);
-  } on FormatException {
-    throw _badFiles('${p.join(dir.path, 'character.json')} is not valid JSON.');
-  }
-  if (character is! Map<String, Object?>) {
-    throw _badFiles(
-      '${p.join(dir.path, 'character.json')} does not hold a JSON object.',
-    );
-  }
+  final (text: characterText, json: character) = _readCharacter(dir);
 
   final screenshots = <String>{};
   List<String> lines(String name, {bool journey = false}) {

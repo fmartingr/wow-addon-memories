@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
+import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 
 import 'support/fakes.dart';
@@ -18,14 +19,37 @@ const RemoteCharacter nandu = RemoteCharacter(
   updated: 1,
 );
 
+const CharacterSummary localNandu = CharacterSummary(
+  id: 'eu-brumamar-nandu',
+  name: 'nandu',
+  realm: 'Brumamar',
+  level: 70,
+  className: 'HUNTER',
+  path: 'wow/eu/brumamar/nandu',
+);
+
+CharacterSummary _local(String name) => CharacterSummary(
+  id: 'eu-brumamar-$name',
+  name: name,
+  realm: 'Brumamar',
+  level: 60,
+  path: 'wow/eu/brumamar/$name',
+);
+
+/// [local] are the characters of the backup folder, and [selected] the paths
+/// that the state file holds as chosen for the site. By default the one
+/// character of the folder is chosen.
 Fakes _fakes({
   Settings settings = readySettings,
   bool registered = false,
   List<RemoteCharacter> characters = const [],
+  List<CharacterSummary> local = const [localNandu],
+  Set<String> selected = const {'wow/eu/brumamar/nandu'},
   String screenshots = 'none',
 }) {
   final upload = FakeUploadService()
-    ..meInfo = MeInfo(screenshots: screenshots, characters: characters);
+    ..meInfo = MeInfo(screenshots: screenshots, characters: characters)
+    ..selections[settings.site] = {...selected};
   if (registered) {
     upload.registeredSites.add(settings.site);
     upload.fingerprint = '0123456789abcdef';
@@ -33,6 +57,7 @@ Fakes _fakes({
   return Fakes(
     store: FakeSettingsStore((settings: settings, notice: null)),
     discovery: FakeDiscovery(checks: {retailDir: const Valid(retail)}),
+    gather: FakeGatherService(snapshot: BackupSnapshot(characters: local)),
     upload: upload,
   );
 }
@@ -460,7 +485,9 @@ void main() {
       await tester.pumpAndSettle();
 
       expect(fakes.upload.syncs, [(site, '/backups/WoW Journey/latest')]);
-      expect(fakes.upload.resends, [true]);
+      expect(fakes.upload.syncSelections, [
+        {nandu.path},
+      ]);
       expect(find.textContaining('Last upload'), findsOneWidget);
       expect(find.text('Uploaded 1 character.'), findsOneWidget);
       expect(find.text(nandu.url), findsOneWidget);
@@ -605,7 +632,9 @@ void main() {
       await tester.pumpAndSettle();
       expect(fakes.gather.calls, hasLength(1));
       expect(fakes.upload.syncs, hasLength(1));
-      expect(fakes.upload.resends, [false]);
+      expect(fakes.upload.syncSelections, [
+        {nandu.path},
+      ]);
     });
 
     testWidgets('a gather uploads nothing when Upload is off', (tester) async {
@@ -685,6 +714,251 @@ void main() {
       await tester.pumpAndSettle();
       expect(find.textContaining('Could not reach'), findsOneWidget);
       expect(find.text(nandu.url), findsOneWidget);
+    });
+  });
+
+  group('Website tab, characters to upload', () {
+    Finder box(String name) => find.descendant(
+      of: find.widgetWithText(CheckboxListTile, name),
+      matching: find.byType(Checkbox),
+    );
+
+    bool ticked(WidgetTester tester, String name) =>
+        tester.widget<Checkbox>(box(name)).value!;
+
+    Future<void> open(
+      WidgetTester tester,
+      Fakes fakes, {
+      double? height,
+    }) async {
+      useWindow(tester, height: height ?? 2400);
+      await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
+    }
+
+    testWidgets('lists every local character with its details and a box', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        registered: true,
+        local: [localNandu, _local('rhea')],
+        selected: {nandu.path},
+      );
+      await open(tester, fakes);
+      expect(find.text(en.selectionTitle), findsOneWidget);
+      expect(find.byType(CheckboxListTile), findsNWidgets(2));
+      expect(ticked(tester, 'nandu'), isTrue);
+      expect(ticked(tester, 'rhea'), isFalse);
+      expect(find.textContaining('Brumamar · Level 70'), findsOneWidget);
+      expect(find.textContaining('Hunter'), findsOneWidget);
+      expect(find.text(en.selectionNote), findsOneWidget);
+      expect(find.text(en.selectionHint), findsNothing);
+    });
+
+    testWidgets('a character is not offered before the key is registered', (
+      tester,
+    ) async {
+      await open(tester, _fakes());
+      expect(find.byType(CheckboxListTile), findsNothing);
+      expect(find.text(en.selectionHint), findsNothing);
+    });
+
+    testWidgets('the list shows with Upload off too', (tester) async {
+      await open(tester, _fakes(registered: true));
+      expect(find.text(cardUploadOffText), findsOneWidget);
+      expect(find.byType(CheckboxListTile), findsOneWidget);
+    });
+
+    testWidgets('only an uploaded character has a link, Copy and Remove', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        registered: true,
+        characters: [nandu],
+        local: [localNandu, _local('rhea')],
+        selected: {nandu.path},
+      );
+      await open(tester, fakes);
+      expect(find.text(nandu.url), findsOneWidget);
+      expect(find.text(copyLinkLabel), findsOneWidget);
+      expect(find.text(removeFromWebsiteLabel), findsOneWidget);
+    });
+
+    testWidgets('a character on the site that the folder lacks is listed', (
+      tester,
+    ) async {
+      final fakes = _fakes(registered: true, characters: [nandu], local: []);
+      await open(tester, fakes);
+      expect(find.byType(CheckboxListTile), findsNothing);
+      expect(find.text(en.noCharacters), findsOneWidget);
+      expect(find.text(nandu.url), findsOneWidget);
+      expect(find.text(removeFromWebsiteLabel), findsOneWidget);
+    });
+
+    testWidgets('with nothing selected: the hint, and Upload now is off', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+        selected: {},
+      );
+      await open(tester, fakes);
+      expect(find.text(en.selectionHint), findsOneWidget);
+      expect(_enabled(tester, _button(uploadNowLabel)), isFalse);
+
+      await tester.tap(box('nandu'));
+      await tester.pumpAndSettle();
+      expect(find.text(en.selectionHint), findsNothing);
+      expect(_enabled(tester, _button(uploadNowLabel)), isTrue);
+    });
+
+    testWidgets('ticking and unticking save the choice and delete nothing', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        registered: true,
+        local: [localNandu, _local('rhea')],
+        selected: {},
+      );
+      await open(tester, fakes);
+      await tester.tap(box('rhea'));
+      await tester.pumpAndSettle();
+      expect(ticked(tester, 'rhea'), isTrue);
+      expect(fakes.upload.selections[site], {'wow/eu/brumamar/rhea'});
+      await tester.tap(box('rhea'));
+      await tester.pumpAndSettle();
+      expect(ticked(tester, 'rhea'), isFalse);
+      expect(fakes.upload.selections[site], isEmpty);
+      expect(fakes.upload.deletions, isEmpty);
+    });
+
+    testWidgets('Select all and Select none', (tester) async {
+      final fakes = _fakes(
+        registered: true,
+        local: [localNandu, _local('rhea'), _local('sol')],
+        selected: {nandu.path},
+      );
+      await open(tester, fakes);
+      expect(_enabled(tester, _button(en.selectAllLabel)), isTrue);
+      expect(_enabled(tester, _button(en.selectNoneLabel)), isTrue);
+
+      await tester.tap(_button(en.selectAllLabel));
+      await tester.pumpAndSettle();
+      for (final name in ['nandu', 'rhea', 'sol']) {
+        expect(ticked(tester, name), isTrue);
+      }
+      expect(_enabled(tester, _button(en.selectAllLabel)), isFalse);
+      expect(fakes.upload.selections[site], hasLength(3));
+
+      await tester.tap(_button(en.selectNoneLabel));
+      await tester.pumpAndSettle();
+      for (final name in ['nandu', 'rhea', 'sol']) {
+        expect(ticked(tester, name), isFalse);
+      }
+      expect(_enabled(tester, _button(en.selectNoneLabel)), isFalse);
+      expect(fakes.upload.selections[site], isEmpty);
+      expect(find.text(en.selectionHint), findsOneWidget);
+    });
+
+    testWidgets('Upload now sends only the ticked characters', (tester) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+        local: [localNandu, _local('rhea')],
+        selected: {'wow/eu/brumamar/rhea'},
+      );
+      await open(tester, fakes);
+      await tester.tap(find.text(uploadNowLabel));
+      await tester.pumpAndSettle();
+      expect(fakes.upload.syncSelections, [
+        {'wow/eu/brumamar/rhea'},
+      ]);
+    });
+
+    testWidgets('a character gathered later appears unticked', (tester) async {
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+      );
+      await open(tester, fakes);
+      fakes.gather.snapshot = BackupSnapshot(
+        characters: [localNandu, _local('rhea')],
+      );
+      await openTab(tester, 'Overview');
+      await tester.tap(find.text('Gather now'));
+      await tester.pumpAndSettle();
+      await openTab(tester, 'Website');
+      expect(ticked(tester, 'nandu'), isTrue);
+      expect(ticked(tester, 'rhea'), isFalse);
+      expect(fakes.upload.syncSelections.last, {nandu.path});
+    });
+
+    testWidgets('Remove from website unticks the character', (tester) async {
+      final fakes = _fakes(registered: true, characters: [nandu]);
+      await open(tester, fakes);
+      expect(ticked(tester, 'nandu'), isTrue);
+      await tester.tap(find.text(removeFromWebsiteLabel));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text(removeLabel));
+      await tester.pumpAndSettle();
+      expect(ticked(tester, 'nandu'), isFalse);
+      expect(find.text(nandu.url), findsNothing);
+      expect(fakes.upload.selections[site], isEmpty);
+      expect(find.text(removedText('nandu')), findsOneWidget);
+    });
+
+    testWidgets('25 characters scroll in the list and do not overflow', (
+      tester,
+    ) async {
+      final names = [
+        for (var i = 1; i <= 25; i++) 'char${i.toString().padLeft(2, '0')}',
+      ];
+      final fakes = _fakes(
+        settings: readySettings.copyWith(upload: true),
+        registered: true,
+        characters: [
+          for (final n in names.take(5))
+            RemoteCharacter(
+              path: 'wow/eu/brumamar/$n',
+              url: '$site/wow/eu/brumamar/$n/',
+              guid: 'Player-1-$n',
+              steps: 1,
+              updated: 1,
+            ),
+        ],
+        local: [for (final n in names) _local(n)],
+        selected: {for (final n in names.take(5)) 'wow/eu/brumamar/$n'},
+      );
+      await open(tester, fakes, height: 700);
+      expect(tester.takeException(), isNull);
+      expect(find.text('char25'), findsNothing);
+
+      await tester.dragUntilVisible(
+        find.text('char25'),
+        find.descendant(
+          of: find.byType(Card).first,
+          matching: find.byType(Scrollable),
+        ),
+        const Offset(0, -200),
+      );
+      await tester.pumpAndSettle();
+      expect(find.text('char25'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    });
+
+    testWidgets('a narrow window with large text does not overflow', (
+      tester,
+    ) async {
+      final fakes = _fakes(
+        registered: true,
+        characters: [nandu],
+        local: [localNandu, _local('rhea')],
+      );
+      useWindow(tester, width: 520, height: 800, textScale: 1.5);
+      await pumpApp(tester, fakes);
+      await openTab(tester, 'Website');
+      expect(tester.takeException(), isNull);
     });
   });
 }

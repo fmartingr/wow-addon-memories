@@ -12,9 +12,9 @@ import '../gather/gather_controller.dart';
 import '../platform/services.dart';
 import '../settings/settings_controller.dart';
 import '../theme/ak_widgets.dart';
-import '../theme/tokens.dart';
 import '../upload/upload_controller.dart';
 import '../watch/watch_controller.dart';
+import 'character_detail.dart';
 import 'folder_flow.dart';
 import 'messages.dart';
 import 'settings_view.dart';
@@ -414,35 +414,8 @@ class _HomePageState extends State<HomePage> {
             ListTile(
               leading: const Icon(Icons.person_outline),
               title: Text(c.name),
-              subtitle: _characterDetail(c, l),
+              subtitle: characterDetail(c, l),
             ),
-        ],
-      ),
-    );
-  }
-
-  /// The realm, the level and the class of a character. The class has its game colour.
-  Widget _characterDetail(CharacterSummary c, AppLocalizations l) {
-    final cls = c.className;
-    final parts = [
-      c.realm,
-      if (c.level != null) l.characterLevel(c.level!),
-    ].where((e) => e.isNotEmpty).toList();
-    final hasClass = cls != null && cls.isNotEmpty;
-    return Text.rich(
-      TextSpan(
-        children: [
-          TextSpan(text: parts.join(' · ')),
-          if (hasClass) ...[
-            if (parts.isNotEmpty) const TextSpan(text: ' · '),
-            TextSpan(
-              text: className(l, cls),
-              style: TextStyle(
-                color: classColours[cls.toUpperCase()] ?? Tokens.text,
-                fontWeight: FontWeight.w700,
-              ),
-            ),
-          ],
         ],
       ),
     );

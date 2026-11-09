@@ -13,10 +13,11 @@ class SiteState {
     this.screenshotsApproved = false,
     Map<String, String>? sent,
     Map<String, Map<String, String>>? shots,
-    Set<String>? removed,
+    Set<String>? selected,
   }) : sent = sent ?? {},
        shots = shots ?? {},
-       removed = removed ?? {};
+       selected = selected ?? {},
+       selectionSet = selected != null;
 
   /// Reads one site record, and falls back to the default of each field that
   /// is missing or of another type.
@@ -29,16 +30,20 @@ class SiteState {
         shots[e.key] = _stringMap(e.value);
       }
     }
+    final sent = _stringMap(json['sent']);
     return SiteState(
       registered: json['registered'] == true,
       screenshotsApproved: json['screenshotsApproved'] == true,
-      sent: _stringMap(json['sent']),
+      sent: sent,
       shots: shots,
-      removed: {
-        if (json['removed'] case final List<Object?> list)
-          for (final v in list)
-            if (v is String) v,
-      },
+      // A file with no selection comes from before the player chose: the
+      // characters it already sent stay selected, and nothing new is.
+      selected: json['selected'] is List<Object?>
+          ? {
+              for (final v in json['selected']! as List<Object?>)
+                if (v is String) v,
+            }
+          : sent.keys.toSet(),
     );
   }
 
@@ -57,9 +62,21 @@ class SiteState {
   /// The SHA-256 of each screenshot file sent, by character path and file.
   final Map<String, Map<String, String>> shots;
 
-  /// The character paths that the player removed from the site. An
-  /// automatic upload never sends them again; only an explicit one does.
-  final Set<String> removed;
+  /// The character paths (`flavor/region/realm/name`) that the player chose
+  /// to upload to this site. A character that is not here is not sent.
+  final Set<String> selected;
+
+  /// Whether the player or a load set [selected]. A site that never had a
+  /// selection writes none, so a file stays as small as before.
+  bool selectionSet;
+
+  /// Replaces the selection with [paths].
+  void select(Iterable<String> paths) {
+    selected
+      ..clear()
+      ..addAll(paths);
+    selectionSet = true;
+  }
 
   /// Forgets what was sent for the character at [path].
   void forget(String path) {
@@ -67,10 +84,11 @@ class SiteState {
     shots.remove(path);
   }
 
-  /// Records that the player removed the character at [path] from the site.
-  void markRemoved(String path) {
+  /// Forgets the character at [path] and stops uploading it, for a character
+  /// that left the site on purpose.
+  void unselect(String path) {
     forget(path);
-    removed.add(path);
+    selected.remove(path);
   }
 
   Map<String, Object?> toJson() => {
@@ -78,7 +96,7 @@ class SiteState {
     'screenshotsApproved': screenshotsApproved,
     'sent': sent,
     'shots': shots,
-    if (removed.isNotEmpty) 'removed': [...removed]..sort(),
+    if (selectionSet) 'selected': [...selected]..sort(),
   };
 }
 
@@ -130,9 +148,9 @@ class UploadState {
       _sites.putIfAbsent(site.toString(), SiteState.new);
 
   /// Forgets what each website knows of the key, for a new key: no site is
-  /// registered, and every character and screenshot goes out again. The
-  /// characters that the player removed stay removed: that is a wish of the
-  /// player, not a fact about the key.
+  /// registered, and every selected character and screenshot goes out again.
+  /// The selection stays: that is a wish of the player, not a fact about the
+  /// key.
   void forgetKey() {
     for (final s in _sites.values) {
       s.registered = false;

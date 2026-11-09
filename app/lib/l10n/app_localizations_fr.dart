@@ -601,7 +601,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String newKeyQuestionText(String site) {
-    return 'Faites-le seulement si le site web a bloqué ou refusé cette clé. L’app crée une nouvelle clé et garde une copie de l’ancienne. Vos personnages sur $site restent liés à l’ancienne clé. L’administrateur du site peut les déplacer vers la nouvelle clé. Inscrivez-vous ensuite à nouveau. Le site web peut demander un nouveau code d’invitation. L’app envoie à nouveau tous vos personnages. L’envoi reste désactivé jusqu’à ce que vous l’activiez.';
+    return 'Faites-le seulement si le site web a bloqué ou refusé cette clé. L’app crée une nouvelle clé et garde une copie de l’ancienne. Vos personnages sur $site restent liés à l’ancienne clé. L’administrateur du site peut les déplacer vers la nouvelle clé. Inscrivez-vous ensuite à nouveau. Le site web peut demander un nouveau code d’invitation. L’app envoie à nouveau vos personnages sélectionnés. L’envoi reste désactivé jusqu’à ce que vous l’activiez.';
   }
 
   @override
@@ -636,6 +636,22 @@ class AppLocalizationsFr extends AppLocalizations {
   @override
   String get cardUploadOff =>
       'L’envoi est désactivé. Activez l’interrupteur Envoi ci-dessous pour envoyer votre parcours.';
+
+  @override
+  String get selectionTitle => 'Personnages à envoyer';
+
+  @override
+  String get selectionHint => 'Choisissez les personnages à envoyer.';
+
+  @override
+  String get selectionNote =>
+      'Les nouveaux personnages ne sont pas envoyés tant que vous ne les cochez pas. Décocher un personnage arrête seulement les envois suivants ; rien n’est retiré du site web.';
+
+  @override
+  String get selectAllLabel => 'Tout sélectionner';
+
+  @override
+  String get selectNoneLabel => 'Ne rien sélectionner';
 
   @override
   String uploadProgress(int done, int total) {
@@ -674,18 +690,6 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get syncUpToDate => 'tout est à jour';
-
-  @override
-  String syncRemoved(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count personnages retirés ignorés (Envoyer maintenant les envoie à nouveau)',
-      one: '1 personnage retiré ignoré (Envoyer maintenant l’envoie à nouveau)',
-    );
-    return '$_temp0';
-  }
 
   @override
   String syncFailed(int count) {
@@ -736,7 +740,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get errBadState =>
-      'Le personnage a été retiré du site web, mais l’app n’a pas pu l’enregistrer, donc la prochaine collecte pourrait l’envoyer à nouveau. Vérifiez que le dossier de l’app est accessible en écriture.';
+      'L’application n’a pas pu enregistrer votre choix de personnages à envoyer. Vérifiez que l’on peut écrire dans le dossier de l’application, puis réessayez.';
 
   @override
   String get errFailed =>
@@ -876,7 +880,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String removedText(String name) {
-    return '$name a été retiré du site web. Les collectes ne l’envoient pas à nouveau ; Envoyer maintenant le fait.';
+    return '$name a été retiré du site web et décoché. Cochez-le à nouveau pour l’envoyer.';
   }
 
   @override

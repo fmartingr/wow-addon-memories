@@ -303,58 +303,90 @@ void main() {
     expect(site.callsTo('POST /api/v1/characters'), hasLength(3));
   });
 
-  test(
-    'a removed character is skipped, even when the website lost it',
-    () async {
-      await syncLatest(latest, client, state);
-      site.characters.remove(_errantes);
-      state.site(site.uri).markRemoved(_errantes);
-      final r = await syncLatest(latest, client, state);
-      expect(statuses(r), {
-        _brumamar: SyncStatus.unchanged,
-        _errantes: SyncStatus.removed,
-      });
-      expect(r.failed, isFalse);
-      expect(site.characters.containsKey(_errantes), isFalse);
-      expect(site.callsTo('POST /api/v1/characters'), hasLength(2));
-      expect(state.site(site.uri).removed, {_errantes});
-    },
-  );
-
-  test('a removed character skips its screenshots too', () async {
-    site.screenshots = 'approved';
-    state.site(site.uri).markRemoved(_brumamar);
-    final r = await syncLatest(latest, client, state);
-    expect(statuses(r)[_brumamar], SyncStatus.removed);
-    expect(r.characters.first.shots.uploaded, 0);
-    expect(site.calls.where((c) => c.method == 'PUT'), isEmpty);
+  test('a character that is not selected is skipped and never sent', () async {
+    final r = await syncLatest(latest, client, state, selected: {_brumamar});
+    expect(statuses(r), {
+      _brumamar: SyncStatus.uploaded,
+      _errantes: SyncStatus.notSelected,
+    });
+    expect(r.failed, isFalse);
+    expect(r.paused, isFalse);
+    expect(site.callsTo('POST /api/v1/characters'), hasLength(1));
+    expect(site.characters.containsKey(_errantes), isFalse);
+    expect(state.site(site.uri).sent.keys, [_brumamar]);
   });
 
-  test('resendRemoved sends removed characters and clears the set', () async {
-    state.site(site.uri).markRemoved(_errantes);
-    final r = await syncLatest(latest, client, state, resendRemoved: true);
+  test('an empty selection sends nothing', () async {
+    final r = await syncLatest(latest, client, state, selected: {});
+    expect(r.characters.map((c) => c.status).toSet(), {SyncStatus.notSelected});
+    expect(site.callsTo('POST /api/v1/characters'), isEmpty);
+  });
+
+  test('a null selection sends every character', () async {
+    final r = await syncLatest(latest, client, state);
     expect(statuses(r), {
       _brumamar: SyncStatus.uploaded,
       _errantes: SyncStatus.uploaded,
     });
-    expect(state.site(site.uri).removed, isEmpty);
-    final again = await syncLatest(latest, client, state);
-    expect(statuses(again)[_errantes], SyncStatus.unchanged);
   });
 
-  test('a failed me() keeps the removed set', () async {
-    state.site(site.uri).markRemoved(_errantes);
-    site.overrides['GET /api/v1/me'] = Reply.error(503, 'busy', 'Busy.');
-    await expectLater(
-      syncLatest(latest, client, state, resendRemoved: true),
-      throwsA(isA<UploadException>()),
+  test(
+    'a character that is not selected is not counted in the progress',
+    () async {
+      final seen = <(int, int)>[];
+      await syncLatest(
+        latest,
+        client,
+        state,
+        selected: {_errantes},
+        onProgress: (done, total) => seen.add((done, total)),
+      );
+      expect(seen, [(0, 1), (1, 1)]);
+    },
+  );
+
+  test(
+    'a character that is not selected keeps what the state remembers',
+    () async {
+      await syncLatest(latest, client, state);
+      final before = Map.of(state.site(site.uri).sent);
+      site.characters.remove(_errantes);
+      final r = await syncLatest(latest, client, state, selected: {_brumamar});
+      expect(statuses(r)[_errantes], SyncStatus.notSelected);
+      expect(state.site(site.uri).sent, before);
+      expect(site.characters.containsKey(_errantes), isFalse);
+    },
+  );
+
+  test('a character that is not selected skips its screenshots too', () async {
+    site.screenshots = 'approved';
+    final r = await syncLatest(latest, client, state, selected: {_errantes});
+    expect(statuses(r)[_brumamar], SyncStatus.notSelected);
+    expect(site.shotFiles[_brumamar], isNull);
+    expect(r.characters.first.shots.uploaded, 0);
+  });
+
+  test('a broken folder that is not selected is no failure', () async {
+    File(p.join(latest.path, 'eu-brumamar-nandu', 'journey.jsonl'))
+        .writeAsStringSync('{broken\n');
+    final r = await syncLatest(latest, client, state, selected: {_errantes});
+    expect(statuses(r), {
+      _brumamar: SyncStatus.notSelected,
+      _errantes: SyncStatus.uploaded,
+    });
+    expect(r.failed, isFalse);
+  });
+
+  test('a stop does not report a character that is not selected', () async {
+    site.overrides['POST /api/v1/characters'] = Reply.error(
+      429,
+      'rate_limited',
+      'Wait 3 seconds.',
     );
-    expect(state.site(site.uri).removed, {_errantes});
-  });
-
-  test('the removed set of one site never skips on another', () async {
-    state.site(Uri.parse('https://other.example')).markRemoved(_errantes);
-    final r = await syncLatest(latest, client, state);
-    expect(statuses(r)[_errantes], SyncStatus.uploaded);
+    final r = await syncLatest(latest, client, state, selected: {_brumamar});
+    expect(r.characters.map((c) => c.status), [
+      SyncStatus.failed,
+      SyncStatus.notSelected,
+    ]);
   });
 }

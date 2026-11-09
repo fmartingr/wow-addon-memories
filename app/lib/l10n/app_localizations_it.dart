@@ -598,7 +598,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String newKeyQuestionText(String site) {
-    return 'Fallo solo se il sito web ha bloccato o rifiutato questa chiave. L’app crea una nuova chiave e tiene una copia di quella vecchia. I tuoi personaggi su $site restano legati alla vecchia chiave. L’amministratore del sito può spostarli sulla nuova chiave. Poi registrati di nuovo. Il sito web può chiedere un nuovo codice d’invito. L’app carica di nuovo tutti i tuoi personaggi. Il caricamento resta disattivato finché non lo attivi.';
+    return 'Fallo solo se il sito web ha bloccato o rifiutato questa chiave. L’app crea una nuova chiave e tiene una copia di quella vecchia. I tuoi personaggi su $site restano legati alla vecchia chiave. L’amministratore del sito può spostarli sulla nuova chiave. Poi registrati di nuovo. Il sito web può chiedere un nuovo codice d’invito. L’app carica di nuovo i tuoi personaggi selezionati. Il caricamento resta disattivato finché non lo attivi.';
   }
 
   @override
@@ -633,6 +633,22 @@ class AppLocalizationsIt extends AppLocalizations {
   @override
   String get cardUploadOff =>
       'Il caricamento è disattivato. Attiva l’interruttore Caricamento qui sotto per inviare il tuo viaggio.';
+
+  @override
+  String get selectionTitle => 'Personaggi da caricare';
+
+  @override
+  String get selectionHint => 'Scegli i personaggi da caricare.';
+
+  @override
+  String get selectionNote =>
+      'I nuovi personaggi non vengono caricati finché non li selezioni. Deselezionare un personaggio ferma solo i caricamenti successivi; non viene rimosso nulla dal sito web.';
+
+  @override
+  String get selectAllLabel => 'Seleziona tutto';
+
+  @override
+  String get selectNoneLabel => 'Deseleziona tutto';
 
   @override
   String uploadProgress(int done, int total) {
@@ -671,17 +687,6 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get syncUpToDate => 'tutto è aggiornato';
-
-  @override
-  String syncRemoved(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: '$count personaggi rimossi saltati (Carica ora li invia di nuovo)',
-      one: '1 personaggio rimosso saltato (Carica ora lo invia di nuovo)',
-    );
-    return '$_temp0';
-  }
 
   @override
   String syncFailed(int count) {
@@ -732,7 +737,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get errBadState =>
-      'Il personaggio è stato rimosso dal sito web, ma l’app non ha potuto salvarlo, quindi la prossima raccolta potrebbe caricarlo di nuovo. Controlla che si possa scrivere nella cartella dell’app.';
+      'L’app non ha potuto salvare la tua scelta dei personaggi da caricare. Controlla che si possa scrivere nella cartella dell’app, poi riprova.';
 
   @override
   String get errFailed =>
@@ -872,7 +877,7 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String removedText(String name) {
-    return '$name è stato rimosso dal sito web. Le raccolte non lo caricano di nuovo; Carica ora sì.';
+    return '$name è stato rimosso dal sito web e deselezionato. Selezionalo di nuovo per caricarlo.';
   }
 
   @override

@@ -11,9 +11,9 @@ import '../gather/ids.dart' show idPattern;
 import 'client.dart';
 import 'state.dart';
 
-/// What happened to one character. [removed]: the player removed it from the
-/// site, so it was skipped.
-enum SyncStatus { uploaded, unchanged, failed, removed }
+/// What happened to one character. [notSelected]: the player did not choose it
+/// for this site, so it was skipped.
+enum SyncStatus { uploaded, unchanged, failed, notSelected }
 
 /// The screenshot step of one character.
 class ShotsResult {
@@ -115,10 +115,10 @@ const Set<String> _perFileCodes = {
 /// records name.
 /// [state] is changed in place; the caller saves it.
 ///
-/// A character that the player removed from the site (see
-/// [SiteState.removed]) is skipped with [SyncStatus.removed], unless
-/// [resendRemoved] is true: an explicit upload then sends it again and clears
-/// the removed set of the site.
+/// [selected] holds the character paths to send (see [SiteState.selected]); a
+/// character outside it is skipped with [SyncStatus.notSelected], is not
+/// counted in the progress and is left as the state has it. Null sends every
+/// character.
 ///
 /// A failure of one character does not stop the others, except a failure that
 /// every next request would get too (a rate limit, a busy website, the network,
@@ -133,13 +133,12 @@ Future<SyncReport> syncLatest(
   Directory latest,
   UploadClient client,
   UploadState state, {
-  bool resendRemoved = false,
+  Set<String>? selected,
   void Function(int done, int total)? onProgress,
 }) async {
   final entries = _readIndex(latest);
   final site = state.site(client.site);
   final me = await client.me();
-  if (resendRemoved) site.removed.clear();
   final approved = me.screenshotsApproved;
   if (approved != site.screenshotsApproved) {
     // The website keeps the screenshot field of a record only for an approved
@@ -154,13 +153,27 @@ Future<SyncReport> syncLatest(
 
   final held = {for (final c in me.characters) c.path};
   final progress = _Progress(
-    _countRequests(latest, entries, site, approved, held),
+    _countRequests(latest, entries, site, approved, held, selected),
     onProgress,
   );
   onProgress?.call(0, progress.total);
   final results = <CharacterResult>[];
   UploadException? stop;
   for (final entry in entries) {
+    final skipped = _unselectedPath(
+      Directory(p.join(latest.path, entry)),
+      selected,
+    );
+    if (skipped != null) {
+      results.add(
+        CharacterResult(
+          id: entry,
+          path: skipped,
+          status: SyncStatus.notSelected,
+        ),
+      );
+      continue;
+    }
     if (stop != null) {
       results.add(
         CharacterResult(
@@ -235,16 +248,18 @@ int _countRequests(
   SiteState site,
   bool approved,
   Set<String> held,
+  Set<String>? selected,
 ) {
   var total = 0;
   for (final id in entries) {
+    final dir = Directory(p.join(latest.path, id));
+    if (_unselectedPath(dir, selected) != null) continue;
     final PreparedCharacter prepared;
     try {
-      prepared = prepareCharacter(Directory(p.join(latest.path, id)));
+      prepared = prepareCharacter(dir);
     } on UploadException {
       continue;
     }
-    if (site.removed.contains(prepared.path)) continue;
     final lost = !held.contains(prepared.path);
     if (lost || site.sent[prepared.path] != prepared.sha256) total++;
     if (!approved) continue;
@@ -252,6 +267,19 @@ int _countRequests(
     total += prepared.screenshots.where((n) => sent?[n] == null).length;
   }
   return total;
+}
+
+/// The path of the character folder [dir] when [selected] leaves it out, else
+/// null. A folder that cannot be read has no path to compare, so it is not
+/// skipped: its failure is reported like any other.
+String? _unselectedPath(Directory dir, Set<String>? selected) {
+  if (selected == null) return null;
+  try {
+    final path = characterPathOf(dir);
+    return selected.contains(path) ? null : path;
+  } on UploadException {
+    return null;
+  }
 }
 
 Future<CharacterResult> _syncCharacter(
@@ -273,13 +301,6 @@ Future<CharacterResult> _syncCharacter(
       path: '',
       status: SyncStatus.failed,
       error: e,
-    );
-  }
-  if (site.removed.contains(prepared.path)) {
-    return CharacterResult(
-      id: id,
-      path: prepared.path,
-      status: SyncStatus.removed,
     );
   }
   // A character removed on the website (another computer, the admin, a reset)

@@ -173,29 +173,84 @@ void main() {
     expect(site.shotFiles[_path], hasLength(2));
   });
 
-  test('delete removes the character and forgets it', () async {
+  test('delete removes the character, forgets it and unselects it', () async {
     await run(['--latest', latest]);
+    final chosen = UploadState.load(File(statePath));
+    chosen.site(site.uri).select([_path, 'wow/eu/los-errantes/nandu']);
+    chosen.save(File(statePath));
     final r = await run(['--delete', _path]);
     expect(r.code, 0, reason: r.err);
     expect(r.out, contains('Removed $_path'));
-    expect(UploadState.load(File(statePath)).site(site.uri).sent.keys, [
-      'wow/eu/los-errantes/nandu',
-    ]);
+    final after = UploadState.load(File(statePath)).site(site.uri);
+    expect(after.sent.keys, ['wow/eu/los-errantes/nandu']);
+    expect(after.selected, {'wow/eu/los-errantes/nandu'});
     final again = await run(['--latest', latest]);
     expect(again.out, contains('uploaded $_path'));
     expect(again.out, contains('unchanged wow/eu/los-errantes/nandu'));
   });
 
-  test('--latest also sends a character that the app removed', () async {
-    await run(['--latest', latest]);
-    final state = UploadState.load(File(statePath));
-    state.site(site.uri).markRemoved(_path);
-    state.save(File(statePath));
-    site.characters.remove(_path);
-    final r = await run(['--latest', latest]);
+  test(
+    '--latest with no --only sends every character, selected or not',
+    () async {
+      await run(['--latest', latest]);
+      final state = UploadState.load(File(statePath));
+      state.site(site.uri).select([]);
+      state.save(File(statePath));
+      site.characters.remove(_path);
+      final r = await run(['--latest', latest]);
+      expect(r.code, 0, reason: r.err);
+      expect(r.out, contains('uploaded $_path'));
+      expect(r.out, contains('Done: 1 uploaded, 1 unchanged, 0 failed.'));
+    },
+  );
+
+  test('--only sends just the characters it names', () async {
+    final r = await run(['--latest', latest, '--only', _path]);
     expect(r.code, 0, reason: r.err);
     expect(r.out, contains('uploaded $_path'));
-    expect(UploadState.load(File(statePath)).site(site.uri).removed, isEmpty);
+    expect(r.out, contains('skipped wow/eu/los-errantes/nandu: not in --only'));
+    expect(
+      r.out,
+      contains('Done: 1 uploaded, 0 unchanged, 0 failed, 1 skipped.'),
+    );
+    expect(site.characters.keys, [_path]);
+  });
+
+  test('--only repeats', () async {
+    final r = await run([
+      '--latest',
+      latest,
+      '--only',
+      _path,
+      '--only=wow/eu/los-errantes/nandu',
+    ]);
+    expect(r.code, 0, reason: r.err);
+    expect(site.characters.keys.toSet(), {_path, 'wow/eu/los-errantes/nandu'});
+  });
+
+  test('--only with a path that matches no character fails', () async {
+    final r = await run([
+      '--latest',
+      latest,
+      '--only',
+      'wow/eu/nowhere/nobody',
+    ]);
+    expect(r.code, 1);
+    expect(
+      r.err,
+      contains('--only wow/eu/nowhere/nobody matches no character'),
+    );
+    expect(site.characters, isEmpty);
+  });
+
+  test('--only needs --latest and a character path', () async {
+    final alone = await run(['--only', _path]);
+    expect(alone.code, 2);
+    expect(alone.err, contains('--only needs --latest'));
+    final bad = await run(['--latest', latest, '--only', 'Nandu']);
+    expect(bad.code, 2);
+    expect(bad.err, contains('--only needs a character path'));
+    expect(site.calls, isEmpty);
   });
 
   test('actions run in the order register, latest, delete, request', () async {

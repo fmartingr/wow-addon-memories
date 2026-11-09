@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
+import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 
 import 'support/fakes.dart';
@@ -10,6 +11,7 @@ Fakes _fakes({String? language, bool registered = false}) {
   if (registered) {
     upload.registeredSites.add(readySettings.site);
     upload.fingerprint = '0123456789abcdef';
+    upload.selections[readySettings.site] = {'wow/eu/brumamar/nandu'};
   }
   return Fakes(
     store: FakeSettingsStore((
@@ -17,6 +19,18 @@ Fakes _fakes({String? language, bool registered = false}) {
       notice: null,
     )),
     discovery: FakeDiscovery(checks: {retailDir: const Valid(retail)}),
+    gather: FakeGatherService(
+      snapshot: const BackupSnapshot(
+        characters: [
+          CharacterSummary(
+            id: 'eu-brumamar-nandu',
+            name: 'Nandu',
+            realm: 'Brumamar',
+            path: 'wow/eu/brumamar/nandu',
+          ),
+        ],
+      ),
+    ),
     upload: upload,
   );
 }

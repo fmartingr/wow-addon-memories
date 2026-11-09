@@ -252,5 +252,24 @@ void main() {
       expect(snap.lastGathered, DateTime.utc(2026, 11, 8, 14, 32).toLocal());
       expect(snap.sizeBytes, 16);
     });
+
+    test('each character has the web path of the upload, or none', () {
+      final latest = p.join(tmp.path, 'latest');
+      Directory(p.join(latest, 'eu-brumamar-nandu'))
+          .createSync(recursive: true);
+      File(p.join(latest, 'eu-brumamar-nandu', 'character.json'))
+          .writeAsStringSync(
+            '{"flavor":"wow","region":"EU","realm":"Brumamar","name":"Nandu"}',
+          );
+      Directory(p.join(latest, 'eu-sin-datos')).createSync();
+      File(p.join(latest, 'index.json')).writeAsStringSync(
+        '{"characters":['
+        '{"id":"eu-brumamar-nandu","path":"eu-brumamar-nandu","name":"Nandu","realm":"Brumamar"},'
+        '{"id":"eu-sin-datos","path":"eu-sin-datos","name":"Sin","realm":"Datos"}'
+        ']}',
+      );
+      final snap = inspectBackupRoot(tmp.path);
+      expect(snap.characters.map((c) => c.path), ['wow/eu/brumamar/nandu', '']);
+    });
   });
 }

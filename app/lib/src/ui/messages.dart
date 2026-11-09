@@ -175,17 +175,14 @@ String syncSummaryText(AppLocalizations l, SyncReport report) {
   var failed = 0;
   var shots = 0;
   var shotsFailed = 0;
-  var removed = 0;
   for (final c in report.characters) {
     switch (c.status) {
       case SyncStatus.uploaded:
         sent++;
-      case SyncStatus.unchanged:
+      case SyncStatus.unchanged || SyncStatus.notSelected:
         break;
       case SyncStatus.failed:
         failed++;
-      case SyncStatus.removed:
-        removed++;
     }
     shots += c.shots.uploaded;
     shotsFailed += c.shots.errors.length;
@@ -195,7 +192,6 @@ String syncSummaryText(AppLocalizations l, SyncReport report) {
     if (shots > 0) l.syncShots(shots),
     if (sent == 0 && shots == 0 && failed == 0 && shotsFailed == 0)
       l.syncUpToDate,
-    if (removed > 0) l.syncRemoved(removed),
     if (failed > 0) l.syncFailed(failed),
     if (shotsFailed > 0) l.syncShotsFailed(shotsFailed),
   ];

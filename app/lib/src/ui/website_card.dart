@@ -1,5 +1,5 @@
 /// The Website card of the Website tab: the last upload, Upload now and the
-/// characters on the website.
+/// characters to upload, each with its page on the website once uploaded.
 library;
 
 import 'package:flutter/material.dart';
@@ -10,6 +10,7 @@ import '../platform/clipboard.dart';
 import '../settings/settings_controller.dart';
 import '../theme/ak_widgets.dart';
 import '../upload/upload_controller.dart';
+import 'character_detail.dart';
 import 'messages.dart';
 
 class WebsiteCard extends StatelessWidget {
@@ -119,9 +120,7 @@ class WebsiteCard extends StatelessWidget {
                       const SizedBox(height: 12),
                     ],
                     FilledButton.icon(
-                      onPressed: upload.canUploadNow
-                          ? () => upload.uploadNow(resendRemoved: true)
-                          : null,
+                      onPressed: upload.canUploadNow ? upload.uploadNow : null,
                       icon: const Icon(Icons.cloud_upload_outlined),
                       label: state == UploadState.uploading
                           ? Text(
@@ -139,7 +138,8 @@ class WebsiteCard extends StatelessWidget {
                         style: TextStyle(color: theme.colorScheme.error),
                       ),
                     ),
-                  for (final c in upload.characters) _character(context, c),
+                  const SizedBox(height: 12),
+                  _selection(context),
                   const SizedBox(height: 12),
                   Text(l.unlistedText, style: theme.textTheme.bodySmall),
                 ],
@@ -151,37 +151,119 @@ class WebsiteCard extends StatelessWidget {
     );
   }
 
-  Widget _character(BuildContext context, RemoteCharacter c) {
+  /// The most that the list of characters grows before it scrolls.
+  static const double _listMaxHeight = 360;
+
+  Widget _selection(BuildContext context) {
     final l = AppLocalizations.of(context);
-    final who = upload.describe(c.path);
-    return Padding(
-      padding: const EdgeInsets.only(top: 12),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(who.name, style: Theme.of(context).textTheme.titleSmall),
-          Text(c.url, style: Theme.of(context).textTheme.bodySmall),
+    final textTheme = Theme.of(context).textTheme;
+    final local = upload.localCharacters;
+    final selected = local.where((c) => c.selected).length;
+    final others = upload.remoteOnlyCharacters;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(l.selectionTitle, style: textTheme.titleSmall),
+        if (local.isEmpty)
+          Text(l.noCharacters)
+        else ...[
+          if (selected == 0) Text(l.selectionHint),
+          Text(l.selectionNote, style: textTheme.bodySmall),
           Wrap(
             spacing: 8,
             children: [
               TextButton(
-                onPressed: () => _copy(context, c),
-                child: Text(
-                  l.copyLinkLabel,
-                  semanticsLabel: l.copyLinkSemantics(who.name),
-                ),
+                onPressed: selected == local.length ? null : upload.selectAll,
+                child: Text(l.selectAllLabel),
               ),
               TextButton(
-                onPressed: upload.busy ? null : () => _remove(context, c),
-                child: Text(
-                  l.removeFromWebsiteLabel,
-                  semanticsLabel: l.removeFromWebsiteSemantics(who.name),
-                ),
+                onPressed: selected == 0 ? null : upload.selectNone,
+                child: Text(l.selectNoneLabel),
               ),
             ],
           ),
         ],
+        ConstrainedBox(
+          constraints: const BoxConstraints(maxHeight: _listMaxHeight),
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              for (final c in local) _localRow(context, c),
+              for (final c in others) _remoteOnlyRow(context, c),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _localRow(BuildContext context, LocalCharacter c) {
+    final l = AppLocalizations.of(context);
+    final remote = c.remote;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        CheckboxListTile(
+          dense: true,
+          contentPadding: EdgeInsets.zero,
+          controlAffinity: ListTileControlAffinity.leading,
+          value: c.selected,
+          onChanged: (v) =>
+              upload.setCharacterSelected(c.summary.path, v ?? false),
+          title: Text(c.summary.name),
+          subtitle: characterDetail(c.summary, l),
+        ),
+        if (remote != null)
+          Padding(
+            padding: const EdgeInsets.only(left: 48),
+            child: _page(context, remote, c.summary.name),
+          ),
+      ],
+    );
+  }
+
+  Widget _remoteOnlyRow(BuildContext context, RemoteCharacter c) {
+    final name = upload.describe(c.path).name;
+    return Padding(
+      padding: const EdgeInsets.only(top: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(name, style: Theme.of(context).textTheme.titleSmall),
+          _page(context, c, name),
+        ],
       ),
+    );
+  }
+
+  /// The link of an uploaded character, with Copy link and Remove from
+  /// website.
+  Widget _page(BuildContext context, RemoteCharacter c, String name) {
+    final l = AppLocalizations.of(context);
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(c.url, style: Theme.of(context).textTheme.bodySmall),
+        Wrap(
+          spacing: 8,
+          children: [
+            TextButton(
+              onPressed: () => _copy(context, c),
+              child: Text(
+                l.copyLinkLabel,
+                semanticsLabel: l.copyLinkSemantics(name),
+              ),
+            ),
+            TextButton(
+              onPressed: upload.busy ? null : () => _remove(context, c),
+              child: Text(
+                l.removeFromWebsiteLabel,
+                semanticsLabel: l.removeFromWebsiteSemantics(name),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 }

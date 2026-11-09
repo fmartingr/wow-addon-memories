@@ -9,6 +9,10 @@ import 'package:wow_journey/src/upload/upload_service.dart';
 /// The golden `latest/` folder, relative to `app/` where the tests run.
 const String fixtureLatest = '../testdata/expected';
 
+const String brumamar = 'wow/eu/brumamar/nandu';
+const String errantes = 'wow/eu/los-errantes/nandu';
+const Set<String> both = {brumamar, errantes};
+
 /// A website on a loopback port that records each request line.
 class _Site {
   final List<String> requests = [];
@@ -126,12 +130,12 @@ void main() {
 
   test('sync uploads each character, then skips what it sent', () async {
     await service.register(site.address, null);
-    final first = await service.sync(site.address, fixtureLatest);
+    final first = await service.sync(site.address, fixtureLatest, both);
     expect(first.characters.map((c) => c.status), [
       SyncStatus.uploaded,
       SyncStatus.uploaded,
     ]);
-    final second = await service.sync(site.address, fixtureLatest);
+    final second = await service.sync(site.address, fixtureLatest, both);
     expect(second.characters.map((c) => c.status), [
       SyncStatus.unchanged,
       SyncStatus.unchanged,
@@ -148,6 +152,7 @@ void main() {
     await service.sync(
       site.address,
       fixtureLatest,
+      both,
       onProgress: (done, total) => seen.add((done, total)),
     );
     expect(seen, [(0, 2), (1, 2), (2, 2)]);
@@ -156,6 +161,7 @@ void main() {
     await service.sync(
       site.address,
       fixtureLatest,
+      both,
       onProgress: (done, total) => seen.add((done, total)),
     );
     expect(seen, [(0, 0)]);
@@ -164,14 +170,14 @@ void main() {
   test('a failure inside the isolate keeps its type and message', () async {
     await service.register(site.address, null);
     await expectLater(
-      service.sync(site.address, p.join(support.path, 'no-such-folder')),
+      service.sync(site.address, p.join(support.path, 'no-such-folder'), both),
       throwsA(isA<UploadException>().having((e) => e.code, 'code', 'no_index')),
     );
   });
 
   test('sync without a key says to register first', () async {
     await expectLater(
-      service.sync(site.address, fixtureLatest),
+      service.sync(site.address, fixtureLatest, both),
       throwsA(
         isA<UploadException>().having((e) => e.code, 'code', 'not_registered'),
       ),
@@ -217,40 +223,84 @@ void main() {
     ]);
   });
 
-  test('a removed character stays removed until resendRemoved', () async {
+  test(
+    'a new site has nothing selected, and setSelected keeps the choice',
+    () async {
+      await service.register(site.address, null);
+      expect((await service.status(site.address)).selected, isEmpty);
+      await service.setSelected(site.address, {brumamar});
+      expect((await service.status(site.address)).selected, {brumamar});
+      expect((await service.status('http://localhost:1')).selected, isEmpty);
+      await service.setSelected(site.address, {});
+      expect((await service.status(site.address)).selected, isEmpty);
+    },
+  );
+
+  test('sync sends only the selected characters', () async {
     await service.register(site.address, null);
-    await service.sync(site.address, fixtureLatest);
-    await service.delete(site.address, 'wow/eu/brumamar/nandu');
-    final auto = await service.sync(site.address, fixtureLatest);
-    expect(auto.characters.map((c) => c.status), [
-      SyncStatus.removed,
-      SyncStatus.unchanged,
-    ]);
-    final explicit = await service.sync(
-      site.address,
-      fixtureLatest,
-      resendRemoved: true,
-    );
-    expect(explicit.characters.map((c) => c.status), [
+    final r = await service.sync(site.address, fixtureLatest, {errantes});
+    expect(r.characters.map((c) => c.status), [
+      SyncStatus.notSelected,
       SyncStatus.uploaded,
-      SyncStatus.unchanged,
     ]);
-    final after = await service.sync(site.address, fixtureLatest);
-    expect(after.characters.first.status, SyncStatus.unchanged);
+    expect(
+      site.requests.where((r) => r == 'POST /api/v1/characters'),
+      hasLength(1),
+    );
+    final none = await service.sync(site.address, fixtureLatest, {});
+    expect(none.characters.map((c) => c.status).toSet(), {
+      SyncStatus.notSelected,
+    });
   });
 
-  test('a delete that gets 404 still marks the character removed', () async {
+  test('a sync does not undo a selection saved before it', () async {
     await service.register(site.address, null);
+    await service.setSelected(site.address, {brumamar});
+    await service.sync(site.address, fixtureLatest, {brumamar});
+    expect((await service.status(site.address)).selected, {brumamar});
+  });
+
+  test('delete unselects the character, and it stays out of a sync', () async {
+    await service.register(site.address, null);
+    await service.setSelected(site.address, both);
+    await service.sync(site.address, fixtureLatest, both);
+    await service.delete(site.address, brumamar);
+    final selected = (await service.status(site.address)).selected;
+    expect(selected, {errantes});
+    final r = await service.sync(site.address, fixtureLatest, selected);
+    expect(r.characters.map((c) => c.status), [
+      SyncStatus.notSelected,
+      SyncStatus.unchanged,
+    ]);
+  });
+
+  test('a delete that gets 404 still unselects the character', () async {
+    await service.register(site.address, null);
+    await service.setSelected(site.address, both);
     site.deleteStatus = 404;
     await expectLater(
-      service.delete(site.address, 'wow/eu/brumamar/nandu'),
+      service.delete(site.address, brumamar),
       throwsA(
         isA<UploadException>().having((e) => e.code, 'code', 'not_found'),
       ),
     );
-    final auto = await service.sync(site.address, fixtureLatest);
-    expect(auto.characters.first.status, SyncStatus.removed);
+    expect((await service.status(site.address)).selected, {errantes});
   });
+
+  test(
+    'a state file of the earlier format keeps the sent characters selected',
+    () async {
+      await service.register(site.address, null);
+      await service.sync(site.address, fixtureLatest, both);
+      final file = File(p.join(support.path, 'upload-state.json'));
+      final json = jsonDecode(file.readAsStringSync()) as Map<String, Object?>;
+      for (final record in (json['sites']! as Map).values) {
+        (record as Map).remove('selected');
+      }
+      file.writeAsStringSync(jsonEncode(json));
+      expect((await service.status(site.address)).selected, both);
+    },
+  );
 
   test('a delete whose state cannot be saved says so', () async {
     await service.register(site.address, null);
@@ -262,7 +312,7 @@ void main() {
       throwsA(
         isA<UploadException>()
             .having((e) => e.code, 'code', 'bad_state')
-            .having((e) => e.message, 'message', contains('removed')),
+            .having((e) => e.message, 'message', contains('could not save')),
       ),
     );
   });
@@ -286,7 +336,8 @@ void main() {
           clock: () => DateTime.utc(2026, 11, 9, 15, 30, 12),
         );
         await service.register(site.address, null);
-        await service.sync(site.address, fixtureLatest);
+        await service.setSelected(site.address, both);
+        await service.sync(site.address, fixtureLatest, both);
         await service.delete(site.address, 'wow/eu/brumamar/nandu');
         final oldBytes = keyFile().readAsBytesSync();
         final old = (await service.status(site.address)).fingerprint;
@@ -312,7 +363,7 @@ void main() {
         final record = state.site(parseSite(site.address));
         expect(record.sent, isEmpty);
         expect(record.shots, isEmpty);
-        expect(record.removed, {'wow/eu/brumamar/nandu'});
+        expect(record.selected, {errantes});
         expect(
           support.listSync().whereType<Directory>(),
           isEmpty,
@@ -337,10 +388,10 @@ void main() {
 
     test('the new key registers and sends everything again', () async {
       await service.register(site.address, null);
-      await service.sync(site.address, fixtureLatest);
+      await service.sync(site.address, fixtureLatest, both);
       await service.replaceKey();
       await service.register(site.address, 'CODE');
-      final again = await service.sync(site.address, fixtureLatest);
+      final again = await service.sync(site.address, fixtureLatest, both);
       expect(again.characters.map((c) => c.status), [
         SyncStatus.uploaded,
         SyncStatus.uploaded,

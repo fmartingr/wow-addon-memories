@@ -594,7 +594,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String newKeyQuestionText(String site) {
-    return 'Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on $site stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends all your characters again. Upload stays off until you turn it on.';
+    return 'Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on $site stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends your selected characters again. Upload stays off until you turn it on.';
   }
 
   @override
@@ -628,6 +628,22 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get cardUploadOff =>
       'Upload is off. Turn on the Upload switch below to send your journey.';
+
+  @override
+  String get selectionTitle => 'Characters to upload';
+
+  @override
+  String get selectionHint => 'Choose the characters to upload.';
+
+  @override
+  String get selectionNote =>
+      'New characters are not uploaded until you tick them. Unticking a character only stops later uploads; it does not remove anything from the website.';
+
+  @override
+  String get selectAllLabel => 'Select all';
+
+  @override
+  String get selectNoneLabel => 'Select none';
 
   @override
   String uploadProgress(int done, int total) {
@@ -666,17 +682,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get syncUpToDate => 'everything is up to date';
-
-  @override
-  String syncRemoved(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other: 'skipped $count removed characters (Upload now sends them again)',
-      one: 'skipped 1 removed character (Upload now sends it again)',
-    );
-    return '$_temp0';
-  }
 
   @override
   String syncFailed(int count) {
@@ -727,7 +732,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get errBadState =>
-      'The character was removed from the website, but the app could not save that, so the next gather may upload it again. Check that the app folder can be written to.';
+      'The app could not save your choice of characters to upload. Check that the app folder can be written to, then try again.';
 
   @override
   String get errFailed =>
@@ -865,7 +870,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String removedText(String name) {
-    return '$name was removed from the website. Gathers do not upload it again; Upload now does.';
+    return '$name was removed from the website and unticked. Tick it again to upload it.';
   }
 
   @override

@@ -16,6 +16,7 @@ class CharacterSummary {
     required this.id,
     required this.name,
     required this.realm,
+    this.path = '',
     this.level,
     this.className,
   });
@@ -23,6 +24,10 @@ class CharacterSummary {
   final String id;
   final String name;
   final String realm;
+
+  /// The web path `flavor/region/realm/name` that the upload uses for this
+  /// character, or empty when `character.json` has none.
+  final String path;
   final int? level;
 
   /// The class token of the game, such as `HUNTER`.
@@ -93,6 +98,15 @@ Future<GatherReport> gatherInto(String flavorDir, String backupRoot) async {
   return (result: result, snapshot: inspectBackupRoot(backupRoot));
 }
 
+String _webPath(String backupRoot, Object? folder) {
+  if (folder is! String) return '';
+  try {
+    return characterPathOf(Directory(p.join(backupRoot, 'latest', folder)));
+  } on UploadException {
+    return '';
+  }
+}
+
 final RegExp _stamp = RegExp(r'^(\d{4})(\d\d)(\d\d)T(\d\d)(\d\d)(\d\d)Z$');
 
 /// Reads `latest/index.json`, the newest backup and the size of
@@ -115,6 +129,7 @@ BackupSnapshot inspectBackupRoot(String backupRoot) {
           id: '${c['id'] ?? ''}',
           name: '${c['name'] ?? ''}',
           realm: '${c['realm'] ?? ''}',
+          path: _webPath(backupRoot, c['path']),
           level: c['level'] is int ? c['level'] as int : null,
           className: c['class'] is String ? c['class'] as String : null,
         ),

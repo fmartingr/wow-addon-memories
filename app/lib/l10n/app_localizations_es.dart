@@ -597,7 +597,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String newKeyQuestionText(String site) {
-    return 'Hazlo solo cuando el sitio web haya bloqueado o rechazado esta clave. La app crea una clave nueva y guarda una copia de la antigua. Tus personajes en $site se quedan con la clave antigua. El administrador del sitio web puede moverlos a la clave nueva. Después, regístrate de nuevo. El sitio web puede pedir un código de invitación nuevo. La app vuelve a subir todos tus personajes. La subida sigue desactivada hasta que la actives.';
+    return 'Hazlo solo cuando el sitio web haya bloqueado o rechazado esta clave. La app crea una clave nueva y guarda una copia de la antigua. Tus personajes en $site se quedan con la clave antigua. El administrador del sitio web puede moverlos a la clave nueva. Después, regístrate de nuevo. El sitio web puede pedir un código de invitación nuevo. La app vuelve a subir tus personajes seleccionados. La subida sigue desactivada hasta que la actives.';
   }
 
   @override
@@ -631,6 +631,22 @@ class AppLocalizationsEs extends AppLocalizations {
   @override
   String get cardUploadOff =>
       'La subida está desactivada. Activa el interruptor Subida de abajo para enviar tu viaje.';
+
+  @override
+  String get selectionTitle => 'Personajes para subir';
+
+  @override
+  String get selectionHint => 'Elige los personajes que quieres subir.';
+
+  @override
+  String get selectionNote =>
+      'Los personajes nuevos no se suben hasta que los marques. Desmarcar un personaje solo detiene las subidas siguientes; no se quita nada del sitio web.';
+
+  @override
+  String get selectAllLabel => 'Seleccionar todo';
+
+  @override
+  String get selectNoneLabel => 'No seleccionar nada';
 
   @override
   String uploadProgress(int done, int total) {
@@ -669,18 +685,6 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get syncUpToDate => 'todo está al día';
-
-  @override
-  String syncRemoved(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count personajes quitados omitidos (Subir ahora los envía de nuevo)',
-      one: '1 personaje quitado omitido (Subir ahora lo envía de nuevo)',
-    );
-    return '$_temp0';
-  }
 
   @override
   String syncFailed(int count) {
@@ -731,7 +735,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get errBadState =>
-      'El personaje se quitó del sitio web, pero la app no pudo guardarlo, así que la próxima recopilación puede subirlo de nuevo. Comprueba que se pueda escribir en la carpeta de la app.';
+      'La app no pudo guardar tu elección de personajes para subir. Comprueba que se puede escribir en la carpeta de la app y vuelve a intentarlo.';
 
   @override
   String get errFailed =>
@@ -871,7 +875,7 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String removedText(String name) {
-    return '$name se quitó del sitio web. Las recopilaciones no lo suben de nuevo; Subir ahora sí.';
+    return '$name se quitó del sitio web y se desmarcó. Márcalo de nuevo para subirlo.';
   }
 
   @override

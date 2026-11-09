@@ -600,7 +600,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String newKeyQuestionText(String site) {
-    return 'Tu das nur, wenn die Webseite diesen Schlüssel gesperrt oder abgelehnt hat. Die App erstellt einen neuen Schlüssel und behält eine Kopie des alten. Deine Charaktere auf $site bleiben beim alten Schlüssel. Der Admin der Webseite kann sie auf den neuen Schlüssel übertragen. Registriere dich dann erneut. Die Webseite fragt eventuell nach einem neuen Einladungscode. Die App lädt alle deine Charaktere erneut hoch. Das Hochladen bleibt aus, bis du es einschaltest.';
+    return 'Tu das nur, wenn die Webseite diesen Schlüssel gesperrt oder abgelehnt hat. Die App erstellt einen neuen Schlüssel und behält eine Kopie des alten. Deine Charaktere auf $site bleiben beim alten Schlüssel. Der Admin der Webseite kann sie auf den neuen Schlüssel übertragen. Registriere dich dann erneut. Die Webseite fragt eventuell nach einem neuen Einladungscode. Die App lädt deine ausgewählten Charaktere erneut hoch. Das Hochladen bleibt aus, bis du es einschaltest.';
   }
 
   @override
@@ -635,6 +635,22 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get cardUploadOff =>
       'Hochladen ist aus. Schalte unten den Schalter Hochladen ein, um deine Reise zu senden.';
+
+  @override
+  String get selectionTitle => 'Charaktere zum Hochladen';
+
+  @override
+  String get selectionHint => 'Wähle die Charaktere zum Hochladen aus.';
+
+  @override
+  String get selectionNote =>
+      'Neue Charaktere werden erst hochgeladen, wenn du sie ankreuzt. Wenn du ein Häkchen entfernst, werden nur spätere Uploads gestoppt; auf der Webseite wird nichts entfernt.';
+
+  @override
+  String get selectAllLabel => 'Alle auswählen';
+
+  @override
+  String get selectNoneLabel => 'Keine auswählen';
 
   @override
   String uploadProgress(int done, int total) {
@@ -673,18 +689,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get syncUpToDate => 'alles ist aktuell';
-
-  @override
-  String syncRemoved(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count entfernte Charaktere übersprungen (Jetzt hochladen sendet sie erneut)',
-      one: '1 entfernten Charakter übersprungen (Jetzt hochladen sendet ihn erneut)',
-    );
-    return '$_temp0';
-  }
 
   @override
   String syncFailed(int count) {
@@ -735,7 +739,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get errBadState =>
-      'Der Charakter wurde von der Webseite entfernt, aber die App konnte das nicht speichern, daher wird er bei der nächsten Sammlung eventuell erneut hochgeladen. Prüfe, ob in den App-Ordner geschrieben werden kann.';
+      'Die App konnte deine Auswahl der hochzuladenden Charaktere nicht speichern. Prüfe, ob in den App-Ordner geschrieben werden kann, und versuche es erneut.';
 
   @override
   String get errFailed =>
@@ -875,7 +879,7 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String removedText(String name) {
-    return '$name wurde von der Webseite entfernt. Sammlungen laden ihn nicht erneut hoch; Jetzt hochladen tut es.';
+    return '$name wurde von der Webseite entfernt und abgewählt. Kreuze den Charakter wieder an, um ihn hochzuladen.';
   }
 
   @override

@@ -42,6 +42,25 @@ enum UploadState {
 /// A character as the screens name it.
 typedef CharacterName = ({String name, String? realm});
 
+/// A character of the backup folder with the player's choice to upload it and
+/// its page on the website, when it has one.
+@immutable
+class LocalCharacter {
+  const LocalCharacter({
+    required this.summary,
+    required this.selected,
+    this.remote,
+  });
+
+  final CharacterSummary summary;
+
+  /// Whether the player chose to upload this character.
+  final bool selected;
+
+  /// The page of the character on the website, or null when it has none.
+  final RemoteCharacter? remote;
+}
+
 /// Uploads after each gather when the Upload switch is on, and does the
 /// explicit actions: check, register, request screenshots, remove.
 ///
@@ -74,6 +93,8 @@ class UploadController extends ChangeNotifier {
 
   bool _registered = false;
   String? _fingerprint;
+  Set<String> _selected = {};
+  Future<void> _selectionWrite = Future.value();
   bool _uploading = false;
   bool _checking = false;
   bool _registering = false;
@@ -122,6 +143,33 @@ class UploadController extends ChangeNotifier {
   /// The characters that the website holds for the key.
   List<RemoteCharacter> get characters => _characters;
 
+  /// The characters of the backup folder, each with its choice and its page.
+  /// A character that was just gathered is not selected.
+  List<LocalCharacter> get localCharacters {
+    final pages = {for (final c in _characters) c.path: c};
+    return [
+      for (final c in gather.snapshot.characters)
+        if (c.path.isNotEmpty)
+          LocalCharacter(
+            summary: c,
+            selected: _selected.contains(c.path),
+            remote: pages[c.path],
+          ),
+    ];
+  }
+
+  /// The characters on the website that the backup folder does not hold.
+  List<RemoteCharacter> get remoteOnlyCharacters {
+    final local = {for (final c in gather.snapshot.characters) c.path};
+    return [
+      for (final c in _characters)
+        if (!local.contains(c.path)) c,
+    ];
+  }
+
+  /// Whether at least one character of the backup folder is selected.
+  bool get hasSelection => localCharacters.any((c) => c.selected);
+
   /// `none`, `pending`, `approved` or `denied`.
   String get screenshots => _screenshots;
 
@@ -160,9 +208,10 @@ class UploadController extends ChangeNotifier {
   /// action uses it.
   bool get canReplaceKey => _fingerprint != null && !_registering && !busy;
 
-  /// Whether Upload now can start: no other action runs, and no gather is
-  /// writing `latest/`.
-  bool get canUploadNow => !busy && gather.state != GatherState.running;
+  /// Whether Upload now can start: no other action runs, no gather is writing
+  /// `latest/`, and the player selected a character.
+  bool get canUploadNow =>
+      !busy && gather.state != GatherState.running && hasSelection;
 
   /// Whether Request screenshots makes sense now.
   bool get canRequestScreenshots =>
@@ -219,6 +268,7 @@ class UploadController extends ChangeNotifier {
   void _forgetSite() {
     _epoch++;
     _registered = false;
+    _selected = {};
     _lastOk = null;
     _paused = false;
     _lastReport = null;
@@ -254,19 +304,21 @@ class UploadController extends ChangeNotifier {
     final epoch = _epoch;
     SiteStatus status;
     Notice? error;
+    const none = (registered: false, fingerprint: null, selected: <String>{});
     try {
       status = await service.status(site);
     } on UploadException catch (e) {
       // A damaged key file shows here, before the player tries to register.
-      status = (registered: false, fingerprint: null);
+      status = none;
       error = UploadErrorNotice.of(e, site);
     } on Object {
-      status = (registered: false, fingerprint: null);
+      status = none;
     }
     if (epoch != _epoch || _disposed) return;
     _registerError = error;
     _registered = status.registered;
     _fingerprint = status.fingerprint;
+    _selected = {...status.selected};
     _notify();
     if (_registered) await _loadMe(site, epoch);
   }
@@ -374,6 +426,7 @@ class UploadController extends ChangeNotifier {
       if (epoch != _epoch) return false;
       _registered = true;
       _fingerprint = status.fingerprint;
+      _selected = {...status.selected};
     } on UploadException catch (e) {
       if (epoch == _epoch) {
         _registerError = UploadErrorNotice.of(e, site);
@@ -391,12 +444,11 @@ class UploadController extends ChangeNotifier {
     return true;
   }
 
-  /// Uploads `<backup folder>/latest`. Returns null, and does nothing, while
-  /// an upload, a removal or a gather runs, when the key is not registered, or
-  /// when the Upload switch is off. The upload after a gather skips the
-  /// characters the player removed; the Upload now button passes
-  /// [resendRemoved] to send them again.
-  Future<SyncReport?> uploadNow({bool resendRemoved = false}) async {
+  /// Uploads the selected characters of `<backup folder>/latest`. Returns
+  /// null, and does nothing, while an upload, a removal or a gather runs, when
+  /// the key is not registered, when the Upload switch is off, or when no
+  /// character is selected.
+  Future<SyncReport?> uploadNow() async {
     final s = settings.settings;
     final root = s.backupRoot;
     if (_uploading ||
@@ -405,6 +457,7 @@ class UploadController extends ChangeNotifier {
         gather.state == GatherState.running ||
         !_registered ||
         !s.upload ||
+        !hasSelection ||
         root == null) {
       return null;
     }
@@ -424,7 +477,7 @@ class UploadController extends ChangeNotifier {
       report = await service.sync(
         site,
         p.join(root, 'latest'),
-        resendRemoved: resendRemoved,
+        {..._selected},
         onProgress: (done, total) {
           if (epoch != _epoch || _disposed) return;
           if (done == _progressDone && total == _progressTotal) return;
@@ -525,8 +578,56 @@ class UploadController extends ChangeNotifier {
     );
   }
 
-  /// Removes the character at the web [path] from the website. Returns
-  /// whether it is gone.
+  /// Ticks or unticks the character at the web [path], and saves the choice
+  /// at once. Unticking only stops later uploads; the website keeps the page.
+  Future<void> setCharacterSelected(String path, bool selected) {
+    if (!_registered) return Future.value();
+    if (selected ? !_selected.add(path) : !_selected.remove(path)) {
+      return Future.value();
+    }
+    return _selectionChanged();
+  }
+
+  /// Selects every character of the backup folder.
+  Future<void> selectAll() {
+    if (!_registered) return Future.value();
+    _selected.addAll(
+      gather.snapshot.characters.map((c) => c.path).where((p) => p.isNotEmpty),
+    );
+    return _selectionChanged();
+  }
+
+  /// Unselects every character of the backup folder.
+  Future<void> selectNone() {
+    if (!_registered) return Future.value();
+    _selected.removeAll(gather.snapshot.characters.map((c) => c.path));
+    return _selectionChanged();
+  }
+
+  /// Shows the new choice now, and writes it after the writes before it.
+  Future<void> _selectionChanged() {
+    _notify();
+    final site = _siteText;
+    final epoch = _epoch;
+    final choice = {..._selected};
+    return _selectionWrite = _selectionWrite.then((_) async {
+      Notice? issue;
+      try {
+        await service.setSelected(site, choice);
+      } on UploadException catch (e) {
+        issue = UploadErrorNotice.of(e, site);
+      } on Object {
+        issue = const GenericFailureNotice();
+      }
+      if (issue != null && epoch == _epoch && !_disposed) {
+        _addIssue(issue);
+        _notify();
+      }
+    });
+  }
+
+  /// Removes the character at the web [path] from the website and unselects
+  /// it. Returns whether it is gone.
   Future<bool> removeCharacter(String path) async {
     if (!_registered) return false;
     if (busy) {
@@ -558,6 +659,7 @@ class UploadController extends ChangeNotifier {
       if (epoch == _epoch) _issues = const [GenericFailureNotice()];
     }
     _removing = false;
+    if (gone && epoch == _epoch) _selected.remove(path);
     _notify();
     if (gone) await _loadMe(site, epoch);
     return gone;

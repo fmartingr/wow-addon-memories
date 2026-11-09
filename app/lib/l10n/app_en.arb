@@ -780,7 +780,7 @@
   "@newKeyTitle": {
     "description": "Title of the dialog that confirms a new key."
   },
-  "newKeyQuestionText": "Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on {site} stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends all your characters again. Upload stays off until you turn it on.",
+  "newKeyQuestionText": "Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on {site} stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends your selected characters again. Upload stays off until you turn it on.",
   "@newKeyQuestionText": {
     "description": "Body of the dialog that confirms a new key: what happens to the characters and what to do next.",
     "placeholders": {
@@ -825,6 +825,26 @@
   "cardUploadOff": "Upload is off. Turn on the Upload switch below to send your journey.",
   "@cardUploadOff": {
     "description": "Shown on the Website card when Upload is off."
+  },
+  "selectionTitle": "Characters to upload",
+  "@selectionTitle": {
+    "description": "Title of the list of characters on the Website card."
+  },
+  "selectionHint": "Choose the characters to upload.",
+  "@selectionHint": {
+    "description": "Shown on the Website card when the key is registered and no character is ticked."
+  },
+  "selectionNote": "New characters are not uploaded until you tick them. Unticking a character only stops later uploads; it does not remove anything from the website.",
+  "@selectionNote": {
+    "description": "Under the title of the character list: new characters start unticked, and unticking removes nothing from the website."
+  },
+  "selectAllLabel": "Select all",
+  "@selectAllLabel": {
+    "description": "Button that ticks every character to upload."
+  },
+  "selectNoneLabel": "Select none",
+  "@selectNoneLabel": {
+    "description": "Button that unticks every character to upload."
   },
   "uploadProgress": "Uploading {done} of {total}",
   "@uploadProgress": {
@@ -873,15 +893,6 @@
   "@syncUpToDate": {
     "description": "Part of the upload summary when nothing changed. Starts with a lower case letter."
   },
-  "syncRemoved": "{count, plural, =1{skipped 1 removed character (Upload now sends it again)} other{skipped {count} removed characters (Upload now sends them again)}}",
-  "@syncRemoved": {
-    "description": "Part of the upload summary. Starts with a lower case letter.",
-    "placeholders": {
-      "count": {
-        "type": "int"
-      }
-    }
-  },
   "syncFailed": "{count, plural, =1{1 character failed} other{{count} characters failed}}",
   "@syncFailed": {
     "description": "Part of the upload summary. Starts with a lower case letter.",
@@ -929,7 +940,7 @@
   "@errBadSite": {
     "description": "Upload error: the website address is not valid."
   },
-  "errBadState": "The character was removed from the website, but the app could not save that, so the next gather may upload it again. Check that the app folder can be written to.",
+  "errBadState": "The app could not save your choice of characters to upload. Check that the app folder can be written to, then try again.",
   "@errBadState": {
     "description": "Upload error: the state file could not be written."
   },
@@ -1102,7 +1113,7 @@
       }
     }
   },
-  "removedText": "{name} was removed from the website. Gathers do not upload it again; Upload now does.",
+  "removedText": "{name} was removed from the website and unticked. Tick it again to upload it.",
   "@removedText": {
     "description": "Shown after a character was removed from the website.",
     "placeholders": {

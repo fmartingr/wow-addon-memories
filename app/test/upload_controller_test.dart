@@ -36,27 +36,32 @@ CharacterResult _result(
   shots: shots,
 );
 
+const BackupSnapshot _snapshot = BackupSnapshot(
+  characters: [
+    CharacterSummary(
+      id: 'eu-brumamar-nandu',
+      name: 'Ñandú',
+      realm: 'Brumamar',
+      path: 'wow/eu/brumamar/nandu',
+    ),
+  ],
+);
+
 class _Rig {
-  _Rig({Settings settings = readySettings, bool registered = true})
-    : store = FakeSettingsStore((settings: settings, notice: null)),
-      upload = FakeUploadService(),
-      gatherService = FakeGatherService(
-        snapshot: const BackupSnapshot(
-          characters: [
-            CharacterSummary(
-              id: 'eu-brumamar-nandu',
-              name: 'Ñandú',
-              realm: 'Brumamar',
-            ),
-          ],
-        ),
-      ) {
+  _Rig({
+    Settings settings = readySettings,
+    bool registered = true,
+    bool selected = true,
+  }) : store = FakeSettingsStore((settings: settings, notice: null)),
+       upload = FakeUploadService(),
+       gatherService = FakeGatherService(snapshot: _snapshot) {
     settingsController = SettingsController(store);
     gather = GatherController(gatherService);
     if (registered) {
       upload.registeredSites.add(settings.site);
       upload.fingerprint = '0123456789abcdef';
     }
+    if (selected) upload.selections[settings.site] = {nandu.path};
     controller = UploadController(
       service: upload,
       settings: settingsController,
@@ -98,8 +103,13 @@ Settings get _on => readySettings.copyWith(upload: true);
 Future<_Rig> _rig({
   Settings settings = readySettings,
   bool registered = true,
+  bool selected = true,
 }) async {
-  final rig = _Rig(settings: settings, registered: registered);
+  final rig = _Rig(
+    settings: settings,
+    registered: registered,
+    selected: selected,
+  );
   addTearDown(rig.dispose);
   await rig.load();
   return rig;
@@ -503,11 +513,19 @@ void main() {
       expect(rig.controller.state, UploadState.done);
     });
 
-    test('never sends the removed characters again', () async {
+    test('sends only the selected characters', () async {
       final rig = await _rig(settings: _on);
       await rig.gatherOnce();
-      await rig.controller.uploadNow(resendRemoved: true);
-      expect(rig.upload.resends, [false, true]);
+      expect(rig.upload.syncSelections, [
+        {nandu.path},
+      ]);
+    });
+
+    test('does not upload while no character is selected', () async {
+      final rig = await _rig(settings: _on, selected: false);
+      await rig.gatherOnce();
+      expect(rig.upload.syncs, isEmpty);
+      expect(rig.controller.state, UploadState.idle);
     });
 
     test('does not upload when the switch is off', () async {
@@ -563,17 +581,17 @@ void main() {
       await pumpEventQueue();
       expect(rig.gather.state, GatherState.running);
       expect(rig.controller.canUploadNow, isFalse);
-      expect(await rig.controller.uploadNow(resendRemoved: true), isNull);
+      expect(await rig.controller.uploadNow(), isNull);
       expect(rig.upload.syncs, isEmpty);
 
       rig.gatherService.pending!.complete((
         result: const GatherResult(),
-        snapshot: const BackupSnapshot(),
+        snapshot: _snapshot,
       ));
       await run;
       await pumpEventQueue();
       expect(rig.controller.canUploadNow, isTrue);
-      expect(rig.upload.resends, [false]);
+      expect(rig.upload.syncs, hasLength(1));
     });
 
     test('a new snapshot of the same gather does not upload again', () async {
@@ -694,6 +712,237 @@ void main() {
       );
       expect(await rig.controller.register(null), isFalse);
       expect(noticeEn(rig.controller.registerError!), keyRevokedText(site));
+    });
+  });
+
+  group('selection', () {
+    const nahuel = CharacterSummary(
+      id: 'eu-brumamar-nahuel',
+      name: 'Nahuel',
+      realm: 'Brumamar',
+      path: 'wow/eu/brumamar/nahuel',
+    );
+    const both = BackupSnapshot(
+      characters: [
+        CharacterSummary(
+          id: 'eu-brumamar-nandu',
+          name: 'Ñandú',
+          realm: 'Brumamar',
+          path: 'wow/eu/brumamar/nandu',
+        ),
+        nahuel,
+      ],
+    );
+
+    Future<_Rig> twoCharacters({bool selected = false}) async {
+      final rig = await _rig(settings: _on, selected: selected);
+      rig.gatherService.snapshot = both;
+      await rig.gather.refresh('/backups/WoW Journey');
+      await pumpEventQueue();
+      return rig;
+    }
+
+    test('a registered site with no saved choice starts with none', () async {
+      final rig = await _rig(selected: false);
+      final local = rig.controller.localCharacters;
+      expect(local.map((c) => c.summary.name), ['Ñandú']);
+      expect(local.single.selected, isFalse);
+      expect(rig.controller.hasSelection, isFalse);
+      expect(rig.controller.canUploadNow, isFalse);
+    });
+
+    test('a saved choice is read back with the key status', () async {
+      final rig = await _rig();
+      expect(rig.controller.localCharacters.single.selected, isTrue);
+      expect(rig.controller.hasSelection, isTrue);
+      expect(rig.controller.canUploadNow, isTrue);
+    });
+
+    test('a character gathered later starts unselected', () async {
+      final rig = await _rig(settings: _on);
+      rig.gatherService.snapshot = both;
+      await rig.gatherOnce();
+      expect(
+        {
+          for (final c in rig.controller.localCharacters)
+            c.summary.name: c.selected,
+        },
+        {'Ñandú': true, 'Nahuel': false},
+      );
+      expect(rig.upload.syncSelections.last, {nandu.path});
+    });
+
+    test('ticking a character saves the choice at once', () async {
+      final rig = await _rig(selected: false);
+      final saved = rig.controller.setCharacterSelected(nandu.path, true);
+      expect(rig.controller.localCharacters.single.selected, isTrue);
+      await saved;
+      expect(rig.upload.savedSelections, [
+        {nandu.path},
+      ]);
+      expect(rig.upload.selections[site], {nandu.path});
+      await rig.controller.setCharacterSelected(nandu.path, false);
+      expect(rig.upload.selections[site], isEmpty);
+      expect(
+        rig.upload.deletions,
+        isEmpty,
+        reason: 'unticking deletes nothing',
+      );
+    });
+
+    test('the choice survives a new controller on the same state', () async {
+      final rig = await _rig(selected: false);
+      await rig.controller.setCharacterSelected(nandu.path, true);
+      final again = UploadController(
+        service: rig.upload,
+        settings: rig.settingsController,
+        gather: rig.gather,
+      );
+      addTearDown(again.dispose);
+      await again.refresh();
+      expect(again.localCharacters.single.selected, isTrue);
+    });
+
+    test('ticking what is ticked saves nothing', () async {
+      final rig = await _rig();
+      await rig.controller.setCharacterSelected(nandu.path, true);
+      expect(rig.upload.savedSelections, isEmpty);
+    });
+
+    test(
+      'select all and select none cover the characters of the folder',
+      () async {
+        final rig = await twoCharacters();
+        await rig.controller.selectAll();
+        expect(rig.upload.selections[site], {nandu.path, nahuel.path});
+        expect(rig.controller.localCharacters.every((c) => c.selected), isTrue);
+        await rig.controller.selectNone();
+        expect(rig.upload.selections[site], isEmpty);
+        expect(rig.controller.hasSelection, isFalse);
+      },
+    );
+
+    test('writes reach the state in the order of the clicks', () async {
+      final rig = await twoCharacters();
+      final first = rig.controller.setCharacterSelected(nandu.path, true);
+      final second = rig.controller.setCharacterSelected(nahuel.path, true);
+      final third = rig.controller.setCharacterSelected(nandu.path, false);
+      await Future.wait([first, second, third]);
+      expect(rig.upload.savedSelections, [
+        {nandu.path},
+        {nandu.path, nahuel.path},
+        {nahuel.path},
+      ]);
+    });
+
+    test('only the selected characters are passed to the sync', () async {
+      final rig = await twoCharacters();
+      await rig.controller.setCharacterSelected(nahuel.path, true);
+      await rig.controller.uploadNow();
+      expect(rig.upload.syncSelections, [
+        {nahuel.path},
+      ]);
+    });
+
+    test('Upload now does nothing while nothing is selected', () async {
+      final rig = await twoCharacters();
+      expect(await rig.controller.uploadNow(), isNull);
+      expect(rig.upload.syncs, isEmpty);
+      await rig.controller.selectAll();
+      expect(await rig.controller.uploadNow(), isNotNull);
+    });
+
+    test('removing a character unselects it', () async {
+      final rig = await twoCharacters(selected: true);
+      await rig.controller.setCharacterSelected(nahuel.path, true);
+      rig.upload.meInfo = const MeInfo(
+        screenshots: 'none',
+        characters: [nandu],
+      );
+      await rig.controller.refresh();
+      expect(rig.controller.localCharacters.first.remote, nandu);
+      expect(await rig.controller.removeCharacter(nandu.path), isTrue);
+      expect(rig.upload.deletions, [(site, nandu.path)]);
+      expect(rig.upload.selections[site], {nahuel.path});
+      final byName = {
+        for (final c in rig.controller.localCharacters) c.summary.name: c,
+      };
+      expect(byName['Ñandú']!.selected, isFalse);
+      expect(byName['Ñandú']!.remote, isNull);
+      expect(byName['Nahuel']!.selected, isTrue);
+      await rig.controller.uploadNow();
+      expect(rig.upload.syncSelections.last, {nahuel.path});
+    });
+
+    test('a character already gone is unselected too', () async {
+      final rig = await _rig();
+      rig.upload.deleteError = const UploadException(
+        'not_found',
+        'Not found.',
+        status: 404,
+      );
+      expect(await rig.controller.removeCharacter(nandu.path), isTrue);
+      expect(rig.controller.hasSelection, isFalse);
+    });
+
+    test('a failed removal keeps the character selected', () async {
+      final rig = await _rig();
+      rig.upload.deleteError = const UploadException('network', 'No network.');
+      expect(await rig.controller.removeCharacter(nandu.path), isFalse);
+      expect(rig.controller.hasSelection, isTrue);
+      expect(rig.upload.selections[site], {nandu.path});
+    });
+
+    test(
+      'characters on the website that the folder lacks are listed apart',
+      () async {
+        final rig = _Rig(selected: false);
+        addTearDown(rig.dispose);
+        const other = RemoteCharacter(
+          path: 'wow/eu/otro/lejano',
+          url: '$site/wow/eu/otro/lejano/',
+          guid: 'Player-1-00000002',
+          steps: 1,
+          updated: 1,
+        );
+        rig.upload.meInfo = const MeInfo(
+          screenshots: 'none',
+          characters: [nandu, other],
+        );
+        await rig.load();
+        expect(rig.controller.remoteOnlyCharacters, [other]);
+        expect(rig.controller.localCharacters.single.remote, nandu);
+      },
+    );
+
+    test(
+      'a save that fails shows a message and keeps the choice on screen',
+      () async {
+        final rig = await _rig(selected: false);
+        rig.upload.selectError = const UploadException(
+          'bad_state',
+          'Not saved.',
+        );
+        await rig.controller.setCharacterSelected(nandu.path, true);
+        expect(noticesEn(rig.controller.issues), [en.errBadState]);
+        expect(rig.controller.localCharacters.single.selected, isTrue);
+      },
+    );
+
+    test('another website has its own choice', () async {
+      final rig = await _rig();
+      rig.upload.selections[otherSite] = {};
+      expect(rig.controller.changeSite(otherSite), isNull);
+      await pumpEventQueue();
+      expect(rig.controller.localCharacters.single.selected, isFalse);
+      expect(rig.upload.selections[site], {nandu.path});
+    });
+
+    test('a choice cannot be made before the key is registered', () async {
+      final rig = await _rig(registered: false, selected: false);
+      await rig.controller.setCharacterSelected(nandu.path, true);
+      await rig.controller.selectAll();
+      expect(rig.upload.savedSelections, isEmpty);
     });
   });
 

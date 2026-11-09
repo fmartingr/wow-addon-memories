@@ -16,7 +16,8 @@ import 'sync.dart';
 /// The usage line of the tool.
 const String usage =
     'usage: memories-upload --site URL [--key FILE] [--state FILE] '
-    '[--latest DIR] [--invite CODE] [--delete PATH] [--request-screenshots]';
+    '[--latest DIR] [--only PATH]... [--invite CODE] [--delete PATH] '
+    '[--request-screenshots]';
 
 const Set<String> _valued = {
   'site',
@@ -25,6 +26,7 @@ const Set<String> _valued = {
   'latest',
   'invite',
   'delete',
+  'only',
 };
 
 ArgParser _parser() => ArgParser()
@@ -47,6 +49,13 @@ ArgParser _parser() => ArgParser()
     'latest',
     help: 'latest/ folder of a gather; its changed characters are uploaded',
     defaultsTo: '',
+  )
+  ..addMultiOption(
+    'only',
+    help:
+        'with --latest, upload only the character at this path, for example '
+        'wow/eu/realm/name; repeat it for more characters',
+    valueHelp: 'PATH',
   )
   ..addOption(
     'invite',
@@ -98,6 +107,7 @@ Future<int> runMemoriesUpload(
   final latestPath = opts.option('latest')!;
   final invite = opts.option('invite')!;
   final deletePath = opts.option('delete')!;
+  final only = opts.multiOption('only');
   if (opts.option('site')!.isEmpty ||
       keyPath.isEmpty ||
       statePath.isEmpty ||
@@ -115,6 +125,18 @@ Future<int> runMemoriesUpload(
   if (deletePath.isNotEmpty && !isCharacterPath(deletePath)) {
     err.writeln(
       'memories-upload: usage: --delete needs a character path like '
+      'wow/eu/realm-name/character-name.',
+    );
+    return 2;
+  }
+
+  if (only.isNotEmpty && latestPath.isEmpty) {
+    err.writeln('memories-upload: usage: --only needs --latest.');
+    return 2;
+  }
+  if (only.any((path) => !isCharacterPath(path))) {
+    err.writeln(
+      'memories-upload: usage: --only needs a character path like '
       'wow/eu/realm-name/character-name.',
     );
     return 2;
@@ -162,6 +184,7 @@ Future<int> runMemoriesUpload(
     await run.all(
       invite: invite,
       latest: latestPath.isEmpty ? null : Directory(latestPath),
+      only: only.isEmpty ? null : only.toSet(),
       delete: deletePath.isEmpty ? null : deletePath,
       requestScreenshots: opts.flag('request-screenshots'),
     );
@@ -197,13 +220,14 @@ class _Run {
   Future<void> all({
     required String invite,
     required Directory? latest,
+    required Set<String>? only,
     required String? delete,
     required bool requestScreenshots,
   }) async {
     if (!site.registered || invite.isNotEmpty) {
       if (!await _step(() => _register(invite))) return;
     }
-    if (latest != null) await _step(() => _sync(latest));
+    if (latest != null) await _step(() => _sync(latest, only));
     if (delete != null) await _step(() => _delete(delete));
     if (requestScreenshots) await _step(_requestScreenshots);
   }
@@ -244,11 +268,13 @@ class _Run {
     );
   }
 
-  Future<void> _sync(Directory latest) async {
-    // A CLI run is an explicit upload, so it also sends removed characters.
-    final report = await syncLatest(latest, client, state, resendRemoved: true);
+  Future<void> _sync(Directory latest, Set<String>? only) async {
+    // The tool has no stored selection: it sends every character unless
+    // --only names some.
+    final report = await syncLatest(latest, client, state, selected: only);
     var uploaded = 0;
     var unchanged = 0;
+    var skipped = 0;
     var failures = 0;
     UploadException? shown;
     for (final c in report.characters) {
@@ -263,8 +289,9 @@ class _Run {
         case SyncStatus.unchanged:
           unchanged++;
           out.writeln('unchanged $name');
-        case SyncStatus.removed:
-          out.writeln('removed, skipped $name');
+        case SyncStatus.notSelected:
+          skipped++;
+          out.writeln('skipped $name: not in --only');
         case SyncStatus.failed:
           failures++;
           final e = c.error!;
@@ -307,15 +334,22 @@ class _Run {
       );
     }
     out.writeln(
-      'Done: $uploaded uploaded, $unchanged unchanged, $failures failed.',
+      'Done: $uploaded uploaded, $unchanged unchanged, $failures failed'
+      '${skipped > 0 ? ', $skipped skipped' : ''}.',
     );
+    final seen = {for (final c in report.characters) c.path};
+    for (final path in only ?? const <String>{}) {
+      if (seen.contains(path)) continue;
+      err.writeln('memories-upload: --only $path matches no character.');
+      failed = true;
+    }
     if (report.paused) out.writeln(_pausedText);
     if (report.failed || report.paused) failed = true;
   }
 
   Future<void> _delete(String path) async {
     await client.deleteCharacter(path);
-    site.forget(path);
+    site.unselect(path);
     out.writeln('Removed $path from ${client.site}.');
   }
 

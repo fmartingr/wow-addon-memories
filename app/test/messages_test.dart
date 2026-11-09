@@ -72,7 +72,6 @@ void main() {
             l.andMore(n),
             l.syncUploaded(n),
             l.syncShots(n),
-            l.syncRemoved(n),
             l.syncFailed(n),
             l.syncShotsFailed(n),
             l.flavorInstallFolder(n, 'a, b'),
@@ -309,35 +308,39 @@ void main() {
         ),
         'Sent 1 screenshot, 1 screenshot failed.',
       );
-      const removed = CharacterResult(
+      const skipped = CharacterResult(
         id: 'a',
         path: 'p',
-        status: SyncStatus.removed,
+        status: SyncStatus.notSelected,
       );
       expect(
         syncSummary(
-          const SyncReport(screenshots: 'none', characters: [removed]),
+          const SyncReport(screenshots: 'none', characters: [skipped]),
         ),
-        'Everything is up to date, skipped 1 removed character (Upload now '
-        'sends it again).',
+        'Everything is up to date.',
       );
       expect(
         syncSummary(
-          const SyncReport(
-            screenshots: 'none',
-            characters: [ok, removed, removed],
-          ),
+          const SyncReport(screenshots: 'none', characters: [ok, skipped]),
         ),
-        'Uploaded 1 character, sent 2 screenshots, skipped 2 removed characters '
-        '(Upload now sends them again).',
+        'Uploaded 1 character, sent 2 screenshots.',
       );
     });
 
-    test('the removal message says the rule', () {
+    test('the removal message says the character is unticked', () {
       expect(removedText('Nandu'), startsWith('Nandu was removed'));
-      expect(removedText('Nandu'), contains('Gathers do not upload it again'));
-      expect(removedText('Nandu'), contains('Upload now does'));
+      expect(removedText('Nandu'), contains('unticked'));
+      expect(removedText('Nandu'), contains('Tick it again'));
     });
+
+    test(
+      'the selection texts say that nothing is removed or sent by itself',
+      () {
+        expect(en.selectionHint, 'Choose the characters to upload.');
+        expect(en.selectionNote, contains('New characters are not uploaded'));
+        expect(en.selectionNote, contains('does not remove anything'));
+      },
+    );
   });
 }
 

@@ -1051,7 +1051,7 @@ abstract class AppLocalizations {
   /// Body of the dialog that confirms a new key: what happens to the characters and what to do next.
   ///
   /// In en, this message translates to:
-  /// **'Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on {site} stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends all your characters again. Upload stays off until you turn it on.'**
+  /// **'Do this only when the website blocked or refused this key. The app makes a new key and keeps a copy of the old one. Your characters on {site} stay with the old key. The website admin can move them to the new key. Then register again. The website may ask for a new invite code. The app sends your selected characters again. Upload stays off until you turn it on.'**
   String newKeyQuestionText(String site);
 
   /// Shown after the app made a new key.
@@ -1102,6 +1102,36 @@ abstract class AppLocalizations {
   /// **'Upload is off. Turn on the Upload switch below to send your journey.'**
   String get cardUploadOff;
 
+  /// Title of the list of characters on the Website card.
+  ///
+  /// In en, this message translates to:
+  /// **'Characters to upload'**
+  String get selectionTitle;
+
+  /// Shown on the Website card when the key is registered and no character is ticked.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose the characters to upload.'**
+  String get selectionHint;
+
+  /// Under the title of the character list: new characters start unticked, and unticking removes nothing from the website.
+  ///
+  /// In en, this message translates to:
+  /// **'New characters are not uploaded until you tick them. Unticking a character only stops later uploads; it does not remove anything from the website.'**
+  String get selectionNote;
+
+  /// Button that ticks every character to upload.
+  ///
+  /// In en, this message translates to:
+  /// **'Select all'**
+  String get selectAllLabel;
+
+  /// Button that unticks every character to upload.
+  ///
+  /// In en, this message translates to:
+  /// **'Select none'**
+  String get selectNoneLabel;
+
   /// Text under the progress bar of a running upload.
   ///
   /// In en, this message translates to:
@@ -1137,12 +1167,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'everything is up to date'**
   String get syncUpToDate;
-
-  /// Part of the upload summary. Starts with a lower case letter.
-  ///
-  /// In en, this message translates to:
-  /// **'{count, plural, =1{skipped 1 removed character (Upload now sends it again)} other{skipped {count} removed characters (Upload now sends them again)}}'**
-  String syncRemoved(int count);
 
   /// Part of the upload summary. Starts with a lower case letter.
   ///
@@ -1195,7 +1219,7 @@ abstract class AppLocalizations {
   /// Upload error: the state file could not be written.
   ///
   /// In en, this message translates to:
-  /// **'The character was removed from the website, but the app could not save that, so the next gather may upload it again. Check that the app folder can be written to.'**
+  /// **'The app could not save your choice of characters to upload. Check that the app folder can be written to, then try again.'**
   String get errBadState;
 
   /// Upload error: an internal failure.
@@ -1387,7 +1411,7 @@ abstract class AppLocalizations {
   /// Shown after a character was removed from the website.
   ///
   /// In en, this message translates to:
-  /// **'{name} was removed from the website. Gathers do not upload it again; Upload now does.'**
+  /// **'{name} was removed from the website and unticked. Tick it again to upload it.'**
   String removedText(String name);
 
   /// Shown when an action starts while an upload runs.

@@ -8,8 +8,14 @@ import 'dart:isolate';
 import 'package:memories_core/memories_core.dart' as core;
 import 'package:path/path.dart' as p;
 
-/// What the app knows about its key on one website, with no request.
-typedef SiteStatus = ({bool registered, String? fingerprint});
+/// What the app knows about its key on one website, with no request: whether
+/// it is registered, the key fingerprint and the character paths that the
+/// player chose to upload.
+typedef SiteStatus = ({
+  bool registered,
+  String? fingerprint,
+  Set<String> selected,
+});
 
 /// Talks to a website. Each method takes the website address as the user
 /// wrote it, and throws an [core.UploadException] with a plain message when it
@@ -29,19 +35,21 @@ abstract interface class UploadService {
   /// The characters that [site] holds for the key, and the screenshot state.
   Future<core.MeInfo> me(String site);
 
-  /// Uploads the changed characters of the `latest/` folder [latestDir].
-  /// A character removed with [delete] is skipped, unless [resendRemoved] is
-  /// true: then every removed character is sent again. [onProgress] gets
-  /// `(done, total)` while it runs; a `total` of 0 means nothing to send.
+  /// Uploads the changed characters of the `latest/` folder [latestDir] that
+  /// are in [selected] (character paths); the others are skipped. [onProgress]
+  /// gets `(done, total)` while it runs; a `total` of 0 means nothing to send.
   Future<core.SyncReport> sync(
     String site,
-    String latestDir, {
-    bool resendRemoved = false,
+    String latestDir,
+    Set<String> selected, {
     void Function(int done, int total)? onProgress,
   });
 
-  /// Removes the character at [path] from [site]. The next [sync] skips it
-  /// until a sync with `resendRemoved`.
+  /// Saves [selected] as the character paths to upload to [site].
+  Future<void> setSelected(String site, Set<String> selected);
+
+  /// Removes the character at [path] from [site] and unselects it, so no
+  /// upload sends it again until the player selects it.
   Future<void> delete(String site, String path);
 
   /// Asks [site] to approve screenshots. Returns the new state.
@@ -93,9 +101,11 @@ class CoreUploadService implements UploadService {
     final uri = _parse(site);
     final files = await _files();
     final key = _loadKey(files.key, MissingKey.none);
+    final record = core.UploadState.load(File(files.state)).site(uri);
     return (
-      registered: core.UploadState.load(File(files.state)).site(uri).registered,
+      registered: record.registered,
       fingerprint: key?.fingerprint,
+      selected: {...record.selected},
     );
   }
 
@@ -133,8 +143,8 @@ class CoreUploadService implements UploadService {
   @override
   Future<core.SyncReport> sync(
     String site,
-    String latestDir, {
-    bool resendRemoved = false,
+    String latestDir,
+    Set<String> selected, {
     void Function(int done, int total)? onProgress,
   }) async {
     final uri = _parse(site);
@@ -152,7 +162,7 @@ class CoreUploadService implements UploadService {
           latestDir,
           files.key,
           files.state,
-          resendRemoved,
+          [...selected],
           port.sendPort,
         ),
       );
@@ -168,36 +178,50 @@ class CoreUploadService implements UploadService {
   }
 
   @override
+  Future<void> setSelected(String site, Set<String> selected) async {
+    final uri = _parse(site);
+    final files = await _files();
+    await _changeState(
+      files.state,
+      (state) => state.site(uri).select(selected),
+    );
+  }
+
+  @override
   Future<void> delete(String site, String path) =>
       _withClient(site, MissingKey.fail, (client, files) async {
         try {
           await client.deleteCharacter(path);
         } on core.UploadException catch (e) {
-          // 404: the site does not hold it, so it stays removed all the same.
+          // 404: the site does not hold it, so it is unselected all the same.
           if (e.code == 'not_found') {
-            await _markRemoved(client.site, path, files.state);
+            await _unselect(client.site, path, files.state);
           }
           rethrow;
         }
-        await _markRemoved(client.site, path, files.state);
+        await _unselect(client.site, path, files.state);
       });
 
-  /// Keeps an automatic sync from sending the character at [path] again.
-  Future<void> _markRemoved(Uri site, String path, String statePath) =>
-      _serialState(() async {
-        try {
-          final state = core.UploadState.load(File(statePath));
-          state.site(site).markRemoved(path);
-          state.save(File(statePath));
-        } on FileSystemException {
-          throw core.UploadException(
-            'bad_state',
-            'The character was removed from the website, but the app could '
-                'not save that in $statePath, so the next gather may upload it '
-                'again. Check that the folder can be written to.',
-          );
-        }
-      });
+  Future<void> _unselect(Uri site, String path, String statePath) =>
+      _changeState(statePath, (state) => state.site(site).unselect(path));
+
+  /// Loads the state, applies [change] and saves it, after the writes before.
+  Future<void> _changeState(
+    String statePath,
+    void Function(core.UploadState state) change,
+  ) => _serialState(() async {
+    try {
+      final state = core.UploadState.load(File(statePath));
+      change(state);
+      state.save(File(statePath));
+    } on FileSystemException {
+      throw core.UploadException(
+        'bad_state',
+        'The change was made on the website, but the app could not save it '
+            'in $statePath. Check that the folder can be written to.',
+      );
+    }
+  });
 
   @override
   Future<String> requestScreenshots(String site) => _withClient(
@@ -346,7 +370,7 @@ Future<core.SyncReport> _syncInIsolate(
   String latestDir,
   String keyPath,
   String statePath,
-  bool resendRemoved,
+  List<String> selected,
   SendPort progress,
 ) => Isolate.run(
   () => syncInto(
@@ -354,19 +378,20 @@ Future<core.SyncReport> _syncInIsolate(
     latestDir,
     keyPath,
     statePath,
-    resendRemoved: resendRemoved,
+    selected: selected.toSet(),
     progress: progress,
   ),
 );
 
-/// Uploads [latestDir] to [site] and saves the state. It runs on any isolate,
-/// and only strings and a port go in. [progress] gets `[done, total]`.
+/// Uploads the characters of [selected] (all of them when null) from
+/// [latestDir] to [site] and saves the state. It runs on any isolate, and only
+/// strings and a port go in. [progress] gets `[done, total]`.
 Future<core.SyncReport> syncInto(
   String site,
   String latestDir,
   String keyPath,
   String statePath, {
-  bool resendRemoved = false,
+  Set<String>? selected,
   SendPort? progress,
 }) async {
   final uri = _parse(site);
@@ -377,7 +402,7 @@ Future<core.SyncReport> syncInto(
       Directory(latestDir),
       client,
       state,
-      resendRemoved: resendRemoved,
+      selected: selected,
       onProgress: progress == null
           ? null
           : (done, total) => progress.send(<int>[done, total]),

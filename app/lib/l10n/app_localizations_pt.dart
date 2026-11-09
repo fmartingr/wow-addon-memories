@@ -599,7 +599,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String newKeyQuestionText(String site) {
-    return 'Faça isso só quando o site tiver bloqueado ou recusado esta chave. O app cria uma chave nova e guarda uma cópia da antiga. Os seus personagens em $site ficam com a chave antiga. O administrador do site pode movê-los para a chave nova. Depois, cadastre-se de novo. O site pode pedir um código de convite novo. O app envia todos os seus personagens de novo. O envio fica desativado até você ativá-lo.';
+    return 'Faça isso só quando o site tiver bloqueado ou recusado esta chave. O app cria uma chave nova e guarda uma cópia da antiga. Os seus personagens em $site ficam com a chave antiga. O administrador do site pode movê-los para a chave nova. Depois, cadastre-se de novo. O site pode pedir um código de convite novo. O app envia seus personagens selecionados de novo. O envio fica desativado até você ativá-lo.';
   }
 
   @override
@@ -634,6 +634,22 @@ class AppLocalizationsPt extends AppLocalizations {
   @override
   String get cardUploadOff =>
       'O envio está desativado. Ative o botão Envio abaixo para enviar a sua jornada.';
+
+  @override
+  String get selectionTitle => 'Personagens para enviar';
+
+  @override
+  String get selectionHint => 'Escolha os personagens que quer enviar.';
+
+  @override
+  String get selectionNote =>
+      'Personagens novos não são enviados até você marcá-los. Desmarcar um personagem só impede os envios seguintes; nada é removido do site.';
+
+  @override
+  String get selectAllLabel => 'Selecionar tudo';
+
+  @override
+  String get selectNoneLabel => 'Selecionar nenhum';
 
   @override
   String uploadProgress(int done, int total) {
@@ -672,18 +688,6 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get syncUpToDate => 'tudo está em dia';
-
-  @override
-  String syncRemoved(int count) {
-    String _temp0 = intl.Intl.pluralLogic(
-      count,
-      locale: localeName,
-      other:
-          '$count personagens removidos ignorados (Enviar agora os envia de novo)',
-      one: '1 personagem removido ignorado (Enviar agora o envia de novo)',
-    );
-    return '$_temp0';
-  }
 
   @override
   String syncFailed(int count) {
@@ -734,7 +738,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get errBadState =>
-      'O personagem foi removido do site, mas o app não conseguiu salvar isso, então a próxima coleta pode enviá-lo de novo. Confira se é possível gravar na pasta do app.';
+      'O app não conseguiu salvar sua escolha de personagens para enviar. Verifique se é possível gravar na pasta do app e tente de novo.';
 
   @override
   String get errFailed =>
@@ -873,7 +877,7 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String removedText(String name) {
-    return '$name foi removido do site. As coletas não o enviam de novo; Enviar agora envia.';
+    return '$name foi removido do site e desmarcado. Marque-o de novo para enviá-lo.';
   }
 
   @override
