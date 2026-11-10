@@ -13,7 +13,7 @@
    git push origin v1.2.3
    ```
 
-3. The workflow builds the 4 files, then the `publish` job creates the release with notes generated from the commits.
+3. The workflow builds the 4 files (the macOS file is optional until the signing secrets exist), then the `publish` job creates the release with notes generated from the commits.
 
 - **Version:** the tag without `v` (`v1.2.3` gives `1.2.3`). The tag must be `v` + semver: `vMAJOR.MINOR.PATCH`,
   with an optional pre-release part (`v1.2.3-rc.1`). Build metadata (`v1.2.3+build.5`) is refused, because Flutter

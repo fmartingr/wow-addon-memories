@@ -121,6 +121,8 @@ jobs:
     needs: version
     runs-on: macos-latest
     timeout-minutes: 120
+    # Until the signing secrets exist, a failed macOS job does not block the release. The release then has no macOS file.
+    continue-on-error: true
     env:
       VERSION: ${{ needs.version.outputs.version }}
       RUN_NUMBER: ${{ github.run_number }}
@@ -275,7 +277,6 @@ jobs:
           files=(
             "dist/Memories-addons-$VERSION.zip"
             "dist/WoW-Journey-$VERSION-windows-x64.zip"
-            "dist/WoW-Journey-$VERSION-macos.zip"
             "dist/WoW-Journey-$VERSION-linux-x64.tar.gz"
           )
           for file in "${files[@]}"; do
@@ -284,6 +285,12 @@ jobs:
               exit 1
             fi
           done
+          macos="dist/WoW-Journey-$VERSION-macos.zip"
+          if [ -f "$macos" ]; then
+            files+=("$macos")
+          else
+            echo "::warning::The build artifacts do not hold $macos. The release has no macOS file."
+          fi
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" "${files[@]}" --clobber
           else
