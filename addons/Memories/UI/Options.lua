@@ -105,6 +105,8 @@ local GROUPS = {
 	PvP = L["PvP"],
 }
 
+Options.GROUPS = GROUPS
+
 local function section(addon, boxes)
 	local order, byGroup = groups(addon, boxes)
 	for _, g in ipairs(order) do

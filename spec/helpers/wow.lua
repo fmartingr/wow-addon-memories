@@ -100,9 +100,9 @@ local frame_mt = { __index = Frame }
 for _, name in ipairs({
 	"ClearAllPoints",
 	"EnableMouse",
+	"EnableMouseWheel",
 	"RegisterForClicks",
 	"RegisterForDrag",
-	"SetAllPoints",
 	"SetAlpha",
 	"SetAutoFocus",
 	"SetClampedToScreen",
@@ -174,6 +174,11 @@ end
 
 function Frame:GetScript(name)
 	return self.scripts[name]
+end
+
+-- A plain frame has no OnClick script, as in the client.
+function Frame:HasScript(name)
+	return name ~= "OnClick" or self.kind ~= "Frame"
 end
 
 function Frame:HookScript(name, fn)
@@ -292,6 +297,37 @@ end
 
 function Frame:SetFrameLevel(level)
 	self.frameLevel = level
+end
+
+function Frame:SetAllPoints(target)
+	self.allPoints = target or self.parent
+end
+
+function Frame:GetFrameLevel()
+	return self.frameLevel or 1
+end
+
+function Frame:GetBottom()
+	return self.bottom
+end
+
+function Frame:GetVerticalScroll()
+	return self.verticalScroll or 0
+end
+
+function Frame:SetVerticalScroll(offset)
+	self.verticalScroll = offset
+	if self.scripts.OnVerticalScroll then
+		self.scripts.OnVerticalScroll(self, offset)
+	end
+end
+
+function Frame:SetChecked(on)
+	self.checked = on == true
+end
+
+function Frame:GetChecked()
+	return self.checked == true
 end
 
 function Frame:SetSize(w, h)

@@ -53,4 +53,6 @@ UI\LowHealth.lua
 UI\Status.lua
 UI\Map\MapData.lua
 UI\Map\Overlay.lua
+UI\Map\Panel.lua
+UI\Map\Tab.lua
 Init.lua
