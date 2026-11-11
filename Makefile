@@ -16,7 +16,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test app-theme theme-check app-shots
+.PHONY: app-viewer app-viewer-check help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test app-theme theme-check app-shots
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -31,7 +31,7 @@ deps: ## Install the Lua test and lint tools with luarocks
 	luarocks --lua-version=5.1 --local install luacov 0.17.0-1
 	luarocks --lua-version=5.1 --local install luacheck 1.2.0-1
 
-lint: lint-lua lint-no-go lint-actions server-lint web-lint theme-check dart-lint app-lint fmt-check ## Run all linters
+lint: lint-lua lint-no-go lint-actions server-lint web-lint theme-check dart-lint app-lint app-viewer-check fmt-check ## Run all linters
 
 lint-lua: ## Run luacheck
 	luacheck .
@@ -60,7 +60,13 @@ theme-check: ## Check that the app tokens are up to date and that the website an
 	node scripts/gen-app-theme.mjs --check
 	node scripts/theme-parity.mjs
 
-app-shots: ## Write PNG pictures of the app screens to THEME_SHOTS (default build/theme-shots) for the theme review
+app-viewer: ## Copy the viewer files of web/ into app/assets/viewer/
+	cd app && fvm dart run tool/viewer_assets.dart
+
+app-viewer-check: ## Check that app/assets/viewer/ matches web/ and that pubspec.yaml lists every folder of it
+	cd app && fvm dart run tool/viewer_assets.dart --check
+
+app-shots: app-viewer ## Write PNG pictures of the app screens to THEME_SHOTS (default build/theme-shots) for the theme review
 	cd app && THEME_PREVIEW_DIR="$(abspath $(or $(THEME_SHOTS),build/theme-shots))" fvm flutter test test/theme_preview_test.dart
 
 dart-lint: ## Analyze and check the format of the Dart core
@@ -68,7 +74,7 @@ dart-lint: ## Analyze and check the format of the Dart core
 	cd $(CORE) && fvm dart analyze --fatal-infos
 	cd $(CORE) && fvm dart format --output=none --set-exit-if-changed .
 
-app-lint: ## Analyze and check the format of the Flutter app
+app-lint: app-viewer ## Analyze and check the format of the Flutter app
 	cd app && fvm flutter analyze
 	cd app && fvm dart format --output=none --set-exit-if-changed .
 
@@ -97,10 +103,10 @@ server-test: ## Run the Go server tests with the race detector (FUZZ=1 also fuzz
 dart-test: ## Run the Dart core tests
 	cd $(CORE) && fvm dart test
 
-app-test: ## Run the Flutter app tests
+app-test: app-viewer ## Run the Flutter app tests
 	cd app && fvm flutter test
 
-companion: ## Run the WoW Journey companion app on this system (COMPANION_DEVICE overrides the device)
+companion: app-viewer ## Run the WoW Journey companion app on this system (COMPANION_DEVICE overrides the device)
 	cd app && fvm flutter run -d $(COMPANION_DEVICE)
 
 coverage: coverage-lua server-coverage dart-coverage ## Run tests with coverage thresholds
@@ -147,7 +153,7 @@ local-down: ## Stop the local test server and delete its data (volume)
 local-logs: ## Follow the log of the local test server
 	docker logs -f $(LOCAL_NAME)
 
-companion-local: ## Run the companion app with http://localhost:$(LOCAL_PORT) as the default website
+companion-local: app-viewer ## Run the companion app with http://localhost:$(LOCAL_PORT) as the default website
 	cd app && fvm flutter run -d $(COMPANION_DEVICE) --dart-define=WOWJOURNEY_SITE=http://localhost:$(LOCAL_PORT)
 
 server-build: ## Build the static Go server into build/memories-server

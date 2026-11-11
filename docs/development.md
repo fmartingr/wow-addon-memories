@@ -35,6 +35,8 @@ rewrite.
 | `make local-up` | Build the Docker image and run a test server on `http://localhost:8080` (admin page on `http://localhost:8081`, open registration, data in a Docker volume). `make local-down` deletes it; `make local-logs` follows its log. |
 | `make companion-local` | Run the companion app with `http://localhost:8080` as the default website. |
 | `make web-lint`, `make web-test` | Check the syntax of the viewer modules in `web/`, and run the `node --test` suite of the viewer logic with its coverage threshold (needs Node 24). |
+| `make app-viewer` | Copy the viewer files of `web/` into `app/assets/viewer/` (gitignored). `make companion`, `make companion-local`, `make app-test`, `make app-lint` and `make app-shots` run it first. CI and the release jobs run `fvm dart run tool/viewer_assets.dart` in `app/`. |
+| `make app-viewer-check` | Fail when `app/assets/viewer/` differs from `web/`, or when a folder of the copy has no entry in `app/pubspec.yaml`. `make lint` runs it. |
 | `make web-assets MAP_SRC=...` | Update the map art in `web/map/` from a map art folder. The art is in git; the target keeps `web/map/README.md`. |
 | `make clean` | Remove the coverage files and `app/build/`. |
 

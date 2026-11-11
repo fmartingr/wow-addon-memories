@@ -36,6 +36,21 @@ flutter:
     - assets/tray/
     - assets/crest.png
     - assets/fonts/OFL.txt
+    - assets/viewer/
+    - assets/viewer/fonts/
+    - assets/viewer/i18n/
+    - assets/viewer/lib/
+    - assets/viewer/map/
+    - assets/viewer/map/art/
+    - assets/viewer/map/mini/0/
+    - assets/viewer/map/mini/1/
+    - assets/viewer/map/tiles/0/
+    - assets/viewer/map/tiles/1/
+    - assets/viewer/map/tiles/2/
+    - assets/viewer/map/tiles/3/
+    - assets/viewer/map/tiles/4/
+    - assets/viewer/map/tiles/5/
+    - assets/viewer/ui/
   fonts:
     - family: Cinzel
       fonts:

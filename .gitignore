@@ -8,6 +8,7 @@ coverage.out
 server/coverage.out
 server/data/
 web/map/cover.jpg
+app/assets/viewer/
 
 .fvm/
 .dart_tool/
