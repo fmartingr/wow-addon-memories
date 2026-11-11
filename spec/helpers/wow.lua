@@ -107,7 +107,6 @@ for _, name in ipairs({
 	"SetAutoFocus",
 	"SetClampedToScreen",
 	"SetFontObject",
-	"SetFrameLevel",
 	"SetFrameStrata",
 	"SetHeight",
 	"SetHighlightTexture",
@@ -117,8 +116,8 @@ for _, name in ipairs({
 	"SetNormalTexture",
 	"SetPushedTexture",
 	"SetScrollChild",
-	"SetSize",
 	"SetTexCoord",
+	"SetThickness",
 	"SetVertexColor",
 	"SetWidth",
 	"StartMoving",
@@ -246,7 +245,7 @@ function Frame:GetCenter()
 end
 
 function Frame:GetWidth()
-	return self.width or 0
+	return self.width or (self.size and self.size[1]) or 0
 end
 
 function Frame:GetEffectiveScale()
@@ -266,6 +265,42 @@ end
 
 function Frame:SetTexture(path)
 	self.texture = path
+end
+
+function Frame:CreateLine(name)
+	local line = new_frame("Line", name, self)
+	self.lines = self.lines or {}
+	self.lines[#self.lines + 1] = line
+	return line
+end
+
+function Frame:SetStartPoint(...)
+	self.startPoint = pack(...)
+end
+
+function Frame:SetEndPoint(...)
+	self.endPoint = pack(...)
+end
+
+function Frame:SetColorTexture(...)
+	self.color = pack(...)
+end
+
+function Frame:SetMouseClickEnabled(on)
+	self.mouseClickEnabled = on
+end
+
+function Frame:SetFrameLevel(level)
+	self.frameLevel = level
+end
+
+function Frame:SetSize(w, h)
+	self.size = { w, h }
+end
+
+function Frame:GetSize()
+	local size = self.size or { 0, 0 }
+	return size[1], size[2]
 end
 
 function Frame:CreateFontString(name)

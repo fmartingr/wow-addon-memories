@@ -52,4 +52,5 @@ UI\Options.lua
 UI\LowHealth.lua
 UI\Status.lua
 UI\Map\MapData.lua
+UI\Map\Overlay.lua
 Init.lua
