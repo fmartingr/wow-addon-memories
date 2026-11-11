@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
+import 'package:path/path.dart' as p;
 import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_controller.dart';
@@ -201,7 +202,7 @@ void main() {
       expect(rig.controller.characters, [nandu]);
       expect(states, contains(UploadState.uploading));
       expect(states.last, UploadState.done);
-      expect(rig.upload.syncs, [(site, '/backups/WoW Journey/latest')]);
+      expect(rig.upload.syncs, [(site, p.join('/backups/WoW Journey', 'latest'))]);
     });
 
     test('progress follows the sync, then clears', () async {
@@ -509,7 +510,7 @@ void main() {
     test('uploads when the switch is on and the key is registered', () async {
       final rig = await _rig(settings: _on);
       await rig.gatherOnce();
-      expect(rig.upload.syncs, [(site, '/backups/WoW Journey/latest')]);
+      expect(rig.upload.syncs, [(site, p.join('/backups/WoW Journey', 'latest'))]);
       expect(rig.controller.state, UploadState.done);
     });
 

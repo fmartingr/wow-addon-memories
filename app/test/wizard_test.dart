@@ -43,7 +43,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(fakes.store.saved, [
-      const Settings(
+      Settings(
         flavorDir: retailDir,
         backupRoot: defaultRoot,
         wizardDone: true,

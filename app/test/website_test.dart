@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
+import 'package:path/path.dart' as p;
 import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 
@@ -484,7 +485,7 @@ void main() {
       await tester.tap(find.text(uploadNowLabel));
       await tester.pumpAndSettle();
 
-      expect(fakes.upload.syncs, [(site, '/backups/WoW Journey/latest')]);
+      expect(fakes.upload.syncs, [(site, p.join('/backups/WoW Journey', 'latest'))]);
       expect(fakes.upload.syncSelections, [
         {nandu.path},
       ]);

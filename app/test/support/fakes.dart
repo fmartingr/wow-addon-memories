@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:memories_core/memories_core.dart';
+import 'package:path/path.dart' as p;
 import 'package:wow_journey/src/app.dart';
 import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/platform/discovery.dart';
@@ -23,7 +24,7 @@ const String install = '/games/World of Warcraft';
 const String retailDir = '$install/_retail_';
 const String foreverDir = '$install/_forever_';
 const String documents = '/home/player/Documents';
-const String defaultRoot = '$documents/WoW Journey';
+final String defaultRoot = p.join(documents, 'WoW Journey');
 
 const WowFolder retail = WowFolder(
   installDir: install,
