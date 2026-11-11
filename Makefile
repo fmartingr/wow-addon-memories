@@ -63,6 +63,8 @@ theme-check: ## Check that the app tokens are up to date and that the website an
 app-viewer: ## Copy the viewer files of web/ into app/assets/viewer/
 	cd app && fvm dart run tool/viewer_assets.dart
 
+# With -j, make lint or make test makes the copy in the same run; the check waits for it.
+app-viewer-check: | $(if $(filter lint test,$(MAKECMDGOALS)),app-viewer)
 app-viewer-check: ## Check that app/assets/viewer/ matches web/ and that pubspec.yaml lists every folder of it
 	cd app && fvm dart run tool/viewer_assets.dart --check
 
