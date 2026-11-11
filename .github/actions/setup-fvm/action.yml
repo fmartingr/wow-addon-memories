@@ -19,3 +19,8 @@ runs:
     - name: Install the pinned Flutter
       shell: pwsh
       run: fvm install
+    # fvm install clones Flutter but does not download the engine artifacts. Without sky_engine, pub cannot resolve
+    # a package that depends on flutter, so fvm dart run fails.
+    - name: Download the Flutter artifacts
+      shell: pwsh
+      run: fvm flutter precache
