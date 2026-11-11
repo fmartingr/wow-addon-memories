@@ -336,6 +336,16 @@ class ViewerServer {
     } on FileSystemException {
       return _notFound(request);
     }
+    // The client can read the last byte before response.close() completes. The
+    // handle is closed before that byte goes out, so a caller that deletes the
+    // folder right after the reply does not hit a Windows sharing violation.
+    var open = true;
+    Future<void> release() async {
+      if (!open) return;
+      open = false;
+      await file.close();
+    }
+
     try {
       try {
         length = await file.length();
@@ -348,21 +358,27 @@ class ViewerServer {
         ..statusCode = HttpStatus.ok
         ..headers.contentType = ContentType.parse(type)
         ..contentLength = length;
-      if (request.method != 'HEAD') {
-        await response.addStream(_chunks(file, length));
+      if (request.method != 'HEAD' && length > 0) {
+        await response.addStream(_chunks(file, length, release));
       }
+      await release();
       await response.close();
     } finally {
-      await file.close();
+      await release();
     }
   }
 
-  static Stream<List<int>> _chunks(RandomAccessFile file, int length) async* {
+  static Stream<List<int>> _chunks(
+    RandomAccessFile file,
+    int length,
+    Future<void> Function() release,
+  ) async* {
     var left = length;
     while (left > 0) {
       final bytes = await file.read(left < _chunkSize ? left : _chunkSize);
       if (bytes.isEmpty) return;
       left -= bytes.length;
+      if (left <= 0) await release();
       yield bytes;
     }
   }
