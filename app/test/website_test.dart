@@ -485,7 +485,9 @@ void main() {
       await tester.tap(find.text(uploadNowLabel));
       await tester.pumpAndSettle();
 
-      expect(fakes.upload.syncs, [(site, p.join('/backups/WoW Journey', 'latest'))]);
+      expect(fakes.upload.syncs, [
+        (site, p.join('/backups/WoW Journey', 'latest')),
+      ]);
       expect(fakes.upload.syncSelections, [
         {nandu.path},
       ]);

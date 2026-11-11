@@ -43,11 +43,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(fakes.store.saved, [
-      Settings(
-        flavorDir: retailDir,
-        backupRoot: defaultRoot,
-        wizardDone: true,
-      ),
+      Settings(flavorDir: retailDir, backupRoot: defaultRoot, wizardDone: true),
     ]);
     expect(find.text('Gather now'), findsOneWidget);
     expect(find.text('Step 1 of 3'), findsNothing);
