@@ -331,6 +331,28 @@ Check every kind again with "Enable all" after its row.
 | T3 | 3, V8 | Sub-addon without the core | Disable `Memories`, keep the sub-addons enabled, log in. | No sub-addon loads (shown as a missing dependency), with no Lua error. | not run |
 | T4 | 3, 5 | Only the core installed | Close the game, move the 5 sub-addon folders out of `Interface/AddOns`, log in. Type `/dump Memories.Addons()`, then `/mem status`. Put the folders back. | The core is `on`; each of the 5 sub-addons is `missing`, in `Addons()` and in the status lines. | not run |
 
+## U. Journey tab on the world map
+
+Rows U1 to U14 check the spec `specs/2026-11-11-map-journey-tab.md`. No game client was at hand when the code was
+written, so run them before the release.
+
+| ID | Source | Check | Steps | Expected | Result |
+|---|---|---|---|---|---|
+| U1 | spec AC1 | Tab | Open the world map. | A Journey tab with the Memories icon shows in the side column, under the last game tab, with no Lua error. `/dump QuestMapFrame.TabButtons` shows the game tab list (or `QuestsTab`, `EventsTab`, `MapLegendTab`). | not run |
+| U2 | spec AC1 | Panel | Click the Journey tab. | The Journey panel shows in the place of the quest log, with no quest row visible through it. The edges of the game tabs and of the Journey tab are not covered. | not run |
+| U3 | spec AC2 | Trail on a zone map | Open the map of a zone where you walked, rode and swam, and took a flight. | Lines follow the recorded trail. The colour changes with the way of travel. | not run |
+| U4 | spec AC3 | Pins | Look at the same map. Hover over a pin of a death and over a pin of a level up. | Each pin has an icon of its group. The pins of a death and of a level up are larger. The tooltip shows the time, the kind name and the fields. | not run |
+| U5 | spec AC4 | Panel filters | Clear the "Deaths" box, then the "Trail" box. Choose one session, then "All". | The pins of the group and then the lines go away. One session shows only its own lines and pins. "All" shows everything. The count line follows each change. | not run |
+| U6 | spec AC5 | Continent map | Open the map of a continent, then the world map. | The trail and the pins of the zones show on it. The coastal zones show too. A zone with no position is skipped, and the panel says "N zones not shown". | not run |
+| U7 | spec AC1 | Game tab hides the overlay | With Journey on, click the quest log tab (or another game tab). | The panel and the overlay go away, and the game panel shows. | not run |
+| U8 | spec AC6 | Saved tab | Click Journey, close the map, open it with M. Then click a game tab, close the map, open it again. Then `/reload`. | The map opens on Journey the first time and on the game tab the second time. The group and trail choices stay after `/reload`. | not run |
+| U9 | spec AC7 | Combat | In a fight, open the map and switch Journey on and off. | No taint error shows, and `/mem errors` has nothing new. | not run |
+| U10 | spec AC7 | Errors | After a play session with the map open, type `/mem errors`. | No new error. | not run |
+| U11 | spec risk | Long journey | Open a continent map with a journey of many hours. | The frame rate does not drop when the map opens. If a cap cuts the view, the panel says so. | not run |
+| U12 | spec risk | Another map addon | With an addon that adds a map tab or pins, open the map. | The two tabs do not overlap. The pins and the drawings of the other addon stay. | not run |
+| U13 | spec AC8 | Language | Run on the esES client, then on frFR or deDE. | All texts of the tab and the panel show in the client language. Long labels wrap and do not overlap. | not run |
+| U14 | spec risk | Panel layout | Collapse and expand the quest log with Journey on, with the map open and then closed. Scroll a long list of sessions. | The tab and the panel follow the quest log. The session rows move on scroll and the chosen one is marked. The check boxes fit in the panel. With no quest log, the tab and panel show beside the map, also on a maximized map. | not run |
+
 ## Validation map
 
 | Validation step | Rows |

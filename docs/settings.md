@@ -11,6 +11,10 @@ Back to the [documentation index](README.md).
     Every kind is on by default. A kind that is off writes no line, but its counts go on.
   - **New findings only:** Gathering (`ga`, `fs`), Kills (`ki`), Loot (`lo`) and Consumables (`cu`), all off. When a
     box is on, its kinds write a line only for a first finding or a rare one.
+- **Journey tab of the world map:** the choices of the panel are saved per account in `MemoriesDB.settings.map`:
+  `groups` (a group is shown unless its entry is `false`), `trail` (on by default) and `tab` (`"quest"` or
+  `"journey"`: the map opens on the tab that was used last). The choice of a session is not saved. When all of
+  Memories is read-only, the choices last for the session only.
 - `/mem status` shows each addon of the set (on, off, missing, failed or newer api), its lines, the number of its kinds
   that are off and the age of its backup, then the login time.
 - `/mem errors` shows the saved errors, ready to copy.
