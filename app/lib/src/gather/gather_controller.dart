@@ -44,6 +44,7 @@ class BackupSnapshot {
     this.screenshots = 0,
     this.lastGathered,
     this.sizeBytes = 0,
+    this.defaultCharacter,
   });
 
   final List<CharacterSummary> characters;
@@ -54,6 +55,9 @@ class BackupSnapshot {
   final DateTime? lastGathered;
 
   final int sizeBytes;
+
+  /// The id of `default_character` in `latest/index.json`, or null.
+  final String? defaultCharacter;
 }
 
 /// A finished gather and the backup root after it.
@@ -117,11 +121,18 @@ BackupSnapshot inspectBackupRoot(String backupRoot) {
   final characters = <CharacterSummary>[];
   var lines = 0;
   var screenshots = 0;
+  String? defaultCharacter;
   try {
     final index = jsonDecode(
       File(p.join(backupRoot, 'latest', 'index.json')).readAsStringSync(),
     );
-    final list = index is Map<String, Object?> ? index['characters'] : null;
+    final map = index is Map<String, Object?>
+        ? index
+        : const <String, Object?>{};
+    final list = map['characters'];
+    final chosen = map['default_character'];
+    // A gather with no character writes "default_character": "".
+    if (chosen is String && chosen.isNotEmpty) defaultCharacter = chosen;
     for (final c in list is List<Object?> ? list : const <Object?>[]) {
       if (c is! Map<String, Object?>) continue;
       characters.add(
@@ -168,6 +179,7 @@ BackupSnapshot inspectBackupRoot(String backupRoot) {
     screenshots: screenshots,
     lastGathered: last?.toLocal(),
     sizeBytes: size,
+    defaultCharacter: defaultCharacter,
   );
 }
 

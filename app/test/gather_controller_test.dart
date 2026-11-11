@@ -271,5 +271,25 @@ void main() {
       final snap = inspectBackupRoot(tmp.path);
       expect(snap.characters.map((c) => c.path), ['wow/eu/brumamar/nandu', '']);
     });
+
+    test('defaultCharacter is the default_character of the index', () {
+      File(p.join(tmp.path, 'latest', 'index.json'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync(
+          '{"default_character":"eu-a-b","characters":[{"id":"eu-a-b"}]}',
+        );
+      expect(inspectBackupRoot(tmp.path).defaultCharacter, 'eu-a-b');
+    });
+
+    test('defaultCharacter is null without one or when it is not text', () {
+      final index = File(p.join(tmp.path, 'latest', 'index.json'))
+        ..createSync(recursive: true)
+        ..writeAsStringSync('{"characters":[]}');
+      expect(inspectBackupRoot(tmp.path).defaultCharacter, isNull);
+      index.writeAsStringSync('{"default_character":3,"characters":[]}');
+      expect(inspectBackupRoot(tmp.path).defaultCharacter, isNull);
+      index.writeAsStringSync('{"default_character":"","characters":[]}');
+      expect(inspectBackupRoot(tmp.path).defaultCharacter, isNull);
+    });
   });
 }
