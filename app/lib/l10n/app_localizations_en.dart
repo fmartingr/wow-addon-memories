@@ -196,6 +196,21 @@ class AppLocalizationsEn extends AppLocalizations {
       'We could not open this folder. If you have not gathered yet, click Gather now first.';
 
   @override
+  String get viewCharacter => 'View';
+
+  @override
+  String viewCharacterLabel(String name) {
+    return 'View $name';
+  }
+
+  @override
+  String get viewerStartFailed => 'Could not start the journey viewer.';
+
+  @override
+  String get viewerOpenFailed =>
+      'Could not open the browser. Copy the link and open it yourself.';
+
+  @override
   String get dismiss => 'Dismiss';
 
   @override
@@ -890,6 +905,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get trayGatherNow => 'Gather now';
+
+  @override
+  String get trayViewJourney => 'View journey';
 
   @override
   String get trayOpenWindow => 'Open window';

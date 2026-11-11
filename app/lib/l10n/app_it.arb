@@ -52,6 +52,10 @@
   "openBackupFolder": "Apri la cartella di backup",
   "openLatestData": "Apri gli ultimi dati",
   "openFolderFailed": "Non siamo riusciti ad aprire questa cartella. Se non hai ancora raccolto, fai prima clic su Raccogli ora.",
+  "viewCharacter": "Visualizza",
+  "viewCharacterLabel": "Visualizza {name}",
+  "viewerStartFailed": "Impossibile avviare il visualizzatore del viaggio.",
+  "viewerOpenFailed": "Non siamo riusciti ad aprire il browser. Copia il link e aprilo tu stesso.",
   "dismiss": "Chiudi",
   "showWebsiteTab": "Mostra la scheda Sito web",
   "andMore": "{count, plural, =1{e 1 altro} other{e altri {count}}}",
@@ -224,6 +228,7 @@
   "notAnswering": "WoW Journey è già in esecuzione, ma non ha risposto. Usa Esci nel menu della sua icona nella barra di sistema, oppure terminalo nel gestore attività, poi avvialo di nuovo.",
   "close": "Chiudi",
   "trayGatherNow": "Raccogli ora",
+  "trayViewJourney": "Visualizza il viaggio",
   "trayOpenWindow": "Apri la finestra",
   "trayOpenBackupFolder": "Apri la cartella di backup",
   "trayQuit": "Esci"

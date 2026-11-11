@@ -52,6 +52,10 @@
   "openBackupFolder": "Ouvrir le dossier de sauvegarde",
   "openLatestData": "Ouvrir les dernières données",
   "openFolderFailed": "Nous n’avons pas pu ouvrir ce dossier. Si vous n’avez pas encore collecté, cliquez d’abord sur Collecter maintenant.",
+  "viewCharacter": "Voir",
+  "viewCharacterLabel": "Voir {name}",
+  "viewerStartFailed": "Impossible de démarrer la visionneuse du parcours.",
+  "viewerOpenFailed": "Impossible d’ouvrir le navigateur. Copiez le lien et ouvrez-le vous-même.",
   "dismiss": "Fermer",
   "showWebsiteTab": "Afficher l’onglet Site web",
   "andMore": "{count, plural, =1{et 1 autre} other{et {count} autres}}",
@@ -224,6 +228,7 @@
   "notAnswering": "WoW Journey est déjà en cours d’exécution, mais n’a pas répondu. Quittez-le depuis le menu de son icône de la zone de notification, ou terminez-le dans le gestionnaire de tâches, puis relancez-le.",
   "close": "Fermer",
   "trayGatherNow": "Collecter maintenant",
+  "trayViewJourney": "Voir le parcours",
   "trayOpenWindow": "Ouvrir la fenêtre",
   "trayOpenBackupFolder": "Ouvrir le dossier de sauvegarde",
   "trayQuit": "Quitter"

@@ -29,8 +29,15 @@ Releases are cut as described in [`releasing.md`](releasing.md).
 - **Main window:** a header and three tabs at the top: Overview, Website and Settings. A message about the settings
   file shows above the tabs.
 - **Overview:** the last gather time, a Gather now button, the counts (characters, journal lines, screenshots), the
-  characters, each problem in plain words with a fix button, the size of the backup folder, and Open backup folder
-  and Open latest data.
+  characters (each with a View button), each problem in plain words with a fix button, the size of the backup folder,
+  and Open backup folder and Open latest data.
+- **Local viewer:** the View button opens the character page of the website in the default browser, with the data on
+  this computer and no upload. The app serves the page on `127.0.0.1` with a port that the system picks. It starts the
+  server at the first View, reads `latest/` of the backup folder, and stops it when the app quits. The page has the
+  language of the app. Other programs on the same computer can read the page and the data while the app runs. The
+  page needs internet only for the Wowhead names of the gear. After a gather, reload the page to see the new data.
+  The map art is Blizzard's; see [`web/map/README.md`](../web/map/README.md). If the browser cannot open, the app
+  shows a message with a Copy link button.
 - **Settings tab:** change the WoW folder or the backup folder (the old backup folder stays as it is), the two
   switches and the version.
 - **Website tab:** the Registration panel has the website address (default `https://wowjourney.xyz`; only
@@ -48,10 +55,12 @@ Releases are cut as described in [`releasing.md`](releasing.md).
   keeps the old key as `upload-key.<UTC time>.json` next to it, makes a new one, turns Upload off and forgets every
   registration, so you register again and the app sends the ticked characters again. A build can set another default address with
   `--dart-define=WOWJOURNEY_SITE=http://localhost:8080`.
-- **Tray:** the tray icon has the menu Gather now, Open window, Open backup folder and Quit. Closing the window hides
-  it to the tray; Quit stops Watch and ends the app. A gather from the tray leaves a hidden window hidden. When there
-  is no tray, closing the window quits the app. On Linux the icon needs a panel with status notifier icons: KDE Plasma
-  and most other desktops have one, GNOME only with the AppIndicator extension (Ubuntu has it on).
+- **Tray:** the tray icon has the menu Gather now, View journey, Open window, Open backup folder and Quit. View journey
+  opens the default character of `latest/index.json`, or the first character; with no character, it shows the window.
+  Closing the window hides it to the tray; Quit stops Watch and the local viewer and ends the app. A gather from the
+  tray leaves a hidden window hidden. When there is no tray, closing the window quits the app. On Linux the icon needs
+  a panel with status notifier icons: KDE Plasma and most other desktops have one, GNOME only with the AppIndicator
+  extension (Ubuntu has it on).
 - **Start at login:** while it is on, the app starts hidden at login (`--hidden`), with only the tray icon. It writes
   the login entry on Finish, when the switch changes and again at each start, so a moved app still starts. The entry
   is the `Run` registry key on Windows, `~/.config/autostart/WoW Journey.desktop` on Linux and

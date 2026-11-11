@@ -8,6 +8,7 @@ import 'package:wow_journey/src/settings/settings_store.dart';
 import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/ui/messages.dart';
+import 'package:wow_journey/src/viewer/viewer_launcher.dart';
 
 import 'support/fakes.dart';
 import 'support/texts.dart';
@@ -116,6 +117,70 @@ void main() {
     expect(find.bySemanticsLabel('Screenshots: 2'), findsOneWidget);
     expect(find.text('Size: 3.0 MB'), findsOneWidget);
     expect(find.textContaining('Last gathered'), findsOneWidget);
+  });
+
+  Fakes viewReady() => _ready(
+    gather: FakeGatherService(
+      snapshot: const BackupSnapshot(
+        characters: [
+          CharacterSummary(id: 'eu-a-one', name: 'One', realm: 'A'),
+          CharacterSummary(id: 'eu-a-two', name: 'Two', realm: 'A'),
+        ],
+      ),
+    ),
+  );
+
+  testWidgets('each character row has a View button', (tester) async {
+    useWindow(tester);
+    await pumpApp(tester, viewReady());
+    expect(find.widgetWithText(TextButton, 'View'), findsNWidgets(2));
+    expect(find.bySemanticsLabel('View One'), findsOneWidget);
+    expect(find.bySemanticsLabel('View Two'), findsOneWidget);
+  });
+
+  testWidgets('View opens the character with the app language', (tester) async {
+    useWindow(tester);
+    final fakes = viewReady();
+    await pumpApp(tester, fakes);
+    await tester.tap(find.widgetWithText(TextButton, 'View').last);
+    await tester.pump();
+    expect(fakes.viewer.opened, [('eu-a-two', 'en')]);
+    expect(find.byType(SnackBar), findsNothing);
+  });
+
+  testWidgets('a server that cannot start shows a message', (tester) async {
+    useWindow(tester);
+    final fakes = viewReady();
+    fakes.viewer.result = const ViewerServerFailed();
+    await pumpApp(tester, fakes);
+    await tester.tap(find.widgetWithText(TextButton, 'View').first);
+    await tester.pump();
+    expect(find.text('Could not start the journey viewer.'), findsOneWidget);
+  });
+
+  testWidgets('a browser that cannot open shows the message and Copy link', (
+    tester,
+  ) async {
+    useWindow(tester);
+    final fakes = viewReady();
+    fakes.viewer.result = ViewerBrowserFailed(
+      Uri.parse('http://127.0.0.1:5000/eu-a-one/?lang=en'),
+    );
+    await pumpApp(tester, fakes);
+    await tester.tap(find.widgetWithText(TextButton, 'View').first);
+    await tester.pump();
+    expect(
+      find.text(
+        'Could not open the browser. Copy the link and open it yourself.',
+      ),
+      findsOneWidget,
+    );
+    await tester.pump(const Duration(milliseconds: 500));
+    await tester.tap(find.text('Copy link'));
+    await tester.pump();
+    expect(fakes.copied, ['http://127.0.0.1:5000/eu-a-one/?lang=en']);
+    await tester.pump(const Duration(milliseconds: 500));
+    expect(find.text('Link copied'), findsOneWidget);
   });
 
   testWidgets('running: the button is off and shows progress; done after', (

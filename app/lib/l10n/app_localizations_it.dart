@@ -197,6 +197,22 @@ class AppLocalizationsIt extends AppLocalizations {
       'Non siamo riusciti ad aprire questa cartella. Se non hai ancora raccolto, fai prima clic su Raccogli ora.';
 
   @override
+  String get viewCharacter => 'Visualizza';
+
+  @override
+  String viewCharacterLabel(String name) {
+    return 'Visualizza $name';
+  }
+
+  @override
+  String get viewerStartFailed =>
+      'Impossibile avviare il visualizzatore del viaggio.';
+
+  @override
+  String get viewerOpenFailed =>
+      'Non siamo riusciti ad aprire il browser. Copia il link e aprilo tu stesso.';
+
+  @override
   String get dismiss => 'Chiudi';
 
   @override
@@ -897,6 +913,9 @@ class AppLocalizationsIt extends AppLocalizations {
 
   @override
   String get trayGatherNow => 'Raccogli ora';
+
+  @override
+  String get trayViewJourney => 'Visualizza il viaggio';
 
   @override
   String get trayOpenWindow => 'Apri la finestra';

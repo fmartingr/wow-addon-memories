@@ -196,6 +196,21 @@ class AppLocalizationsEs extends AppLocalizations {
       'No pudimos abrir esta carpeta. Si aún no has recopilado, pulsa primero Recopilar ahora.';
 
   @override
+  String get viewCharacter => 'Ver';
+
+  @override
+  String viewCharacterLabel(String name) {
+    return 'Ver $name';
+  }
+
+  @override
+  String get viewerStartFailed => 'No se pudo iniciar el visor del viaje.';
+
+  @override
+  String get viewerOpenFailed =>
+      'No pudimos abrir el navegador. Copia el enlace y ábrelo tú mismo.';
+
+  @override
   String get dismiss => 'Cerrar';
 
   @override
@@ -895,6 +910,9 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get trayGatherNow => 'Recopilar ahora';
+
+  @override
+  String get trayViewJourney => 'Ver el viaje';
 
   @override
   String get trayOpenWindow => 'Abrir ventana';

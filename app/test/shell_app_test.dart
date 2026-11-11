@@ -40,6 +40,7 @@ void main() {
     expect(fakes.window.calls, ['init']);
     expect(fakes.tray.items.map((i) => i.label), [
       enTray.gatherNow,
+      enTray.viewJourney,
       enTray.openWindow,
       enTray.openBackupFolder,
       enTray.quit,

@@ -52,6 +52,10 @@
   "openBackupFolder": "Abrir pasta de backup",
   "openLatestData": "Abrir dados mais recentes",
   "openFolderFailed": "Não conseguimos abrir esta pasta. Se você ainda não coletou, clique primeiro em Coletar agora.",
+  "viewCharacter": "Ver",
+  "viewCharacterLabel": "Ver {name}",
+  "viewerStartFailed": "Não foi possível iniciar o visualizador da jornada.",
+  "viewerOpenFailed": "Não conseguimos abrir o navegador. Copie o link e abra-o você mesmo.",
   "dismiss": "Fechar",
   "showWebsiteTab": "Mostrar a aba Site",
   "andMore": "{count, plural, =1{e mais 1} other{e mais {count}}}",
@@ -224,6 +228,7 @@
   "notAnswering": "O WoW Journey já está em execução, mas não respondeu. Use Sair no menu do ícone dele na bandeja, ou encerre-o no gerenciador de tarefas, e inicie-o de novo.",
   "close": "Fechar",
   "trayGatherNow": "Coletar agora",
+  "trayViewJourney": "Ver a jornada",
   "trayOpenWindow": "Abrir janela",
   "trayOpenBackupFolder": "Abrir pasta de backup",
   "trayQuit": "Sair"

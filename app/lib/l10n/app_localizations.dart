@@ -412,6 +412,30 @@ abstract class AppLocalizations {
   /// **'We could not open this folder. If you have not gathered yet, click Gather now first.'**
   String get openFolderFailed;
 
+  /// Label of the button on a character row that opens the character page in the browser.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get viewCharacter;
+
+  /// Spoken label of the View button of one character. {name} is the character name.
+  ///
+  /// In en, this message translates to:
+  /// **'View {name}'**
+  String viewCharacterLabel(String name);
+
+  /// Shown when the local journey viewer cannot start.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not start the journey viewer.'**
+  String get viewerStartFailed;
+
+  /// Shown when the browser cannot open the character page. A Copy link button follows.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not open the browser. Copy the link and open it yourself.'**
+  String get viewerOpenFailed;
+
   /// Tooltip of the button that closes a notice.
   ///
   /// In en, this message translates to:
@@ -1443,6 +1467,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Gather now'**
   String get trayGatherNow;
+
+  /// Tray menu item that opens the page of the default character in the browser.
+  ///
+  /// In en, this message translates to:
+  /// **'View journey'**
+  String get trayViewJourney;
 
   /// Tray menu item.
   ///

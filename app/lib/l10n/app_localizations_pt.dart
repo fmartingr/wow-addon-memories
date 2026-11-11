@@ -197,6 +197,22 @@ class AppLocalizationsPt extends AppLocalizations {
       'Não conseguimos abrir esta pasta. Se você ainda não coletou, clique primeiro em Coletar agora.';
 
   @override
+  String get viewCharacter => 'Ver';
+
+  @override
+  String viewCharacterLabel(String name) {
+    return 'Ver $name';
+  }
+
+  @override
+  String get viewerStartFailed =>
+      'Não foi possível iniciar o visualizador da jornada.';
+
+  @override
+  String get viewerOpenFailed =>
+      'Não conseguimos abrir o navegador. Copie o link e abra-o você mesmo.';
+
+  @override
   String get dismiss => 'Fechar';
 
   @override
@@ -897,6 +913,9 @@ class AppLocalizationsPt extends AppLocalizations {
 
   @override
   String get trayGatherNow => 'Coletar agora';
+
+  @override
+  String get trayViewJourney => 'Ver a jornada';
 
   @override
   String get trayOpenWindow => 'Abrir janela';

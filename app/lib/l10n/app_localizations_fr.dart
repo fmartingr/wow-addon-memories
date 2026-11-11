@@ -197,6 +197,22 @@ class AppLocalizationsFr extends AppLocalizations {
       'Nous n’avons pas pu ouvrir ce dossier. Si vous n’avez pas encore collecté, cliquez d’abord sur Collecter maintenant.';
 
   @override
+  String get viewCharacter => 'Voir';
+
+  @override
+  String viewCharacterLabel(String name) {
+    return 'Voir $name';
+  }
+
+  @override
+  String get viewerStartFailed =>
+      'Impossible de démarrer la visionneuse du parcours.';
+
+  @override
+  String get viewerOpenFailed =>
+      'Impossible d’ouvrir le navigateur. Copiez le lien et ouvrez-le vous-même.';
+
+  @override
   String get dismiss => 'Fermer';
 
   @override
@@ -900,6 +916,9 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get trayGatherNow => 'Collecter maintenant';
+
+  @override
+  String get trayViewJourney => 'Voir le parcours';
 
   @override
   String get trayOpenWindow => 'Ouvrir la fenêtre';

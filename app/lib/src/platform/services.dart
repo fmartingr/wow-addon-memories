@@ -5,6 +5,7 @@ library;
 import '../gather/gather_controller.dart';
 import '../settings/settings_store.dart';
 import '../upload/upload_service.dart';
+import '../viewer/viewer_launcher.dart';
 import '../watch/watch_controller.dart';
 import 'clipboard.dart';
 import 'discovery.dart';
@@ -27,6 +28,7 @@ class AppServices {
     required this.window,
     required this.startup,
     required this.uploader,
+    required this.viewer,
     this.signature = flavorSignature,
     this.clock = DateTime.now,
     this.copyText = copyToClipboard,
@@ -42,6 +44,9 @@ class AppServices {
   final WindowService window;
   final StartupService startup;
   final UploadService uploader;
+
+  /// Opens a character page of the local viewer in the browser.
+  final ViewerLauncher viewer;
 
   /// The signature of the Memories files that Watch polls.
   final SignatureFunction signature;

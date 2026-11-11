@@ -13,6 +13,7 @@ import '../platform/services.dart';
 import '../settings/settings_controller.dart';
 import '../theme/ak_widgets.dart';
 import '../upload/upload_controller.dart';
+import '../viewer/viewer_launcher.dart';
 import '../watch/watch_controller.dart';
 import 'character_detail.dart';
 import 'folder_flow.dart';
@@ -108,6 +109,34 @@ class _HomePageState extends State<HomePage> {
       ..hideCurrentSnackBar()
       ..showSnackBar(
         SnackBar(content: Text(AppLocalizations.of(context).openFolderFailed)),
+      );
+  }
+
+  Future<void> _view(CharacterSummary c) async {
+    final lang = Localizations.localeOf(context).languageCode;
+    final result = await widget.services.viewer.open(c.id, lang);
+    if (result is ViewerOpened || !mounted) return;
+    final l = AppLocalizations.of(context);
+    final messenger = ScaffoldMessenger.of(context)..hideCurrentSnackBar();
+    messenger.showSnackBar(switch (result) {
+      ViewerBrowserFailed(:final url) => SnackBar(
+        content: Text(l.viewerOpenFailed),
+        action: SnackBarAction(
+          label: l.copyLinkLabel,
+          onPressed: () => _copyLink(url),
+        ),
+      ),
+      _ => SnackBar(content: Text(l.viewerStartFailed)),
+    });
+  }
+
+  Future<void> _copyLink(Uri url) async {
+    await widget.services.copyText(url.toString());
+    if (!mounted) return;
+    ScaffoldMessenger.of(context)
+      ..hideCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(content: Text(AppLocalizations.of(context).linkCopiedText)),
       );
   }
 
@@ -415,6 +444,13 @@ class _HomePageState extends State<HomePage> {
               leading: const Icon(Icons.person_outline),
               title: Text(c.name),
               subtitle: characterDetail(c, l),
+              trailing: TextButton(
+                onPressed: () => _view(c),
+                child: Text(
+                  l.viewCharacter,
+                  semanticsLabel: l.viewCharacterLabel(c.name),
+                ),
+              ),
             ),
         ],
       ),

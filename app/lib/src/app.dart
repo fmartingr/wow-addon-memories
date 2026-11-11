@@ -63,6 +63,7 @@ class _WowJourneyAppState extends State<WowJourneyApp>
     window: widget.services.window,
     startup: widget.services.startup,
     opener: widget.services.opener,
+    viewer: widget.services.viewer,
     startHidden: widget.startHidden,
   );
   StreamSubscription<void>? _showRequests;
@@ -77,6 +78,7 @@ class _WowJourneyAppState extends State<WowJourneyApp>
     _upload;
     WidgetsBinding.instance.addObserver(this);
     _settings.addListener(_syncWatch);
+    _settings.addListener(_syncViewer);
     _settings.load();
     _shell.start();
     _showRequests = widget.showRequests?.listen((_) => _shell.openWindow());
@@ -100,12 +102,17 @@ class _WowJourneyAppState extends State<WowJourneyApp>
     }
   }
 
+  void _syncViewer() {
+    widget.services.viewer.backupRoot = _settings.settings.backupRoot;
+  }
+
   @override
   void dispose() {
     WidgetsBinding.instance.removeObserver(this);
     _showRequests?.cancel();
     _shell.dispose();
     _settings.removeListener(_syncWatch);
+    _settings.removeListener(_syncViewer);
     _watch.dispose();
     _upload.dispose();
     _settings.dispose();

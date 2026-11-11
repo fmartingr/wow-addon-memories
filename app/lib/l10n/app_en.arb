@@ -242,6 +242,27 @@
   "@openFolderFailed": {
     "description": "Shown when a folder cannot be opened."
   },
+  "viewCharacter": "View",
+  "@viewCharacter": {
+    "description": "Label of the button on a character row that opens the character page in the browser."
+  },
+  "viewCharacterLabel": "View {name}",
+  "@viewCharacterLabel": {
+    "description": "Spoken label of the View button of one character. {name} is the character name.",
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "viewerStartFailed": "Could not start the journey viewer.",
+  "@viewerStartFailed": {
+    "description": "Shown when the local journey viewer cannot start."
+  },
+  "viewerOpenFailed": "Could not open the browser. Copy the link and open it yourself.",
+  "@viewerOpenFailed": {
+    "description": "Shown when the browser cannot open the character page. A Copy link button follows."
+  },
   "dismiss": "Dismiss",
   "@dismiss": {
     "description": "Tooltip of the button that closes a notice."
@@ -1141,6 +1162,10 @@
   "trayGatherNow": "Gather now",
   "@trayGatherNow": {
     "description": "Tray menu item."
+  },
+  "trayViewJourney": "View journey",
+  "@trayViewJourney": {
+    "description": "Tray menu item that opens the page of the default character in the browser."
   },
   "trayOpenWindow": "Open window",
   "@trayOpenWindow": {

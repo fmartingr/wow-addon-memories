@@ -196,6 +196,22 @@ class AppLocalizationsDe extends AppLocalizations {
       'Wir konnten diesen Ordner nicht öffnen. Wenn du noch nicht gesammelt hast, klicke zuerst auf Jetzt sammeln.';
 
   @override
+  String get viewCharacter => 'Ansehen';
+
+  @override
+  String viewCharacterLabel(String name) {
+    return '$name ansehen';
+  }
+
+  @override
+  String get viewerStartFailed =>
+      'Der Reise-Betrachter konnte nicht gestartet werden.';
+
+  @override
+  String get viewerOpenFailed =>
+      'Der Browser konnte nicht geöffnet werden. Kopiere den Link und öffne ihn selbst.';
+
+  @override
   String get dismiss => 'Schließen';
 
   @override
@@ -899,6 +915,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get trayGatherNow => 'Jetzt sammeln';
+
+  @override
+  String get trayViewJourney => 'Reise ansehen';
 
   @override
   String get trayOpenWindow => 'Fenster öffnen';

@@ -45,6 +45,26 @@ void main() {
     });
   });
 
+  group('the local viewer texts', () {
+    const keys = [
+      'viewCharacter',
+      'viewCharacterLabel',
+      'trayViewJourney',
+      'viewerStartFailed',
+      'viewerOpenFailed',
+    ];
+    for (final code in appLanguageCodes) {
+      test('$code has them', () {
+        final arb = _arb(code);
+        for (final key in keys) {
+          expect(arb[key], isA<String>(), reason: '$code $key');
+          expect((arb[key] as String).trim(), isNotEmpty, reason: '$code $key');
+        }
+        expect(arb['viewCharacterLabel'], contains('{name}'));
+      });
+    }
+  });
+
   group('the languages', () {
     test('are the 6 of the app, English first', () {
       expect(appLanguageCodes, ['en', 'de', 'fr', 'es', 'it', 'pt']);

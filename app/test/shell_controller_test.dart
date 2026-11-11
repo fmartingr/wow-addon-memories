@@ -7,6 +7,7 @@ import 'package:wow_journey/src/gather/gather_controller.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_controller.dart';
 import 'package:wow_journey/src/shell/shell_controller.dart';
+import 'package:wow_journey/src/viewer/viewer_launcher.dart';
 import 'package:wow_journey/src/watch/watch_controller.dart';
 
 import 'support/fakes.dart';
@@ -42,6 +43,7 @@ class _Shell {
       window: window,
       startup: startup,
       opener: opener,
+      viewer: viewer,
       startHidden: startHidden,
       systemLocales: () => systemLocales,
     );
@@ -56,6 +58,7 @@ class _Shell {
   final FakeWindow window = FakeWindow();
   final FakeStartup startup = FakeStartup();
   final FakeOpener opener = FakeOpener();
+  final FakeViewer viewer = FakeViewer();
   final _Timer timer = _Timer();
   late final SettingsController settings = SettingsController(store);
   late final GatherController gather = GatherController(service);
@@ -123,6 +126,7 @@ void main() {
       await pumpEventQueue();
       expect(h.tray.items.map((i) => i.label), [
         'Jetzt sammeln',
+        'Reise ansehen',
         'Fenster öffnen',
         'Sicherungsordner öffnen',
         'Beenden',
@@ -185,11 +189,12 @@ void main() {
   });
 
   group('the tray menu', () {
-    test('has the four items in order', () async {
+    test('has the five items in order', () async {
       final h = _Shell();
       await h.start();
       expect(h.tray.items.map((i) => i.label), [
         'Gather now',
+        'View journey',
         'Open window',
         'Open backup folder',
         'Quit',
@@ -250,6 +255,88 @@ void main() {
       expect(h.window.calls, ['init', 'show']);
     });
 
+    group('View journey', () {
+      const characters = [
+        CharacterSummary(id: 'eu-a-one', name: 'One', realm: 'A'),
+        CharacterSummary(id: 'eu-a-two', name: 'Two', realm: 'A'),
+      ];
+
+      Future<_Shell> ready({String? defaultCharacter}) async {
+        final h = _Shell();
+        h.service.snapshot = BackupSnapshot(
+          characters: characters,
+          defaultCharacter: defaultCharacter,
+        );
+        await h.start();
+        await h.gather.refresh(readySettings.backupRoot!);
+        return h;
+      }
+
+      test('opens the default character in the app language', () async {
+        final h = await ready(defaultCharacter: 'eu-a-two');
+        h.tray.select(enTray.viewJourney);
+        await pumpEventQueue();
+        expect(h.viewer.opened, [('eu-a-two', 'en')]);
+        expect(h.window.calls, ['init']);
+      });
+
+      test(
+        'opens the first character when the default is not listed',
+        () async {
+          final h = await ready(defaultCharacter: 'eu-gone');
+          h.tray.select(enTray.viewJourney);
+          await pumpEventQueue();
+          expect(h.viewer.opened, [('eu-a-one', 'en')]);
+        },
+      );
+
+      test('opens the first character without a default', () async {
+        final h = await ready();
+        h.tray.select(enTray.viewJourney);
+        await pumpEventQueue();
+        expect(h.viewer.opened, [('eu-a-one', 'en')]);
+      });
+
+      test(
+        'uses the system language, or the language of the setting',
+        () async {
+          for (final (language, expected) in [(null, 'de'), ('fr', 'fr')]) {
+            final h = _Shell(
+              settings: readySettings.copyWith(language: language),
+            );
+            h.systemLocales = const [Locale('de')];
+            h.service.snapshot = const BackupSnapshot(characters: characters);
+            await h.start();
+            await h.gather.refresh(readySettings.backupRoot!);
+            await h.shell.viewJourney();
+            expect(h.viewer.opened, [('eu-a-one', expected)]);
+          }
+        },
+      );
+
+      test('shows the window when there is no character', () async {
+        final h = _Shell();
+        await h.start();
+        h.tray.select(enTray.viewJourney);
+        await pumpEventQueue();
+        expect(h.viewer.opened, isEmpty);
+        expect(h.window.calls, ['init', 'show']);
+      });
+
+      test('shows the window when the page cannot open', () async {
+        for (final failure in [
+          const ViewerServerFailed(),
+          ViewerBrowserFailed(Uri.parse('http://127.0.0.1:1/')),
+        ]) {
+          final h = await ready();
+          h.viewer.result = failure;
+          h.tray.select(enTray.viewJourney);
+          await pumpEventQueue();
+          expect(h.window.calls, ['init', 'show']);
+        }
+      });
+    });
+
     test('Quit stops Watch, removes the icon and quits', () async {
       final h = _Shell();
       await h.start();
@@ -259,6 +346,16 @@ void main() {
       await pumpEventQueue();
       expect(h.watch.watching, isFalse);
       expect(h.timer.cancelled, isTrue);
+      expect(h.tray.disposed, isTrue);
+      expect(h.viewer.closed, isTrue);
+      expect(h.window.calls, ['init', 'quit']);
+    });
+
+    test('Quit still quits when the viewer fails to close', () async {
+      final h = _Shell();
+      await h.start();
+      h.viewer.closeError = StateError('close failed');
+      await h.shell.quit();
       expect(h.tray.disposed, isTrue);
       expect(h.window.calls, ['init', 'quit']);
     });

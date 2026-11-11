@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 
 import 'src/app.dart';
 import 'src/gather/gather_controller.dart';
+import 'src/platform/browser.dart';
 import 'src/platform/discovery.dart';
 import 'src/platform/documents_dir.dart';
 import 'src/platform/folder_opener.dart';
@@ -16,6 +17,8 @@ import 'src/platform/window_service.dart';
 import 'src/settings/settings_store.dart';
 import 'src/shell/launch.dart';
 import 'src/upload/upload_service.dart';
+import 'src/viewer/viewer_files.dart';
+import 'src/viewer/viewer_launcher.dart';
 
 Future<void> main(List<String> args) async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -32,6 +35,10 @@ Future<void> main(List<String> args) async {
     window: window,
     startup: SystemStartupService(),
     uploader: CoreUploadService(directories.support),
+    viewer: ViewerLauncher(
+      files: const BundleViewerFiles(),
+      browser: const SystemBrowser(),
+    ),
   );
   final app = await launch(
     args: args,

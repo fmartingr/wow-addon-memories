@@ -17,6 +17,7 @@ import 'package:wow_journey/src/platform/window_service.dart';
 import 'package:wow_journey/src/settings/settings.dart';
 import 'package:wow_journey/src/settings/settings_store.dart';
 import 'package:wow_journey/src/upload/upload_service.dart';
+import 'package:wow_journey/src/viewer/viewer_launcher.dart';
 
 const String install = '/games/World of Warcraft';
 const String retailDir = '$install/_retail_';
@@ -141,6 +142,29 @@ class FakeGatherService implements GatherService {
   Future<BackupSnapshot> inspect(String backupRoot) async {
     inspected.add(backupRoot);
     return snapshot;
+  }
+}
+
+/// A viewer that records each open and answers [result].
+class FakeViewer implements ViewerLauncher {
+  ViewerResult result = const ViewerOpened();
+  final List<(String, String)> opened = [];
+  bool closed = false;
+  Object? closeError;
+
+  @override
+  String? backupRoot;
+
+  @override
+  Future<ViewerResult> open(String id, String lang) async {
+    opened.add((id, lang));
+    return result;
+  }
+
+  @override
+  Future<void> close() async {
+    closed = true;
+    if (closeError case final e?) throw e;
   }
 }
 
@@ -443,6 +467,7 @@ class Fakes {
   final FakeGatherService gather;
   final FakeSignature signature;
   final FakeOpener opener = FakeOpener();
+  final FakeViewer viewer = FakeViewer();
   final FakeTray tray = FakeTray();
   final FakeWindow window = FakeWindow();
   final FakeStartup startup = FakeStartup();
@@ -465,6 +490,7 @@ class Fakes {
     window: window,
     startup: startup,
     uploader: upload,
+    viewer: viewer,
     signature: signature.call,
     clock: () => clock(),
     copyText: (text) async => copied.add(text),

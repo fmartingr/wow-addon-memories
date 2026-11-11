@@ -52,6 +52,10 @@
   "openBackupFolder": "Sicherungsordner öffnen",
   "openLatestData": "Neueste Daten öffnen",
   "openFolderFailed": "Wir konnten diesen Ordner nicht öffnen. Wenn du noch nicht gesammelt hast, klicke zuerst auf Jetzt sammeln.",
+  "viewCharacter": "Ansehen",
+  "viewCharacterLabel": "{name} ansehen",
+  "viewerStartFailed": "Der Reise-Betrachter konnte nicht gestartet werden.",
+  "viewerOpenFailed": "Der Browser konnte nicht geöffnet werden. Kopiere den Link und öffne ihn selbst.",
   "dismiss": "Schließen",
   "showWebsiteTab": "Reiter Webseite anzeigen",
   "andMore": "{count, plural, =1{und 1 weiterer} other{und {count} weitere}}",
@@ -224,6 +228,7 @@
   "notAnswering": "WoW Journey läuft bereits, hat aber nicht geantwortet. Beende es über das Menü seines Tray-Symbols oder im Task-Manager und starte es dann erneut.",
   "close": "Schließen",
   "trayGatherNow": "Jetzt sammeln",
+  "trayViewJourney": "Reise ansehen",
   "trayOpenWindow": "Fenster öffnen",
   "trayOpenBackupFolder": "Sicherungsordner öffnen",
   "trayQuit": "Beenden"
