@@ -4,7 +4,7 @@ describe("map overlay", function()
 	wow.pin_locale("enUS", before_each, after_each)
 
 	local ns, O
-	local ZONE, OTHER = 1453, 1454
+	local ZONE, OTHER, CONT = 1453, 1454, 12
 
 	-- A fake world map: a canvas of 1000 x 500 and the provider calls of the game.
 	local function fakeMap(mapID)
@@ -26,6 +26,23 @@ describe("map overlay", function()
 		end
 		function map:IsShown()
 			return self.shown
+		end
+		-- SetMapID changes the map and draws it again before it returns, as the game does. refuse makes it raise an
+		-- error before the change; broken takes the id first and then raises, as the game does for a map with no art.
+		map.set = {}
+		function map:SetMapID(id)
+			if self.mapID == id then
+				return
+			end
+			self.set[#self.set + 1] = id
+			if self.refuse then
+				error("no such map")
+			end
+			self.mapID = id
+			if self.broken and self.broken[id] then
+				error("attempt to index a nil value")
+			end
+			self.providers[1]:OnMapChanged()
 		end
 		_G.WorldMapFrame = map
 		_G.MapCanvasDataProviderMixin = {
@@ -58,6 +75,7 @@ describe("map overlay", function()
 		ns = wow.boot({
 			login = false,
 			maps = opts.maps or { [ZONE] = { mapType = 3 }, [OTHER] = { mapType = 3 } },
+			projections = opts.projections,
 			saved = { MemoriesCharDB = { trail = { v = 1, chunks = chunks or {} } } },
 		})
 		O = ns.Overlay
@@ -1063,6 +1081,257 @@ describe("map overlay", function()
 			O.Show(false)
 			assert.same({}, O.Chapters())
 			assert.is_not_nil(map)
+		end)
+	end)
+
+	describe("follow", function()
+		local TWO = {
+			chunk(ZONE, 1000, "0,1000,1000;10,2000,1000;20,3000,1000"),
+			chunk(OTHER, 1040, "0,1000,2000;10,2000,2000;20,3000,2000"),
+		}
+
+		local function play(chunks, opts)
+			boot(chunks, opts)
+			local map, p = attach()
+			O.Show(true)
+			frames(map, 2)
+			O.Play()
+			step(map, 0.001)
+			return map, p
+		end
+
+		it("shows the map of the playhead, keeps the playhead and waits before it goes on", function()
+			local map = play(TWO)
+			assert.equal(60, select(2, O.Position()))
+			step(map, 0.5)
+			assert.same({}, map.set)
+			step(map, 0.5)
+			assert.same({ OTHER }, map.set)
+			assert.equal(OTHER, map:GetMapID())
+			assert.near(40, O.Position(), 0.1)
+			assert.is_true(O.Playing())
+			local held = O.Position()
+			step(map, 0.5)
+			assert.equal(held, (O.Position()))
+			step(map, 0.5)
+			assert.equal(held, (O.Position()))
+			step(map, 0.5)
+			assert.near(60, O.Position(), 0.001)
+			assert.equal(2, visible(lines(map)))
+		end)
+
+		it("shows the pins of the new map that the playhead passed, with no pop, burst or feed event", function()
+			boot(TWO)
+			journal({ { t = 1040, m = OTHER, x = 2000, y = 2000, kind = "lv", args = { 5 } } })
+			local map = attach()
+			O.Show(true)
+			frames(map, 2)
+			O.Play()
+			step(map, 0.001)
+			local events = 0
+			ns.Listen("MAP_REPLAY_EVENT", function()
+				events = events + 1
+			end)
+			step(map, 0.5)
+			step(map, 0.5)
+			assert.same({ OTHER }, map.set)
+			step(map, 0.01)
+			local shown = pins(map)
+			assert.equal(1, visible(shown))
+			assert.is_nil(shown[1].popAt)
+			assert.equal(0, events)
+		end)
+
+		it("stays on a map that shows the zone of the playhead", function()
+			local projections = {
+				[ZONE] = { continent = 1, x0 = 100, y0 = 100, x1 = 200, y1 = 200 },
+				[OTHER] = { continent = 1, x0 = 500, y0 = 500, x1 = 600, y1 = 600 },
+				[CONT] = { continent = 1, x0 = 0, y0 = 0, x1 = 1000, y1 = 1000 },
+			}
+			boot(TWO, {
+				maps = { [CONT] = { mapType = 2 }, [ZONE] = { mapType = 3 }, [OTHER] = { mapType = 3 } },
+				projections = projections,
+			})
+			local map = attach(CONT)
+			O.Show(true)
+			frames(map, 2)
+			O.Play()
+			step(map, 0.001)
+			frames(map, 6, 0.5)
+			assert.same({}, map.set)
+			assert.equal(CONT, map:GetMapID())
+			assert.equal(60, (O.Position()))
+		end)
+
+		it("stops following when the player changes the map during the replay, until the next Play", function()
+			local map, p = play(TWO)
+			step(map, 0.2)
+			map.mapID = OTHER
+			p:OnMapChanged()
+			assert.is_true(O.Playing())
+			frames(map, 3, 0.1)
+			assert.same({}, map.set)
+			O.Pause()
+			O.Play()
+			step(map, 0.1)
+			assert.same({ ZONE }, map.set)
+		end)
+
+		it("stops following after a seek and after a change of the box too, and starts again with them", function()
+			local map, p = play(TWO)
+			step(map, 0.2)
+			map.mapID = OTHER
+			p:OnMapChanged()
+			O.Seek(10)
+			step(map, 0.01)
+			assert.same({ ZONE }, map.set)
+		end)
+
+		it("leaves following off for a map that cannot be shown, and asks once", function()
+			local map = play(TWO)
+			map.refuse = true
+			frames(map, 5, 0.5)
+			assert.same({ OTHER }, map.set)
+			assert.equal(ZONE, map:GetMapID())
+			assert.equal(60, (O.Position()))
+			assert.equal(1, #ns.Errors())
+		end)
+
+		it("leaves following off when the map has no SetMapID", function()
+			local map = play(TWO)
+			map.SetMapID = nil
+			frames(map, 5, 0.5)
+			assert.equal(ZONE, map:GetMapID())
+			assert.equal(60, (O.Position()))
+		end)
+
+		it("puts the map back and stops following when SetMapID takes the id and then raises", function()
+			local map = play(TWO)
+			map.broken = { [OTHER] = true }
+			frames(map, 5, 0.5)
+			assert.same({ OTHER, ZONE }, map.set)
+			assert.equal(ZONE, map:GetMapID())
+			assert.near(60, O.Position(), 0.001)
+			assert.equal(1, #ns.Errors())
+		end)
+
+		it("does not ask for a map that has no art", function()
+			local map = play(TWO)
+			_G.C_Map.GetMapArtLayers = function(id)
+				return id == OTHER and {} or { { layerWidth = 1000, layerHeight = 500 } }
+			end
+			frames(map, 5, 0.5)
+			_G.C_Map.GetMapArtLayers = nil
+			assert.same({}, map.set)
+			assert.equal(60, (O.Position()))
+			assert.equal(1, #ns.Errors())
+		end)
+
+		it("plays on the clock of the map shown when no trail is saved, and keeps no playhead across maps", function()
+			boot({})
+			journal({
+				{ t = 1000, m = ZONE, x = 1000, y = 1000, kind = "lv", args = { 2 } },
+				{ t = 1010, m = ZONE, x = 2000, y = 1000, kind = "lv", args = { 3 } },
+			})
+			local map, p = attach()
+			O.Show(true)
+			frames(map, 2)
+			assert.equal(10, select(2, O.Position()))
+			assert.equal(2, visible(pins(map)))
+			O.Play()
+			step(map, 0.1)
+			assert.is_true(O.Playing())
+			map.mapID = OTHER
+			p:OnMapChanged()
+			assert.is_false(O.Playing())
+		end)
+
+		it("plays the map shown only with Follow off, on the clock of that map", function()
+			boot(TWO)
+			ns.Settings.Set("map.follow", false)
+			local map = attach()
+			O.Show(true)
+			frames(map, 2)
+			assert.equal(20, select(2, O.Position()))
+			O.Play()
+			step(map, 0.001)
+			frames(map, 4, 0.5)
+			assert.same({}, map.set)
+		end)
+
+		it("draws again on the other clock when Follow changes, and saves the choice", function()
+			boot(TWO)
+			local map = attach()
+			O.Show(true)
+			frames(map, 2)
+			assert.equal(60, select(2, O.Position()))
+			O.SetFollow(false)
+			assert.is_false(MemoriesDB.settings.map.follow)
+			assert.equal(20, select(2, O.Position()))
+			O.SetFollow(true)
+			assert.is_true(MemoriesDB.settings.map.follow)
+			assert.equal(60, select(2, O.Position()))
+		end)
+
+		it("has nothing to play when nothing is shown", function()
+			boot(TWO)
+			for _, group in ipairs(ns.MapData.Groups()) do
+				ns.Settings.Set("map.groups." .. group, false)
+			end
+			ns.Settings.Set("map.trail", false)
+			local map = attach()
+			O.Show(true)
+			step(map)
+			assert.equal(0, select(2, O.Position()))
+		end)
+
+		it("keeps the playhead through a filter change during the replay", function()
+			local map = play(TWO)
+			step(map, 0.2)
+			local at = O.Position()
+			ns.Settings.Set("map.color", "age")
+			O.Draw()
+			assert.equal(at, (O.Position()))
+			assert.is_true(O.Playing())
+			assert.same({}, map.set)
+		end)
+
+		it("keeps the feed of the panel through a map change of Follow", function()
+			local map = play(TWO)
+			local resets = 0
+			ns.Listen("MAP_REPLAY_RESET", function()
+				resets = resets + 1
+			end)
+			step(map, 0.5)
+			step(map, 0.5)
+			assert.same({ OTHER }, map.set)
+			assert.equal(0, resets)
+		end)
+
+		it("does not keep a playhead read on another clock", function()
+			local map = play(TWO)
+			step(map, 0.2)
+			O.SetSession({ start = 1040 })
+			assert.is_false(O.Playing())
+			local at, total = O.Position()
+			assert.equal(total, at)
+			O.SetSession(nil)
+			O.SetFollow(false)
+			O.Play()
+			step(map, 0.2)
+			O.SetFollow(true)
+			assert.is_false(O.Playing())
+		end)
+
+		it("keeps the chapters on the clock of the whole journey", function()
+			boot(TWO)
+			local map = attach()
+			journal({ { t = 1050, kind = "lv", args = { 12 } } })
+			O.Show(true)
+			frames(map, 2)
+			local chapters = O.Chapters()
+			assert.equal(2, #chapters)
+			assert.equal(50, chapters[2].c)
 		end)
 	end)
 end)

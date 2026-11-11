@@ -588,4 +588,78 @@ describe("map data", function()
 			assert.same({}, M.Levels())
 		end)
 	end)
+
+	describe("Route", function()
+		it("lists a visit for each chunk with its time range, by start time, from the chunk fields", function()
+			boot({
+				chunk(OTHER, 2000, "0,1000,1000;30,2000,1000"),
+				chunk(ZONE, 1000, "0,1000,1000;10,2000,1000;25,3000,1000"),
+			})
+			local decoded = 0
+			local decode = ns.TrailCodec.Decode
+			ns.TrailCodec.Decode = function(rec)
+				decoded = decoded + 1
+				return decode(rec)
+			end
+			assert.same({
+				{ m = ZONE, t0 = 1000, t1 = 1025 },
+				{ m = OTHER, t0 = 2000, t1 = 2030 },
+			}, M.Route())
+			assert.equal(0, decoded)
+		end)
+
+		it("leaves out a chunk that starts inside an instance, and a malformed chunk", function()
+			boot({
+				chunk(ZONE, 1000, "0,1000,1000,i;10,2000,1000"),
+				chunk(ZONE, 1100, "0,1000,1000,-;10,2000,1000"),
+				chunk(ZONE, 1200, "garbage"),
+				chunk(ZONE, 1300, ""),
+				{ s = 1, t = "x", m = ZONE, d = "0,1,1" },
+				{ s = 1, t = 1400, m = "x", d = "0,1,1" },
+				"not a chunk",
+			})
+			assert.same({ { m = ZONE, t0 = 1100, t1 = 1110 } }, M.Route())
+		end)
+
+		it("keeps the chunks of the chosen session, and an older chunk by its time", function()
+			boot({
+				{ s = 900, t = 1000, m = ZONE, n = 2, d = "0,1000,1000;10,2000,1000" },
+				{ s = 2000, t = 2000, m = ZONE, n = 2, d = "0,1000,1000;10,2000,1000" },
+				{ t = 2100, m = ZONE, n = 2, d = "0,1000,1000;10,2000,1000" },
+			})
+			assert.equal(2, #M.Route({ session = { start = 2000 } }))
+			assert.equal(3, #M.Route({}))
+			assert.same({ { m = ZONE, t0 = 2000, t1 = 2010 } }, M.Route({ session = { start = 2000, stop = 2050 } }))
+			assert.same({ { m = ZONE, t0 = 2100, t1 = 2110 } }, M.Route({ session = { start = 2050, stop = 2200 } }))
+		end)
+
+		it("reads the saved copy of the open stretch", function()
+			boot({}, { open = chunk(ZONE, 3000, "0,1000,1000;12,2000,1000") })
+			assert.same({ { m = ZONE, t0 = 3000, t1 = 3012 } }, M.Route())
+		end)
+
+		it("is empty for no trail", function()
+			boot({})
+			assert.same({}, M.Route())
+		end)
+	end)
+
+	describe("Shows", function()
+		local projections = {
+			[ZONE] = { continent = 1, x0 = 100, y0 = 100, x1 = 200, y1 = 200 },
+			[CONT] = { continent = 1, x0 = 0, y0 = 0, x1 = 1000, y1 = 1000 },
+		}
+
+		it("is true for the map itself and for a zone that a higher map projects", function()
+			boot({}, { projections = projections })
+			assert.is_true(M.Shows(ZONE, ZONE))
+			assert.is_true(M.Shows(CONT, ZONE))
+		end)
+
+		it("is false for another zone, and for a zone with no projection", function()
+			boot({}, { projections = projections })
+			assert.is_false(M.Shows(ZONE, OTHER))
+			assert.is_false(M.Shows(CONT, OTHER))
+		end)
+	end)
 end)

@@ -14,7 +14,8 @@ Back to the [documentation index](README.md).
 - **Journey tab of the world map:** the choices of the panel are saved per account in `MemoriesDB.settings.map`:
   `groups` (a group is shown unless its entry is `false`), `trail` (on by default), `tab` (`"quest"` or
   `"journey"`: the map opens on the tab that was used last), `color` (the colour of the trail: `"way"`, `"level"` or
-  `"age"`) and `colorblind` (a palette for colour blindness, off by default). The choice of a session is not saved. When all of
+  `"age"`) and `colorblind` (a palette for colour blindness, off by default) and `follow` (the replay moves through the maps,
+  on by default). The choice of a session is not saved. When all of
   Memories is read-only, the choices last for the session only.
 - `/mem status` shows each addon of the set (on, off, missing, failed or newer api), its lines, the number of its kinds
   that are off and the age of its backup, then the login time.

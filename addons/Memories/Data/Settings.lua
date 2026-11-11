@@ -23,8 +23,8 @@ local DEFAULTS = {
 	-- "yards" or "meters"; any other value lets the region and the client language decide.
 	distanceUnit = "auto",
 	-- The Journey tab of the world map: the shown groups, the trail, the last tab ("quest" or "journey"), the colour of
-	-- the trail ("way", "level" or "age") and the colourblind palette.
-	map = { groups = {}, trail = true, tab = "quest", color = "way", colorblind = false },
+	-- the trail ("way", "level" or "age"), the colourblind palette and whether the replay follows the journey across maps.
+	map = { groups = {}, trail = true, tab = "quest", color = "way", colorblind = false, follow = true },
 }
 
 -- Keys of these tables are kind names, box keys and group names, never paths. Each maps to the default of one entry.

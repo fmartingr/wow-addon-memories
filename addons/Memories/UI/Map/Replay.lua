@@ -128,6 +128,50 @@ local function levelAt(levels, t)
 	return levels[found].level
 end
 
+-- The clock of the whole journey from its visits ({ m, t0, t1 }, by t0): real time inside a visit and at most GAP for
+-- each gap between visits. It returns { times, clocks, total, at }, where at gives the clock of a unix time. Visits
+-- that overlap count once.
+function Replay.Clock(visits)
+	local times, clocks = {}, {}
+	local function add(t, inside)
+		local n = #times
+		if n == 0 then
+			times[1], clocks[1] = t, 0
+		elseif t > times[n] then
+			local dt = t - times[n]
+			times[n + 1], clocks[n + 1] = t, clocks[n] + (inside and dt or math.min(dt, Replay.GAP))
+		end
+	end
+	for _, v in ipairs(visits) do
+		add(v.t0, false)
+		add(v.t1, true)
+	end
+	return {
+		times = times,
+		clocks = clocks,
+		total = clocks[#clocks] or 0,
+		at = function(t)
+			return clockAt(times, clocks, t)
+		end,
+	}
+end
+
+-- The visits with the clock of their start and end: { m, c0, c1 }, in clock order.
+function Replay.Route(visits, clock)
+	local out = {}
+	for _, v in ipairs(visits) do
+		out[#out + 1] = { m = v.m, c0 = clock.at(v.t0), c1 = clock.at(v.t1) }
+	end
+	return out
+end
+
+-- The map of the playhead at the clock c: the map of the last visit that started at or before it, or nil before the
+-- first.
+function Replay.MapAt(route, c)
+	local found = lastAtOrBefore(route, "c0", c)
+	return found > 0 and route[found].m or nil
+end
+
 -- The curve of a trip that skips the trail: ARC_STEPS steps along a quadratic curve that bows to the north.
 Replay.ARC_STEPS = 10
 Replay.ARC_BOW = 0.25
@@ -163,7 +207,7 @@ end
 -- data = { segments, pins } of MapData. It returns { edges, pins, total, cut }: each edge is one step of the trail with
 -- its clock c (where it ends) and c0 (where it starts), each pin has its clock c, and both lists are in clock order. At
 -- most maxEdges edges stay, the oldest ones, and cut counts the others.
-function Replay.Build(data, maxEdges)
+function Replay.Build(data, maxEdges, clock)
 	local edges = {}
 	for _, seg in ipairs(data.segments or {}) do
 		local pts, ts = seg.pts, seg.ts or {}
@@ -198,29 +242,38 @@ function Replay.Build(data, maxEdges)
 			edges[i] = nil
 		end
 	end
+	-- A clock with no visits cannot place anything, so the clock of this map takes its place.
+	if clock and #clock.times == 0 then
+		clock = nil
+	end
+	-- An event far outside the time of the journey has no place on the clock of the whole journey, so it is left out.
+	local from = clock and clock.times[1] - Replay.GAP
+	local to = clock and clock.times[#clock.times] + Replay.GAP
 	local pins = {}
 	for _, pin in ipairs(data.pins or {}) do
-		if type(pin.t) == "number" then
+		if type(pin.t) == "number" and (not clock or (pin.t >= from and pin.t <= to)) then
 			pins[#pins + 1] = pin
 		end
 	end
-	local stamps = {}
-	for _, e in ipairs(edges) do
-		stamps[#stamps + 1] = e.t0
-		stamps[#stamps + 1] = e.t
-	end
-	for _, pin in ipairs(pins) do
-		stamps[#stamps + 1] = pin.t
-	end
-	table.sort(stamps)
-	local times, clocks = {}, {}
-	for _, t in ipairs(stamps) do
-		local n = #times
-		if n == 0 or t > times[n] then
-			times[n + 1] = t
-			clocks[n + 1] = n == 0 and 0 or clocks[n] + math.min(t - times[n], Replay.GAP)
+	-- With a clock of the whole journey, every map shares one clock. Without it, the clock counts the steps and the
+	-- pins of this map only, and each pause counts as at most GAP.
+	if not clock then
+		local stamps = {}
+		for _, e in ipairs(edges) do
+			stamps[#stamps + 1] = e.t0
+			stamps[#stamps + 1] = e.t
 		end
+		for _, pin in ipairs(pins) do
+			stamps[#stamps + 1] = pin.t
+		end
+		table.sort(stamps)
+		local visits = {}
+		for _, t in ipairs(stamps) do
+			visits[#visits + 1] = { t0 = t, t1 = t }
+		end
+		clock = Replay.Clock(visits)
 	end
+	local times, clocks = clock.times, clock.clocks
 	local first, span = edges[1] and edges[1].t0, edges[#edges] and edges[#edges].t - edges[1].t0
 	local levels = data.levels or {}
 	for _, e in ipairs(edges) do

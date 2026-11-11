@@ -103,6 +103,23 @@ local shownEdges, shownPins = 0, 0
 local width, height, unit = 0, 0, 1
 -- The size factor of the pins on the map shown.
 local pinScale = 1
+-- Follow: with the clock of the whole journey, the replay shows the map of the playhead. It waits this long after it
+-- changes the map, so the player sees the new map before the replay goes on.
+Overlay.MAP_PAUSE = 0.6
+-- Following is off until Play, a seek or the Follow box, after a map change that the overlay did not ask for.
+local hold = false
+local pauseLeft = 0
+-- The playhead that the draw inside SetMapID of Follow keeps: { pos, playing }.
+local resume
+-- The map that Follow asked for, and the map of the last draw.
+local expectedMap, drawnMap
+-- The clock of the last draw: whether it spans the whole journey, and its session. A playhead means a moment only on
+-- the clock it was read on.
+local drawnFollow, drawnSession = false, nil
+-- Whether the map shown shows the zone of the playhead, by map of the zone.
+local shows = {}
+-- True for the first frame after a draw that kept the playhead, so the pins it passes do not pop.
+local quiet = false
 -- The colour mode of the trail and the palette, as the settings were at the last draw.
 local look = { mode = "way", blind = false }
 function Overlay.Enabled()
@@ -190,14 +207,18 @@ local function release()
 	shownEdges, shownPins = 0, 0
 end
 
-function Overlay.Clear()
+local function clear()
 	generation = generation + 1
 	release()
 	if container then
 		container:SetScript("OnUpdate", nil)
 	end
-	timeline, playing, pos = nil, false, 0
-	stats = { lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
+	timeline, playing, pos, pauseLeft = nil, false, 0, 0
+	stats ={ lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
+end
+
+function Overlay.Clear()
+	clear()
 	ns.Emit("MAP_REPLAY_RESET")
 end
 
@@ -441,12 +462,52 @@ end
 
 -- A failed draw leaves the map as the game drew it.
 local function fail()
+	resume = nil
 	Overlay.Clear()
 	if container then
 		container:Hide()
 	end
 	finish()
 	changed()
+end
+
+-- Shows the map of the playhead when it is not the map shown and the map shown does not show its zone. It keeps the
+-- playhead, calls SetMapID, a public call, and waits MAP_PAUSE. It returns true when it asked for a map, and then the
+-- redraw of the map change replaces the timeline.
+local function goTo()
+	local m = ns.Replay.MapAt(timeline.route, pos)
+	if not m or m == drawnMap then
+		return false
+	end
+	if shows[m] == nil then
+		shows[m] = ns.MapData.Shows(drawnMap, m)
+	end
+	if shows[m] then
+		return false
+	end
+	local map = provider and provider:GetMap()
+	local from, before = drawnMap, timeline
+	-- A map that cannot be shown leaves following off, so the replay does not ask for it again and again.
+	hold = true
+	-- The game's SetMapID sizes the canvas from the art layers of the map and raises an error for a map with none.
+	local art = C_Map.GetMapArtLayers
+	if map and type(map.SetMapID) == "function" and (type(art) ~= "function" or (art(m) or {})[1]) then
+		resume, expectedMap = { pos = pos, playing = playing }, m
+		-- The game's SetMapID calls OnMapChanged of each provider before it returns, so the draw is done here.
+		pcall(map.SetMapID, map, m)
+		if drawnMap == m then
+			hold = false
+			pauseLeft = Overlay.MAP_PAUSE
+			return true
+		end
+		resume, expectedMap = nil, nil
+		-- An error inside SetMapID leaves the map on the new id with the art of the old map.
+		if map:GetMapID() ~= from then
+			pcall(map.SetMapID, map, from)
+		end
+	end
+	ns.LogError("map overlay:follow", "the map " .. m .. " cannot be shown", nil, true)
+	return timeline ~= before
 end
 
 -- One step of the replay: it moves the playhead, shows or hides the lines and the pins that the playhead passed, and
@@ -460,10 +521,17 @@ local function update(dt)
 	local now = GetTime()
 	-- The pins that the playhead reaches on the frame that ends the replay still pop in.
 	local wasPlaying = playing
+	if pauseLeft > 0 then
+		pauseLeft = pauseLeft - dt
+		dt = 0
+	end
 	if playing then
 		pos, playing = ns.Replay.Advance(pos, dt, speed, timeline.total)
 		if not playing then
 			changed()
+		end
+		if timeline.route and not hold and pauseLeft <= 0 and goTo() then
+			return
 		end
 	end
 	local wantEdges, wantPins = ns.Replay.Counts(timeline, pos)
@@ -488,7 +556,7 @@ local function update(dt)
 		shownPins = wantPins
 		ns.Emit("MAP_REPLAY_RESET")
 	else
-		local animate = wasPlaying and wantPins - shownPins <= Overlay.MAX_POPS
+		local animate = wasPlaying and not quiet and wantPins - shownPins <= Overlay.MAX_POPS
 		for i = shownPins + 1, wantPins do
 			placePin(i, animate)
 			if animate then
@@ -498,6 +566,7 @@ local function update(dt)
 		end
 		shownPins = wantPins
 	end
+	quiet = false
 	local busy = animatePins(now)
 	busy = animateBursts(now) or busy
 	placeHead(now)
@@ -528,6 +597,7 @@ function Overlay.Play()
 		pos = 0
 	end
 	playing = true
+	hold = false
 	wake()
 	changed()
 end
@@ -555,6 +625,7 @@ function Overlay.Seek(c)
 	if pos >= timeline.total then
 		playing = false
 	end
+	hold = false
 	wake()
 	changed()
 end
@@ -603,8 +674,7 @@ local function pinLevel(map)
 end
 
 -- The pins and the segments of mapID for the current filter, with the counts of the panel.
-local function query(mapID)
-	local filter = Overlay.Filter()
+local function query(mapID, filter)
 	local skipped = {}
 	local data = { mapID = mapID, pins = {}, segments = {}, cutPins = 0 }
 	if next(filter.groups) then
@@ -643,9 +713,13 @@ local function draw()
 		fail()
 		return
 	end
-	Overlay.Clear()
+	-- A draw during a replay keeps the playhead, since each map shares the clock of the journey.
+	local keepPos, keepPlaying = pos, playing
+	-- The panel empties its feed only when the playhead does not stay.
+	clear()
 	-- A hidden map draws again from RefreshAllData when it shows, with the filter of that time.
 	if not map:IsShown() then
+		ns.Emit("MAP_REPLAY_RESET")
 		finish()
 		changed()
 		return
@@ -670,16 +744,48 @@ local function draw()
 	local mapID = map:GetMapID()
 	pinScale = ns.IsSkippedMap(mapID) and Overlay.HIGH_MAP_PIN or 1
 	look = { mode = ns.Settings.Get("map.color"), blind = ns.Settings.Get("map.colorblind") == true }
-	local data = query(mapID)
-	timeline = ns.Replay.Build(data, Overlay.MAX_LINES)
+	local filter = Overlay.Filter()
+	local data = query(mapID, filter)
+	-- With nothing to show, no clock spans the journey, so the replay has nothing to play.
+	local following = ns.Settings.Get("map.follow") ~= false and (filter.trail or next(filter.groups) ~= nil)
+	local clock, route
+	if following then
+		local visits = ns.MapData.Route(filter)
+		-- With no trail saved, the replay plays on the clock of this map, as with Follow off.
+		following = #visits > 0
+		clock = ns.Replay.Clock(visits)
+		route = following and ns.Replay.Route(visits, clock) or nil
+	end
+	timeline = ns.Replay.Build(data, Overlay.MAX_LINES, clock)
+	timeline.route = route
 	timeline.levels = data.levels
 	stats.lines = #timeline.edges
 	stats.pins = #timeline.pins
 	stats.cutLines = timeline.cut
 	stats.cutPins = data.cutPins
 	stats.zones = data.zones
-	-- With no replay running the whole journey shows.
-	pos = timeline.total
+	-- The playhead stays for the map change of Follow and for a draw during a replay. With no replay running the whole
+	-- journey shows. A map change that nobody asked for during a replay is the player's, and it stops following.
+	-- A playhead on another clock, from Follow off or another session, would land on an unrelated moment.
+	local keep
+	if following and drawnFollow and drawnSession == session then
+		if resume and expectedMap == mapID then
+			keep = resume
+		elseif keepPlaying then
+			keep = { pos = keepPos, playing = true }
+			hold = hold or (expectedMap ~= mapID and drawnMap ~= mapID)
+		end
+	end
+	resume, expectedMap, drawnMap, shows = nil, nil, mapID, {}
+	drawnFollow, drawnSession = following, session
+	quiet = keep ~= nil
+	if keep then
+		pos = math.min(keep.pos, timeline.total)
+		playing = keep.playing and pos < timeline.total
+	else
+		pos = timeline.total
+		ns.Emit("MAP_REPLAY_RESET")
+	end
 	if width > 0 and height > 0 then
 		wake()
 	end
@@ -696,6 +802,13 @@ function Overlay.Draw()
 	if not ns.Safe("map overlay", draw) then
 		fail()
 	end
+end
+
+-- Turns Follow on or off, and draws again with the clock that fits it.
+function Overlay.SetFollow(on)
+	ns.Settings.Set("map.follow", on == true)
+	hold = false
+	Overlay.Draw()
 end
 
 function Overlay.SetSession(value)

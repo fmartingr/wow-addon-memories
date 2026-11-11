@@ -365,6 +365,9 @@ written, so run them before the release.
 | U25 | AC15 | Chapters | Open the panel with the "Chapters" button on. Click a chapter, then Play. | The list shows the start and each level. A click jumps the replay to that moment. The mark follows the playhead. "Sessions" shows the list of sessions again. | not run |
 | U26 | AC15 | Highlights feed | Play a journey with level ups, deaths and flights. Drag the slider back. | The feed shows the last six events, newest first, each with an icon and a main field. A drag back empties it. | not run |
 | U27 | AC16 | Highlight animations | Play a journey with a level up, a death, a flight and a hearthstone, at 1x and at 8x. | A ring grows and fades at the pin and a short label rises and fades. The colour fits the kind. At 8x no more than 4 play at once and the frame rate stays smooth. A seek plays none. The ring is a soft star, not a square. | not run |
+| U28 | AC17 | Follow | Open a zone map, keep Follow on, click Play on a journey that crossed two zones. | When the playhead enters the other zone, the world map shows that zone after the replay waits a moment. The replay goes on from the same moment, with the trail of the new zone, and the Highlights feed keeps its events. There is no flicker and no Lua error, also with the map open in combat. | not run |
+| U29 | AC17 | Follow on a continent | Open the map of a continent, keep Follow on, click Play on a journey that crossed zones of that continent, then a flight to another continent. | The map stays on the continent while its zones are on it. It changes to a zone map only when the playhead leaves the continent. | not run |
+| U30 | AC17 | The player moves the map | During a replay, open another map yourself. Then click Pause and Play. | The replay keeps playing on your map and does not take the map back. After Pause and Play, or a seek, it follows again. Turn Follow off: the replay stays on the map shown. | not run |
 
 ## Validation map
 

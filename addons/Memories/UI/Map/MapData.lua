@@ -237,6 +237,36 @@ function MapData.Segments(mapID, filter)
 	return out, target.skipped, jumps
 end
 
+-- True when the trail of zone shows on mapID: the map itself, or a higher map that has a projection for the zone.
+function MapData.Shows(mapID, zone)
+	return newTarget(mapID):Has(zone)
+end
+
+-- The visits of the journey: { m, t0, t1 } for each saved chunk, by start time. The times come from the chunk
+-- fields, so no chunk is decoded in full. A chunk that starts inside an instance is left out, as the map has no place
+-- for it. filter.session limits the chunks as it does for Segments.
+function MapData.Route(filter)
+	local session = filter and filter.session
+	local out = {}
+	for rec in chunks() do
+		if type(rec) == "table" and type(rec.m) == "number" and type(rec.t) == "number" and type(rec.d) == "string" then
+			-- The greedy ".*;" jumps to the last point in one pass; an unanchored "...$" retries from every character.
+			local last = tonumber(rec.d:match(".*;(%d+),") or rec.d:match("^(%d+),"))
+			local flags = rec.d:match("^%d+,%d+,%d+,([^;]*)")
+			local member = not session
+				or (type(rec.s) == "number" and rec.s == session.start)
+				or (type(rec.s) ~= "number" and inSession(session, rec.t))
+			if last and member and not (flags and flags:find("i", 1, true)) then
+				out[#out + 1] = { m = rec.m, t0 = rec.t, t1 = rec.t + last }
+			end
+		end
+	end
+	table.sort(out, function(a, b)
+		return a.t0 < b.t0
+	end)
+	return out
+end
+
 -- The two columns of a journal line that decide whether it can be a pin, without splitting the whole line.
 local function head(line)
 	local t, m, x, y, kind = line:match("^(%d*)|[^|]*|(%d*)|(%d*)|(%d*)|(%w+)")

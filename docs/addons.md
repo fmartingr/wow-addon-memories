@@ -32,6 +32,11 @@ leaves no room beside it. A click on a game tab hides the Journey view.
 - **Highlight animations:** when the playhead passes a level up, a death, a flight, a boat or zeppelin, a hearthstone,
   a portal, a summon, a dungeon or a boss, a ring grows and fades at its pin and a short label rises and fades (about
   1.2 s). At most 4 play at once, and none plays on a seek.
+- **Follow:** with the Follow box on the player bar (on by default), the replay moves through the maps by itself. The
+  clock then spans the whole journey. When the playhead enters a stretch of the trail on another map, the world map
+  shows that map, the replay waits 0.6 s, and it goes on from the same moment. A continent or world map that shows the
+  zone of the playhead stays as it is. A map change that you make during a replay turns following off until the next
+  Play, seek or change of the box. With Follow off, the replay plays the map shown only.
 - **Trail colour:** a button in the panel changes the colour of the trail: the way of travel (foot, mounted, taxi,
   swimming, dead or ghost), the level of the character, or the age (older steps are cooler and dimmer). A check box
   swaps the colours for a palette that is readable with colour blindness.

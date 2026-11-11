@@ -318,4 +318,81 @@ describe("replay timeline", function()
 			assert.same({ 1000, 1020 }, { tl.first, tl.last })
 		end)
 	end)
+
+	describe("the clock of the whole journey", function()
+		local visits = {
+			{ m = 1, t0 = 1000, t1 = 1020 },
+			{ m = 2, t0 = 5000, t1 = 5030 },
+			{ m = 1, t0 = 5030, t1 = 5040 },
+		}
+
+		it("counts the real time inside a visit and at most the gap between two visits", function()
+			local clock = R.Clock(visits)
+			assert.equal(20 + R.GAP + 30 + 10, clock.total)
+			assert.equal(0, clock.at(1000))
+			assert.equal(20, clock.at(1020))
+			assert.equal(20 + R.GAP, clock.at(5000))
+			assert.equal(20 + R.GAP + 30, clock.at(5030))
+			assert.equal(clock.total, clock.at(99999))
+			assert.equal(0, clock.at(1))
+		end)
+
+		it("puts a time inside a gap in between, and counts overlapping visits once", function()
+			local clock = R.Clock({ { t0 = 0, t1 = 100 }, { t0 = 50, t1 = 120 }, { t0 = 1000, t1 = 1000 } })
+			assert.equal(120 + R.GAP, clock.total)
+			assert.equal(120 + R.GAP / 2, clock.at(560))
+		end)
+
+		it("is empty with no visit", function()
+			local clock = R.Clock({})
+			assert.equal(0, clock.total)
+			assert.equal(0, clock.at(5))
+		end)
+
+		it("gives each visit the clock of its start and end, and the map of the playhead", function()
+			local clock = R.Clock(visits)
+			local route = R.Route(visits, clock)
+			assert.same({ m = 2, c0 = 20 + R.GAP, c1 = 20 + R.GAP + 30 }, route[2])
+			assert.is_nil(R.MapAt(route, -1))
+			assert.equal(1, R.MapAt(route, 0))
+			assert.equal(1, R.MapAt(route, 30))
+			assert.equal(2, R.MapAt(route, 20 + R.GAP))
+			assert.equal(2, R.MapAt(route, 60))
+			assert.equal(1, R.MapAt(route, 20 + R.GAP + 30))
+			assert.equal(1, R.MapAt(route, 9999))
+			assert.is_nil(R.MapAt({}, 5))
+		end)
+
+		it("builds a timeline on the clock of the journey, with its total and its times", function()
+			local clock = R.Clock(visits)
+			local tl = R.Build({ segments = { seg("foot", { 0, 0, 1, 0 }, { 5000, 5010 }) } }, nil, clock)
+			assert.equal(clock.total, tl.total)
+			assert.equal(20 + R.GAP, tl.edges[1].c0)
+			assert.equal(20 + R.GAP + 10, tl.edges[1].c)
+			assert.same({ 1000, 5040 }, { tl.first, tl.last })
+			assert.equal(20, tl.clockAt(1020))
+		end)
+
+		it("leaves out a pin that is far outside the journey, and keeps one near its edge", function()
+			local clock = R.Clock(visits)
+			local tl = R.Build({
+				pins = {
+					{ t = 100 },
+					{ t = 1000 - R.GAP },
+					{ t = 5040 + R.GAP + 1 },
+					{ t = 3000 },
+					{ t = 5040 + R.GAP },
+				},
+			}, nil, clock)
+			assert.equal(3, #tl.pins)
+			assert.equal(0, tl.pins[1].c)
+			assert.equal(clock.total, tl.pins[3].c)
+		end)
+
+		it("falls back to the clock of the map when the journey has no visit", function()
+			local tl = R.Build({ segments = { seg("foot", { 0, 0, 1, 0 }, { 1000, 1010 }) } }, nil, R.Clock({}))
+			assert.equal(10, tl.total)
+			assert.equal(1, #tl.edges)
+		end)
+	end)
 end)

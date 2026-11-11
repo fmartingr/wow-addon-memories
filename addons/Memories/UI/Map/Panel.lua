@@ -16,7 +16,7 @@ Panel.VISIBLE = math.ceil(Panel.LIST_HEIGHT / Panel.ROW) + 1
 Panel.BOX = 22
 -- The boxes sit in two columns, so the core and every sub-addon group still fit in the height of the quest log.
 Panel.COLUMN = 125
-Panel.BAR_WIDTH, Panel.BAR_HEIGHT = 440, 48
+Panel.BAR_WIDTH, Panel.BAR_HEIGHT = 520, 48
 -- The bar lies over the map. The map lays its pins at the levels of its pin manager, near 2000 and up, so the bar sits
 -- above the topmost of them, and at least this far above the map.
 Panel.BAR_LEVEL = 500
@@ -259,6 +259,7 @@ function Panel.UpdateBar()
 	bar.play:SetEnabled(ready)
 	bar.speed:SetEnabled(ready)
 	bar.slider:SetEnabled(ready)
+	bar.follow:SetChecked(ns.Settings.Get("map.follow") ~= false)
 	bar.updating = true
 	bar.slider:SetMinMaxValues(0, math.max(total, 1))
 	bar.updating = false
@@ -309,6 +310,15 @@ local function buildBar(parent)
 	b.speed:SetScript("OnClick", function()
 		ns.Safe("map panel:speed", ns.Overlay.CycleSpeed)
 	end)
+	b.follow = CreateFrame("CheckButton", nil, b, "UICheckButtonTemplate")
+	b.follow:SetSize(22, 22)
+	b.follow:SetPoint("LEFT", b.speed, "RIGHT", 8, 0)
+	b.follow.label = b.follow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	b.follow.label:SetPoint("LEFT", b.follow, "RIGHT", 2, 0)
+	b.follow.label:SetText(L["Follow"])
+	b.follow:SetScript("OnClick", function(self)
+		ns.Safe("map panel:follow", ns.Overlay.SetFollow, self:GetChecked() == true)
+	end)
 	b.time = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	b.time:SetPoint("RIGHT", -10, 0)
 	b.time:SetWidth(100)
@@ -319,7 +329,7 @@ local function buildBar(parent)
 	-- templates.
 	b.slider:EnableMouse(true)
 	b.slider:SetHeight(16)
-	b.slider:SetPoint("LEFT", b.speed, "RIGHT", 10, 0)
+	b.slider:SetPoint("LEFT", b.follow.label, "RIGHT", 12, 0)
 	b.slider:SetPoint("RIGHT", b.time, "LEFT", -10, 0)
 	b.track = b.slider:CreateTexture(nil, "BACKGROUND")
 	b.track:SetColorTexture(1, 0.82, 0, 0.35)

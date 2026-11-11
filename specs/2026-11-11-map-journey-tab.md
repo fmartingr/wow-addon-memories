@@ -64,11 +64,18 @@ zoomed out, and a wrong tab and panel layout. AC10 to AC13 and the decisions bel
 - **AC15 — Chapters and highlights:** the panel lists the journey in chapters (the start, then one chapter for each
   level) and a click on a chapter jumps the replay to that moment. The same list area switches to the list of sessions
   (AC4). A Highlights feed shows the last six events that the playhead passed, newest first, each with its icon, its
-  kind name and its main field. The feed empties on a seek back and on a new draw.
+  kind name and its main field. The feed empties on a seek back and on a new draw that does not keep the playhead.
 - **AC16 — Highlight animations:** when the playhead passes a level up, a death, a flight, a boat or zeppelin, a
   hearthstone, a portal or teleport, a summon, a dungeon, or a boss, a burst plays at its pin: a ring grows and fades
   and a short label rises and fades (about 1.2 s). The colour and the label follow the kind. At most 4 bursts play at
   once, and none plays on a seek or a jump over many events.
+
+- **AC17 — Follow:** with the check box **Follow** on the player bar (saved as `map.follow`, on by default), the replay
+  moves through the maps by itself. The clock then spans the whole journey on all maps. When the playhead enters a
+  stretch of the trail on another map, the world map shows that map, the replay waits 0.6 s, and it goes on from the
+  same moment. A continent or world map that shows the zone of the playhead stays as it is. A map change that the
+  player makes during a replay turns following off until the next Play, seek or change of the box. A map that cannot be
+  shown turns following off in the same way. With Follow off, the replay plays the map shown only.
 
 ## Constraints
 
@@ -116,6 +123,9 @@ zoomed out, and a wrong tab and panel layout. AC10 to AC13 and the decisions bel
 | A burst is one pooled frame with a ring texture and a label, driven by the same `OnUpdate` as the pins. | No new update loop, and no per-burst garbage. |
 | Chapters come from the `lv` lines of the journal. | Levels are the natural chapters of the journey of a character. |
 | The panel changes a text or a value only when it changed. | No garbage while the replay plays. |
+| Follow uses one clock for the whole journey, built from the time range of each trail chunk: real time inside a chunk and at most 20 s for each gap between chunks. | The chunk records give the range with no full decode, so the clock costs two numbers for each chunk, and it is the same on each map. |
+| Follow switches the map with `WorldMapFrame:SetMapID`, a public call, and keeps the playhead through the redraw. | The provider redraws the map by itself, so no game function is changed. |
+| A map change that the overlay did not ask for during a replay turns following off, not the saved setting. | The replay never fights the player for the map. |
 | Every texture has its own size and one anchor. A pin takes no clicks, only the tooltip. | A texture with `SetAllPoints` in a frame of size 0 can fill the canvas. |
 | The tab icon is the addon icon `Media\icon`. | The file exists in the addon already. |
 
@@ -291,6 +301,25 @@ Coverage: `make coverage-lua` must not drop.
   kinds in the table and not for others; at most 4 bursts at once; no burst on a seek or a jump over many events; a
   burst ends by itself and returns to the pool.
 - **Verify:** `make test-lua lint-lua fmt-check`; in the game, the new manual rows.
+
+### [x] 9. Follow: the replay moves through the maps
+
+- **Outcome:** AC17.
+- **Depends on:** 8.
+- **Covers:** AC17, AC6 (`map.follow`).
+- **Files:** `Data/Settings.lua`, `UI/Map/MapData.lua` (`Route`, `Shows`), `Replay.lua` (`Clock`, `Route`, `MapAt`, a clock for
+  `Build`), `Overlay.lua`, `Panel.lua`, `Locales.lua`, `docs/addons.md`, `docs/settings.md`, `docs/manual-checklist.md`,
+  `spec/settings_spec.lua`, `spec/mapdata_spec.lua`, `spec/replay_spec.lua`, `spec/overlay_spec.lua`, `spec/maptab_spec.lua`.
+- **Implementation:** `MapData.Route` lists one visit `{ m, t0, t1 }` for each trail chunk (not an instance chunk),
+  read from the chunk fields with no full decode; `Replay.Clock` builds the clock of the whole journey from the visits and
+  `Replay.Build` takes it; the overlay finds the map of the playhead, and when it is not the map shown and the map shown
+  does not show it, it keeps the playhead, calls `SetMapID`, and waits `MAP_PAUSE`; a draw during a replay keeps the
+  playhead; an unexpected map change or a failed `SetMapID` sets a hold that Play, a seek and the box clear; the bar has the
+  Follow box.
+- **Tests:** the route and its session filter; the clock; the map at a clock; the switch, the pause and the kept playhead;
+  a continent that stays; a change by the player and a failure hold following; Play clears the hold; Follow off plays
+  one map; the box saves the setting.
+- **Verify:** `make test-lua lint-lua fmt-check`; in the game, rows U28 to U30.
 
 ## Validation
 
