@@ -1,5 +1,7 @@
 local _, ns = ...
 
+local L = ns.L
+
 -- Draws the trail and the pins of MapData on the world map, and replays them. One data provider owns the drawing: the
 -- map calls it when the map changes, when it clears its data and when its canvas changes, so the overlay follows each
 -- zoom with no hook on a game function. Lines and pins sit in pools. A replay moves a playhead along the timeline of
@@ -14,13 +16,7 @@ Overlay.SLICE = 200
 Overlay.LINE_WIDTH = 2
 
 -- The colour of each way of travel, as the website's trail colours.
-Overlay.WAY_COLOR = {
-	foot = { 1, 0.953, 0.769 },
-	mounted = { 1, 0.7, 0.28 },
-	taxi = { 1, 0.886, 0.541 },
-	swim = { 0.29, 0.84, 0.75 },
-	dead = { 0.561, 0.831, 1 },
-}
+Overlay.WAY_COLOR = ns.Replay.WAY_COLOR
 
 Overlay.GROUP_COLOR = {
 	Sessions = { 0.7, 0.7, 0.7 },
@@ -68,6 +64,22 @@ Overlay.HEAD_SIZE = 22
 Overlay.POP = 0.45
 -- A pin that pops in while the replay jumps over many pins at once shows with no pop beyond this count.
 Overlay.MAX_POPS = 8
+-- A burst plays at a pin when the playhead passes an event of these kinds: a ring grows and fades and a label rises and
+-- fades. The colour follows the kind. At most MAX_BURSTS play at once.
+Overlay.BURST_TIME = 1.2
+Overlay.MAX_BURSTS = 4
+Overlay.BURST = {
+	lv = { 1, 0.85, 0.2 },
+	de = { 1, 0.25, 0.2 },
+	tx = { 0.4, 0.75, 1 },
+	bt = { 0.4, 0.75, 1 },
+	hs = { 0.4, 0.75, 1 },
+	po = { 0.78, 0.55, 1 },
+	su = { 0.78, 0.55, 1 },
+	dn = { 0.78, 0.55, 1 },
+	bo = { 0.78, 0.55, 1 },
+	wb = { 1, 0.5, 0.2 },
+}
 -- The size of a pin or a line is in screen units. The canvas scale of the map is clamped to this range.
 Overlay.MIN_SCALE, Overlay.MAX_SCALE = 0.1, 10
 
@@ -82,7 +94,7 @@ local stats = { lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
 -- Each new draw and each clear raises this, so an older draw never touches the new pools.
 local generation = 0
 
-local linePool, pinPool = {}, {}
+local linePool, pinPool, burstPool = {}, {}, {}
 -- The replay: the timeline of the map shown, the playhead, and how many lines and pins show.
 local timeline
 local pos, playing, speed = 0, false, ns.Replay.SPEEDS[1]
@@ -91,6 +103,8 @@ local shownEdges, shownPins = 0, 0
 local width, height, unit = 0, 0, 1
 -- The size factor of the pins on the map shown.
 local pinScale = 1
+-- The colour mode of the trail and the palette, as the settings were at the last draw.
+local look = { mode = "way", blind = false }
 function Overlay.Enabled()
 	return enabled
 end
@@ -106,6 +120,18 @@ end
 -- The playhead and the length of the replay, in played seconds.
 function Overlay.Position()
 	return pos, timeline and timeline.total or 0
+end
+
+-- The chapters of the replay: { level, t, c } for the start and each level up. They are empty with nothing to play.
+-- Reading the level ups scans every journal, so the chapters are kept with the timeline of the draw.
+function Overlay.Chapters()
+	if not timeline then
+		return {}
+	end
+	if not timeline.chapters then
+		timeline.chapters = ns.Replay.Chapters(timeline, timeline.levels or ns.MapData.Levels())
+	end
+	return timeline.chapters
 end
 
 function Overlay.Playing()
@@ -154,6 +180,10 @@ local function release()
 		pin:Hide()
 		pin.popAt = nil
 	end
+	for _, burst in ipairs(burstPool) do
+		burst:Hide()
+		burst.startAt = nil
+	end
 	if head then
 		head:Hide()
 	end
@@ -168,6 +198,7 @@ function Overlay.Clear()
 	end
 	timeline, playing, pos = nil, false, 0
 	stats = { lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
+	ns.Emit("MAP_REPLAY_RESET")
 end
 
 local function tooltip(pin)
@@ -254,9 +285,8 @@ local function placeLine(i)
 		line = container:CreateLine(nil, "ARTWORK")
 		linePool[i] = line
 	end
-	local color = Overlay.WAY_COLOR[e.way] or Overlay.WAY_COLOR.foot
 	line:SetThickness(Overlay.LINE_WIDTH * unit)
-	line:SetColorTexture(color[1], color[2], color[3], 0.9)
+	line:SetColorTexture(ns.Replay.Color(e, look.mode, look.blind))
 	line:SetStartPoint("TOPLEFT", container, e.x1 * width, -e.y1 * height)
 	line:SetEndPoint("TOPLEFT", container, e.x2 * width, -e.y2 * height)
 	line:Show()
@@ -268,26 +298,33 @@ local function newHead()
 	frame.glow:SetTexture("Interface\\Cooldown\\star4")
 	frame.glow:SetBlendMode("ADD")
 	frame.glow:SetPoint("CENTER")
-	frame.dot = frame:CreateTexture(nil, "ARTWORK")
-	frame.dot:SetTexture("Interface\\Buttons\\WHITE8X8")
-	frame.dot:SetPoint("CENTER")
+	-- The arrow of the game's own minimap, in silver, turned along the route.
+	frame.arrow = frame:CreateTexture(nil, "ARTWORK")
+	frame.arrow:SetTexture("Interface\\Minimap\\ROTATING-MINIMAPARROW")
+	frame.arrow:SetDesaturated(true)
+	frame.arrow:SetVertexColor(0.85, 0.88, 0.92, 1)
+	frame.arrow:SetPoint("CENTER")
 	return frame
 end
 
 local function placeHead(now)
-	local x, y, way = ns.Replay.Head(timeline, pos)
+	local x, y, _, dx, dy = ns.Replay.Head(timeline, pos)
 	if not x or (not playing and pos >= timeline.total) then
 		head:Hide()
 		return
 	end
-	local color = Overlay.WAY_COLOR[way] or Overlay.WAY_COLOR.foot
 	local pulse = 0.5 + 0.5 * math.sin(now * 5)
 	local size = Overlay.HEAD_SIZE * unit
 	head:SetSize(size, size)
-	head.dot:SetSize(size * 0.35, size * 0.35)
-	head.glow:SetSize(size * (1.4 + 0.5 * pulse), size * (1.4 + 0.5 * pulse))
-	head.dot:SetVertexColor(color[1], color[2], color[3], 1)
-	head.glow:SetVertexColor(color[1], color[2], color[3], 0.6 + 0.4 * pulse)
+	head.arrow:SetSize(size, size)
+	-- The arrow art points up and SetRotation turns it counterclockwise. The step is in map units, so it turns on the
+	-- canvas size to follow the line as it shows. A step of no length keeps the last turn.
+	if dx ~= 0 or dy ~= 0 then
+		head.turn = math.atan2(-dx * width, -dy * height)
+	end
+	head.arrow:SetRotation(head.turn or 0)
+	head.glow:SetSize(size * (1.3 + 0.5 * pulse), size * (1.3 + 0.5 * pulse))
+	head.glow:SetVertexColor(0.8, 0.85, 1, 0.5 + 0.4 * pulse)
 	head:ClearAllPoints()
 	head:SetPoint("CENTER", container, "TOPLEFT", x * width, -y * height)
 	head:Show()
@@ -321,6 +358,83 @@ local function animatePins(now)
 	return busy
 end
 
+local function newBurst()
+	local frame = CreateFrame("Frame", nil, container)
+	frame:SetSize(1, 1)
+	frame.ring = frame:CreateTexture(nil, "BACKGROUND")
+	frame.ring:SetTexture("Interface\\Cooldown\\star4")
+	frame.ring:SetBlendMode("ADD")
+	frame.ring:SetPoint("CENTER")
+	frame.label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
+	return frame
+end
+
+-- The label of a burst: the level for a level up, else the name of the kind.
+local function burstLabel(data)
+	local level = data.fields and data.fields.level
+	if data.kind == "lv" and type(level) == "number" then
+		return L["Level %d"]:format(level)
+	end
+	local spec = ns.Kinds.Get(data.kind)
+	return spec and spec.name or data.kind
+end
+
+-- Starts the burst of a pin of a kind that has one. It plays nothing when MAX_BURSTS already play.
+local function startBurst(data, now)
+	local color = Overlay.BURST[data.kind]
+	if not color then
+		return
+	end
+	local burst
+	for _, b in ipairs(burstPool) do
+		if not b.startAt then
+			burst = b
+			break
+		end
+	end
+	if not burst then
+		if #burstPool >= Overlay.MAX_BURSTS then
+			return
+		end
+		burst = newBurst()
+		burstPool[#burstPool + 1] = burst
+	end
+	burst.startAt, burst.x, burst.y = now, data.x, data.y
+	burst.ring:SetVertexColor(color[1], color[2], color[3], 1)
+	burst.label:SetTextColor(color[1], color[2], color[3], 1)
+	burst.label:SetText(burstLabel(data))
+	burst:Show()
+end
+
+-- The ring grows and fades, and the label rises and fades. The frame is scaled to the screen, so it keeps its size at
+-- each zoom. A burst ends by itself.
+local function animateBursts(now)
+	local busy = false
+	for _, burst in ipairs(burstPool) do
+		if burst.startAt then
+			local t = (now - burst.startAt) / Overlay.BURST_TIME
+			if t >= 1 then
+				burst.startAt = nil
+				burst:Hide()
+			else
+				busy = true
+				local grow = 1 - (1 - t) ^ 3
+				local ring = Overlay.BIG_PIN_SIZE * (0.6 + 3.4 * grow)
+				burst:SetScale(unit)
+				burst:ClearAllPoints()
+				burst:SetPoint("CENTER", container, "TOPLEFT", burst.x * width / unit, -burst.y * height / unit)
+				burst.ring:SetSize(ring, ring)
+				burst.ring:SetAlpha((1 - t) ^ 1.2)
+				burst.label:ClearAllPoints()
+				burst.label:SetPoint("CENTER", burst, "CENTER", 0, 18 + 26 * t)
+				local fade = t < 0.15 and t / 0.15 or 1 - ((t - 0.15) / 0.85) ^ 2
+				burst.label:SetAlpha(fade)
+			end
+		end
+	end
+	return busy
+end
+
 local function finish()
 	ns.Emit("MAP_OVERLAY_DRAWN", Overlay.Stats())
 end
@@ -344,6 +458,8 @@ local function update(dt)
 		return
 	end
 	local now = GetTime()
+	-- The pins that the playhead reaches on the frame that ends the replay still pop in.
+	local wasPlaying = playing
 	if playing then
 		pos, playing = ns.Replay.Advance(pos, dt, speed, timeline.total)
 		if not playing then
@@ -370,14 +486,20 @@ local function update(dt)
 			pinPool[i].popAt = nil
 		end
 		shownPins = wantPins
+		ns.Emit("MAP_REPLAY_RESET")
 	else
-		local animate = playing and wantPins - shownPins <= Overlay.MAX_POPS
+		local animate = wasPlaying and wantPins - shownPins <= Overlay.MAX_POPS
 		for i = shownPins + 1, wantPins do
 			placePin(i, animate)
+			if animate then
+				startBurst(timeline.pins[i], now)
+				ns.Emit("MAP_REPLAY_EVENT", timeline.pins[i])
+			end
 		end
 		shownPins = wantPins
 	end
 	local busy = animatePins(now)
+	busy = animateBursts(now) or busy
 	placeHead(now)
 	if not (playing or busy or shownEdges < wantEdges) then
 		container:SetScript("OnUpdate", nil)
@@ -496,9 +618,13 @@ local function query(mapID)
 	end
 	if filter.trail then
 		local zones
-		data.segments, zones = ns.MapData.Segments(mapID, filter)
+		data.segments, zones, data.jumps = ns.MapData.Segments(mapID, filter)
 		for zone in pairs(zones or {}) do
 			skipped[zone] = true
+		end
+		-- The level ups are read only for the colour mode that needs them.
+		if look.mode == "level" then
+			data.levels = ns.MapData.Levels()
 		end
 	end
 	data.zones = count(skipped)
@@ -531,7 +657,7 @@ local function draw()
 		end
 		container = CreateFrame("Frame", nil, canvas)
 		container:SetAllPoints(canvas)
-		linePool, pinPool = {}, {}
+		linePool, pinPool, burstPool = {}, {}, {}
 		head = newHead()
 		head:Hide()
 	end
@@ -543,8 +669,10 @@ local function draw()
 	measure(map, canvas)
 	local mapID = map:GetMapID()
 	pinScale = ns.IsSkippedMap(mapID) and Overlay.HIGH_MAP_PIN or 1
+	look = { mode = ns.Settings.Get("map.color"), blind = ns.Settings.Get("map.colorblind") == true }
 	local data = query(mapID)
 	timeline = ns.Replay.Build(data, Overlay.MAX_LINES)
+	timeline.levels = data.levels
 	stats.lines = #timeline.edges
 	stats.pins = #timeline.pins
 	stats.cutLines = timeline.cut

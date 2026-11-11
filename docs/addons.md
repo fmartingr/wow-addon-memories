@@ -26,18 +26,28 @@ leaves no room beside it. A click on a game tab hides the Journey view.
   The clock counts played seconds, and a long pause counts as 20 s, so a journey of many sessions plays with no dead
   time. At 1× the replay runs 40 played seconds for each real second, as on the website. Play at the end starts again
   from the start.
-- **Replay:** the trail draws as the playhead passes it, with a glowing marker at the head. A pin pops in when the
-  playhead passes its event and pulses for 6 played seconds. With no replay running, the whole journey shows.
-- **Trail:** lines on the map shown, coloured by the way of travel (foot, mounted, taxi, swimming, dead or ghost).
+- **Replay:** the trail draws as the playhead passes it. A silver arrow at the head points along the route and turns
+  with it. A pin pops in when the playhead passes its event and pulses for 6 played seconds. With no replay running,
+  the whole journey shows.
+- **Highlight animations:** when the playhead passes a level up, a death, a flight, a boat or zeppelin, a hearthstone,
+  a portal, a summon, a dungeon or a boss, a ring grows and fades at its pin and a short label rises and fades (about
+  1.2 s). At most 4 play at once, and none plays on a seek.
+- **Trail colour:** a button in the panel changes the colour of the trail: the way of travel (foot, mounted, taxi,
+  swimming, dead or ghost), the level of the character, or the age (older steps are cooler and dimmer). A check box
+  swaps the colours for a palette that is readable with colour blindness.
+- **Trip arcs:** a trip that skips the trail (a hearthstone, a portal, a summon, a boat, or a flight with no points)
+  draws as a curved arc from the last point before it to the first point after it, in the time of the trip.
 - **Pins:** one pin for each journal line that has a position on the map, with an icon of its group. The tooltip shows
   the time, the kind name and the fields. The pins of a death and of a level up are larger.
 - **Zoom:** pins and lines keep their screen size when the map zooms. On a continent or the world map the pins show
   at half size, as a whole journey packs into a small space there.
 - **Continent and world maps:** the trail and the pins of the zones below the map, put on it through the world
   position. A zone with no position on the map is skipped, and the panel counts these zones.
-- **Panel:** a check box for the trail and for each group of kinds, the list of sessions (the date and the length,
-  with one choice for "All"), and the count of the lines and pins. The panel says when a cap (3000 lines, 500 pins)
-  cuts the view.
+- **Panel:** a check box for the trail and for each group of kinds, and a list that switches between chapters and
+  sessions. A click on a chapter (the start, then one for each level) jumps the replay to it. The sessions show the
+  date and the length, with one choice for "All". The panel also has the count of the lines and pins, which says when
+  a cap (3000 lines, 500 pins) cuts the view, and the Highlights feed: the last six events that the replay passed,
+  newest first.
 - **Limits:** the tab only reads the saved data. It records nothing, and it changes no game map function.
 
 Code: `addons/Memories/UI/Map/` (`MapData.lua` reads the data, `Replay.lua` is the timeline, `Overlay.lua` draws and

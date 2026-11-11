@@ -814,4 +814,255 @@ describe("map overlay", function()
 			end)
 		end)
 	end)
+
+	describe("trail look", function()
+		it("turns the arrow of the head along the step it is on", function()
+			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000;20,2000,2000") })
+			local map = attach()
+			O.Show(true)
+			frames(map, 2)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.125)
+			local arrow = head(map).arrow
+			assert.equal("Interface\\Minimap\\ROTATING-MINIMAPARROW", arrow.texture)
+			assert.near(math.atan2(-1, -0), arrow.rotation, 1e-6)
+			step(map, 0.25)
+			assert.near(math.atan2(-0, -1), arrow.rotation, 1e-6)
+		end)
+
+		it("keeps the last turn on a step of no length", function()
+			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000;20,2000,1000") })
+			local map = attach()
+			O.Show(true)
+			frames(map, 2)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.125)
+			local turn = head(map).arrow.rotation
+			step(map, 0.01)
+			assert.equal(turn, head(map).arrow.rotation)
+		end)
+
+		it("colours the lines by level in the level mode", function()
+			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000;20,3000,1000") })
+			local map = attach()
+			journal({ { t = 1015, kind = "lv", args = { 30 } } })
+			ns.Settings.Set("map.color", "level")
+			O.Show(true)
+			frames(map, 2)
+			local ls = lines(map)
+			local a = { unpack(ls[1].color, 1, 4) }
+			local b = { unpack(ls[2].color, 1, 4) }
+			assert.same({ ns.Replay.Color({ level = 29 }, "level") }, a)
+			assert.same({ ns.Replay.Color({ level = 30 }, "level") }, b)
+		end)
+
+		it("colours the lines by age, and with the colourblind palette", function()
+			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000;20,3000,1000") })
+			local map = attach()
+			ns.Settings.Set("map.color", "age")
+			O.Show(true)
+			frames(map, 2)
+			assert.same({ ns.Replay.Color({ age = 0.5 }, "age", false) }, { unpack(lines(map)[1].color, 1, 4) })
+			ns.Settings.Set("map.colorblind", true)
+			ns.Settings.Set("map.color", "way")
+			O.Draw()
+			frames(map, 2)
+			assert.same({ ns.Replay.Color({ way = "foot" }, "way", true) }, { unpack(lines(map)[1].color, 1, 4) })
+		end)
+
+		it("draws the arc of a trip between two chunks with the arc colour", function()
+			boot({
+				chunk(ZONE, 1000, "0,1000,1000;10,2000,1000"),
+				chunk(ZONE, 1040, "0,8000,6000;10,8500,6000"),
+			})
+			local map = attach()
+			O.Show(true)
+			frames(map, 3)
+			assert.equal(2 + ns.Replay.ARC_STEPS, visible(lines(map)))
+			local arc = 0
+			for _, line in ipairs(lines(map)) do
+				local c = ns.Replay.WAY_COLOR.arc
+				if line.shown and line.color[1] == c[1] and line.color[2] == c[2] then
+					arc = arc + 1
+				end
+			end
+			assert.equal(ns.Replay.ARC_STEPS, arc)
+		end)
+	end)
+
+	describe("highlights", function()
+		local function bursts(map)
+			local out = {}
+			for _, f in ipairs(wow.frames) do
+				if f.kind == "Frame" and f.parent == container(map) and f.ring then
+					out[#out + 1] = f
+				end
+			end
+			return out
+		end
+
+		local function setup(list)
+			boot({ TRAIL })
+			local map = attach()
+			journal(list)
+			O.Show(true)
+			frames(map, 2)
+			return map
+		end
+
+		local EVENTS = {
+			{ t = 1015, m = ZONE, x = 5000, y = 5000, kind = "lv", args = { 12 } },
+			{ t = 1035, m = ZONE, x = 6000, y = 5000, kind = "de", args = { "Wolf" } },
+		}
+
+		it("plays a burst at a level up with the level as its label, and tells the panel", function()
+			local map = setup(EVENTS)
+			local seen = {}
+			ns.Listen("MAP_REPLAY_EVENT", function(_, pin)
+				seen[#seen + 1] = pin.kind
+			end)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			local list = bursts(map)
+			assert.equal(1, #list)
+			assert.equal("Level 12", list[1].label.text)
+			assert.same({ unpack(O.BURST.lv, 1, 3) }, { unpack(list[1].ring.vertexColor or O.BURST.lv, 1, 3) })
+			assert.is_true(list[1].shown)
+			assert.same({ "lv" }, seen)
+		end)
+
+		it("labels a death with the name of the kind and a flight with its own colour", function()
+			local map = setup({
+				{ t = 1015, m = ZONE, x = 5000, y = 5000, kind = "de", args = { "Wolf" } },
+				{ t = 1035, m = ZONE, x = 6000, y = 5000, kind = "tx", args = { "A", "B" } },
+			})
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			assert.equal("Died", bursts(map)[1].label.text)
+			step(map, 0.5)
+			assert.equal(2, #bursts(map))
+			assert.equal("Took a flight", bursts(map)[2].label.text)
+		end)
+
+		it("plays no burst for a kind that has none", function()
+			local map = setup({ { t = 1015, m = ZONE, x = 5000, y = 5000, kind = "di", args = { "Elwynn" } } })
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			assert.equal(0, #bursts(map))
+		end)
+
+		it("grows the ring and fades the burst, which ends by itself and goes back to the pool", function()
+			local map = setup(EVENTS)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			local burst = bursts(map)[1]
+			local early = burst.ring.size[1]
+			step(map, 0.4)
+			assert.is_true(burst.ring.size[1] > early)
+			assert.is_true(burst.label.alpha < 1)
+			step(map, O.BURST_TIME)
+			assert.is_nil(burst.startAt)
+			assert.is_false(burst.shown)
+			O.Seek(0)
+			step(map, 0.001)
+			O.Play()
+			step(map, 0.51)
+			assert.equal(2, #bursts(map))
+			assert.is_not_nil(burst.startAt)
+		end)
+
+		it("scales a burst to the screen and anchors it at its pin", function()
+			local map = setup(EVENTS)
+			map.scale = 0.5
+			O.Show(true)
+			frames(map, 2)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			local burst = bursts(map)[1]
+			assert.equal(2, burst.scale)
+			assert.same({ "CENTER", container(map), "TOPLEFT" }, { unpack(burst.point, 1, 3) })
+			assert.near(500 / 2, burst.point[4], 1e-6)
+			assert.near(-250 / 2, burst.point[5], 1e-6)
+		end)
+
+		it("plays at most a few bursts at once", function()
+			local list = {}
+			for i = 1, 6 do
+				list[i] = { t = 1010 + i, m = ZONE, x = 1000 * i, y = 5000, kind = "lv", args = { 10 + i } }
+			end
+			local map = setup(list)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			local playing = 0
+			for _, b in ipairs(bursts(map)) do
+				if b.startAt then
+					playing = playing + 1
+				end
+			end
+			assert.equal(O.MAX_BURSTS, playing)
+			assert.equal(O.MAX_BURSTS, #bursts(map))
+		end)
+
+		it("plays no burst and sends no event when the playhead jumps over many events", function()
+			local list = {}
+			for i = 1, 12 do
+				list[i] = { t = 1010 + i, m = ZONE, x = 500 * i, y = 5000, kind = "lv", args = { 10 + i } }
+			end
+			local map = setup(list)
+			local events = 0
+			ns.Listen("MAP_REPLAY_EVENT", function()
+				events = events + 1
+			end)
+			O.Seek(0)
+			step(map, 0.001)
+			O.Seek(999)
+			step(map)
+			assert.equal(0, #bursts(map))
+			assert.equal(0, events)
+		end)
+
+		it("plays no burst on a seek, and tells the panel to empty its feed on a seek back", function()
+			local map = setup(EVENTS)
+			local resets = 0
+			ns.Listen("MAP_REPLAY_RESET", function()
+				resets = resets + 1
+			end)
+			O.Seek(25)
+			step(map)
+			assert.equal(0, #bursts(map))
+			O.Seek(0)
+			step(map)
+			assert.is_true(resets > 0)
+		end)
+
+		it("hides the bursts when the map clears its data", function()
+			local map = setup(EVENTS)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			local burst = bursts(map)[1]
+			O.Show(false)
+			assert.is_false(burst.shown)
+			assert.is_nil(burst.startAt)
+		end)
+
+		it("gives the chapters of the replay, empty with nothing to play", function()
+			local map = setup({ { t = 1015, kind = "lv", args = { 12 } } })
+			local chapters = O.Chapters()
+			assert.equal(2, #chapters)
+			assert.equal(12, chapters[2].level)
+			assert.equal(15, chapters[2].c)
+			O.Show(false)
+			assert.same({}, O.Chapters())
+			assert.is_not_nil(map)
+		end)
+	end)
 end)

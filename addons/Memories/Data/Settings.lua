@@ -22,8 +22,9 @@ local DEFAULTS = {
 	lowHealthFlash = true,
 	-- "yards" or "meters"; any other value lets the region and the client language decide.
 	distanceUnit = "auto",
-	-- The Journey tab of the world map: the shown groups, the trail, and the last tab ("quest" or "journey").
-	map = { groups = {}, trail = true, tab = "quest" },
+	-- The Journey tab of the world map: the shown groups, the trail, the last tab ("quest" or "journey"), the colour of
+	-- the trail ("way", "level" or "age") and the colourblind palette.
+	map = { groups = {}, trail = true, tab = "quest", color = "way", colorblind = false },
 }
 
 -- Keys of these tables are kind names, box keys and group names, never paths. Each maps to the default of one entry.
@@ -31,6 +32,11 @@ local DEFAULTS = {
 local MAPS = { kinds = true, newOnly = false, ["map.groups"] = true }
 
 local TABS = { quest = true, journey = true }
+Settings.COLORS = { "way", "level", "age" }
+local COLOR = {}
+for _, mode in ipairs(Settings.COLORS) do
+	COLOR[mode] = true
+end
 
 -- MemoriesDB is a file the player can edit, so a missing value or one of the wrong type takes its default. The client's
 -- Settings page writes the default of every setting it shows in the same way. A MAPS table keeps its free keys; any
@@ -77,6 +83,9 @@ local function check(t)
 				entries[key] = nil
 			end
 		end
+	end
+	if not COLOR[t.map.color] then
+		t.map.color = DEFAULTS.map.color
 	end
 	if not TABS[t.map.tab] then
 		t.map.tab = DEFAULTS.map.tab
@@ -164,7 +173,10 @@ function Settings.Set(path, value)
 	local want = type(path) == "string" and expected(path)
 	assert(want, "unknown setting " .. tostring(path))
 	assert(
-		type(value) == want and (path ~= "recordRate" or RATE[value]) and (path ~= "map.tab" or TABS[value]),
+		type(value) == want
+			and (path ~= "recordRate" or RATE[value])
+			and (path ~= "map.tab" or TABS[value])
+			and (path ~= "map.color" or COLOR[value]),
 		"bad value for setting " .. path
 	)
 	local t, key = Settings.Slot(path)

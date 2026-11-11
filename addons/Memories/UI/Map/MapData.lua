@@ -142,19 +142,26 @@ local function inSession(session, t)
 	return not session or (t >= session.start and (session.stop == nil or t <= session.stop))
 end
 
+-- A trip that skips the trail leaves two points less than JUMP_GAP seconds apart and at least JUMP_MIN map units apart.
+MapData.JUMP_GAP = 120
+MapData.JUMP_MIN = 0.03
+
 -- The segments of the trail on mapID: a list of { way, pts = { x1, y1, x2, y2, ... }, ts = { t1, t2, ... } }, with one
 -- time for each point. filter.session limits the time.
 -- The second result is the set of zones, by id, that have no position on mapID. Trail starts a new chunk at a pause, a
 -- teleport, a map change and a new session (its start is the chunk's s), so each of these breaks the line. A full chunk
 -- is cut with no pause, so the line goes on into the next one. A long gap inside a chunk is the player standing still,
 -- as Trail drops the points of a player who does not move.
+-- The third result lists the jumps: { x1, y1, t0, x2, y2, t1 } from the last point of a chunk to the first point of the
+-- next one, for a hearthstone, a portal, a summon, a boat or a flight with no recorded points.
 function MapData.Segments(mapID, filter)
 	filter = filter or {}
 	local session = filter.session
 	local step2 = (filter.step or MapData.STEP) ^ 2
 	local target = newTarget(mapID)
-	local out = {}
+	local out, jumps = {}, {}
 	local seg, lx, ly, lt, goesOn
+	local px, py, pt
 	local function close()
 		if seg and #seg.pts >= 4 then
 			out[#out + 1] = seg
@@ -172,12 +179,16 @@ function MapData.Segments(mapID, filter)
 				and ns.TrailCodec.Decode(rec)
 			or {}
 		local first = points[1]
-		if
-			not (goesOn and first and zone == goesOn.m and rec.s == goesOn.s and first.t - goesOn.t <= ns.Trail.PAUSE)
-		then
+		local continued = goesOn
+			and first
+			and zone == goesOn.m
+			and rec.s == goesOn.s
+			and first.t - goesOn.t <= ns.Trail.PAUSE
+		if not continued then
 			close()
 		end
 		goesOn = nil
+		local fresh = not continued
 		for _, p in ipairs(points) do
 			local fx, fy
 			if
@@ -187,6 +198,20 @@ function MapData.Segments(mapID, filter)
 				and (not timed or inSession(session, p.t))
 			then
 				fx, fy = target:Place(zone, p.x / SCALE, p.y / SCALE)
+			end
+			if fx then
+				local gap = pt and p.t - pt
+				if
+					fresh
+					and gap
+					and gap > 0
+					and gap <= MapData.JUMP_GAP
+					and (fx - px) ^ 2 + (fy - py) ^ 2 >= MapData.JUMP_MIN ^ 2
+				then
+					jumps[#jumps + 1] = { x1 = px, y1 = py, t0 = pt, x2 = fx, y2 = fy, t1 = p.t }
+				end
+				fresh = false
+				px, py, pt = fx, fy, p.t
 			end
 			local way = fx and MapData.Way(p.flags)
 			if not fx then
@@ -209,7 +234,7 @@ function MapData.Segments(mapID, filter)
 		end
 	end
 	close()
-	return out, target.skipped
+	return out, target.skipped, jumps
 end
 
 -- The two columns of a journal line that decide whether it can be a pin, without splitting the whole line.
@@ -253,6 +278,28 @@ function MapData.Pins(mapID, filter)
 		end
 	end
 	return out, total, target.skipped
+end
+
+-- The level ups of the character as { t, level }, by time.
+function MapData.Levels()
+	local out = {}
+	for _, item in ipairs(ns.Registry.Journals()) do
+		for line in item.journal:Lines() do
+			if type(line) == "string" then
+				local t, _, _, _, kind = head(line)
+				if kind == "lv" and t then
+					local level = ns.Codec.DecodeLine(line).level
+					if type(level) == "number" then
+						out[#out + 1] = { t = t, level = level }
+					end
+				end
+			end
+		end
+	end
+	table.sort(out, function(a, b)
+		return a.t < b.t
+	end)
+	return out
 end
 
 -- The groups of the registered kinds in registration order, as the tokens of Kinds. A kind without a group has "".

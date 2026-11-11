@@ -135,4 +135,187 @@ describe("replay timeline", function()
 		assert.equal("1:00:00", R.ClockText(3600))
 		assert.equal("2:03:09", R.ClockText(7389))
 	end)
+
+	describe("trip arcs", function()
+		local jump = { x1 = 0.1, y1 = 0.5, t0 = 1000, x2 = 0.9, y2 = 0.5, t1 = 1030 }
+
+		it("cuts a trip into the steps of a curve that joins its two points in its time", function()
+			local tl = R.Build({ jumps = { jump } })
+			assert.equal(R.ARC_STEPS, #tl.edges)
+			local first, last = tl.edges[1], tl.edges[#tl.edges]
+			assert.same({ 0.1, 0.5, "arc", 1000 }, { first.x1, first.y1, first.way, first.t0 })
+			assert.near(0.9, last.x2, 1e-9)
+			assert.near(0.5, last.y2, 1e-9)
+			assert.near(1030, last.t, 1e-9)
+			for i = 2, #tl.edges do
+				assert.near(tl.edges[i - 1].x2, tl.edges[i].x1, 1e-9)
+				assert.near(tl.edges[i - 1].y2, tl.edges[i].y1, 1e-9)
+			end
+			assert.equal(tl.total, last.c)
+		end)
+
+		it("bows the curve to the north, whichever way the trip goes", function()
+			for _, j in ipairs({ jump, { x1 = 0.9, y1 = 0.5, t0 = 1, x2 = 0.1, y2 = 0.5, t1 = 31 } }) do
+				local tl = R.Build({ jumps = { j } })
+				local highest = 1
+				for _, e in ipairs(tl.edges) do
+					highest = math.min(highest, e.y2)
+				end
+				assert.is_true(highest < 0.5)
+			end
+		end)
+
+		it("is a straight line for a trip of no length", function()
+			local tl = R.Build({ jumps = { { x1 = 0.5, y1 = 0.5, t0 = 1, x2 = 0.5, y2 = 0.5, t1 = 11 } } })
+			assert.equal(R.ARC_STEPS, #tl.edges)
+			assert.near(0.5, tl.edges[5].y2, 1e-9)
+		end)
+
+		it("plays in time order with the trail", function()
+			local tl = R.Build({
+				segments = { seg("foot", { 0, 0, 0.1, 0 }, { 990, 1000 }) },
+				jumps = { jump },
+			})
+			assert.equal("foot", tl.edges[1].way)
+			assert.equal("arc", tl.edges[2].way)
+		end)
+	end)
+
+	describe("levels and ages", function()
+		local levels = { { t = 100, level = 10 }, { t = 200, level = 11 } }
+		local function edgeAt(t0, t1, data)
+			data = data or {}
+			data.segments = { seg("foot", { 0, 0, 1, 0 }, { t0, t1 }) }
+			return R.Build(data).edges[1]
+		end
+
+		it("gives each step the level of the character at its end", function()
+			assert.equal(9, edgeAt(10, 50, { levels = levels }).level)
+			assert.equal(10, edgeAt(150, 160, { levels = levels }).level)
+			assert.equal(11, edgeAt(250, 260, { levels = levels }).level)
+			assert.equal(1, edgeAt(10, 50, { levels = { { t = 100, level = 1 } } }).level)
+			assert.is_nil(edgeAt(10, 50).level)
+			assert.is_nil(edgeAt(10, 50, { levels = {} }).level)
+		end)
+
+		it("gives the oldest step age 0 and the newest age 1", function()
+			local tl = R.Build({
+				segments = { seg("foot", { 0, 0, 1, 0, 2, 0, 3, 0 }, { 100, 110, 120, 140 }) },
+			})
+			assert.equal(0.25, tl.edges[1].age)
+			assert.equal(0.5, tl.edges[2].age)
+			assert.equal(1, tl.edges[3].age)
+			assert.equal(1, edgeAt(5, 5).age)
+		end)
+	end)
+
+	describe("colour", function()
+		local function rgba(...)
+			return { ... }
+		end
+
+		it("uses the colour of the way, a palette for each way and one for the colourblind", function()
+			for way, color in pairs(R.WAY_COLOR) do
+				assert.same(rgba(color[1], color[2], color[3], 0.9), rgba(R.Color({ way = way }, "way", false)))
+			end
+			for way, color in pairs(R.BLIND_WAY_COLOR) do
+				assert.same(rgba(color[1], color[2], color[3], 0.9), rgba(R.Color({ way = way }, "way", true)))
+			end
+			assert.same(
+				rgba(R.WAY_COLOR.foot[1], R.WAY_COLOR.foot[2], R.WAY_COLOR.foot[3], 0.9),
+				rgba(R.Color({ way = "x" }, "way"))
+			)
+			assert.is_not.same(
+				rgba(R.Color({ way = "foot" }, "way", false)),
+				rgba(R.Color({ way = "foot" }, "way", true))
+			)
+		end)
+
+		it("keeps the five ways of the colourblind palette apart", function()
+			local seen = {}
+			for _, color in pairs(R.BLIND_WAY_COLOR) do
+				local key = ("%.2f,%.2f,%.2f"):format(color[1], color[2], color[3])
+				assert.is_nil(seen[key])
+				seen[key] = true
+			end
+		end)
+
+		it("colours a step by its level along a ramp from level 1 to the last level", function()
+			local low = rgba(R.Color({ way = "foot", level = 1 }, "level"))
+			local high = rgba(R.Color({ way = "foot", level = R.MAX_LEVEL }, "level"))
+			local mid = rgba(R.Color({ way = "foot", level = 30 }, "level"))
+			assert.is_not.same(low, high)
+			assert.is_not.same(low, mid)
+			assert.equal(0.9, low[4])
+			assert.same(high, rgba(R.Color({ way = "foot", level = 99 }, "level")))
+			assert.same(low, rgba(R.Color({ way = "foot", level = -5 }, "level")))
+			assert.is_not.same(
+				rgba(R.Color({ level = 30 }, "level", false)),
+				rgba(R.Color({ level = 30 }, "level", true))
+			)
+		end)
+
+		it("falls back to the way for a step with no level or no age", function()
+			local foot = rgba(R.Color({ way = "foot" }, "way"))
+			assert.same(foot, rgba(R.Color({ way = "foot" }, "level")))
+			assert.same(foot, rgba(R.Color({ way = "foot" }, "age")))
+		end)
+
+		it("makes an older step cooler and dimmer than a newer one", function()
+			local old = rgba(R.Color({ age = 0 }, "age"))
+			local new = rgba(R.Color({ age = 1 }, "age"))
+			assert.is_true(old[4] < new[4])
+			assert.is_true(old[3] > new[3])
+			assert.equal(0.4, old[4])
+			assert.equal(0.9, new[4])
+		end)
+	end)
+
+	describe("the clock of a time and the direction of the head", function()
+		it("gives the clock of a unix time from the timeline", function()
+			local tl = R.Build({ segments = { seg("foot", { 0, 0, 1, 0 }, { 1000, 1010 }) } })
+			assert.equal(5, tl.clockAt(1005))
+			assert.equal(0, tl.clockAt(1))
+			assert.equal(10, tl.clockAt(9999))
+		end)
+
+		it("gives the direction of the step the head is on", function()
+			local tl = R.Build({ segments = { seg("foot", { 0, 0, 1, 0, 1, 2 }, { 1000, 1010, 1020 }) } })
+			local _, _, _, dx, dy = R.Head(tl, 5)
+			assert.same({ 1, 0 }, { dx, dy })
+			_, _, _, dx, dy = R.Head(tl, 15)
+			assert.same({ 0, 2 }, { dx, dy })
+			_, _, _, dx, dy = R.Head(tl, 99)
+			assert.same({ 0, 2 }, { dx, dy })
+			_, _, _, dx, dy = R.Head(R.Build({ segments = { seg("foot", { 0, 0, 3, 3 }, { 1000, 1000 }) } }), 0)
+			assert.same({ 3, 3 }, { dx, dy })
+		end)
+	end)
+
+	describe("chapters", function()
+		local tl
+		before_each(function()
+			tl = R.Build({ segments = { seg("foot", { 0, 0, 1, 0, 2, 0 }, { 1000, 1010, 1020 }) } })
+		end)
+
+		it("lists the start and each level up inside the timeline, with its clock", function()
+			local chapters = R.Chapters(tl, {
+				{ t = 900, level = 9 },
+				{ t = 1005, level = 10 },
+				{ t = 1015, level = 11 },
+				{ t = 5000, level = 12 },
+			})
+			assert.same({ { c = 0 }, { level = 10, t = 1005, c = 5 }, { level = 11, t = 1015, c = 15 } }, chapters)
+		end)
+
+		it("has only the start with no level up, and none with nothing to play", function()
+			assert.same({ { c = 0 } }, R.Chapters(tl, {}))
+			assert.same({ { c = 0 } }, R.Chapters(tl))
+			assert.same({}, R.Chapters(R.Build({}), { { t = 1, level = 2 } }))
+		end)
+
+		it("gives the first and the last time of the timeline", function()
+			assert.same({ 1000, 1020 }, { tl.first, tl.last })
+		end)
+	end)
 end)

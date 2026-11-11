@@ -1,4 +1,4 @@
-# Journey tab on the world map: the trail and the events of the character, in the game
+# Journey tab on the world map: a replay of the journey of the character, in the game
 
 ## Why
 
@@ -6,14 +6,24 @@ The player sees the journey only on the website or in the local viewer, outside 
 world map, and every trail point and most journal lines have a map id and a position on it. The player must see the
 journey on the game map, while playing, with no upload and no app.
 
-This spec adds a side tab beside the quest log tab of the world map. The tab draws the trail and pins on the map and
-shows a panel in the place of the quest log.
+This spec adds a side tab beside the quest log tab of the world map. The tab is a replay player like the one on the
+website: a play button, a speed button, a slider and a clock, a trail that draws as time runs, and pins that pop in for
+the events of the journey (level up, death and others).
+
+**Revision 2 (look and feel).** The player wants the replay to look and feel like the best replay players for the
+game: a trail with a readable colour scheme, a marker that points along the route, arcs for the trips that skip the
+trail, a list of chapters to jump to, a feed of highlights, and an animation for each big moment. AC14 to AC16 and tasks
+7 and 8 record this. All code, text and art are our own, written from the public game API (see the Must Not rules).
+
+**Revision (after the first build).** The first build drew a static overlay and listed the replay as out of scope. That
+did not match the goal. The player also found two bugs in the game: icons that "bug out" and cover the map when
+zoomed out, and a wrong tab and panel layout. AC10 to AC13 and the decisions below record the fixes.
 
 ## What
 
 - **AC1 — Tab:** the world map has a **Journey** tab in the column of the side tabs, under the last game tab. A click
-  shows the Journey panel in the place of the quest log and turns the overlay on. A click on a game tab turns it off.
-  The map opens on the tab that the player used last.
+  shows the Journey panel and the player bar and turns the overlay on. A click on a game tab turns it off. The map
+  opens on the tab that the player used last.
 - **AC2 — Trail:** the overlay draws the recorded trail of the map that the map shows, as lines. The line color shows
   the way of travel (foot, mounted, taxi, swimming, dead or ghost), as the website does.
 - **AC3 — Pins:** the overlay draws one pin for each journal line that has a position on that map. A pin has an icon of
@@ -21,7 +31,7 @@ shows a panel in the place of the quest log.
   larger.
 - **AC4 — Panel:** the Journey panel has a check box for each group of kinds (Progress, Deaths, Travel, ...) and a
   check box for Trail, a list of sessions (the date and the length) with one choice for "All", and a count of the
-  shown lines and pins.
+  lines and pins.
 - **AC5 — Higher maps:** on a continent or the world map, the overlay draws the trail and the pins of the zones
   below it, put on that map through the world position. Without a valid projection for a zone, the overlay skips that
   zone.
@@ -31,6 +41,34 @@ shows a panel in the place of the quest log.
   error goes to `/memories errors`, and the game map still works. In combat, the tab works and shows no taint error.
 - **AC8 — Language:** all new texts exist in the 6 languages of the addon (`Locales.lua`).
 - **AC9 — Docs:** `docs/addons.md`, `docs/settings.md` and `docs/manual-checklist.md` describe the tab.
+- **AC10 — Player bar:** a bar at the bottom of the map has a play and pause button, a speed button (1x, 2x, 4x, 8x,
+  16x), a slider to seek, and the clock of the replay (`m:ss / m:ss`). The clock counts played seconds, and a pause
+  longer than 20 s counts as 20 s. At 1x the replay runs 40 played seconds for each real second, as the website. Play
+  at the end starts again from the start. With nothing to play, the controls are off.
+- **AC11 — Replay:** the trail draws as the playhead passes it, with a glowing marker at the head that moves along the
+  trail. A pin pops in with a short grow animation when the playhead passes its event, then pulses for 6 played
+  seconds. A seek back hides the lines and pins after the playhead. With no replay running, the whole journey shows.
+- **AC12 — Zoom and size:** pins, lines and the head marker keep their screen size at each canvas scale and each map
+  size. On a continent or world map the pins are half size. No icon covers the map, and no texture stretches.
+- **AC13 — Layout:** the panel stays on screen and never lies over a game frame that it does not own. On the
+  windowed map it docks beside the map. On a maximized map it lies over the right side of the map. It follows the map
+  when the map is maximized or made small while open. The tab, the panel and the player bar lie above the map pins and
+  take their clicks.
+
+- **AC14 — Trail look:** the trail has three colour modes, saved as `map.color`: `way` (the way of travel, the default),
+  `level` (the level of the character at that time) and `age` (older steps are cooler and dimmer than newer ones). A
+  check box `map.colorblind` swaps the palette for one that stays readable with the common colour blindness types. The
+  marker at the head is an arrow in silver that points along the route and turns with it. A trip that skips the trail
+  (a hearthstone, a portal, a summon, a boat or a flight with no recorded points) draws as a curved arc from the last
+  point before to the first point after, and it draws in the replay in the time of the trip.
+- **AC15 — Chapters and highlights:** the panel lists the journey in chapters (the start, then one chapter for each
+  level) and a click on a chapter jumps the replay to that moment. The same list area switches to the list of sessions
+  (AC4). A Highlights feed shows the last six events that the playhead passed, newest first, each with its icon, its
+  kind name and its main field. The feed empties on a seek back and on a new draw.
+- **AC16 — Highlight animations:** when the playhead passes a level up, a death, a flight, a boat or zeppelin, a
+  hearthstone, a portal or teleport, a summon, a dungeon, or a boss, a burst plays at its pin: a ring grows and fades
+  and a short label rises and fades (about 1.2 s). The colour and the label follow the kind. At most 4 bursts play at
+  once, and none plays on a seek or a jump over many events.
 
 ## Constraints
 
@@ -51,8 +89,8 @@ shows a panel in the place of the quest log.
   - Hide the pins or drawings of other addons.
   - Record any new data. This is a viewer only.
 - **Out of Scope:**
-  - A replay (an animation of the journey on the map).
   - Heat maps, the gear card and the stats window.
+  - Camera follow, the purse and level read-outs of the website player, and the events list.
   - Other characters of the account.
   - Skins for ElvUI, GW2 UI and other UI suites (the tab uses the look of the game tabs).
   - The Retail client. The target is the client of `## Interface: 16001`.
@@ -65,7 +103,20 @@ shows a panel in the place of the quest log.
 | One data provider, added with `WorldMapFrame:AddDataProvider`, draws the overlay on a canvas layer. | The provider gets `OnMapChanged` and `RemoveAllData` from the game, so the overlay follows the zoom and the map change with no hook. |
 | The pure data code (what to draw for a map) is separate from the frame code. | The busted suite tests the data code with no game frames. The frame code is thin. |
 | Trail lines come from `Line` textures on a pool, in the canvas coordinates of the shown map. | `Line` is the game's own way to draw a segment, with no art file. |
-| The panel opens where the quest log sits; with no quest log, it docks beside the map view. | The map has no tab strip of its own. |
+| The panel docks beside the windowed map and lies over the right side of a maximized map. It never lies over the quest log. | The Era client has no `QuestMapFrame`. A panel over a game frame was fragile, and a 16:9 screen has only about 170 px beside a maximized map. |
+| The pure timeline (`Replay.lua`) is separate from the frame code (`Overlay.lua`). | The busted suite tests the clock, the counts and the head position with no frames. |
+| The replay uses played seconds with each pause capped at 20 s, 40 played seconds for each real second at 1x. | A journey of many sessions plays with no dead time, and the rate matches the website. |
+| One `OnUpdate` on the overlay frame runs only while the replay plays or an animation runs, and shows at most `SLICE` new lines for each frame. | No cost at rest, and a long trail never stops a frame. |
+| Pin, line and head sizes are in screen units and divide by the canvas scale (`GetCanvasScale`). The provider callbacks `OnCanvasSizeChanged` and `OnCanvasScaleChanged` place them again. | This is how the game sizes its own pins. A size in canvas units grew with the map and covered it. |
+| Pins on a continent or world map (`ns.IsSkippedMap`) are half size. | Up to 500 pins at full size are too dense on those maps. |
+| The player bar and the panel take their frame level from `PIN_FRAME_LEVEL_TOPMOST` of the map's pin manager, plus 10, with a fixed level as fallback. | The game's pins sit at levels from 2000 up, and they drew over the bar and took its clicks. |
+| The colour of a step by level or by age is worked out when the timeline is built, not for each frame. | The colour modes cost nothing while the replay plays. |
+| The head marker is the game's own arrow texture (`Interface\Minimap\ROTATING-MINIMAPARROW`), set to grey and rotated with `SetRotation`. | An arrow that follows the route needs no art of our own. |
+| A trip arc comes from a jump in the trail: two points of consecutive chunks that are less than 120 s apart and far apart on the map. The arc is a quadratic curve cut in 10 steps that are edges of the timeline. | Every kind of trip (hearthstone, portal, summon, boat, flight) leaves such a jump, so one rule covers them all. |
+| A burst is one pooled frame with a ring texture and a label, driven by the same `OnUpdate` as the pins. | No new update loop, and no per-burst garbage. |
+| Chapters come from the `lv` lines of the journal. | Levels are the natural chapters of the journey of a character. |
+| The panel changes a text or a value only when it changed. | No garbage while the replay plays. |
+| Every texture has its own size and one anchor. A pin takes no clicks, only the tooltip. | A texture with `SetAllPoints` in a frame of size 0 can fill the canvas. |
 | The tab icon is the addon icon `Media\icon`. | The file exists in the addon already. |
 
 ## Risks
@@ -77,6 +128,9 @@ shows a panel in the place of the quest log.
 | `Line` textures and pins are many on a continent map. | A frame drop; a high memory use. | A cap of 3000 lines and 500 pins for each draw, and the panel says when a cap cuts the view. | 2 |
 | Taint from the tab or the panel in combat. | A blocked action. | No secure frame is changed; the tab and the panel are plain frames; `InCombatLockdown` is not needed. | 3 |
 | A zone has no projection on the continent map. | A zone is missing on the higher map. | Skip it and count it; the panel shows "N zones not shown". | 1 |
+| The animation costs frame time on a long journey at 16x. | A frame drop while the replay plays. | One `OnUpdate`, a slice of lines for each frame, at most 8 pops for each frame, and it stops at rest. | 2, 3 |
+| A texture path of the replay is wrong on the client (the head glow `Interface\Cooldown\star4`). | A square block shows instead of a glow. | Manual rows U19 and U21; change the path if the row fails. | 2 |
+| The tab or the panel lies outside the map frame, which the map draws through a frame buffer. | The tab or the panel is clipped. | Manual row U14 on the windowed and the maximized map. | 3 |
 | Another addon adds a tab or an overlay to the map. | Two tabs and two overlays. | Each addon owns its frames; the tab column puts ours under the last tab that exists. | 3 |
 
 ## Current State
@@ -96,7 +150,10 @@ shows a panel in the place of the quest log.
 - **Test harness:** `spec/helpers/wow.lua` has a `C_Map` stub (`GetBestMapForUnit`, `GetPlayerMapPosition`,
   `GetMapInfo`) and a `CreateFrame` stub. `make test-lua` runs busted; `make lint-lua` runs luacheck; `make fmt-check`
   runs stylua.
-- **Client:** `## Interface: 16001` in every TOC.
+- **Client:** `## Interface: 16001` in every TOC. The Era map has no quest log frame and no mouse-wheel zoom, so a
+  zoom out means a change to the continent or world map.
+- **Segments:** `MapData.Segments` returns `{ way, pts, ts }`, with one time for each point, so the replay can order
+  the steps in time.
 
 ## Implementation guidelines
 
@@ -106,7 +163,7 @@ Coverage: `make coverage-lua` must not drop.
 
 ## Tasks
 
-### [ ] 1. Map data: what to draw for a map
+### [x] 1. Map data: what to draw for a map
 
 - **Outcome:** `ns.MapData` returns, for a map id and a filter, the trail segments and the pins, in map coordinates.
 - **Covers:** AC2 (data), AC3 (data), AC5 (projection), AC6 (settings keys); risk "long trail", "no projection".
@@ -129,7 +186,7 @@ Coverage: `make coverage-lua` must not drop.
   `spec/helpers/wow.lua`.
 - **Verify:** `make test-lua lint-lua fmt-check coverage-lua`.
 
-### [ ] 2. The overlay: a data provider that draws on the map
+### [x] 2. The overlay: a data provider that draws on the map
 
 - **Outcome:** with the overlay on, the map shows the lines and the pins of task 1 and their tooltips.
 - **Depends on:** 1.
@@ -142,7 +199,7 @@ Coverage: `make coverage-lua` must not drop.
   count; a change of map clears the pools; an error in a draw leaves the map working.
 - **Verify:** `make test-lua lint-lua fmt-check`; in the game, the manual rows of task 3.
 
-### [ ] 3. The tab and the panel
+### [x] 3. The tab and the panel
 
 - **Outcome:** the Journey tab and panel of AC1, AC4 and AC6.
 - **Depends on:** 2.
@@ -157,7 +214,7 @@ Coverage: `make coverage-lua` must not drop.
   `MemoriesDB` keeps the choices for the session only.
 - **Verify:** `make test-lua lint-lua fmt-check`.
 
-### [ ] 4. Texts and docs
+### [x] 4. Texts and docs
 
 - **Outcome:** AC8 and AC9.
 - **Depends on:** 3.
@@ -169,11 +226,79 @@ Coverage: `make coverage-lua` must not drop.
   clash.
 - **Verify:** `make test-lua lint-lua fmt-check`.
 
+### [x] 5. Replay: the timeline, the player bar and animated pins
+
+- **Outcome:** AC10, AC11 and the zoom part of AC12.
+- **Depends on:** 3.
+- **Covers:** AC10, AC11, AC12; risk "animation cost".
+- **Files:** `addons/Memories/UI/Map/Replay.lua` (new), `Overlay.lua`, `Panel.lua`, `MapData.lua` (`ts`),
+  `Memories.toc`, `Locales.lua` ("Play", "Pause"), `spec/replay_spec.lua` (new), `spec/overlay_spec.lua`,
+  `spec/maptab_spec.lua`, `spec/mapdata_spec.lua`, `spec/helpers/wow.lua`.
+- **Implementation:** `Replay.Build` makes the sorted steps and pins with a clock; `Replay.Advance`, `Counts`, `Head` and
+  `ClockText` are pure. The overlay keeps the playhead, the speed and the shown counts, and runs one `OnUpdate`. The
+  bar has a play button, a speed button, a slider and a clock, set from the events `MAP_REPLAY_CHANGED` and
+  `MAP_REPLAY_TICK`.
+- **Tests:** the clock caps a pause; counts and head position at a clock; play, pause, restart at the end, speed, seek
+  back and forward; pop and pulse end by themselves; at most 8 pops for each frame; the bar controls and the slider;
+  a failure in a frame clears the drawing and stops the update.
+- **Verify:** `make test-lua lint-lua fmt-check`.
+
+### [x] 6. Fix the zoom, the icons and the layout
+
+- **Outcome:** AC12 and AC13.
+- **Depends on:** 5.
+- **Covers:** AC12, AC13; risk "texture path", "frame buffer".
+- **Files:** `Overlay.lua`, `Panel.lua`, `Tab.lua`, `docs/addons.md`, `docs/manual-checklist.md` (U14, U18 to U21),
+  `spec/overlay_spec.lua`, `spec/maptab_spec.lua`.
+- **Implementation:** sizes divide by the canvas scale and follow `OnCanvasSizeChanged` and `OnCanvasScaleChanged`;
+  pins are half size on a continent or world map; every texture has its own size and one anchor; the panel docks beside
+  the windowed map and over the right side of a maximized map, follows `SynchronizeDisplayState`, and is clamped to the
+  screen; the tab is clamped and lies above the panel; the bar and panel take the level of `PIN_FRAME_LEVEL_TOPMOST`
+  plus 10; the slider takes the mouse and has a thumb of its own size.
+- **Tests:** sizes at several scales and a scale out of range; a canvas of size 0; the dock on a windowed and a
+  maximized map; the bar level; the slider drag.
+- **Verify:** `make test-lua lint-lua fmt-check`; in the game, rows U14, U18, U19 and U21.
+
+### [x] 7. Trail look: colour modes, the arrow marker and trip arcs
+
+- **Outcome:** AC14.
+- **Depends on:** 6.
+- **Covers:** AC14, AC6 (`map.color`, `map.colorblind`).
+- **Files:** `Data/Settings.lua`, `UI/Map/MapData.lua` (`Levels`, jumps), `Replay.lua`, `Overlay.lua`, `Panel.lua`,
+  `Locales.lua`, `spec/settings_spec.lua`, `spec/mapdata_spec.lua`, `spec/replay_spec.lua`, `spec/overlay_spec.lua`,
+  `spec/maptab_spec.lua`.
+- **Implementation:** `MapData.Levels()` lists `{ t, level }` from the `lv` lines; `MapData.Segments` returns the jumps as a
+  third result; `Replay.Build` adds the arc edges, and gives each edge its `level` and `age`; the overlay picks the colour
+  of a line from the mode and the palette; the head is an arrow that turns with the direction of the step; the panel has a
+  button that cycles the colour mode and a check box for the colourblind palette.
+- **Tests:** the level at a time (before the first `lv`, between, after, none); a jump needs less than 120 s and enough
+  distance; an arc has 10 edges that join the two points in the time of the trip; the colour of a step in each mode and
+  palette; the arrow turns for each direction; the settings save and clean.
+- **Verify:** `make test-lua lint-lua fmt-check`.
+
+### [x] 8. Chapters, the Highlights feed and highlight animations
+
+- **Outcome:** AC15 and AC16.
+- **Depends on:** 7.
+- **Covers:** AC15, AC16; risk "animation cost".
+- **Files:** `UI/Map/Replay.lua`, `Overlay.lua`, `Panel.lua`, `Locales.lua`, `docs/addons.md`,
+  `docs/manual-checklist.md`, `spec/replay_spec.lua`, `spec/overlay_spec.lua`, `spec/maptab_spec.lua`.
+- **Implementation:** the timeline gives the clock of a unix time, so a chapter row seeks to it; the panel list switches
+  between chapters and sessions; the overlay sends an event for each pin that the playhead passes while the replay plays,
+  and the panel keeps the last six for the feed; a pool of burst frames plays the ring and the label with the same
+  `OnUpdate` as the pins, and a kind table sets the colour and the label.
+- **Tests:** a chapter click seeks to its clock; the list switch; the feed order, size and reset; a burst plays for the
+  kinds in the table and not for others; at most 4 bursts at once; no burst on a seek or a jump over many events; a
+  burst ends by itself and returns to the pool.
+- **Verify:** `make test-lua lint-lua fmt-check`; in the game, the new manual rows.
+
 ## Validation
 
 1. `make lint test` passes.
-2. In the game: open the map, click Journey, and see the trail and the pins of the zone. Change a filter and see the
-   change. Open the continent map and see the zones. Close and open the map: the last tab stays.
+2. In the game: open the map, click Journey, and see the player bar. Click Play and see the trail draw with the head
+   marker and the pins pop in. Change the speed, drag the slider, pause. Change a filter and see the change. Open the
+   continent map and see the zones, with smaller pins and no icon over the map. Maximize and shrink the map with
+   Journey on. Close and open the map: the last tab stays.
 3. `/memories errors` shows no new error after a play session with the map open.
 4. Every manual row that this spec adds is run and marked.
 
@@ -184,5 +309,7 @@ Coverage: `make coverage-lua` must not drop.
 
 ## Open Decisions
 
-- No game client was available while writing this spec. The map API names come from the Blizzard UI code. Run task 3
-  in the game before the release.
+- No game client was available while writing this spec. The map API names come from the Blizzard UI code (checked
+  against the Classic Era 1.15.9 source after the revision). Run the manual rows U1 to U21 in the game before the
+  release. Two points stay open: the head glow texture `Interface\Cooldown\star4`, and the clip of the tab and the panel
+  by the frame buffer of the map.

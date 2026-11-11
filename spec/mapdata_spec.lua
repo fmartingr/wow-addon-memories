@@ -521,4 +521,71 @@ describe("map data", function()
 			assert.same({}, M.Sessions())
 		end)
 	end)
+
+	describe("jumps", function()
+		it("finds a trip between two chunks that are close in time and far on the map", function()
+			boot({
+				chunk(ZONE, 1000, "0,1000,1000;10,2000,1000"),
+				chunk(ZONE, 1040, "0,8000,6000;10,8500,6000"),
+			})
+			local segs, _, jumps = M.Segments(ZONE, {})
+			assert.equal(2, #segs)
+			assert.equal(1, #jumps)
+			local j = jumps[1]
+			assert.same({ 0.2, 0.1, 1010, 0.8, 0.6, 1040 }, { j.x1, j.y1, j.t0, j.x2, j.y2, j.t1 })
+		end)
+
+		it("finds no trip after a long pause, or for a short move, or inside one chunk", function()
+			boot({
+				chunk(ZONE, 1000, "0,1000,1000;10,2000,1000"),
+				chunk(ZONE, 5000, "0,8000,6000;10,8500,6000"),
+				chunk(ZONE, 5030, "0,8600,6000;10,8700,6000"),
+			})
+			local _, _, jumps = M.Segments(ZONE, {})
+			assert.same({}, jumps)
+		end)
+
+		it("finds no trip from a full chunk that goes on into the next one", function()
+			local max = ns.Trail.MAX_POINTS
+			boot({
+				{ s = 1, t = 1000, m = ZONE, n = max, d = "0,1000,1000;10,2000,1000" },
+				{ s = 1, t = 1030, m = ZONE, n = 2, d = "0,2100,1000;10,2200,1000" },
+			})
+			local _, _, jumps = M.Segments(ZONE, {})
+			assert.same({}, jumps)
+		end)
+
+		it("finds a trip on a continent from one zone to another", function()
+			local projections = {
+				[ZONE] = { continent = 1, x0 = 100, y0 = 100, x1 = 200, y1 = 200 },
+				[OTHER] = { continent = 1, x0 = 500, y0 = 500, x1 = 600, y1 = 600 },
+				[CONT] = { continent = 1, x0 = 0, y0 = 0, x1 = 1000, y1 = 1000 },
+			}
+			boot({
+				chunk(ZONE, 1000, "0,5000,5000;10,6000,5000"),
+				chunk(OTHER, 1040, "0,5000,5000;10,6000,5000"),
+			}, { projections = projections })
+			local _, _, jumps = M.Segments(CONT, {})
+			assert.equal(1, #jumps)
+			assert.near(0.16, jumps[1].x1, 1e-9)
+			assert.near(0.55, jumps[1].x2, 1e-9)
+		end)
+	end)
+
+	describe("Levels", function()
+		it("lists the level ups by time", function()
+			boot({})
+			lines({
+				{ t = 300, kind = "lv", args = { 12 } },
+				{ t = 100, kind = "lv", args = { 10 } },
+				{ t = 200, kind = "di", args = { "a" } },
+			})
+			assert.same({ { t = 100, level = 10 }, { t = 300, level = 12 } }, M.Levels())
+		end)
+
+		it("is empty for a journal with no level up", function()
+			boot({})
+			assert.same({}, M.Levels())
+		end)
+	end)
 end)

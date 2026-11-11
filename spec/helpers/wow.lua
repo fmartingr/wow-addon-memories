@@ -104,6 +104,7 @@ for _, name in ipairs({
 	"RegisterForClicks",
 	"RegisterForDrag",
 	"SetAutoFocus",
+	"SetDesaturated",
 	"SetBlendMode",
 	"SetFontObject",
 	"SetFrameStrata",
@@ -306,6 +307,18 @@ end
 
 function Frame:SetAlpha(alpha)
 	self.alpha = alpha
+end
+
+function Frame:SetScale(scale)
+	self.scale = scale
+end
+
+function Frame:SetTextColor(...)
+	self.textColor = pack(...)
+end
+
+function Frame:SetRotation(angle)
+	self.rotation = angle
 end
 
 function Frame:SetThickness(thickness)

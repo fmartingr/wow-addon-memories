@@ -2,9 +2,10 @@ local _, ns = ...
 
 local L = ns.L
 
--- The Journey panel of the world map: a check box for each group of kinds and for the trail, the sessions, and the
--- counts of the last draw. The player bar sits at the bottom of the map: play and pause, the speed, a slider and the
--- clock of the replay. Both are plain frames, so they never taint a game frame.
+-- The Journey panel of the world map: a check box for each group of kinds and for the trail, the colour of the
+-- trail, a list of chapters to jump to or of sessions to show, the counts of the last draw, and the Highlights feed
+-- of the events that the replay passed. The player bar sits at the bottom of the map: play and pause, the speed, a
+-- slider and the clock of the replay. Both are plain frames, so they never taint a game frame.
 local Panel = {}
 ns.MapPanel = Panel
 
@@ -26,7 +27,12 @@ local bar
 local paintRows
 local boxes = {}
 local rows = {}
-local sessionList = {}
+-- The rows of the list, and what the list shows: "chapters" or "sessions". The choice is not saved.
+local items = {}
+local listMode = "chapters"
+local chapterNow
+local feed = {}
+Panel.FEED_SIZE = 6
 
 function Panel.Frame()
 	return frame
@@ -54,6 +60,26 @@ local function check(parent, text, slot, onClick)
 	return box
 end
 
+local COLOR_LABEL = { way = L["Way"], level = L["Level"], age = L["Age"] }
+
+local function colorText()
+	return L["Color: %s"]:format(COLOR_LABEL[ns.Settings.Get("map.color")] or "")
+end
+
+-- A click on the colour button goes to the next colour mode of the trail.
+local function cycleColor()
+	local modes = ns.Settings.COLORS
+	local now = ns.Settings.Get("map.color")
+	for i, mode in ipairs(modes) do
+		if mode == now then
+			ns.Settings.Set("map.color", modes[i % #modes + 1])
+			break
+		end
+	end
+	frame.color:SetText(colorText())
+	ns.Overlay.Draw()
+end
+
 local function setter(path)
 	return function(on)
 		ns.Settings.Set(path, on)
@@ -73,6 +99,26 @@ function Panel.SessionText(session)
 	return ("%s, %s"):format(date("%Y-%m-%d %H:%M", session.start), length)
 end
 
+-- The row of the chapter that holds the playhead: the last one that starts at or before it.
+local function chapterAt(at)
+	local found
+	for i, item in ipairs(items) do
+		if item.chapter and item.c <= at then
+			found = i
+		end
+	end
+	return found
+end
+
+local function pick(item)
+	-- A seek moves the mark of the chapter through the tick of the player bar.
+	if item.chapter then
+		ns.Overlay.Seek(item.c)
+	else
+		chooseSession(item.session)
+	end
+end
+
 local function row(slot)
 	if rows[slot] then
 		return rows[slot]
@@ -85,28 +131,35 @@ local function row(slot)
 	button.mark:SetAllPoints()
 	button.mark:SetColorTexture(1, 0.82, 0, 0.25)
 	button:SetScript("OnClick", function(self)
-		ns.Safe("map panel:session", chooseSession, self.session)
+		ns.Safe("map panel:pick", pick, self.item)
 	end)
 	rows[slot] = button
 	return button
 end
 
+local function marked(item, i)
+	if item.chapter then
+		return i == chapterNow
+	end
+	local chosen = ns.Overlay.Session()
+	local session = item.session
+	return session == chosen or (session ~= nil and chosen ~= nil and session.start == chosen.start)
+end
+
 -- A character can have thousands of sessions, so only the rows in view exist and they move with the scroll.
 function paintRows()
-	local chosen = ns.Overlay.Session()
-	-- The newest session comes first, under the row for all of them.
-	local n = #sessionList + 1
+	local n = #items
 	local first = math.floor((frame.scroll:GetVerticalScroll() or 0) / Panel.ROW)
 	local shown = math.max(0, math.min(Panel.VISIBLE, n - first))
 	for slot = 1, shown do
 		local i = first + slot
+		local item = items[i]
 		local button = row(slot)
-		local session = i > 1 and sessionList[n - i + 1] or nil
-		button.session = session
+		button.item = item
 		button:ClearAllPoints()
 		button:SetPoint("TOPLEFT", 0, -(i - 1) * Panel.ROW)
-		button.text:SetText(session and Panel.SessionText(session) or L["All"])
-		button.mark:SetShown(session == chosen or (session ~= nil and chosen ~= nil and session.start == chosen.start))
+		button.text:SetText(item.text)
+		button.mark:SetShown(marked(item, i))
 		button:Show()
 	end
 	for slot = shown + 1, #rows do
@@ -114,10 +167,32 @@ function paintRows()
 	end
 end
 
-local function refreshSessions()
-	sessionList = ns.MapData.Sessions()
-	frame.content:SetHeight((#sessionList + 1) * Panel.ROW)
+-- Builds the rows of the list. The chapters run from the start, and the sessions run from the newest, under the row
+-- for all of them.
+local function refreshList()
+	items = {}
+	if listMode == "sessions" then
+		items[1] = { text = L["All"] }
+		local sessions = ns.MapData.Sessions()
+		for i = #sessions, 1, -1 do
+			items[#items + 1] = { text = Panel.SessionText(sessions[i]), session = sessions[i] }
+		end
+	else
+		for _, chapter in ipairs(ns.Overlay.Chapters()) do
+			local text = chapter.level and L["Level %d"]:format(chapter.level) or L["Start"]
+			items[#items + 1] = { text = text, chapter = true, c = chapter.c }
+		end
+		chapterNow = chapterAt((ns.Overlay.Position()))
+	end
+	frame.content:SetHeight(math.max(#items, 1) * Panel.ROW)
 	paintRows()
+	frame.chapters:SetEnabled(listMode ~= "chapters")
+	frame.sessions:SetEnabled(listMode ~= "sessions")
+end
+
+local function setListMode(mode)
+	listMode = mode
+	refreshList()
 end
 
 -- The counts line from the stats of a draw.
@@ -145,10 +220,12 @@ function Panel.Refresh()
 	end
 	local filter = ns.Overlay.Filter()
 	boxes.trail:SetChecked(filter.trail)
+	boxes.blind:SetChecked(ns.Settings.Get("map.colorblind") == true)
+	frame.color:SetText(colorText())
 	for group, box in pairs(boxes.groups) do
 		box:SetChecked(filter.groups[group] == true)
 	end
-	refreshSessions()
+	refreshList()
 	Panel.SetStats(ns.Overlay.Stats())
 	Panel.UpdateBar()
 end
@@ -200,6 +277,13 @@ function Panel.Tick(at, total)
 		bar.updating = false
 	end
 	bar.time:SetText(ns.Replay.ClockText(at) .. " / " .. ns.Replay.ClockText(total))
+	if frame and listMode == "chapters" then
+		local now = chapterAt(at)
+		if now ~= chapterNow then
+			chapterNow = now
+			paintRows()
+		end
+	end
 end
 
 local function buildBar(parent)
@@ -261,6 +345,44 @@ local function buildBar(parent)
 	return b
 end
 
+local DETAIL = { "level", "name", "to", "dest", "area", "killer", "zone", "title", "from" }
+
+-- The line of the feed for a pin: its icon, its kind name and its main field.
+function Panel.HighlightText(pin)
+	local spec = ns.Kinds.Get(pin.kind)
+	local text = spec and spec.name or pin.kind
+	for _, key in ipairs(DETAIL) do
+		local value = pin.fields and pin.fields[key]
+		if value ~= nil then
+			text = text .. ": " .. tostring(value)
+			break
+		end
+	end
+	local icon = ns.Overlay.GROUP_ICON[pin.group]
+	return icon and ("|T%s:14|t %s"):format(icon, text) or text
+end
+
+local function paintFeed()
+	if not frame then
+		return
+	end
+	for i, line in ipairs(frame.feed) do
+		line:SetText(feed[i] or "")
+	end
+end
+
+-- The feed keeps the last FEED_SIZE events, newest first.
+function Panel.Highlight(pin)
+	table.insert(feed, 1, Panel.HighlightText(pin))
+	feed[Panel.FEED_SIZE + 1] = nil
+	paintFeed()
+end
+
+function Panel.ClearFeed()
+	feed = {}
+	paintFeed()
+end
+
 -- The panel is kept only once it is whole, so a failed build is tried again on the next click.
 function Panel.Create(parent)
 	if frame then
@@ -287,12 +409,31 @@ function Panel.Create(parent)
 		slot = slot + 1
 		built.groups[group] = check(f, groupLabel(group), slot, setter("map.groups." .. group))
 	end
+	slot = slot + 1
+	built.blind = check(f, L["Colorblind palette"], slot, setter("map.colorblind"))
+	f.color = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	f.color:SetSize(112, 20)
+	f.color:SetPoint("TOPRIGHT", -14, -10)
+	f.color:SetScript("OnClick", function()
+		ns.Safe("map panel:color", cycleColor)
+	end)
 	local y = -40 - (math.floor(slot / 2) + 1) * Panel.BOX - 12
-	f.sessionsTitle = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-	f.sessionsTitle:SetPoint("TOPLEFT", 14, y)
-	f.sessionsTitle:SetText(L["Sessions"])
+	f.chapters = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	f.chapters:SetSize(100, 20)
+	f.chapters:SetPoint("TOPLEFT", 14, y)
+	f.chapters:SetText(L["Chapters"])
+	f.chapters:SetScript("OnClick", function()
+		ns.Safe("map panel:chapters", setListMode, "chapters")
+	end)
+	f.sessions = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
+	f.sessions:SetSize(100, 20)
+	f.sessions:SetPoint("LEFT", f.chapters, "RIGHT", 4, 0)
+	f.sessions:SetText(L["Sessions"])
+	f.sessions:SetScript("OnClick", function()
+		ns.Safe("map panel:sessions", setListMode, "sessions")
+	end)
 	local scroll = CreateFrame("ScrollFrame", nil, f, "UIPanelScrollFrameTemplate")
-	scroll:SetPoint("TOPLEFT", 14, y - 18)
+	scroll:SetPoint("TOPLEFT", 14, y - 24)
 	scroll:SetSize(Panel.WIDTH - 50, Panel.LIST_HEIGHT)
 	f.content = CreateFrame("Frame", nil, scroll)
 	f.content:SetSize(Panel.WIDTH - 50, Panel.ROW)
@@ -305,6 +446,17 @@ function Panel.Create(parent)
 	f.count:SetPoint("TOPLEFT", scroll, "BOTTOMLEFT", 0, -10)
 	f.count:SetWidth(Panel.WIDTH - 30)
 	f.count:SetJustifyH("LEFT")
+	f.feedTitle = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+	f.feedTitle:SetPoint("TOPLEFT", f.count, "BOTTOMLEFT", 0, -8)
+	f.feedTitle:SetText(L["Highlights"])
+	f.feed = {}
+	for i = 1, Panel.FEED_SIZE do
+		local line = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+		line:SetPoint("TOPLEFT", i == 1 and f.feedTitle or f.feed[i - 1], "BOTTOMLEFT", 0, -3)
+		line:SetWidth(Panel.WIDTH - 30)
+		line:SetJustifyH("LEFT")
+		f.feed[i] = line
+	end
 	local playerBar = buildBar(parent)
 	f:SetScript("OnShow", function()
 		local level = Panel.LevelOver(parent)
@@ -323,7 +475,17 @@ end
 
 ns.Listen("MAP_OVERLAY_DRAWN", function(_, stats)
 	Panel.SetStats(stats)
+	if frame and frame:IsShown() then
+		-- Only the chapters depend on a draw. The sessions are many, so a draw only paints their rows again.
+		ns.Safe("map panel:list", listMode == "chapters" and refreshList or paintRows)
+	end
 end, "map panel")
+
+ns.Listen("MAP_REPLAY_EVENT", function(_, pin)
+	Panel.Highlight(pin)
+end, "map panel")
+
+ns.Listen("MAP_REPLAY_RESET", Panel.ClearFeed, "map panel")
 
 ns.Listen("MAP_REPLAY_CHANGED", Panel.UpdateBar, "map panel")
 ns.Listen("MAP_REPLAY_TICK", function(_, at, total)

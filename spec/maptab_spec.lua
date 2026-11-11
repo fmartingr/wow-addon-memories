@@ -37,7 +37,7 @@ describe("map journey tab", function()
 	local function fakeMap(opts)
 		opts = opts or {}
 		local canvas = CreateFrame("Frame")
-		canvas.canvasWidth, canvas.canvasHeight = 1000, 500
+		canvas:SetSize(1000, 500)
 		local map = CreateFrame("Frame", "WorldMapFrame")
 		map.providers = {}
 		map.mapID = ZONE
@@ -544,7 +544,7 @@ describe("map journey tab", function()
 			assert.is_true(byLabel("Trail").checked)
 			assert.is_true(byLabel("Progress").checked)
 			assert.is_false(byLabel("Deaths").checked)
-			assert.equal(#ns.MapData.Groups() + 1, #boxes())
+			assert.equal(#ns.MapData.Groups() + 2, #boxes())
 		end)
 
 		it("saves a group box and draws again", function()
@@ -590,6 +590,7 @@ describe("map journey tab", function()
 				},
 			})
 			click(Tab.Button())
+			click(Panel.Frame().sessions)
 			local rows = sessionRows()
 			assert.equal(4, #rows)
 			assert.equal("All", rows[1].text.text)
@@ -612,6 +613,7 @@ describe("map journey tab", function()
 			end
 			start({ boot = { saved = { MemoriesCharDB = { sessions = list } } } })
 			click(Tab.Button())
+			click(Panel.Frame().sessions)
 			local rows = sessionRows
 			assert.equal(Panel.VISIBLE, #rows())
 			assert.equal("All", rows()[1].text.text)
@@ -658,6 +660,174 @@ describe("map journey tab", function()
 			click(Tab.Button())
 			assert.is_not_nil(byLabel("Other"))
 			assert.is_not_nil(byLabel("Mystery"))
+		end)
+
+		it("cycles the colour of the trail with the colour button and draws again", function()
+			start({ shown = true })
+			click(Tab.Button())
+			local button = Panel.Frame().color
+			assert.equal("Color: Way", button.text)
+			click(button)
+			assert.equal("Color: Level", button.text)
+			assert.equal("level", MemoriesDB.settings.map.color)
+			click(button)
+			assert.equal("age", MemoriesDB.settings.map.color)
+			click(button)
+			assert.equal("way", MemoriesDB.settings.map.color)
+			assert.equal("Color: Way", button.text)
+		end)
+
+		it("saves the colourblind palette box", function()
+			start({ shown = true })
+			click(Tab.Button())
+			local blind = byLabel("Colorblind palette")
+			assert.is_false(blind.checked)
+			blind.checked = true
+			click(blind)
+			assert.is_true(MemoriesDB.settings.map.colorblind)
+			ns.Settings.Set("map.colorblind", false)
+			Panel.Refresh()
+			assert.is_false(blind.checked)
+		end)
+
+		describe("chapters and highlights", function()
+			local TRAIL = {
+				s = 1,
+				t = 1000,
+				m = ZONE,
+				n = 5,
+				d = "0,1000,1000;10,2000,1000;20,3000,1000;30,4000,1000;40,5000,1000",
+			}
+
+			local function open()
+				start({
+					boot = { saved = { MemoriesCharDB = { trail = { v = 1, chunks = { TRAIL } } } } },
+					shown = true,
+				})
+				local j = ns.Store.Core()
+				j:WriteAt({ t = 1015, m = ZONE, x = 5000, y = 5000 }, "lv", 12)
+				j:WriteAt({ t = 1035, m = ZONE, x = 6000, y = 5000 }, "de", "Wolf")
+				click(Tab.Button())
+				return Panel.Frame()
+			end
+
+			local function frameStep(dt)
+				wow.advance(dt)
+				local c
+				for _, f in ipairs(wow.frames) do
+					if f.kind == "Frame" and f.scripts.OnUpdate and f.parent == WorldMapFrame:GetCanvas() then
+						c = f
+					end
+				end
+				if c then
+					c.scripts.OnUpdate(c, dt)
+				end
+			end
+
+			it(
+				"lists the start and the levels as chapters by default, and marks the chapter of the playhead",
+				function()
+					open()
+					local rows = sessionRows()
+					assert.equal(2, #rows)
+					assert.equal("Start", rows[1].text.text)
+					assert.equal("Level 12", rows[2].text.text)
+					assert.is_false(rows[1].mark.shown)
+					assert.is_true(rows[2].mark.shown)
+				end
+			)
+
+			it("jumps the replay to a chapter with a click", function()
+				open()
+				local rows = sessionRows()
+				click(rows[1])
+				assert.equal(0, (ns.Overlay.Position()))
+				assert.is_true(rows[1].mark.shown)
+				assert.is_false(rows[2].mark.shown)
+				click(rows[2])
+				assert.equal(15, (ns.Overlay.Position()))
+				assert.is_true(rows[2].mark.shown)
+			end)
+
+			it("moves the mark when the playhead passes a chapter", function()
+				open()
+				local rows = sessionRows()
+				click(rows[1])
+				frameStep(0.001)
+				ns.Overlay.Play()
+				frameStep(0.2)
+				assert.is_true(rows[1].mark.shown)
+				frameStep(0.3)
+				assert.is_true(rows[2].mark.shown)
+				assert.is_false(rows[1].mark.shown)
+			end)
+
+			it("switches the list between chapters and sessions with its two buttons", function()
+				local f = open()
+				assert.is_false(f.chapters.enabled)
+				assert.is_true(f.sessions.enabled)
+				click(f.sessions)
+				assert.is_true(f.chapters.enabled)
+				assert.is_false(f.sessions.enabled)
+				assert.equal("All", sessionRows()[1].text.text)
+				click(f.chapters)
+				assert.equal("Start", sessionRows()[1].text.text)
+			end)
+
+			it(
+				"fills the Highlights feed as the replay passes events, newest first, and empties it on a seek back",
+				function()
+					local f = open()
+					click(sessionRows()[1])
+					frameStep(0.001)
+					ns.Overlay.Play()
+					frameStep(0.51)
+					assert.truthy(f.feed[1].text:find("Level up: 12", 1, true))
+					assert.equal("", f.feed[2].text)
+					frameStep(0.5)
+					assert.truthy(f.feed[1].text:find("Died: Wolf", 1, true))
+					assert.truthy(f.feed[2].text:find("Level up: 12", 1, true))
+					ns.Overlay.Seek(0)
+					frameStep(0.001)
+					assert.equal("", f.feed[1].text)
+				end
+			)
+
+			it("keeps the last six events of the feed", function()
+				local f = open()
+				for i = 1, 8 do
+					Panel.Highlight({ kind = "di", group = "Progress", fields = { area = "A" .. i } })
+				end
+				assert.truthy(f.feed[1].text:find("A8", 1, true))
+				assert.truthy(f.feed[6].text:find("A3", 1, true))
+			end)
+
+			it("writes a feed line with the icon, the kind name and the main field", function()
+				open()
+				local line = Panel.HighlightText({ kind = "hs", group = "Travel", fields = { to = "Stormwind" } })
+				assert.truthy(line:find("|T" .. ns.Overlay.GROUP_ICON.Travel, 1, true))
+				assert.truthy(line:find("Hearthstone: Stormwind", 1, true))
+				assert.equal("Entered a zone", Panel.HighlightText({ kind = "zo", fields = {} }))
+				assert.equal("zz", Panel.HighlightText({ kind = "zz" }))
+				assert.equal("Entered a zone", Panel.HighlightText({ kind = "zo" }))
+			end)
+
+			it("empties the feed when the map draws again", function()
+				local f = open()
+				Panel.Highlight({ kind = "di", group = "Progress", fields = { area = "A" } })
+				ns.Overlay.Draw()
+				assert.equal("", f.feed[1].text)
+			end)
+
+			it("has no row for chapters with nothing to play", function()
+				start({ shown = true })
+				for _, group in ipairs(ns.MapData.Groups()) do
+					ns.Settings.Set("map.groups." .. group, false)
+				end
+				ns.Settings.Set("map.trail", false)
+				click(Tab.Button())
+				assert.equal(0, #sessionRows())
+			end)
 		end)
 
 		it("shows a session that is still running up to now", function()

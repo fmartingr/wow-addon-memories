@@ -359,6 +359,12 @@ written, so run them before the release.
 | U19 | replay | Icons | Look at the pins of each group on a map with many events. | Each pin shows its group icon inside a coloured border, with no overlapping texture, no square block and no stretched icon. | not run |
 | U20 | replay | Frame rate | Play a long journey at 16× on a continent map. | The frame rate stays smooth and `/mem errors` shows nothing new. | not run |
 | U21 | replay | Bar over pins | Open a zone with flight points or other game pins near the bottom of the map and play. | The player bar and the panel draw above the game pins and the Journey pins. The slider thumb shows and drags. The head marker glows (a soft star, not a square). | not run |
+| U22 | AC14 | Arrow | Click Play on a zone map. | A silver arrow, not a dot, walks the route. It turns with each bend of the trail. It keeps one size at each map. | not run |
+| U23 | AC14 | Trail colours | Click the colour button until "Color: Level", then "Color: Age", then "Color: Way". Turn the colourblind box on and off. | The trail changes colour at each click. By level it moves from cool to warm as the level rises. By age the old steps are dim and cool and the new ones bright. The colourblind palette is readable. | not run |
+| U24 | AC14 | Trip arcs | Play a journey that has a hearthstone, a portal, a boat or a flight with no recorded points. | A curved arc draws from the place before the trip to the place after it, in the time of the trip. Walking between zones draws no arc. | not run |
+| U25 | AC15 | Chapters | Open the panel with the "Chapters" button on. Click a chapter, then Play. | The list shows the start and each level. A click jumps the replay to that moment. The mark follows the playhead. "Sessions" shows the list of sessions again. | not run |
+| U26 | AC15 | Highlights feed | Play a journey with level ups, deaths and flights. Drag the slider back. | The feed shows the last six events, newest first, each with an icon and a main field. A drag back empties it. | not run |
+| U27 | AC16 | Highlight animations | Play a journey with a level up, a death, a flight and a hearthstone, at 1x and at 8x. | A ring grows and fades at the pin and a short label rises and fades. The colour fits the kind. At 8x no more than 4 play at once and the frame rate stays smooth. A seek plays none. The ring is a soft star, not a square. | not run |
 
 ## Validation map
 
