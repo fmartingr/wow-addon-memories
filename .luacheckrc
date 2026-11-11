@@ -156,6 +156,7 @@ read_globals = {
 	"CreateFrame",
 	"CreateSettingsButtonInitializer",
 	"CreateSettingsListSectionHeaderInitializer",
+	"CreateVector2D",
 	"DEFAULT_CHAT_FRAME",
 	"ERR_ZONE_EXPLORED",
 	"ERR_ZONE_EXPLORED_XP",

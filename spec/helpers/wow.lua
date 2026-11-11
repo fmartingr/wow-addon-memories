@@ -757,6 +757,16 @@ local function install_units()
 			return who == "pet" and data.petThreat or who == "player" and data.threat or nil
 		end
 	end
+	local function vector(x, y)
+		return {
+			x = x,
+			y = y,
+			GetXY = function(self)
+				return self.x, self.y
+			end,
+		}
+	end
+	_G.CreateVector2D = vector
 	_G.C_Map = {
 		GetBestMapForUnit = function(u)
 			if u == "player" then
@@ -775,6 +785,23 @@ local function install_units()
 		end,
 		GetMapInfo = function(mapID)
 			return wow.maps[mapID]
+		end,
+		-- wow.projections[map] = { continent, x0, y0, x1, y1 }: the rectangle of the map in world units.
+		GetWorldPosFromMapPos = function(mapID, v)
+			local r = wow.projections[mapID]
+			if not r then
+				return nil
+			end
+			local x, y = v:GetXY()
+			return r.continent, vector(r.x0 + x * (r.x1 - r.x0), r.y0 + y * (r.y1 - r.y0))
+		end,
+		GetMapPosFromWorldPos = function(continent, v, mapID)
+			local r = wow.projections[mapID]
+			if not r or r.continent ~= continent then
+				return nil
+			end
+			local x, y = v:GetXY()
+			return mapID, vector((x - r.x0) / (r.x1 - r.x0), (y - r.y0) / (r.y1 - r.y0))
 		end,
 	}
 end
@@ -1569,6 +1596,7 @@ function wow.reset(opts)
 	wow.units = opts.units or {}
 	wow.map = merge({ id = 1453, x = 0.5, y = 0.25 }, opts.map)
 	wow.maps = opts.maps or {}
+	wow.projections = opts.projections or {}
 	wow.spells = opts.spells or {}
 	wow.addon_state = merge({}, opts.installed)
 	wow.flags = merge({}, opts.flags)

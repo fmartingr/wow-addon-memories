@@ -22,21 +22,44 @@ local DEFAULTS = {
 	lowHealthFlash = true,
 	-- "yards" or "meters"; any other value lets the region and the client language decide.
 	distanceUnit = "auto",
+	-- The Journey tab of the world map: the shown groups, the trail, and the last tab ("quest" or "journey").
+	map = { groups = {}, trail = true, tab = "quest" },
 }
 
--- Keys of these tables are kind names and box keys, never paths. Each maps to the default of one entry.
-local MAPS = { kinds = true, newOnly = false }
+-- Keys of these tables are kind names, box keys and group names, never paths. Each maps to the default of one entry.
+-- A group is shown unless its entry is false.
+local MAPS = { kinds = true, newOnly = false, ["map.groups"] = true }
+
+local TABS = { quest = true, journey = true }
 
 -- MemoriesDB is a file the player can edit, so a missing value or one of the wrong type takes its default. The client's
--- Settings page writes the default of every setting it shows in the same way.
-local function clean(t, defaults)
+-- Settings page writes the default of every setting it shows in the same way. A MAPS table keeps its free keys; any
+-- other table drops the keys it has no default for.
+local function clean(t, defaults, path)
 	for key, default in pairs(defaults) do
 		if type(default) == "table" then
-			clean(U.TableAt(t, key), default)
+			clean(U.TableAt(t, key), default, path and path .. "." .. key or key)
 		elseif type(t[key]) ~= type(default) then
 			t[key] = default
 		end
 	end
+	if MAPS[path] == nil then
+		for key in pairs(t) do
+			if defaults[key] == nil then
+				t[key] = nil
+			end
+		end
+	end
+end
+
+local function walk(t, list)
+	for i = 1, #list do
+		if type(t) ~= "table" then
+			return nil
+		end
+		t = t[list[i]]
+	end
+	return t
 end
 
 local checked, session
@@ -47,17 +70,16 @@ local function check(t)
 		return t
 	end
 	clean(t, DEFAULTS)
-	for key in pairs(t) do
-		if DEFAULTS[key] == nil then
-			t[key] = nil
-		end
-	end
 	for map in pairs(MAPS) do
-		for key, v in pairs(t[map]) do
+		local entries = walk(t, U.Split(map, "."))
+		for key, v in pairs(entries) do
 			if type(v) ~= "boolean" then
-				t[map][key] = nil
+				entries[key] = nil
 			end
 		end
+	end
+	if not TABS[t.map.tab] then
+		t.map.tab = DEFAULTS.map.tab
 	end
 	if not RATE[t.recordRate] then
 		t.recordRate = DEFAULTS.recordRate
@@ -81,30 +103,34 @@ function Settings.Root()
 	return check(U.TableAt(MemoriesDB, "settings"))
 end
 
+-- The MAPS prefix of a path such as "newOnly.kills" or "map.groups.Travel", and the key after it.
+local function mapKey(path)
+	-- The rest may be empty: "map.groups." is the group of the kinds that have none.
+	local prefix, rest = path:match("^([^.]+%.[^.]+)%.(.*)$")
+	if not (prefix and MAPS[prefix] ~= nil) then
+		prefix, rest = path:match("^([^.]+)%.(.*)$")
+	end
+	if prefix and MAPS[prefix] ~= nil then
+		return prefix, rest
+	end
+end
+
 local function parts(path)
-	local head, rest = path:match("^([^.]+)%.(.+)$")
-	if head and MAPS[head] ~= nil then
-		return { head, rest }
+	local prefix, rest = mapKey(path)
+	if prefix then
+		local list = U.Split(prefix, ".")
+		list[#list + 1] = rest
+		return list
 	end
 	return U.Split(path, ".")
 end
 
-local function walk(t, list)
-	for i = 1, #list do
-		if type(t) ~= "table" then
-			return nil
-		end
-		t = t[list[i]]
-	end
-	return t
-end
-
 function Settings.Default(path)
-	local list = parts(path)
-	if #list == 2 and MAPS[list[1]] ~= nil then
-		return MAPS[list[1]]
+	local prefix = mapKey(path)
+	if prefix then
+		return MAPS[prefix]
 	end
-	return U.Copy(walk(DEFAULTS, list))
+	return U.Copy(walk(DEFAULTS, parts(path)))
 end
 
 -- The value at a dotted path such as "newOnly.kills", else its default.
@@ -137,7 +163,10 @@ end
 function Settings.Set(path, value)
 	local want = type(path) == "string" and expected(path)
 	assert(want, "unknown setting " .. tostring(path))
-	assert(type(value) == want and (path ~= "recordRate" or RATE[value]), "bad value for setting " .. path)
+	assert(
+		type(value) == want and (path ~= "recordRate" or RATE[value]) and (path ~= "map.tab" or TABS[value]),
+		"bad value for setting " .. path
+	)
 	local t, key = Settings.Slot(path)
 	t[key] = value
 	ns.Emit("SETTING_CHANGED", path, value)
