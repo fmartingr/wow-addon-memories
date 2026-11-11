@@ -10,8 +10,8 @@ ns.MapTab = Tab
 Tab.SIZE = 36
 Tab.GAP = 4
 Tab.DOCK_OFFSET = -60
--- The quest log nests its rows several levels deep, and the panel must lie over all of them to take their clicks.
-Tab.LEVEL_ABOVE_LOG = 100
+-- The screen can push the tab onto the panel, so the tab sits above the panel and its boxes.
+Tab.ABOVE_PANEL = 20
 
 local button
 local hookGameTabs
@@ -87,16 +87,24 @@ function Tab.Place()
 	end
 end
 
--- The panel takes the place of the quest log when it is shown, else it docks beside the map.
+-- The maximized map takes the whole height of the screen and leaves too little room beside it for the panel.
+local function maximized()
+	return type(WorldMapFrame.IsMaximized) == "function" and WorldMapFrame:IsMaximized() and true or false
+end
+
+-- The panel docks beside the map, past the column of side tabs, so it never lies over a game frame or the tab. On a
+-- maximized map it lies over the right side of the map instead. The screen keeps it in view.
 local function dock(panel)
 	panel:ClearAllPoints()
-	if logShown() then
-		panel:SetAllPoints(QuestMapFrame)
-		panel:SetFrameLevel((QuestMapFrame:GetFrameLevel() or 1) + Tab.LEVEL_ABOVE_LOG)
+	local scroll = WorldMapFrame.ScrollContainer
+	if scroll and maximized() then
+		panel:SetPoint("TOPRIGHT", scroll, "TOPRIGHT", 0, 0)
+		panel:SetPoint("BOTTOMRIGHT", scroll, "BOTTOMRIGHT", 0, 0)
 	else
 		panel:SetPoint("TOPLEFT", WorldMapFrame, "TOPRIGHT", Tab.SIZE + Tab.GAP, 0)
 		panel:SetPoint("BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0)
 	end
+	panel:SetClampedToScreen(true)
 end
 
 local function look()
@@ -145,6 +153,7 @@ end
 local function create()
 	button = CreateFrame("Button", "MemoriesMapTab", WorldMapFrame)
 	button:SetSize(Tab.SIZE, Tab.SIZE)
+	button:SetClampedToScreen(true)
 	button.icon = button:CreateTexture(nil, "ARTWORK")
 	button.icon:SetPoint("CENTER")
 	button.icon:SetSize(Tab.SIZE - 8, Tab.SIZE - 8)
@@ -170,6 +179,7 @@ end
 -- The quest log can show or hide while the map is open, so the tab and the panel follow it.
 local function follow()
 	Tab.Place()
+	button:SetFrameLevel(ns.MapPanel.LevelOver(WorldMapFrame) + Tab.ABOVE_PANEL)
 	local panel = ns.MapPanel.Frame()
 	if selected and panel then
 		dock(panel)
@@ -229,6 +239,12 @@ function Tab.Attach()
 	if WorldMapFrame.HookScript then
 		WorldMapFrame:HookScript("OnShow", function()
 			ns.Safe("map tab:show", Tab.Restore)
+		end)
+	end
+	-- The map of Classic Era is maximized and made small again while it is open.
+	if type(WorldMapFrame.SynchronizeDisplayState) == "function" and type(hooksecurefunc) == "function" then
+		hooksecurefunc(WorldMapFrame, "SynchronizeDisplayState", function()
+			ns.Safe("map tab:display state", follow)
 		end)
 	end
 	if type(EventRegistry) == "table" and EventRegistry.RegisterCallback then

@@ -254,7 +254,7 @@ describe("map data", function()
 			end
 			local segs = M.Segments(ZONE, { session = { start = 2000 } })
 			assert.equal(1, decoded)
-			assert.same({ { way = "foot", pts = { 0.3, 0.1, 0.4, 0.1 } } }, segs)
+			assert.same({ { way = "foot", pts = { 0.3, 0.1, 0.4, 0.1 }, ts = { 2000, 2002 } } }, segs)
 		end)
 
 		it("reads the saved copy of the open stretch when Trail does not record", function()

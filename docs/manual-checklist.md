@@ -333,13 +333,13 @@ Check every kind again with "Enable all" after its row.
 
 ## U. Journey tab on the world map
 
-Rows U1 to U14 check the spec `specs/2026-11-11-map-journey-tab.md`. No game client was at hand when the code was
+Rows U1 to U21 check the spec `specs/2026-11-11-map-journey-tab.md`. No game client was at hand when the code was
 written, so run them before the release.
 
 | ID | Source | Check | Steps | Expected | Result |
 |---|---|---|---|---|---|
 | U1 | spec AC1 | Tab | Open the world map. | A Journey tab with the Memories icon shows in the side column, under the last game tab, with no Lua error. `/dump QuestMapFrame.TabButtons` shows the game tab list (or `QuestsTab`, `EventsTab`, `MapLegendTab`). | not run |
-| U2 | spec AC1 | Panel | Click the Journey tab. | The Journey panel shows in the place of the quest log, with no quest row visible through it. The edges of the game tabs and of the Journey tab are not covered. | not run |
+| U2 | spec AC1 | Panel and player bar | Click the Journey tab. | The Journey panel shows beside the map, on screen, and the quest log stays as it was. A player bar with Play, a speed button, a slider and a clock shows at the bottom of the map, over the map art. | not run |
 | U3 | spec AC2 | Trail on a zone map | Open the map of a zone where you walked, rode and swam, and took a flight. | Lines follow the recorded trail. The colour changes with the way of travel. | not run |
 | U4 | spec AC3 | Pins | Look at the same map. Hover over a pin of a death and over a pin of a level up. | Each pin has an icon of its group. The pins of a death and of a level up are larger. The tooltip shows the time, the kind name and the fields. | not run |
 | U5 | spec AC4 | Panel filters | Clear the "Deaths" box, then the "Trail" box. Choose one session, then "All". | The pins of the group and then the lines go away. One session shows only its own lines and pins. "All" shows everything. The count line follows each change. | not run |
@@ -351,7 +351,14 @@ written, so run them before the release.
 | U11 | spec risk | Long journey | Open a continent map with a journey of many hours. | The frame rate does not drop when the map opens. If a cap cuts the view, the panel says so. | not run |
 | U12 | spec risk | Another map addon | With an addon that adds a map tab or pins, open the map. | The two tabs do not overlap. The pins and the drawings of the other addon stay. | not run |
 | U13 | spec AC8 | Language | Run on the esES client, then on frFR or deDE. | All texts of the tab and the panel show in the client language. Long labels wrap and do not overlap. | not run |
-| U14 | spec risk | Panel layout | Collapse and expand the quest log with Journey on, with the map open and then closed. Scroll a long list of sessions. | The tab and the panel follow the quest log. The session rows move on scroll and the chosen one is marked. The check boxes fit in the panel. With no quest log, the tab and panel show beside the map, also on a maximized map. | not run |
+| U14 | spec risk | Panel layout | Collapse and expand the quest log with Journey on, with the map open and then closed. Scroll a long list of sessions. | The tab follows the quest log. The panel stays beside the windowed map and on screen. On a maximized map it lies over the right side of the map, below the Journey tab, and the tab stays clickable. Maximize and shrink the map with Journey on: the panel moves with it. The session rows move on scroll and the chosen one is marked. The check boxes fit in the panel. | not run |
+| U15 | replay | Play | On a zone map with a trail, click Play. | The trail draws from the start, with a glowing marker at its head. The slider and the clock move. At the end the marker goes away and the button shows Play again. | not run |
+| U16 | replay | Pins pop | Play a journey that has a level up and a death on the map. | Each pin pops in with a short grow animation when the marker passes its event, then pulses for a moment. Pins of a death and of a level up are larger. | not run |
+| U17 | replay | Speed and seek | Click the speed button until 16×. Drag the slider back and forward. Click Pause, then Play. | The replay runs faster at each step. A drag back hides the lines and pins after the playhead. Pause holds the picture and Play goes on from the same place. | not run |
+| U18 | replay | Zoom | While the replay runs and after it, open a continent, a zone, and the world map, and zoom if the client allows it. | Pins and lines keep a normal screen size; continent and world pins are half the size of zone pins. No icon grows to cover the map. | not run |
+| U19 | replay | Icons | Look at the pins of each group on a map with many events. | Each pin shows its group icon inside a coloured border, with no overlapping texture, no square block and no stretched icon. | not run |
+| U20 | replay | Frame rate | Play a long journey at 16× on a continent map. | The frame rate stays smooth and `/mem errors` shows nothing new. | not run |
+| U21 | replay | Bar over pins | Open a zone with flight points or other game pins near the bottom of the map and play. | The player bar and the panel draw above the game pins and the Journey pins. The slider thumb shows and drags. The head marker glows (a soft star, not a square). | not run |
 
 ## Validation map
 

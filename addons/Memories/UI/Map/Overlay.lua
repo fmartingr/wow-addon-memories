@@ -1,8 +1,10 @@
 local _, ns = ...
 
--- Draws the trail and the pins of MapData on the world map. One data provider owns the drawing: the map calls it when
--- the map changes and when it clears its data, so the overlay follows each zoom with no hook on a game function.
--- Lines and pins sit in pools, and the lines are drawn in slices so that a long trail does not stop a frame.
+-- Draws the trail and the pins of MapData on the world map, and replays them. One data provider owns the drawing: the
+-- map calls it when the map changes, when it clears its data and when its canvas changes, so the overlay follows each
+-- zoom with no hook on a game function. Lines and pins sit in pools. A replay moves a playhead along the timeline of
+-- Replay: a step of the trail shows when the playhead passes it, and a pin pops in with an animation. With no replay
+-- running, the whole journey shows.
 local Overlay = {}
 ns.Overlay = Overlay
 
@@ -58,23 +60,37 @@ Overlay.GROUP_ICON = {
 local DEFAULT_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 
 Overlay.BIG_KINDS = { de = true, lv = true }
-Overlay.PIN_SIZE, Overlay.BIG_PIN_SIZE = 12, 20
+Overlay.PIN_SIZE, Overlay.BIG_PIN_SIZE = 16, 24
+-- A continent or the world packs a whole journey into a small space, so its pins show at this part of their size.
+Overlay.HIGH_MAP_PIN = 0.5
+Overlay.HEAD_SIZE = 22
+-- Seconds of the pop of a new pin.
+Overlay.POP = 0.45
+-- A pin that pops in while the replay jumps over many pins at once shows with no pop beyond this count.
+Overlay.MAX_POPS = 8
+-- The size of a pin or a line is in screen units. The canvas scale of the map is clamped to this range.
+Overlay.MIN_SCALE, Overlay.MAX_SCALE = 0.1, 10
 
 local provider
 local container
+local head
 local enabled = false
 -- The choice of a session from the panel; it is not saved.
 local session
 -- Counts of the last draw, for the panel.
 local stats = { lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
--- Each new draw and each clear raises this, so the slices of an older draw stop.
+-- Each new draw and each clear raises this, so an older draw never touches the new pools.
 local generation = 0
 
 local linePool, pinPool = {}, {}
-local linesUsed, pinsUsed = 0, 0
--- The lists of the map shown, so a new canvas size places them again without reading the saved data.
-local last
-
+-- The replay: the timeline of the map shown, the playhead, and how many lines and pins show.
+local timeline
+local pos, playing, speed = 0, false, ns.Replay.SPEEDS[1]
+local shownEdges, shownPins = 0, 0
+-- The canvas size, and the canvas units of one screen unit.
+local width, height, unit = 0, 0, 1
+-- The size factor of the pins on the map shown.
+local pinScale = 1
 function Overlay.Enabled()
 	return enabled
 end
@@ -85,6 +101,19 @@ end
 
 function Overlay.Stats()
 	return ns.U.Copy(stats)
+end
+
+-- The playhead and the length of the replay, in played seconds.
+function Overlay.Position()
+	return pos, timeline and timeline.total or 0
+end
+
+function Overlay.Playing()
+	return playing
+end
+
+function Overlay.Speed()
+	return speed
 end
 
 -- The filter of MapData from the settings and the session choice.
@@ -98,24 +127,46 @@ function Overlay.Filter()
 	return { trail = ns.Settings.Get("map.trail") ~= false, groups = groups, session = session }
 end
 
-function Overlay.SetSession(value)
-	session = value
-	Overlay.Draw()
+local function changed()
+	ns.Emit("MAP_REPLAY_CHANGED")
+end
+
+local function canvasScale(map, canvas)
+	local scale
+	if type(map.GetCanvasScale) == "function" then
+		local ok, value = pcall(map.GetCanvasScale, map)
+		scale = ok and value or nil
+	end
+	if type(scale) ~= "number" and canvas.GetScale then
+		scale = canvas:GetScale()
+	end
+	if type(scale) ~= "number" or scale ~= scale then
+		return 1
+	end
+	return math.min(math.max(scale, Overlay.MIN_SCALE), Overlay.MAX_SCALE)
 end
 
 local function release()
-	for i = 1, linesUsed do
-		linePool[i]:Hide()
+	for _, line in ipairs(linePool) do
+		line:Hide()
 	end
-	for i = 1, pinsUsed do
-		pinPool[i]:Hide()
+	for _, pin in ipairs(pinPool) do
+		pin:Hide()
+		pin.popAt = nil
 	end
-	linesUsed, pinsUsed = 0, 0
+	if head then
+		head:Hide()
+	end
+	shownEdges, shownPins = 0, 0
 end
 
 function Overlay.Clear()
 	generation = generation + 1
 	release()
+	if container then
+		container:SetScript("OnUpdate", nil)
+	end
+	timeline, playing, pos = nil, false, 0
 	stats = { lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
 end
 
@@ -146,13 +197,16 @@ end
 
 local function newPin()
 	local pin = CreateFrame("Button", nil, container)
-	pin.border = pin:CreateTexture(nil, "BACKGROUND")
-	pin.border:SetAllPoints()
+	pin.glow = pin:CreateTexture(nil, "BACKGROUND")
+	pin.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
+	pin.glow:SetBlendMode("ADD")
+	pin.glow:SetPoint("CENTER")
+	pin.border = pin:CreateTexture(nil, "BORDER")
 	pin.border:SetTexture("Interface\\Buttons\\WHITE8X8")
+	pin.border:SetPoint("CENTER")
 	pin.icon = pin:CreateTexture(nil, "ARTWORK")
-	pin.icon:SetPoint("TOPLEFT", 1, -1)
-	pin.icon:SetPoint("BOTTOMRIGHT", -1, 1)
 	pin.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
+	pin.icon:SetPoint("CENTER")
 	-- A pin shows its tooltip but lets the clicks through, so the map still zooms in and out under it.
 	if pin.SetMouseClickEnabled then
 		pin:SetMouseClickEnabled(false)
@@ -162,45 +216,109 @@ local function newPin()
 	return pin
 end
 
-local function placePin(data, w, h)
-	local pin = pinPool[pinsUsed + 1]
+-- The size of a pin in canvas units, with the pop factor k.
+local function sizePin(pin, k)
+	local base = (Overlay.BIG_KINDS[pin.data.kind] and Overlay.BIG_PIN_SIZE or Overlay.PIN_SIZE) * pinScale
+	local size = math.max(base * unit * k, 0.01)
+	local inner = math.max(size - 2 * unit * k * pinScale, 0.01)
+	pin:SetSize(size, size)
+	pin.border:SetSize(size, size)
+	pin.icon:SetSize(inner, inner)
+	pin.glow:SetSize(size * 1.9, size * 1.9)
+end
+
+local function placePin(i, animate)
+	local data = timeline.pins[i]
+	local pin = pinPool[i]
 	if not pin then
 		pin = newPin()
-		pinPool[pinsUsed + 1] = pin
+		pinPool[i] = pin
 	end
-	pinsUsed = pinsUsed + 1
-	local size = Overlay.BIG_KINDS[data.kind] and Overlay.BIG_PIN_SIZE or Overlay.PIN_SIZE
-	local color = Overlay.GROUP_COLOR[data.group] or DEFAULT_COLOR
 	pin.data = data
-	pin:SetSize(size, size)
-	pin:ClearAllPoints()
-	pin:SetPoint("CENTER", container, "TOPLEFT", data.x * w, -data.y * h)
+	local color = Overlay.GROUP_COLOR[data.group] or DEFAULT_COLOR
 	pin.border:SetVertexColor(color[1], color[2], color[3], 1)
+	pin.glow:SetVertexColor(color[1], color[2], color[3], 1)
 	pin.icon:SetTexture(Overlay.GROUP_ICON[data.group] or DEFAULT_ICON)
+	pin:ClearAllPoints()
+	pin:SetPoint("CENTER", container, "TOPLEFT", data.x * width, -data.y * height)
+	pin.popAt = animate and GetTime() or nil
+	pin.glow:SetAlpha(Overlay.BIG_KINDS[data.kind] and 0.4 or 0)
+	sizePin(pin, animate and 0 or 1)
 	pin:Show()
 end
 
-local function placeLine(way, x1, y1, x2, y2, w, h)
-	local line = linePool[linesUsed + 1]
+local function placeLine(i)
+	local e = timeline.edges[i]
+	local line = linePool[i]
 	if not line then
 		line = container:CreateLine(nil, "ARTWORK")
-		line:SetThickness(Overlay.LINE_WIDTH)
-		linePool[linesUsed + 1] = line
+		linePool[i] = line
 	end
-	linesUsed = linesUsed + 1
-	local color = Overlay.WAY_COLOR[way] or Overlay.WAY_COLOR.foot
+	local color = Overlay.WAY_COLOR[e.way] or Overlay.WAY_COLOR.foot
+	line:SetThickness(Overlay.LINE_WIDTH * unit)
 	line:SetColorTexture(color[1], color[2], color[3], 0.9)
-	line:SetStartPoint("TOPLEFT", container, x1 * w, -y1 * h)
-	line:SetEndPoint("TOPLEFT", container, x2 * w, -y2 * h)
+	line:SetStartPoint("TOPLEFT", container, e.x1 * width, -e.y1 * height)
+	line:SetEndPoint("TOPLEFT", container, e.x2 * width, -e.y2 * height)
 	line:Show()
 end
 
-local function count(set)
-	local n = 0
-	for _ in pairs(set) do
-		n = n + 1
+local function newHead()
+	local frame = CreateFrame("Frame", nil, container)
+	frame.glow = frame:CreateTexture(nil, "BACKGROUND")
+	frame.glow:SetTexture("Interface\\Cooldown\\star4")
+	frame.glow:SetBlendMode("ADD")
+	frame.glow:SetPoint("CENTER")
+	frame.dot = frame:CreateTexture(nil, "ARTWORK")
+	frame.dot:SetTexture("Interface\\Buttons\\WHITE8X8")
+	frame.dot:SetPoint("CENTER")
+	return frame
+end
+
+local function placeHead(now)
+	local x, y, way = ns.Replay.Head(timeline, pos)
+	if not x or (not playing and pos >= timeline.total) then
+		head:Hide()
+		return
 	end
-	return n
+	local color = Overlay.WAY_COLOR[way] or Overlay.WAY_COLOR.foot
+	local pulse = 0.5 + 0.5 * math.sin(now * 5)
+	local size = Overlay.HEAD_SIZE * unit
+	head:SetSize(size, size)
+	head.dot:SetSize(size * 0.35, size * 0.35)
+	head.glow:SetSize(size * (1.4 + 0.5 * pulse), size * (1.4 + 0.5 * pulse))
+	head.dot:SetVertexColor(color[1], color[2], color[3], 1)
+	head.glow:SetVertexColor(color[1], color[2], color[3], 0.6 + 0.4 * pulse)
+	head:ClearAllPoints()
+	head:SetPoint("CENTER", container, "TOPLEFT", x * width, -y * height)
+	head:Show()
+end
+
+-- The pop of a pin that just showed, and the pulse of a pin that is new in played time. Both end by themselves.
+local function animatePins(now)
+	local busy = false
+	for i = 1, shownPins do
+		local pin = pinPool[i]
+		local k = 1
+		if pin.popAt then
+			local t = (now - pin.popAt) / Overlay.POP
+			if t >= 1 then
+				pin.popAt = nil
+			else
+				k = 1 + 2.70158 * (t - 1) ^ 3 + 1.70158 * (t - 1) ^ 2
+				busy = true
+			end
+			sizePin(pin, k)
+		end
+		local age = pos - pin.data.c
+		if playing and age >= 0 and age < ns.Replay.PULSE then
+			pin.glow:SetAlpha(0.5 + 0.5 * math.sin(now * 9))
+			busy = true
+		elseif pin.glowing then
+			pin.glow:SetAlpha(Overlay.BIG_KINDS[pin.data.kind] and 0.4 or 0)
+		end
+		pin.glowing = playing and age >= 0 and age < ns.Replay.PULSE
+	end
+	return busy
 end
 
 local function finish()
@@ -209,49 +327,142 @@ end
 
 -- A failed draw leaves the map as the game drew it.
 local function fail()
-	last = nil
 	Overlay.Clear()
 	if container then
 		container:Hide()
 	end
 	finish()
+	changed()
 end
 
--- Draws up to SLICE lines of the segments from the position (seg, i), then asks for the next slice.
-local function lineSlice(segments, w, h, seg, i, left, token)
-	if token ~= generation then
+-- One step of the replay: it moves the playhead, shows or hides the lines and the pins that the playhead passed, and
+-- animates. It stops its own OnUpdate once nothing moves.
+local function update(dt)
+	if not timeline or width <= 0 or height <= 0 then
+		-- A canvas with no size wakes the replay again from Relayout.
+		container:SetScript("OnUpdate", nil)
 		return
 	end
-	local drawn = 0
-	while seg <= #segments and left > 0 do
-		local s = segments[seg]
-		if i + 3 > #s.pts then
-			seg, i = seg + 1, 1
-		elseif drawn >= Overlay.SLICE then
-			break
-		else
-			local p = s.pts
-			placeLine(s.way, p[i], p[i + 1], p[i + 2], p[i + 3], w, h)
-			i = i + 2
-			drawn, left = drawn + 1, left - 1
+	local now = GetTime()
+	if playing then
+		pos, playing = ns.Replay.Advance(pos, dt, speed, timeline.total)
+		if not playing then
+			changed()
 		end
 	end
-	stats.lines = linesUsed
-	if seg <= #segments and left > 0 then
-		C_Timer.After(0, function()
-			if not ns.Safe("map overlay:slice", lineSlice, segments, w, h, seg, i, left, token) then
-				fail()
-			end
-		end)
+	local wantEdges, wantPins = ns.Replay.Counts(timeline, pos)
+	if wantEdges < shownEdges then
+		for i = wantEdges + 1, shownEdges do
+			linePool[i]:Hide()
+		end
+		shownEdges = wantEdges
 	else
-		finish()
+		-- A slice of the new lines each frame, so a long trail never stops a frame.
+		local upto = math.min(wantEdges, shownEdges + Overlay.SLICE)
+		for i = shownEdges + 1, upto do
+			placeLine(i)
+		end
+		shownEdges = upto
+	end
+	if wantPins < shownPins then
+		for i = wantPins + 1, shownPins do
+			pinPool[i]:Hide()
+			pinPool[i].popAt = nil
+		end
+		shownPins = wantPins
+	else
+		local animate = playing and wantPins - shownPins <= Overlay.MAX_POPS
+		for i = shownPins + 1, wantPins do
+			placePin(i, animate)
+		end
+		shownPins = wantPins
+	end
+	local busy = animatePins(now)
+	placeHead(now)
+	if not (playing or busy or shownEdges < wantEdges) then
+		container:SetScript("OnUpdate", nil)
+	end
+	ns.Emit("MAP_REPLAY_TICK", pos, timeline.total, playing)
+end
+
+local function onUpdate(_, dt)
+	if not ns.Safe("map overlay:update", update, dt) then
+		fail()
 	end
 end
 
-local function edges(segments)
+local function wake()
+	if container and timeline then
+		container:SetScript("OnUpdate", onUpdate)
+	end
+end
+
+-- Starts the replay at the start, or goes on from the playhead.
+function Overlay.Play()
+	if not timeline or timeline.total <= 0 then
+		return
+	end
+	if pos >= timeline.total then
+		pos = 0
+	end
+	playing = true
+	wake()
+	changed()
+end
+
+function Overlay.Pause()
+	if playing then
+		playing = false
+		changed()
+	end
+end
+
+function Overlay.Toggle()
+	if playing then
+		Overlay.Pause()
+	else
+		Overlay.Play()
+	end
+end
+
+function Overlay.Seek(c)
+	if not timeline or type(c) ~= "number" then
+		return
+	end
+	pos = math.min(math.max(c, 0), timeline.total)
+	if pos >= timeline.total then
+		playing = false
+	end
+	wake()
+	changed()
+end
+
+-- A speed of Replay.SPEEDS.
+function Overlay.SetSpeed(value)
+	for _, s in ipairs(ns.Replay.SPEEDS) do
+		if s == value then
+			speed = value
+			changed()
+			return
+		end
+	end
+end
+
+function Overlay.CycleSpeed()
+	local speeds = ns.Replay.SPEEDS
+	for i, s in ipairs(speeds) do
+		if s == speed then
+			Overlay.SetSpeed(speeds[i % #speeds + 1])
+			return
+		end
+	end
+	Overlay.SetSpeed(speeds[1])
+end
+
+local function count(set)
 	local n = 0
-	for _, s in ipairs(segments) do
-		n = n + #s.pts / 2 - 1
+	for _ in pairs(set) do
+		n = n + 1
 	end
 	return n
 end
@@ -294,7 +505,13 @@ local function query(mapID)
 	return data
 end
 
-local function draw(reuse)
+local function measure(map, canvas)
+	local w, h = canvas:GetSize()
+	width, height = tonumber(w) or 0, tonumber(h) or 0
+	unit = 1 / canvasScale(map, canvas)
+end
+
+local function draw()
 	local map = provider and provider:GetMap()
 	if not enabled or not map then
 		fail()
@@ -303,8 +520,8 @@ local function draw(reuse)
 	Overlay.Clear()
 	-- A hidden map draws again from RefreshAllData when it shows, with the filter of that time.
 	if not map:IsShown() then
-		last = nil
 		finish()
+		changed()
 		return
 	end
 	local canvas = map:GetCanvas()
@@ -315,35 +532,79 @@ local function draw(reuse)
 		container = CreateFrame("Frame", nil, canvas)
 		container:SetAllPoints(canvas)
 		linePool, pinPool = {}, {}
+		head = newHead()
+		head:Hide()
 	end
 	local level = pinLevel(map)
 	if level then
 		container:SetFrameLevel(level)
 	end
 	container:Show()
-	local w, h = canvas:GetSize()
+	measure(map, canvas)
 	local mapID = map:GetMapID()
-	local data = reuse and last and last.mapID == mapID and last or query(mapID)
-	last = data
-	local token = generation
-	for _, pinData in ipairs(data.pins) do
-		placePin(pinData, w, h)
-	end
-	stats.pins = pinsUsed
+	pinScale = ns.IsSkippedMap(mapID) and Overlay.HIGH_MAP_PIN or 1
+	local data = query(mapID)
+	timeline = ns.Replay.Build(data, Overlay.MAX_LINES)
+	stats.lines = #timeline.edges
+	stats.pins = #timeline.pins
+	stats.cutLines = timeline.cut
 	stats.cutPins = data.cutPins
 	stats.zones = data.zones
-	local total = edges(data.segments)
-	stats.cutLines = math.max(0, total - Overlay.MAX_LINES)
-	lineSlice(data.segments, w, h, 1, 1, math.min(total, Overlay.MAX_LINES), token)
+	-- With no replay running the whole journey shows.
+	pos = timeline.total
+	if width > 0 and height > 0 then
+		wake()
+	end
+	finish()
+	changed()
 end
 
--- Draws again for the map shown. With reuse, a draw of the same map places the lists of the last draw again instead of
--- reading the saved data. A failure goes to /memories errors and leaves the map as the game drew it.
-function Overlay.Draw(reuse)
+-- Draws again for the map shown, from the saved data. A failure goes to /memories errors and leaves the map as the game
+-- drew it.
+function Overlay.Draw()
 	if not provider then
 		return
 	end
-	if not ns.Safe("map overlay", draw, reuse) then
+	if not ns.Safe("map overlay", draw) then
+		fail()
+	end
+end
+
+function Overlay.SetSession(value)
+	session = value
+	Overlay.Draw()
+end
+
+-- Places the lines and the pins that show again for a new canvas size, with no change of the playhead. A new zoom
+-- (sizeOnly) keeps the canvas offsets and only sizes them again, as the map fires it on each frame of a zoom.
+function Overlay.Relayout(sizeOnly)
+	local map = provider and provider:GetMap()
+	if not (enabled and timeline and container and map and map:IsShown()) then
+		return
+	end
+	local ok = ns.Safe("map overlay:relayout", function()
+		measure(map, map:GetCanvas())
+		if width <= 0 or height <= 0 then
+			return
+		end
+		for i = 1, shownEdges do
+			if sizeOnly then
+				linePool[i]:SetThickness(Overlay.LINE_WIDTH * unit)
+			else
+				placeLine(i)
+			end
+		end
+		for i = 1, shownPins do
+			local pin = pinPool[i]
+			if not sizeOnly then
+				pin:ClearAllPoints()
+				pin:SetPoint("CENTER", container, "TOPLEFT", pin.data.x * width, -pin.data.y * height)
+			end
+			sizePin(pin, 1)
+		end
+		wake()
+	end)
+	if not ok then
 		fail()
 	end
 end
@@ -362,13 +623,16 @@ local function newProvider()
 		Overlay.Draw()
 	end
 	function p:RemoveAllData()
-		last = nil
 		ns.Safe("map overlay:clear", Overlay.Clear)
 		finish()
+		changed()
 	end
-	-- The lines and the pins sit at offsets from the canvas size of the last draw.
+	-- The lines and the pins sit at offsets from the canvas size and show at a size that follows the zoom.
 	function p:OnCanvasSizeChanged()
-		Overlay.Draw(true)
+		Overlay.Relayout()
+	end
+	function p:OnCanvasScaleChanged()
+		Overlay.Relayout(true)
 	end
 	return p
 end

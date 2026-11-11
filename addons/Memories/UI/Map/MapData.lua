@@ -142,7 +142,8 @@ local function inSession(session, t)
 	return not session or (t >= session.start and (session.stop == nil or t <= session.stop))
 end
 
--- The segments of the trail on mapID: a list of { way, pts = { x1, y1, x2, y2, ... } }. filter.session limits the time.
+-- The segments of the trail on mapID: a list of { way, pts = { x1, y1, x2, y2, ... }, ts = { t1, t2, ... } }, with one
+-- time for each point. filter.session limits the time.
 -- The second result is the set of zones, by id, that have no position on mapID. Trail starts a new chunk at a pause, a
 -- teleport, a map change and a new session (its start is the chunk's s), so each of these breaks the line. A full chunk
 -- is cut with no pause, so the line goes on into the next one. A long gap inside a chunk is the player standing still,
@@ -153,7 +154,7 @@ function MapData.Segments(mapID, filter)
 	local step2 = (filter.step or MapData.STEP) ^ 2
 	local target = newTarget(mapID)
 	local out = {}
-	local seg, lx, ly, goesOn
+	local seg, lx, ly, lt, goesOn
 	local function close()
 		if seg and #seg.pts >= 4 then
 			out[#out + 1] = seg
@@ -194,12 +195,13 @@ function MapData.Segments(mapID, filter)
 			elseif not (seg and way == seg.way and (fx - lx) ^ 2 + (fy - ly) ^ 2 < step2) then
 				if seg and way ~= seg.way then
 					close()
-					seg = { way = way, pts = { lx, ly } }
+					seg = { way = way, pts = { lx, ly }, ts = { lt } }
 				end
-				seg = seg or { way = way, pts = {} }
+				seg = seg or { way = way, pts = {}, ts = {} }
 				seg.pts[#seg.pts + 1] = fx
 				seg.pts[#seg.pts + 1] = fy
-				lx, ly = fx, fy
+				seg.ts[#seg.ts + 1] = p.t
+				lx, ly, lt = fx, fy, p.t
 			end
 		end
 		if #points > 0 and type(rec.n) == "number" and rec.n >= ns.Trail.MAX_POINTS then

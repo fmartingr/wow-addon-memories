@@ -3,19 +3,26 @@ local _, ns = ...
 local L = ns.L
 
 -- The Journey panel of the world map: a check box for each group of kinds and for the trail, the sessions, and the
--- counts of the last draw. It is a plain frame, so it never taints a game frame.
+-- counts of the last draw. The player bar sits at the bottom of the map: play and pause, the speed, a slider and the
+-- clock of the replay. Both are plain frames, so they never taint a game frame.
 local Panel = {}
 ns.MapPanel = Panel
 
 Panel.WIDTH = 270
 Panel.ROW = 18
-Panel.LIST_HEIGHT = 120
+Panel.LIST_HEIGHT = 110
 Panel.VISIBLE = math.ceil(Panel.LIST_HEIGHT / Panel.ROW) + 1
 Panel.BOX = 22
 -- The boxes sit in two columns, so the core and every sub-addon group still fit in the height of the quest log.
 Panel.COLUMN = 125
+Panel.BAR_WIDTH, Panel.BAR_HEIGHT = 440, 48
+-- The bar lies over the map. The map lays its pins at the levels of its pin manager, near 2000 and up, so the bar sits
+-- above the topmost of them, and at least this far above the map.
+Panel.BAR_LEVEL = 500
+Panel.ABOVE_PINS = 10
 
 local frame
+local bar
 local paintRows
 local boxes = {}
 local rows = {}
@@ -143,6 +150,115 @@ function Panel.Refresh()
 	end
 	refreshSessions()
 	Panel.SetStats(ns.Overlay.Stats())
+	Panel.UpdateBar()
+end
+
+function Panel.Bar()
+	return bar
+end
+
+-- The level for a frame of this addon that lies over the canvas of map. Another addon can add pin levels, so each show
+-- asks again.
+function Panel.LevelOver(map)
+	local base = (map:GetFrameLevel() or 1) + Panel.BAR_LEVEL
+	if type(map.GetPinFrameLevelsManager) ~= "function" then
+		return base
+	end
+	local ok, level = pcall(function()
+		return map:GetPinFrameLevelsManager():GetValidFrameLevel("PIN_FRAME_LEVEL_TOPMOST", math.huge)
+	end)
+	return ok and type(level) == "number" and math.max(base, level + Panel.ABOVE_PINS) or base
+end
+
+-- Sets the bar from the replay: the text of the play button, the speed, the slider and the clock.
+function Panel.UpdateBar()
+	if not bar then
+		return
+	end
+	local at, total = ns.Overlay.Position()
+	local ready = total > 0
+	bar.play:SetText(ns.Overlay.Playing() and L["Pause"] or L["Play"])
+	bar.speed:SetText(ns.Overlay.Speed() .. "x")
+	bar.play:SetEnabled(ready)
+	bar.speed:SetEnabled(ready)
+	bar.slider:SetEnabled(ready)
+	bar.updating = true
+	bar.slider:SetMinMaxValues(0, math.max(total, 1))
+	bar.updating = false
+	Panel.Tick(at, total)
+end
+
+-- Each frame of a replay moves only the slider and the clock.
+function Panel.Tick(at, total)
+	if not bar then
+		return
+	end
+	-- A thumb in the player's hand stays where the mouse holds it.
+	if not bar.dragging then
+		bar.updating = true
+		bar.slider:SetValue(at)
+		bar.updating = false
+	end
+	bar.time:SetText(ns.Replay.ClockText(at) .. " / " .. ns.Replay.ClockText(total))
+end
+
+local function buildBar(parent)
+	local b = CreateFrame("Frame", nil, parent)
+	b:Hide()
+	b:SetSize(Panel.BAR_WIDTH, Panel.BAR_HEIGHT)
+	-- The level is set before the children exist, so they take theirs above it.
+	b:SetFrameLevel(Panel.LevelOver(parent))
+	b:EnableMouse(true)
+	b:SetPoint("BOTTOM", parent.ScrollContainer or parent, "BOTTOM", 0, 14)
+	b.bg = b:CreateTexture(nil, "BACKGROUND")
+	b.bg:SetAllPoints()
+	b.bg:SetColorTexture(0.05, 0.04, 0.03, 0.85)
+	b.play = CreateFrame("Button", nil, b, "UIPanelButtonTemplate")
+	b.play:SetSize(76, 24)
+	b.play:SetPoint("LEFT", 10, 0)
+	b.play:SetScript("OnClick", function()
+		ns.Safe("map panel:play", ns.Overlay.Toggle)
+	end)
+	b.speed = CreateFrame("Button", nil, b, "UIPanelButtonTemplate")
+	b.speed:SetSize(46, 24)
+	b.speed:SetPoint("LEFT", b.play, "RIGHT", 4, 0)
+	b.speed:SetScript("OnClick", function()
+		ns.Safe("map panel:speed", ns.Overlay.CycleSpeed)
+	end)
+	b.time = b:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
+	b.time:SetPoint("RIGHT", -10, 0)
+	b.time:SetWidth(100)
+	b.time:SetJustifyH("RIGHT")
+	b.slider = CreateFrame("Slider", nil, b)
+	b.slider:SetOrientation("HORIZONTAL")
+	-- A slider takes no drag without the mouse, and its thumb shows only at a size of its own, as in the game's
+	-- templates.
+	b.slider:EnableMouse(true)
+	b.slider:SetHeight(16)
+	b.slider:SetPoint("LEFT", b.speed, "RIGHT", 10, 0)
+	b.slider:SetPoint("RIGHT", b.time, "LEFT", -10, 0)
+	b.track = b.slider:CreateTexture(nil, "BACKGROUND")
+	b.track:SetColorTexture(1, 0.82, 0, 0.35)
+	b.track:SetPoint("LEFT")
+	b.track:SetPoint("RIGHT")
+	b.track:SetHeight(3)
+	b.thumb = b.slider:CreateTexture(nil, "OVERLAY")
+	b.thumb:SetTexture("Interface\\Buttons\\UI-SliderBar-Button-Horizontal")
+	b.thumb:SetSize(32, 32)
+	b.slider:SetThumbTexture(b.thumb)
+	b.slider:SetMinMaxValues(0, 1)
+	b.slider:SetScript("OnMouseDown", function()
+		b.dragging = true
+	end)
+	b.slider:SetScript("OnMouseUp", function()
+		b.dragging = false
+	end)
+	b.slider:SetScript("OnValueChanged", function(_, value, byUser)
+		if byUser and not b.updating then
+			ns.Safe("map panel:seek", ns.Overlay.Seek, value)
+		end
+	end)
+	return b
 end
 
 -- The panel is kept only once it is whole, so a failed build is tried again on the next click.
@@ -153,6 +269,7 @@ function Panel.Create(parent)
 	local f = CreateFrame("Frame", nil, parent)
 	-- Hidden from the start, so a build that fails halfway leaves nothing over the map.
 	f:Hide()
+	f:SetFrameLevel(Panel.LevelOver(parent))
 	f:SetWidth(Panel.WIDTH)
 	-- The panel lies over the quest log, so it takes the clicks and the wheel that would reach the log under it.
 	f:EnableMouse(true)
@@ -188,13 +305,27 @@ function Panel.Create(parent)
 	f.count:SetPoint("TOPLEFT", scroll, "BOTTOMLEFT", 0, -10)
 	f.count:SetWidth(Panel.WIDTH - 30)
 	f.count:SetJustifyH("LEFT")
+	local playerBar = buildBar(parent)
 	f:SetScript("OnShow", function()
+		local level = Panel.LevelOver(parent)
+		f:SetFrameLevel(level)
+		playerBar:SetFrameLevel(level)
+		playerBar:Show()
 		ns.Safe("map panel:show", Panel.Refresh)
 	end)
-	frame, boxes = f, built
+	f:SetScript("OnHide", function()
+		playerBar.dragging = false
+		playerBar:Hide()
+	end)
+	frame, boxes, bar = f, built, playerBar
 	return frame
 end
 
 ns.Listen("MAP_OVERLAY_DRAWN", function(_, stats)
 	Panel.SetStats(stats)
+end, "map panel")
+
+ns.Listen("MAP_REPLAY_CHANGED", Panel.UpdateBar, "map panel")
+ns.Listen("MAP_REPLAY_TICK", function(_, at, total)
+	Panel.Tick(at, total)
 end, "map panel")

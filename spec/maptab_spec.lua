@@ -185,19 +185,181 @@ describe("map journey tab", function()
 		assert.equal("quest", MemoriesDB.settings.map.tab)
 	end)
 
-	it("takes the place of the quest log, or docks beside the map without it", function()
+	it("docks the panel beside the map, never over the quest log", function()
 		start()
-		_G.QuestMapFrame:SetFrameLevel(5)
-		click(Tab.Button())
-		assert.equal(_G.QuestMapFrame, Panel.Frame().allPoints)
-		assert.equal(5 + Tab.LEVEL_ABOVE_LOG, Panel.Frame():GetFrameLevel())
-		click(Tab.Button())
-		_G.QuestMapFrame.shown = false
 		click(Tab.Button())
 		assert.same(
 			{ "BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0 },
 			{ unpack(Panel.Frame().point, 1, 5) }
 		)
+		assert.is_nil(Panel.Frame().allPoints)
+		assert.is_true(Panel.Frame().clamped)
+	end)
+
+	it(
+		"lays the panel over the right side of a maximized map, and beside it again when the map is made small",
+		function()
+			boot()
+			local map = fakeMap({ log = false, shown = true })
+			map.ScrollContainer = CreateFrame("ScrollFrame", nil, map)
+			map.maximized = true
+			function map:IsMaximized()
+				return self.maximized
+			end
+			function map:SynchronizeDisplayState() end
+			wow.login()
+			click(Tab.Button())
+			assert.same(
+				{ "BOTTOMRIGHT", map.ScrollContainer, "BOTTOMRIGHT", 0, 0 },
+				{ unpack(Panel.Frame().point, 1, 5) }
+			)
+			assert.is_true(Tab.Button().clamped)
+			assert.is_true(Panel.Frame().clamped)
+			map.maximized = false
+			map:SynchronizeDisplayState()
+			assert.same(
+				{ "BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0 },
+				{ unpack(Panel.Frame().point, 1, 5) }
+			)
+			assert.equal(0, #ns.Errors())
+		end
+	)
+
+	it("lays the panel, the bar and the tab above the topmost pins of the map", function()
+		local map = start({ shown = true })
+		function map:GetPinFrameLevelsManager()
+			return {
+				GetValidFrameLevel = function(_, name, index)
+					assert.equal("PIN_FRAME_LEVEL_TOPMOST", name)
+					assert.equal(math.huge, index)
+					return 2600
+				end,
+			}
+		end
+		click(Tab.Button())
+		assert.equal(2600 + Panel.ABOVE_PINS, Panel.Frame():GetFrameLevel())
+		assert.equal(2600 + Panel.ABOVE_PINS, Panel.Bar():GetFrameLevel())
+		WorldMapFrame:Hide()
+		WorldMapFrame:Show()
+		assert.equal(2600 + Panel.ABOVE_PINS + Tab.ABOVE_PANEL, Tab.Button():GetFrameLevel())
+	end)
+
+	it("keeps the bar above the map when the pin levels cannot be read", function()
+		local map = start({ shown = true })
+		function map:GetPinFrameLevelsManager()
+			error("boom")
+		end
+		click(Tab.Button())
+		assert.equal(map:GetFrameLevel() + Panel.BAR_LEVEL, Panel.Bar():GetFrameLevel())
+	end)
+
+	it("shows the player bar with the panel, at the bottom of the map", function()
+		start()
+		click(Tab.Button())
+		local bar = Panel.Bar()
+		assert.is_true(bar.shown)
+		assert.same({ "BOTTOM", WorldMapFrame, "BOTTOM", 0, 14 }, { unpack(bar.point, 1, 5) })
+		click(Tab.Button())
+		assert.is_false(bar.shown)
+	end)
+
+	describe("player bar", function()
+		local function open()
+			start({
+				boot = {
+					saved = {
+						MemoriesCharDB = {
+							trail = {
+								v = 1,
+								chunks = {
+									{ s = 1, t = 1000, m = ZONE, n = 3, d = "0,1000,1000;10,2000,1000;20,3000,1000" },
+								},
+							},
+						},
+					},
+				},
+				shown = true,
+			})
+			click(Tab.Button())
+			return Panel.Bar()
+		end
+
+		it("shows the clock and the play button, and plays and pauses with a click", function()
+			local bar = open()
+			assert.equal("Play", bar.play.text)
+			assert.equal("0:40 / 0:40", bar.time.text)
+			assert.equal("1x", bar.speed.text)
+			assert.is_true(bar.play.enabled)
+			click(bar.play)
+			assert.is_true(ns.Overlay.Playing())
+			assert.equal("Pause", bar.play.text)
+			click(bar.play)
+			assert.is_false(ns.Overlay.Playing())
+			assert.equal("Play", bar.play.text)
+		end)
+
+		it("cycles the speed with a click on the speed button", function()
+			local bar = open()
+			click(bar.speed)
+			assert.equal("2x", bar.speed.text)
+			assert.equal(2, ns.Overlay.Speed())
+		end)
+
+		it("gives the slider a thumb of its own size", function()
+			local bar = open()
+			assert.same({ 32, 32 }, bar.thumb.size)
+			assert.equal("Interface\\Buttons\\UI-SliderBar-Button-Horizontal", bar.thumb.texture)
+		end)
+
+		it("moves the slider with the playhead and seeks when the player drags it", function()
+			local bar = open()
+			assert.same({ 0, 40 }, bar.slider.range)
+			assert.equal(40, bar.slider.value)
+			bar.slider.scripts.OnValueChanged(bar.slider, 5, true)
+			assert.equal(5, (ns.Overlay.Position()))
+			bar.slider.scripts.OnValueChanged(bar.slider, 9, false)
+			assert.equal(5, (ns.Overlay.Position()))
+			assert.equal("0:05 / 0:40", bar.time.text)
+		end)
+
+		it("leaves the thumb where the player holds it while the replay plays", function()
+			local bar = open()
+			click(bar.play)
+			bar.slider.scripts.OnMouseDown(bar.slider)
+			bar.slider.value = 5
+			bar.slider.scripts.OnValueChanged(bar.slider, 5, true)
+			ns.Emit("MAP_REPLAY_TICK", 6, 40, true)
+			assert.equal(5, bar.slider.value)
+			assert.equal("0:06 / 0:40", bar.time.text)
+			bar.slider.scripts.OnMouseUp(bar.slider)
+			ns.Emit("MAP_REPLAY_TICK", 7, 40, true)
+			assert.equal(7, bar.slider.value)
+		end)
+
+		it("disables the controls with nothing to play", function()
+			start({ shown = true })
+			for _, group in ipairs(ns.MapData.Groups()) do
+				ns.Settings.Set("map.groups." .. group, false)
+			end
+			ns.Settings.Set("map.trail", false)
+			click(Tab.Button())
+			local bar = Panel.Bar()
+			assert.is_false(bar.play.enabled)
+			assert.is_false(bar.speed.enabled)
+			assert.is_false(bar.slider.enabled)
+			assert.equal("0:00 / 0:00", bar.time.text)
+		end)
+
+		it("keeps a failed click out of the map", function()
+			local bar = open()
+			ns.Overlay.Toggle = function()
+				error("boom")
+			end
+			assert.has_no.errors(function()
+				click(bar.play)
+			end)
+			assert.equal(1, #ns.Errors())
+		end)
 	end)
 
 	it("turns the overlay off with a click on a game tab", function()

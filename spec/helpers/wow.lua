@@ -103,9 +103,8 @@ for _, name in ipairs({
 	"EnableMouseWheel",
 	"RegisterForClicks",
 	"RegisterForDrag",
-	"SetAlpha",
 	"SetAutoFocus",
-	"SetClampedToScreen",
+	"SetBlendMode",
 	"SetFontObject",
 	"SetFrameStrata",
 	"SetHeight",
@@ -114,10 +113,12 @@ for _, name in ipairs({
 	"SetMovable",
 	"SetMultiLine",
 	"SetNormalTexture",
+	"SetObeyStepOnDrag",
+	"SetOrientation",
+	"SetThumbTexture",
 	"SetPushedTexture",
 	"SetScrollChild",
 	"SetTexCoord",
-	"SetThickness",
 	"SetVertexColor",
 	"SetWidth",
 	"StartMoving",
@@ -303,6 +304,14 @@ function Frame:SetAllPoints(target)
 	self.allPoints = target or self.parent
 end
 
+function Frame:SetAlpha(alpha)
+	self.alpha = alpha
+end
+
+function Frame:SetThickness(thickness)
+	self.thickness = thickness
+end
+
 function Frame:GetFrameLevel()
 	return self.frameLevel or 1
 end
@@ -320,6 +329,26 @@ function Frame:SetVerticalScroll(offset)
 	if self.scripts.OnVerticalScroll then
 		self.scripts.OnVerticalScroll(self, offset)
 	end
+end
+
+function Frame:SetClampedToScreen(on)
+	self.clamped = on == true
+end
+
+function Frame:SetEnabled(on)
+	self.enabled = on == true
+end
+
+function Frame:SetMinMaxValues(lo, hi)
+	self.range = { lo, hi }
+end
+
+function Frame:SetValue(value)
+	self.value = value
+end
+
+function Frame:GetValue()
+	return self.value
 end
 
 function Frame:SetChecked(on)
