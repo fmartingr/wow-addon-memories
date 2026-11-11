@@ -7,7 +7,7 @@ luacov.*.out
 coverage.out
 server/coverage.out
 server/data/
-web/map/
+web/map/cover.jpg
 
 .fvm/
 .dart_tool/

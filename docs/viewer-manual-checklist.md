@@ -21,7 +21,7 @@ browser at 360 × 740 and write "360 px" in the cell. Use a real character on `m
 | 14 | 4 | Drag, wheel (desktop) and pinch (phone) move and zoom the map. The zoom buttons and World work. | not run | not run |
 | 15 | 4 | A phone rotation keeps the centre of the map. | not run | not run |
 | 16 | 4 | A link `#journey?x=..&y=..&z=..` opens at that camera. The URL follows the camera, and Back does not step through each move. | not run | not run |
-| 17 | 4 | With `web/map/` renamed, the grid and the notice "Map art is not installed on this server." show, and the trail is still in the right place. | not run | not run |
+| 17 | 4 | With `web/map/` renamed (rename it back after the check), the grid and the notice "Map art is not installed on this server." show, and the trail is still in the right place. | not run | not run |
 | 18 | 4 | The Blizzard legal notice shows under the map. | not run | not run |
 | 19 | 5 | Play, pause and back to start work. Each speed (1×, 2×, 4×, 8×, 16×) changes the pace. On a phone, the speed button cycles the speeds. | not run | not run |
 | 20 | 5 | Space plays and pauses. Left and Right seek. The keys do nothing in another tab. | not run | not run |
@@ -47,4 +47,4 @@ browser at 360 × 740 and write "360 px" in the cell. Use a real character on `m
 | 40 | i18n | Dates, numbers and the coin letters follow the language (German: `1.234`, `G S K`). One kill reads "1 kill". | not run | not run |
 | 41 | i18n | With the network blocking `/_/i18n/de.mjs`, a German page still opens in English with no error. | not run | not run |
 | 42 | i18n | On a German character page, hover a gear slot: the Wowhead tooltip shows the German item name, and the link points to `wowhead.com/classic/de/item=<id>`. English uses `wowhead.com/classic/item=<id>`. | not run | not run |
-| 43 | i18n | With `web/map/` renamed, the grid shows the zone names of the page language (German: "Wald von Elwynn"). A zone with no translation shows its English name. | not run | not run |
+| 43 | i18n | With `web/map/` renamed (rename it back after the check), the grid shows the zone names of the page language (German: "Wald von Elwynn"). A zone with no translation shows its English name. | not run | not run |

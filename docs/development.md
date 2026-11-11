@@ -6,6 +6,10 @@ Back to the [documentation index](README.md).
 
 GPL-3.0-or-later. See [`LICENSE`](../LICENSE).
 
+The map art in `web/map/` is not under GPL-3.0. Blizzard Entertainment owns it. See
+[`web/map/README.md`](../web/map/README.md). A full removal of the art from the repository needs a git history
+rewrite.
+
 
 ## Make targets
 
@@ -31,7 +35,7 @@ GPL-3.0-or-later. See [`LICENSE`](../LICENSE).
 | `make local-up` | Build the Docker image and run a test server on `http://localhost:8080` (admin page on `http://localhost:8081`, open registration, data in a Docker volume). `make local-down` deletes it; `make local-logs` follows its log. |
 | `make companion-local` | Run the companion app with `http://localhost:8080` as the default website. |
 | `make web-lint`, `make web-test` | Check the syntax of the viewer modules in `web/`, and run the `node --test` suite of the viewer logic with its coverage threshold (needs Node 24). |
-| `make web-assets MAP_SRC=...` | Copy the map art from a map art folder into `web/map/` (the art is not in git). |
+| `make web-assets MAP_SRC=...` | Update the map art in `web/map/` from a map art folder. The art is in git; the target keeps `web/map/README.md`. |
 | `make clean` | Remove the coverage files and `app/build/`. |
 
 

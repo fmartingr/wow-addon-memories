@@ -142,19 +142,22 @@ the language of the character's game client, the `Accept-Language` header, Engli
 
 ## Map art
 
-The character page draws the world map from art that Blizzard owns. The art is not in git. Without it, the maps show a
-plain grid with the zone outlines and the notice "Map art is not installed on this server."
+The character page draws the world map from art that Blizzard owns. The art is in git, in `web/map/`, with an
+attribution. The Docker image copies the whole `web/` folder, so the published images have the map art. See
+[`web/map/README.md`](../web/map/README.md) for the owner, the source and the terms.
 
-To add the art:
+To update the art:
 
 1. Get a map art folder: `assets/art/`, `assets/mini/`, `assets/tiles/` and `assets/world.js`, built from OpenMap.
-2. Run `make web-assets MAP_SRC=<path of the map art folder>` in this repository.
-3. Build an image with the art: `docker build -f server/Dockerfile -t memories-server:maps .` The image copies the whole
-   `web/` folder, `web/map/` included.
-4. Set `image: memories-server:maps` for the `server` service in `deploy/compose.yaml`, then run `docker compose up -d`.
-   The published images have no art.
+2. Run `make web-assets MAP_SRC=<path of the map art folder>` in this repository. The target keeps
+   `web/map/README.md`.
+3. Commit the changed files of `web/map/`.
+4. Build an image with the new art: `docker build -f server/Dockerfile -t memories-server:local .`. Set
+   `image: memories-server:local` for the `server` service in `deploy/compose.yaml`, then run `docker compose up -d`.
+   Without these steps, the server runs the published image and its art.
 
-Do not publish an image that has the art in it.
+If the art is missing from `web/map/`, the maps show a plain grid with the zone outlines and the notice "Map art is not
+installed on this server."
 
 ## The data volume
 
