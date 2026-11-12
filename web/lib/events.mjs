@@ -26,11 +26,17 @@ const itypeName = (itype) => (itype ? tr('itype.' + itype) ?? itype : t('fallbac
 // The catalog key of the toast of a need or greed roll.
 const rollKey = (e) => 'note.rl' + (e.type === 'greed' ? 'Greed' : 'Need') + (e.won === 1 ? 'Won' : e.won === 0 ? 'Lost' : '');
 
+// The reason of a screenshot: the notes of other addons, else the reason Memories wrote. A manual shot has none.
+export const shotWhy = (e) => (Array.isArray(e.notes) && e.notes.length ? e.notes.map((n) => n.note).join('; ') : e.why === 'by hand' ? '' : e.why || '');
+
 // The toast and log line of each kind: [text, colour].
 export const NOTE = {
   lv: (e) => [t('note.lv', { level: e.level }), EVENT_COLOURS.lv],
   de: (e) => [e.killer ? t('note.deBy', { killer: e.killer }) : t('note.de'), EVENT_COLOURS.de],
-  ss: (e) => [t('note.ss', { why: e.why }), EVENT_COLOURS.ss],
+  ss: (e) => {
+    const why = shotWhy(e);
+    return [why ? t('note.ss', { why }) : t('tip.ssTitle'), EVENT_COLOURS.ss];
+  },
   dn: (e) => [t('note.dn', { name: e.name }), EVENT_COLOURS.dn],
   bo: (e) => [t(e.success ? 'note.boWin' : 'note.boLose', { name: e.name }), EVENT_COLOURS.bo],
   hs: (e) => [t('note.hs', { to: e.to }), EVENT_COLOURS.hs],
@@ -58,6 +64,12 @@ export function noteOf(e) {
   return n ? n(e) : [e.title || e.k, '#eadcb4'];
 }
 
+// The caption of a screenshot in the lightbox: its note and its date, or only the date for a manual shot.
+export const shotCaption = (e) => {
+  const why = shotWhy(e);
+  return why ? t('lightbox.caption', { why, date: fmtDate(e.t) }) : t('lightbox.captionPlain', { date: fmtDate(e.t) });
+};
+
 // tipHtml makes the tooltip and the detail of an event. shotUrl is the URL of its screenshot or null. The title carries
 // its colour in data-c, which the page sets through the CSSOM, because the page policy blocks style attributes.
 export function tipHtml(model, e, shotUrl = null) {
@@ -82,7 +94,7 @@ export function tipHtml(model, e, shotUrl = null) {
     case 'di': title = e.area; body = line('tip.di', { xp: fmtNum(e.xp) }); break;
     case 'hs': title = t('tip.hsTitle'); body = line('tip.hs', { to: e.to }); break;
     case 'tx': title = t('tip.txTitle'); body = line('tip.tx', { from: e.from, to: e.to, cost: moneyText(e.cost) }); break;
-    case 'ss': title = t('tip.ssTitle'); body = line('tip.ss', { why: e.why, result: e.result }) + (shotUrl ? `<img class="shot" src="${esc(shotUrl)}" alt="">` : ''); break;
+    case 'ss': { title = t('tip.ssTitle'); const why = shotWhy(e); body = (why ? line('tip.ss', { why }) : '') + (shotUrl ? `<img class="shot" src="${esc(shotUrl)}" alt="">` : ''); break; }
     case 'ga': {
       title = withCount(e); col = itemColour(e.quality);
       const prof = e.prof ? profName(e.prof) : t('fallback.gathering');

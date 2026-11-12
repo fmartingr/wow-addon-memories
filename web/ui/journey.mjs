@@ -4,7 +4,7 @@
 import { screenshotUrl } from '../lib/data.mjs';
 import { clamp, clock, coinsHtml, esc, fmtDate, fmtDay, moneyText } from '../lib/format.mjs';
 import { boundsOf } from '../lib/geo.mjs';
-import { EVENT_COLOURS, NOTE, noteOf, tipHtml } from '../lib/events.mjs';
+import { EVENT_COLOURS, NOTE, noteOf, shotCaption, tipHtml } from '../lib/events.mjs';
 import { t } from '../lib/i18n.mjs';
 import { CAT, FLAG, LANES } from '../lib/model.mjs';
 import { advance, crossed, eventId, findEvent, goldAt, levelAt, placeAt, posAt, SPEEDS, spanAt } from '../lib/playback.mjs';
@@ -383,7 +383,7 @@ export function createJourneyTab(panel, ctx) {
     };
     if (url) img.src = url;
     else img.onerror();
-    if (url) $('lightboxCap').textContent = t('lightbox.caption', { why: e.why ?? '', date: fmtDate(e.t) });
+    if (url) $('lightboxCap').textContent = shotCaption(e);
     $('lightbox').hidden = false;
     lightboxAt = performance.now();
     hideTip();

@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { buildModel } from '../lib/model.mjs';
 import { advance, BASE_RATE, crossed, eventId, findEvent, goldAt, lastBefore, levelAt, placeAt, posAt, spanAt, zoneChange } from '../lib/playback.mjs';
-import { noteOf, NOTE, tipHtml } from '../lib/events.mjs';
+import { noteOf, NOTE, shotCaption, tipHtml } from '../lib/events.mjs';
 import { ZONES } from '../zones.mjs';
 
 const char = { first: { level: 1 }, sessions: [{ start: 1000, last: 1200 }] };
@@ -141,4 +141,32 @@ test('tipHtml and noteOf for common kinds', () => {
   assert.deepEqual(noteOf(m.events[1]), ['Level 4', '#ffd100']);
   assert.equal(noteOf(m.events[2])[0], 'xx');
   assert.ok(ZONES[1438]);
+});
+
+test('a screenshot shows the note of another addon and no text when manual', () => {
+  const withNote = { k: 'ss', why: 'by hand', result: 'ok', notes: [{ source: 'Paparazzi', note: 'Level up, Boss kill' }] };
+  assert.match(NOTE.ss(withNote)[0], /Level up, Boss kill/);
+  assert.doesNotMatch(NOTE.ss(withNote)[0], /by hand/);
+  assert.doesNotMatch(NOTE.ss({ k: 'ss', why: 'by hand', result: 'ok' })[0], /by hand/);
+});
+
+test('a screenshot tooltip shows the note of another addon with no result code', () => {
+  const m = buildModel(char, [{ t: 1100, k: 'ss', why: 'by hand', result: 'ok', notes: [{ source: 'Paparazzi', note: 'Death' }] }], []);
+  const html = tipHtml(m, m.events[0], '/shot.jpg');
+  assert.match(html, /Death/);
+  assert.doesNotMatch(html, /\(ok\)|by hand/);
+  assert.match(html, /<img class="shot" src="\/shot\.jpg"/);
+  const auto = tipHtml(m, { ...m.events[0], notes: undefined, why: 'level 2' }, null);
+  assert.match(auto, /level 2/);
+  assert.doesNotMatch(auto, /\(ok\)/);
+});
+
+test('the lightbox caption is the note of the screenshot, or only the date for a manual shot', () => {
+  const noted = shotCaption({ t: 1100, why: 'by hand', notes: [{ source: 'Paparazzi', note: 'Death' }] });
+  assert.match(noted, /Death/);
+  assert.doesNotMatch(noted, /by hand/);
+  const manual = shotCaption({ t: 1100, why: 'by hand' });
+  assert.doesNotMatch(manual, /by hand/);
+  assert.match(manual, /^Screenshot · /);
+  assert.match(shotCaption({ t: 1100, why: 'level 2' }), /Screenshot: level 2 · /);
 });
