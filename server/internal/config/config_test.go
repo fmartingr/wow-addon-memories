@@ -24,6 +24,8 @@ func TestLoadDefaults(t *testing.T) {
 		SiteURL:              "http://localhost:8080",
 		SiteName:             "WoW Journey",
 		GitHubURL:            "https://github.com/fmartingr/wow-addon-memories",
+		CurseForgeURL:        "https://www.curseforge.com/wow/addons/memories",
+		ExampleURL:           "https://wowjourney.xyz/forever/eu/brumamar/neral",
 		Registration:         "invite",
 		MaxUploadBytes:       16 << 20,
 		MaxShotBytes:         15 << 20,
@@ -63,6 +65,8 @@ func TestLoadEachVariable(t *testing.T) {
 		"MEMORIES_SITE_URL":               "https://journey.example.com",
 		"MEMORIES_SITE_NAME":              "My Journey",
 		"MEMORIES_GITHUB_URL":             "https://github.com/me/fork",
+		"MEMORIES_CURSEFORGE_URL":         "https://www.curseforge.com/wow/addons/fork",
+		"MEMORIES_EXAMPLE_URL":            "https://journey.example.com/forever/eu/realm/me/",
 		"MEMORIES_REGISTRATION":           "open",
 		"MEMORIES_TRUSTED_PROXIES":        "10.0.0.0/8, 172.18.0.5/32",
 		"MEMORIES_MAX_UPLOAD_BYTES":       "100",
@@ -87,6 +91,7 @@ func TestLoadEachVariable(t *testing.T) {
 	want := Config{
 		PublicAddr: "127.0.0.1:9000", AdminAddr: "0.0.0.0:9001", DataDir: "/srv/data", WebDir: "/srv/web",
 		SiteURL: "https://journey.example.com", SiteName: "My Journey", GitHubURL: "https://github.com/me/fork",
+		CurseForgeURL: "https://www.curseforge.com/wow/addons/fork", ExampleURL: "https://journey.example.com/forever/eu/realm/me",
 		Registration: "open", MaxUploadBytes: 100, MaxShotBytes: 200, MaxPixels: 300, MaxDecodedBytes: 310, MaxText: 320,
 		MaxRecords: 330, MaxChunks: 340, MaxPoints: 350, MaxCharactersPerKey: 4,
 		MaxDataBytesPerKey: 500, MaxShotBytesPerKey: 600, MaxConcurrentUploads: 3, RateSignedPerMinute: 7, RateRegisterPerHour: 8,
@@ -119,6 +124,10 @@ func TestLoadURLs(t *testing.T) {
 		{"github bad scheme", "MEMORIES_GITHUB_URL", "javascript:alert(1)", "", "MEMORIES_GITHUB_URL"},
 		{"github keeps escapes", "MEMORIES_GITHUB_URL", "https://github.com/a/b%2Fc", "https://github.com/a/b%2Fc", ""},
 		{"github empty takes the default", "MEMORIES_GITHUB_URL", "", "https://github.com/fmartingr/wow-addon-memories", ""},
+		{"curseforge bad scheme", "MEMORIES_CURSEFORGE_URL", "javascript:alert(1)", "", "MEMORIES_CURSEFORGE_URL"},
+		{"curseforge trailing slash", "MEMORIES_CURSEFORGE_URL", "https://www.curseforge.com/wow/addons/x/", "https://www.curseforge.com/wow/addons/x", ""},
+		{"example with query", "MEMORIES_EXAMPLE_URL", "https://example.com/a?b=1", "", "MEMORIES_EXAMPLE_URL"},
+		{"example trailing slash", "MEMORIES_EXAMPLE_URL", "https://example.com/forever/eu/r/me/", "https://example.com/forever/eu/r/me", ""},
 	}
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
@@ -132,9 +141,13 @@ func TestLoadURLs(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			got := c.SiteURL
-			if tc.key == "MEMORIES_GITHUB_URL" {
-				got = c.GitHubURL
+			got := map[string]string{
+				"MEMORIES_GITHUB_URL":     c.GitHubURL,
+				"MEMORIES_CURSEFORGE_URL": c.CurseForgeURL,
+				"MEMORIES_EXAMPLE_URL":    c.ExampleURL,
+			}[tc.key]
+			if got == "" {
+				got = c.SiteURL
 			}
 			if got != tc.want {
 				t.Errorf("got %q, want %q", got, tc.want)

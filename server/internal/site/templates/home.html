@@ -16,8 +16,15 @@
 <p class="eyebrow">{{T "eyebrow"}}</p>
 <h1>{{.Name}}</h1>
 <p class="lead">{{T "lead"}}</p>
-{{if .ReleasesURL}}<p class="actions"><a class="btn primary" href="{{.ReleasesURL}}">{{T "download"}}</a> <a class="btn" href="{{.GitHubURL}}">{{T "github"}}</a></p>
-{{end}}</header>
+<p class="actions">{{if .CurseForgeURL}}<a class="btn primary" href="{{.CurseForgeURL}}">{{T "curseforge"}}</a> {{end}}{{if .ReleasesURL}}<a class="btn" href="{{.ReleasesURL}}">{{T "download"}}</a> <a class="btn" href="{{.GitHubURL}}">{{T "github"}}</a>{{end}}</p>
+</header>
+
+{{if .ExampleURL}}<section>
+<h2 class="panel-title">{{T "example.title"}}</h2>
+<p>{{T "example.text"}}</p>
+<p><a class="btn" href="{{.ExampleURL}}/">{{T "example"}}</a></p>
+</section>
+{{end}}
 
 <section>
 <h2 class="panel-title">{{T "records.title"}}</h2>
@@ -29,6 +36,12 @@
 </article>
 {{end}}</div>
 <p>{{T "records.outro"}}</p>
+<p>{{T "records.shots"}}</p>
+</section>
+
+<section>
+<h2 class="panel-title">{{T "ingame.title"}}</h2>
+<p>{{T "ingame.text"}}</p>
 </section>
 
 <section>
@@ -43,6 +56,8 @@
 <li class="step"><div>
 <h3>{{T "step.install"}}</h3>
 <p>{{H "step.install.html"}}</p>
+{{if .CurseForgeURL}}<p><a href="{{.CurseForgeURL}}">{{T "curseforge"}}</a></p>
+{{end}}
 </div></li>
 <li class="trail" aria-hidden="true"><div class="prints"><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print l" viewBox="0 0 40 90"><use href="#print"/></svg><svg class="print r" viewBox="0 0 40 90"><use href="#print"/></svg></div></li>
 <li class="step"><div>
@@ -74,11 +89,11 @@
 <p class="callout">{{T "unlisted"}}</p>
 </section>
 
-{{if .ReleasesURL}}<section class="closing panel">
+{{if or .CurseForgeURL .ReleasesURL}}<section class="closing panel">
 <h2 class="panel-title">{{T "closing.title"}}</h2>
-<p><a class="btn primary" href="{{.ReleasesURL}}">{{T "download"}}</a></p>
-<p><a href="{{.GitHubURL}}">{{T "github"}}</a> {{T "closing.after"}}</p>
-</section>
+<p class="actions">{{if .CurseForgeURL}}<a class="btn primary" href="{{.CurseForgeURL}}">{{T "curseforge"}}</a> {{end}}{{if .ReleasesURL}}<a class="btn" href="{{.ReleasesURL}}">{{T "download"}}</a>{{end}}</p>
+{{if .GitHubURL}}<p><a href="{{.GitHubURL}}">{{T "github"}}</a> {{T "closing.after"}}</p>
+{{end}}</section>
 {{end}}</main>
 <footer class="foot">
 <p class="cookie-note">{{T "cookie"}}</p>

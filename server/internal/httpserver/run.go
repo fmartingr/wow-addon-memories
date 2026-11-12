@@ -39,6 +39,8 @@ func siteOptions(cfg config.Config) site.Options {
 	return site.Options{
 		Name:             cfg.SiteName,
 		GitHubURL:        cfg.GitHubURL,
+		CurseForgeURL:    cfg.CurseForgeURL,
+		ExampleURL:       cfg.ExampleURL,
 		OpenRegistration: cfg.Registration == config.RegistrationOpen,
 	}
 }

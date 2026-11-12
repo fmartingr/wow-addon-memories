@@ -40,6 +40,8 @@ exit code 2. The size limits and quotas other than the rate limits apply to the 
 | `MEMORIES_SITE_URL` | `http://localhost:8080` | Public address of the site: `http` or `https`, no path. A trailing `/` is dropped. |
 | `MEMORIES_SITE_NAME` | `WoW Journey` | Name of the site. |
 | `MEMORIES_GITHUB_URL` | `https://github.com/fmartingr/wow-addon-memories` | Repository; the home page links to it and to its `/releases/latest`. |
+| `MEMORIES_CURSEFORGE_URL` | `https://www.curseforge.com/wow/addons/memories` | The addons on CurseForge; the home page links to it. |
+| `MEMORIES_EXAMPLE_URL` | `https://wowjourney.xyz/forever/eu/brumamar/neral` | A character page that the home page shows as an example. |
 | `MEMORIES_REGISTRATION` | `invite` | `invite` or `open`. |
 | `MEMORIES_TRUSTED_PROXIES` | empty | Comma-separated CIDR list of proxies whose `X-Forwarded-For` is trusted. |
 | `MEMORIES_MAX_UPLOAD_BYTES` | 16 MiB | Largest upload request. |

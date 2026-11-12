@@ -30,6 +30,8 @@ type Config struct {
 	SiteURL        string
 	SiteName       string
 	GitHubURL      string
+	CurseForgeURL  string
+	ExampleURL     string
 	Registration   string
 	TrustedProxies []netip.Prefix
 
@@ -95,6 +97,18 @@ func Load(getenv func(string) string) (Config, error) {
 		bad("MEMORIES_GITHUB_URL", err.Error())
 	}
 	c.GitHubURL = gh
+
+	cf, err := webURL(str("MEMORIES_CURSEFORGE_URL", "https://www.curseforge.com/wow/addons/memories"), true)
+	if err != nil {
+		bad("MEMORIES_CURSEFORGE_URL", err.Error())
+	}
+	c.CurseForgeURL = cf
+
+	example, err := webURL(str("MEMORIES_EXAMPLE_URL", "https://wowjourney.xyz/forever/eu/brumamar/neral"), true)
+	if err != nil {
+		bad("MEMORIES_EXAMPLE_URL", err.Error())
+	}
+	c.ExampleURL = example
 
 	switch c.Registration = str("MEMORIES_REGISTRATION", RegistrationInvite); c.Registration {
 	case RegistrationInvite, RegistrationOpen:

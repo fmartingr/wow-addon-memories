@@ -25,7 +25,10 @@ func newSite(t *testing.T, opt Options) *Site {
 }
 
 func TestHomeShowsTheLinksAndTheUnlistedLine(t *testing.T) {
-	s := newSite(t, Options{Name: "My Site", GitHubURL: "https://github.com/a/b"})
+	s := newSite(t, Options{
+		Name: "My Site", GitHubURL: "https://github.com/a/b",
+		CurseForgeURL: "https://www.curseforge.com/wow/addons/x", ExampleURL: "https://example.com/forever/eu/r/me",
+	})
 	rec := serve(t, s.Home(), http.MethodGet)
 	body := rec.Body.String()
 	if rec.Code != http.StatusOK {
@@ -38,7 +41,12 @@ func TestHomeShowsTheLinksAndTheUnlistedLine(t *testing.T) {
 		"A character page is unlisted: anybody with the link can open it, and nobody can find it on this site.",
 		`href="` + CSSPath + `"`,
 		`href="` + BaseCSSPath + `"`,
-		`class="btn primary"`,
+		`<a class="btn primary" href="https://www.curseforge.com/wow/addons/x">Get Memories on CurseForge</a>`,
+		`href="https://example.com/forever/eu/r/me/"`,
+		"Open the journey of Neral",
+		"Replay it in the game",
+		"Paparazzi",
+		"Download the WoW Journey app",
 		`class="hero panel"`,
 	} {
 		if !strings.Contains(body, want) {
@@ -47,6 +55,19 @@ func TestHomeShowsTheLinksAndTheUnlistedLine(t *testing.T) {
 	}
 	if len(Addons) != 6 {
 		t.Errorf("%d addons, want 6", len(Addons))
+	}
+}
+
+func TestHomeLeavesOutTheCurseForgeLinkAndTheExampleWithoutTheirURLs(t *testing.T) {
+	s := newSite(t, Options{Name: "My Site", GitHubURL: "https://github.com/a/b"})
+	body := serve(t, s.Home(), http.MethodGet).Body.String()
+	for _, absent := range []string{"curseforge.com", "Get Memories on CurseForge", "Open the journey of Neral", "See an example"} {
+		if strings.Contains(body, absent) {
+			t.Errorf("home page has %q with no address for it", absent)
+		}
+	}
+	if !strings.Contains(body, `href="https://github.com/a/b/releases/latest"`) {
+		t.Error("home page lacks the releases link")
 	}
 }
 

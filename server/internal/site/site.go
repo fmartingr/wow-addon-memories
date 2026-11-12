@@ -27,6 +27,10 @@ const (
 type Options struct {
 	Name      string
 	GitHubURL string
+	// CurseForgeURL is the page of the addons on CurseForge, and ExampleURL a character page to show as an example.
+	// The home page leaves out a link with no address.
+	CurseForgeURL string
+	ExampleURL    string
 	// OpenRegistration drops the invite code step from the upload steps.
 	OpenRegistration bool
 }
@@ -56,6 +60,8 @@ type pageData struct {
 	BaseCSS          string
 	GitHubURL        string
 	ReleasesURL      string
+	CurseForgeURL    string
+	ExampleURL       string
 	OpenRegistration bool
 	Addons           []Addon
 	Langs            []LangLink
@@ -80,7 +86,7 @@ func New(opt Options) (*Site, error) {
 			return nil, fmt.Errorf("copy the page templates: %w", err)
 		}
 		tpl.Funcs(langFuncs(l))
-		data := pageData{Name: opt.Name, Lang: l, CSS: CSSPath, BaseCSS: BaseCSSPath, GitHubURL: opt.GitHubURL, OpenRegistration: opt.OpenRegistration, Addons: Addons}
+		data := pageData{Name: opt.Name, Lang: l, CSS: CSSPath, BaseCSS: BaseCSSPath, GitHubURL: opt.GitHubURL, CurseForgeURL: opt.CurseForgeURL, ExampleURL: opt.ExampleURL, OpenRegistration: opt.OpenRegistration, Addons: Addons}
 		for _, other := range Langs {
 			data.Langs = append(data.Langs, LangLink{Code: other, Name: LangNames[other], Current: other == l})
 		}

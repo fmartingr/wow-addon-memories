@@ -108,6 +108,8 @@ The image sets `MEMORIES_WEB_DIR`, `MEMORIES_DATA_DIR` and `MEMORIES_ADMIN_ADDR`
 | `MEMORIES_SITE_URL` | `http://localhost:8080` | Public address of the site: `http` or `https`, no path. |
 | `MEMORIES_SITE_NAME` | `WoW Journey` | Name of the site. |
 | `MEMORIES_GITHUB_URL` | `https://github.com/fmartingr/wow-addon-memories` | Repository. The home page links to it and to its `/releases/latest`. |
+| `MEMORIES_CURSEFORGE_URL` | `https://www.curseforge.com/wow/addons/memories` | The addons on CurseForge. The home page links to it. |
+| `MEMORIES_EXAMPLE_URL` | `https://wowjourney.xyz/forever/eu/brumamar/neral` | A character page that the home page shows as an example. |
 | `MEMORIES_REGISTRATION` | `invite` | `invite` or `open`. |
 | `MEMORIES_TRUSTED_PROXIES` | `172.30.60.0/24,fd00:30:60::/64` (compose) | Proxies whose `X-Forwarded-For` the server trusts: the IPv4 and IPv6 subnets of the compose network, which has Caddy as its only proxy. Without it, every player has the address of Caddy and shares one rate limit. |
 | `MEMORIES_MAX_UPLOAD_BYTES` | 16 MiB | Largest upload request. |

@@ -128,6 +128,8 @@ func TestHome(t *testing.T) {
 		unlistedLine,
 		`href="https://github.com/fmartingr/wow-addon-memories/releases/latest"`,
 		`href="https://github.com/fmartingr/wow-addon-memories"`,
+		`href="https://www.curseforge.com/wow/addons/memories"`,
+		`href="https://wowjourney.xyz/forever/eu/brumamar/neral/"`,
 		"Memories_Combat", "Memories_Gathering", "Memories_Character", "Memories_Economy", "Memories_Social",
 		"WoW Journey",
 	} {
