@@ -116,6 +116,8 @@ jobs:
           - os: macos-latest
             target: macos
     runs-on: ${{ matrix.os }}
+    # The macOS app is not released until its signing secrets exist, so a failed macOS build does not fail CI.
+    continue-on-error: ${{ matrix.target == 'macos' }}
     # On Windows pub installs only fvm.bat, which make and bash cannot run, so each
     # command is its own step in the default shell (pwsh on Windows).
     defaults:
