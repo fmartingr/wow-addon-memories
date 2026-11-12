@@ -3,6 +3,7 @@ module github.com/fmartingr/wow-addon-memories/server
 go 1.27
 
 require (
+	github.com/getsentry/sentry-go v0.50.0
 	golang.org/x/text v0.43.0
 	modernc.org/sqlite v1.60.1
 )

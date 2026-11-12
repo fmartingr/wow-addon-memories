@@ -44,6 +44,8 @@ exit code 2. The size limits and quotas other than the rate limits apply to the 
 | `MEMORIES_EXAMPLE_URL` | `https://wowjourney.xyz/forever/eu/brumamar/neral` | A character page that the home page shows as an example. |
 | `MEMORIES_REGISTRATION` | `invite` | `invite` or `open`. |
 | `MEMORIES_TRUSTED_PROXIES` | empty | Comma-separated CIDR list of proxies whose `X-Forwarded-For` is trusted. |
+| `MEMORIES_SENTRY_DSN` | empty | Sentry DSN. When set, the server sends every error log line and every handler panic to Sentry, with no header, query, body or request path. Empty turns Sentry off. |
+| `MEMORIES_SENTRY_ENVIRONMENT` | `production` | Sentry environment of the events. |
 | `MEMORIES_MAX_UPLOAD_BYTES` | 16 MiB | Largest upload request. |
 | `MEMORIES_MAX_SHOT_BYTES` | 15 MiB | Largest screenshot request. |
 | `MEMORIES_MAX_PIXELS` | 50,000,000 | Largest screenshot, in pixels. |

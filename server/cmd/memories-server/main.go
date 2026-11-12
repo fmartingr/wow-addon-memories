@@ -13,6 +13,7 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/backup"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/httpserver"
+	"github.com/fmartingr/wow-addon-memories/server/internal/reporting"
 )
 
 const (
@@ -57,7 +58,18 @@ func run(ctx context.Context, args []string, getenv func(string) string, stdout,
 		return exitOK
 	}
 
-	log := slog.New(slog.NewJSONHandler(stdout, nil))
+	flush, err := reporting.Init(reporting.Options{DSN: cfg.SentryDSN, Environment: cfg.SentryEnvironment})
+	if err != nil {
+		fmt.Fprintf(stderr, "memories-server: the settings are not valid:\n%v\n", err)
+		return exitUsage
+	}
+	defer flush()
+
+	var handler slog.Handler = slog.NewJSONHandler(stdout, nil)
+	if cfg.SentryDSN != "" {
+		handler = reporting.Handler(handler)
+	}
+	log := slog.New(handler)
 	if err := httpserver.Run(ctx, cfg, log); err != nil {
 		fmt.Fprintf(stderr, "memories-server: %v\n", err)
 		return exitError

@@ -112,6 +112,8 @@ The image sets `MEMORIES_WEB_DIR`, `MEMORIES_DATA_DIR` and `MEMORIES_ADMIN_ADDR`
 | `MEMORIES_EXAMPLE_URL` | `https://wowjourney.xyz/forever/eu/brumamar/neral` | A character page that the home page shows as an example. |
 | `MEMORIES_REGISTRATION` | `invite` | `invite` or `open`. |
 | `MEMORIES_TRUSTED_PROXIES` | `172.30.60.0/24,fd00:30:60::/64` (compose) | Proxies whose `X-Forwarded-For` the server trusts: the IPv4 and IPv6 subnets of the compose network, which has Caddy as its only proxy. Without it, every player has the address of Caddy and shares one rate limit. |
+| `MEMORIES_SENTRY_DSN` | empty | Sentry DSN. When set, the server sends every error log line and every handler panic to Sentry, with no header, query, body or request path. Empty turns Sentry off. |
+| `MEMORIES_SENTRY_ENVIRONMENT` | `production` | Sentry environment of the events. |
 | `MEMORIES_MAX_UPLOAD_BYTES` | 16 MiB | Largest upload request. |
 | `MEMORIES_MAX_SHOT_BYTES` | 15 MiB | Largest screenshot request. |
 | `MEMORIES_MAX_PIXELS` | 50,000,000 | Largest screenshot, in pixels. |

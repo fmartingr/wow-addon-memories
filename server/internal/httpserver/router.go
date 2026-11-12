@@ -12,6 +12,7 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/ratelimit"
+	"github.com/fmartingr/wow-addon-memories/server/internal/reporting"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
@@ -43,12 +44,12 @@ func NewPublic(cfg config.Config, s *site.Site, pages *site.Pages, st *store.Sto
 	outer := http.NewServeMux()
 	outer.Handle(site.AssetPrefix, pages.Assets())
 	outer.Handle("/", limited)
-	return site.Headers(logRequests(log, outer))
+	return site.Headers(logRequests(log, reporting.Panics(outer)))
 }
 
 // NewAdmin returns the handler of the admin listener: the admin pages behind the security headers and the request log.
 func NewAdmin(pages http.Handler, log *slog.Logger) http.Handler {
-	return site.Headers(logRequests(log, pages))
+	return site.Headers(logRequests(log, reporting.Panics(pages)))
 }
 
 type statusWriter struct {

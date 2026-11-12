@@ -35,6 +35,9 @@ type Config struct {
 	Registration   string
 	TrustedProxies []netip.Prefix
 
+	SentryDSN         string
+	SentryEnvironment string
+
 	MaxUploadBytes       int64
 	MaxShotBytes         int64
 	MaxPixels            int64
@@ -126,6 +129,9 @@ func Load(getenv func(string) string) (Config, error) {
 			c.TrustedProxies = append(c.TrustedProxies, prefix.Masked())
 		}
 	}
+
+	c.SentryDSN = str("MEMORIES_SENTRY_DSN", "")
+	c.SentryEnvironment = str("MEMORIES_SENTRY_ENVIRONMENT", "production")
 
 	for _, s := range []intSetting{
 		{"MEMORIES_MAX_UPLOAD_BYTES", &c.MaxUploadBytes, 16 * miB, "bytes"},
