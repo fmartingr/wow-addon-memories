@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Left a group">
+ <title>gl: Left a group</title>
+ <defs>
+ <linearGradient id="rim" x1="0" x2="0.9" y1="0" y2="1"><stop offset="0" stop-color="#fff2a4"/><stop offset=".15" stop-color="#eecb64"/><stop offset=".5" stop-color="#a66b2d"/><stop offset=".75" stop-color="#f6d26e"/><stop offset="1" stop-color="#69401f"/></linearGradient>
+ <radialGradient id="face" cx=".40" cy=".29" r=".80"><stop offset="0" stop-color="#233d44"/><stop offset=".65" stop-color="#16282e"/><stop offset="1" stop-color="#0c1015"/></radialGradient>
+ <linearGradient id="goldGlyph" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fff4d1"/><stop offset=".48" stop-color="#ffe1a0"/><stop offset="1" stop-color="#cadbb2"/></linearGradient>
+ </defs>
+ <circle cx="32" cy="33.0" r="29.4" fill="#0a0909" opacity=".35"/>
+ <circle cx="32" cy="31.4" r="29.0" fill="#0e0c0f" stroke="#1f110b" stroke-width="2"/>
+ <circle cx="32" cy="31.4" r="27.0" fill="url(#rim)" stroke="#f9da83" stroke-width=".75"/>
+ <circle cx="32" cy="31.4" r="24.6" fill="#5d5847" stroke="#422b1e" stroke-width=".8"/>
+ <circle cx="32" cy="31.4" r="22.5" fill="url(#face)" stroke="#0d151c" stroke-width="1.3"/>
+ <path d="M 9 24.6 A 25 25 0 0 1 49 12" fill="none" stroke="#fff4be" stroke-width="1" opacity=".72" stroke-linecap="round"/>
+ <path d="M 15 49 A 25 25 0 0 0 54 39" fill="none" stroke="#4f2a17" stroke-width="1.3" opacity=".85"/>
+ <path d="M 18 11.2 A 23 23 0 0 1 46 11.2" fill="none" stroke="#9cecf0" stroke-width=".65" opacity=".42"/>
+ <g opacity=".84" fill="#090b0e" transform="translate(15.00000 18.55000) scale(0.05078125)"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z" /></g>
+ <g opacity="1" fill="url(#goldGlyph)" transform="translate(15.00000 17.25000) scale(0.05078125)"><path d="M144 0a80 80 0 1 1 0 160A80 80 0 1 1 144 0zM512 0a80 80 0 1 1 0 160A80 80 0 1 1 512 0zM0 298.7C0 239.8 47.8 192 106.7 192l42.7 0c15.9 0 31 3.5 44.6 9.7c-1.3 7.2-1.9 14.7-1.9 22.3c0 38.2 16.8 72.5 43.3 96c-.2 0-.4 0-.7 0L21.3 320C9.6 320 0 310.4 0 298.7zM405.3 320c-.2 0-.4 0-.7 0c26.6-23.5 43.3-57.8 43.3-96c0-7.6-.7-15-1.9-22.3c13.6-6.3 28.7-9.7 44.6-9.7l42.7 0C592.2 192 640 239.8 640 298.7c0 11.8-9.6 21.3-21.3 21.3l-213.3 0zM224 224a96 96 0 1 1 192 0 96 96 0 1 1 -192 0zM128 485.3C128 411.7 187.7 352 261.3 352l117.3 0C452.3 352 512 411.7 512 485.3c0 14.7-11.9 26.7-26.7 26.7l-330.7 0c-14.7 0-26.7-11.9-26.7-26.7z" /></g>
+ <circle cx="45" cy="45" r="9.6" fill="#1b1111" stroke="#17100b" stroke-width="1.3"/><circle cx="45" cy="45" r="8.35" fill="#399da3" stroke="#9cecf0" stroke-width="1.5"/><g opacity=".74" fill="#171619" transform="translate(40.99375 40.80000) scale(0.01855469)"><path d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" /></g><g opacity="1" fill="#f9efcd" transform="translate(40.99375 40.00000) scale(0.01855469)"><path d="M432 256c0 17.7-14.3 32-32 32L48 288c-17.7 0-32-14.3-32-32s14.3-32 32-32l352 0c17.7 0 32 14.3 32 32z" /></g>
+ </svg>

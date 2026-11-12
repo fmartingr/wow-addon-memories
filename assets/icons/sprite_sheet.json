@@ -1,0 +1,683 @@
+{
+  "image": "sprite_sheet.png",
+  "width": 576,
+  "height": 576,
+  "cell": 64,
+  "icons": {
+    "in": {
+      "x": 0,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Sessions",
+      "name": "Login or reload",
+      "filename": "login_or_reload.png"
+    },
+    "out": {
+      "x": 64,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Sessions",
+      "name": "Logout or reload",
+      "filename": "logout_or_reload.png"
+    },
+    "pl": {
+      "x": 128,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Sessions",
+      "name": "Total /played",
+      "filename": "total_played.png"
+    },
+    "gp": {
+      "x": 192,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Sessions",
+      "name": "Unsaved session gap",
+      "filename": "unsaved_session_gap.png"
+    },
+    "pc": {
+      "x": 256,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Sessions",
+      "name": "Computer this session ran on",
+      "filename": "computer_this_session_ran_on.png"
+    },
+    "af": {
+      "x": 320,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Sessions",
+      "name": "Away from keyboard",
+      "filename": "away_from_keyboard.png"
+    },
+    "lv": {
+      "x": 384,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Progress",
+      "name": "Level up",
+      "filename": "level_up.png"
+    },
+    "xp": {
+      "x": 448,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Progress",
+      "name": "Experience gained",
+      "filename": "experience_gained.png"
+    },
+    "qt": {
+      "x": 512,
+      "y": 0,
+      "width": 64,
+      "height": 64,
+      "group": "Progress",
+      "name": "Quest turned in",
+      "filename": "quest_turned_in.png"
+    },
+    "di": {
+      "x": 0,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Progress",
+      "name": "Discovered an area",
+      "filename": "discovered_an_area.png"
+    },
+    "rs": {
+      "x": 64,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Progress",
+      "name": "Rested state",
+      "filename": "rested_state.png"
+    },
+    "de": {
+      "x": 128,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Deaths",
+      "name": "Died",
+      "filename": "died.png"
+    },
+    "gh": {
+      "x": 192,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Deaths",
+      "name": "Released spirit",
+      "filename": "released_spirit.png"
+    },
+    "al": {
+      "x": 256,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Deaths",
+      "name": "Alive again",
+      "filename": "alive_again.png"
+    },
+    "cc": {
+      "x": 320,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Deaths",
+      "name": "Close call",
+      "filename": "close_call.png"
+    },
+    "lh": {
+      "x": 384,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Deaths",
+      "name": "Low-health warning",
+      "filename": "low_health_warning.png"
+    },
+    "hc": {
+      "x": 448,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Deaths",
+      "name": "Hardcore death",
+      "filename": "hardcore_death.png"
+    },
+    "zo": {
+      "x": 512,
+      "y": 64,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Entered a zone",
+      "filename": "entered_a_zone.png"
+    },
+    "sz": {
+      "x": 0,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Entered a subzone",
+      "filename": "entered_a_subzone.png"
+    },
+    "ld": {
+      "x": 64,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Loading screen started",
+      "filename": "loading_screen_started.png"
+    },
+    "le": {
+      "x": 128,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Loading screen ended",
+      "filename": "loading_screen_ended.png"
+    },
+    "tx": {
+      "x": 192,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Took a flight",
+      "filename": "took_a_flight.png"
+    },
+    "tl": {
+      "x": 256,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Flight landed",
+      "filename": "flight_landed.png"
+    },
+    "bt": {
+      "x": 320,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Boat or zeppelin",
+      "filename": "boat_or_zeppelin.png"
+    },
+    "hs": {
+      "x": 384,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Hearthstone",
+      "filename": "hearthstone.png"
+    },
+    "so": {
+      "x": 448,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Summon offered",
+      "filename": "summon_offered.png"
+    },
+    "su": {
+      "x": 512,
+      "y": 128,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Summoned",
+      "filename": "summoned.png"
+    },
+    "po": {
+      "x": 0,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Portal or teleport",
+      "filename": "portal_or_teleport.png"
+    },
+    "jp": {
+      "x": 64,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Other teleport",
+      "filename": "other_teleport.png"
+    },
+    "mo": {
+      "x": 128,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "First mount-up with a mount",
+      "filename": "first_mount_up_with_a_mount.png"
+    },
+    "ml": {
+      "x": 192,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Travel",
+      "name": "Learned a mount or riding",
+      "filename": "learned_a_mount_or_riding.png"
+    },
+    "dn": {
+      "x": 256,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Dungeons",
+      "name": "Entered a dungeon or raid",
+      "filename": "entered_a_dungeon_or_raid.png"
+    },
+    "dx": {
+      "x": 320,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Dungeons",
+      "name": "Left a dungeon or raid",
+      "filename": "left_a_dungeon_or_raid.png"
+    },
+    "bo": {
+      "x": 384,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Dungeons",
+      "name": "Boss fight ended",
+      "filename": "boss_fight_ended.png"
+    },
+    "wb": {
+      "x": 448,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Dungeons",
+      "name": "World boss killed",
+      "filename": "world_boss_killed.png"
+    },
+    "ss": {
+      "x": 512,
+      "y": 192,
+      "width": 64,
+      "height": 64,
+      "group": "Screenshots",
+      "name": "Screenshot saved",
+      "filename": "screenshot_saved.png"
+    },
+    "sn": {
+      "x": 0,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Other addons",
+      "name": "Screenshot note from another addon",
+      "filename": "screenshot_note_from_another_addon.png"
+    },
+    "ex": {
+      "x": 64,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Other addons",
+      "name": "Event from another addon",
+      "filename": "event_from_another_addon.png"
+    },
+    "nt": {
+      "x": 128,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Other addons",
+      "name": "Note from Memories",
+      "filename": "note_from_memories.png"
+    },
+    "ki": {
+      "x": 192,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Combat",
+      "name": "Killed a creature",
+      "filename": "killed_a_creature.png"
+    },
+    "ra": {
+      "x": 256,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Combat",
+      "name": "Killed a rare",
+      "filename": "killed_a_rare.png"
+    },
+    "fi": {
+      "x": 320,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Combat",
+      "name": "Long fight",
+      "filename": "long_fight.png"
+    },
+    "ga": {
+      "x": 384,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Gathering",
+      "name": "Gathered",
+      "filename": "gathered.png"
+    },
+    "fs": {
+      "x": 448,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Gathering",
+      "name": "Caught while fishing",
+      "filename": "caught_while_fishing.png"
+    },
+    "op": {
+      "x": 512,
+      "y": 256,
+      "width": 64,
+      "height": 64,
+      "group": "Gathering",
+      "name": "Opened a container or chest",
+      "filename": "opened_a_container_or_chest.png"
+    },
+    "pp": {
+      "x": 0,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Gathering",
+      "name": "Picked a pocket",
+      "filename": "picked_a_pocket.png"
+    },
+    "sk": {
+      "x": 64,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Character",
+      "name": "Skill changed",
+      "filename": "skill_changed.png"
+    },
+    "lr": {
+      "x": 128,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Character",
+      "name": "Learned a spell",
+      "filename": "learned_a_spell.png"
+    },
+    "rc": {
+      "x": 192,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Character",
+      "name": "Learned a recipe",
+      "filename": "learned_a_recipe.png"
+    },
+    "ta": {
+      "x": 256,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Character",
+      "name": "Talent points",
+      "filename": "talent_points.png"
+    },
+    "cu": {
+      "x": 320,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Character",
+      "name": "Used a consumable",
+      "filename": "used_a_consumable.png"
+    },
+    "pt": {
+      "x": 384,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Character",
+      "name": "Tamed a beast",
+      "filename": "tamed_a_beast.png"
+    },
+    "rp": {
+      "x": 448,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Milestones",
+      "name": "Reputation changed",
+      "filename": "reputation_changed.png"
+    },
+    "qa": {
+      "x": 512,
+      "y": 320,
+      "width": 64,
+      "height": 64,
+      "group": "Milestones",
+      "name": "Quest accepted",
+      "filename": "quest_accepted.png"
+    },
+    "hb": {
+      "x": 0,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Milestones",
+      "name": "Hearthstone bound",
+      "filename": "hearthstone_bound.png"
+    },
+    "fp": {
+      "x": 64,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Milestones",
+      "name": "Learned a flight path",
+      "filename": "learned_a_flight_path.png"
+    },
+    "bk": {
+      "x": 128,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Milestones",
+      "name": "Read a book",
+      "filename": "read_a_book.png"
+    },
+    "lo": {
+      "x": 192,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Loot",
+      "name": "Loot",
+      "filename": "loot.png"
+    },
+    "rl": {
+      "x": 256,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Loot",
+      "name": "Group roll ended",
+      "filename": "group_roll_ended.png"
+    },
+    "ge": {
+      "x": 320,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Loot",
+      "name": "Gear snapshot",
+      "filename": "gear_snapshot.png"
+    },
+    "eq": {
+      "x": 384,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Loot",
+      "name": "Equipped an item",
+      "filename": "equipped_an_item.png"
+    },
+    "mn": {
+      "x": 448,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Money",
+      "name": "Money in or out",
+      "filename": "money_in_or_out.png"
+    },
+    "tb": {
+      "x": 512,
+      "y": 384,
+      "width": 64,
+      "height": 64,
+      "group": "Money",
+      "name": "Trainer purchase",
+      "filename": "trainer_purchase.png"
+    },
+    "ah": {
+      "x": 0,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "Money",
+      "name": "Auction house",
+      "filename": "auction_house.png"
+    },
+    "ma": {
+      "x": 64,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "Money",
+      "name": "Mail",
+      "filename": "mail.png"
+    },
+    "tr": {
+      "x": 128,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "Money",
+      "name": "Traded with someone",
+      "filename": "traded_with_someone.png"
+    },
+    "gj": {
+      "x": 192,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "Social",
+      "name": "Joined a group",
+      "filename": "joined_a_group.png"
+    },
+    "gl": {
+      "x": 256,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "Social",
+      "name": "Left a group",
+      "filename": "left_a_group.png"
+    },
+    "gu": {
+      "x": 320,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "Social",
+      "name": "Own guild changed",
+      "filename": "own_guild_changed.png"
+    },
+    "ep": {
+      "x": 384,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "PvP",
+      "name": "Enemy player met",
+      "filename": "enemy_player_met.png"
+    },
+    "pk": {
+      "x": 448,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "PvP",
+      "name": "PvP kill or death",
+      "filename": "pvp_kill_or_death.png"
+    },
+    "hk": {
+      "x": 512,
+      "y": 448,
+      "width": 64,
+      "height": 64,
+      "group": "PvP",
+      "name": "Honor gained",
+      "filename": "honor_gained.png"
+    },
+    "du": {
+      "x": 0,
+      "y": 512,
+      "width": 64,
+      "height": 64,
+      "group": "PvP",
+      "name": "Duel",
+      "filename": "duel.png"
+    },
+    "bg": {
+      "x": 64,
+      "y": 512,
+      "width": 64,
+      "height": 64,
+      "group": "PvP",
+      "name": "Battleground ended",
+      "filename": "battleground_ended.png"
+    },
+    "rk": {
+      "x": 128,
+      "y": 512,
+      "width": 64,
+      "height": 64,
+      "group": "PvP",
+      "name": "PvP rank changed",
+      "filename": "pvp_rank_changed.png"
+    }
+  }
+}

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Gear snapshot">
+ <title>ge: Gear snapshot</title>
+ <defs>
+ <linearGradient id="rim" x1="0" x2="0.9" y1="0" y2="1"><stop offset="0" stop-color="#fff2a4"/><stop offset=".15" stop-color="#eecb64"/><stop offset=".5" stop-color="#a66b2d"/><stop offset=".75" stop-color="#f6d26e"/><stop offset="1" stop-color="#69401f"/></linearGradient>
+ <radialGradient id="face" cx=".40" cy=".29" r=".80"><stop offset="0" stop-color="#363f26"/><stop offset=".65" stop-color="#1f281f"/><stop offset="1" stop-color="#0c1015"/></radialGradient>
+ <linearGradient id="goldGlyph" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fff4d1"/><stop offset=".48" stop-color="#ffe1a0"/><stop offset="1" stop-color="#e0da78"/></linearGradient>
+ </defs>
+ <circle cx="32" cy="33.0" r="29.4" fill="#0a0909" opacity=".35"/>
+ <circle cx="32" cy="31.4" r="29.0" fill="#0e0c0f" stroke="#1f110b" stroke-width="2"/>
+ <circle cx="32" cy="31.4" r="27.0" fill="url(#rim)" stroke="#f9da83" stroke-width=".75"/>
+ <circle cx="32" cy="31.4" r="24.6" fill="#6f5a29" stroke="#422b1e" stroke-width=".8"/>
+ <circle cx="32" cy="31.4" r="22.5" fill="url(#face)" stroke="#0d151c" stroke-width="1.3"/>
+ <path d="M 9 24.6 A 25 25 0 0 1 49 12" fill="none" stroke="#fff4be" stroke-width="1" opacity=".72" stroke-linecap="round"/>
+ <path d="M 15 49 A 25 25 0 0 0 54 39" fill="none" stroke="#4f2a17" stroke-width="1.3" opacity=".85"/>
+ <path d="M 18 11.2 A 23 23 0 0 1 46 11.2" fill="none" stroke="#c9eb77" stroke-width=".65" opacity=".42"/>
+ <g opacity=".84" fill="#090b0e" transform="translate(15.00000 15.30000) scale(0.06347656)"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0zm0 66.8l0 378.1C394 378 431.1 230.1 432 141.4L256 66.8s0 0 0 0z" /></g>
+ <g opacity="1" fill="url(#goldGlyph)" transform="translate(15.00000 14.00000) scale(0.06347656)"><path d="M256 0c4.6 0 9.2 1 13.4 2.9L457.7 82.8c22 9.3 38.4 31 38.3 57.2c-.5 99.2-41.3 280.7-213.6 363.2c-16.7 8-36.1 8-52.8 0C57.3 420.7 16.5 239.2 16 140c-.1-26.2 16.3-47.9 38.3-57.2L242.7 2.9C246.8 1 251.4 0 256 0zm0 66.8l0 378.1C394 378 431.1 230.1 432 141.4L256 66.8s0 0 0 0z" /></g>
+ <circle cx="45" cy="45" r="9.6" fill="#1b1111" stroke="#17100b" stroke-width="1.3"/><circle cx="45" cy="45" r="8.35" fill="#7ca338" stroke="#c9eb77" stroke-width="1.5"/><g opacity=".74" fill="#171619" transform="translate(40.40000 40.80000) scale(0.01855469)"><path d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0L362.9 64.8C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" /></g><g opacity="1" fill="#f9efcd" transform="translate(40.40000 40.00000) scale(0.01855469)"><path d="M149.1 64.8L138.7 96 64 96C28.7 96 0 124.7 0 160L0 416c0 35.3 28.7 64 64 64l384 0c35.3 0 64-28.7 64-64l0-256c0-35.3-28.7-64-64-64l-74.7 0L362.9 64.8C356.4 45.2 338.1 32 317.4 32L194.6 32c-20.7 0-39 13.2-45.5 32.8zM256 192a96 96 0 1 1 0 192 96 96 0 1 1 0-192z" /></g>
+ </svg>

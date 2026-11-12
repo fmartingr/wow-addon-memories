@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Quest accepted">
+ <title>qa: Quest accepted</title>
+ <defs>
+ <linearGradient id="rim" x1="0" x2="0.9" y1="0" y2="1"><stop offset="0" stop-color="#fff2a4"/><stop offset=".15" stop-color="#eecb64"/><stop offset=".5" stop-color="#a66b2d"/><stop offset=".75" stop-color="#f6d26e"/><stop offset="1" stop-color="#69401f"/></linearGradient>
+ <radialGradient id="face" cx=".40" cy=".29" r=".80"><stop offset="0" stop-color="#482c42"/><stop offset=".65" stop-color="#291f2c"/><stop offset="1" stop-color="#0c1015"/></radialGradient>
+ <linearGradient id="goldGlyph" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fff4d1"/><stop offset=".48" stop-color="#ffe1a0"/><stop offset="1" stop-color="#fabfac"/></linearGradient>
+ </defs>
+ <circle cx="32" cy="33.0" r="29.4" fill="#0a0909" opacity=".35"/>
+ <circle cx="32" cy="31.4" r="29.0" fill="#0e0c0f" stroke="#1f110b" stroke-width="2"/>
+ <circle cx="32" cy="31.4" r="27.0" fill="url(#rim)" stroke="#f9da83" stroke-width=".75"/>
+ <circle cx="32" cy="31.4" r="24.6" fill="#824645" stroke="#422b1e" stroke-width=".8"/>
+ <circle cx="32" cy="31.4" r="22.5" fill="url(#face)" stroke="#0d151c" stroke-width="1.3"/>
+ <path d="M 9 24.6 A 25 25 0 0 1 49 12" fill="none" stroke="#fff4be" stroke-width="1" opacity=".72" stroke-linecap="round"/>
+ <path d="M 15 49 A 25 25 0 0 0 54 39" fill="none" stroke="#4f2a17" stroke-width="1.3" opacity=".85"/>
+ <path d="M 18 11.2 A 23 23 0 0 1 46 11.2" fill="none" stroke="#ffb1e5" stroke-width=".65" opacity=".42"/>
+ <path d="M27 17.8 C27 16.7 28 15.8 29.1 15.8 H35.7 C36.8 15.8 37.6 16.8 37.4 17.9 L35.6 35.1 C35.5 36.5 34.5 37.4 33.2 37.4 H31 C29.7 37.4 28.8 36.5 28.6 35.1 Z" fill="#090b0e" opacity=".8" transform="translate(0 1.4)"/>
+ <path d="M27 17.8 C27 16.7 28 15.8 29.1 15.8 H35.7 C36.8 15.8 37.6 16.8 37.4 17.9 L35.6 35.1 C35.5 36.5 34.5 37.4 33.2 37.4 H31 C29.7 37.4 28.8 36.5 28.6 35.1 Z" fill="url(#goldGlyph)" stroke="#432518" stroke-width=".65"/>
+ <circle cx="32.2" cy="43" r="4.2" fill="#090b0e" opacity=".8"/>
+ <circle cx="32.2" cy="41.6" r="4.2" fill="url(#goldGlyph)" stroke="#432518" stroke-width=".65"/>
+ <circle cx="45" cy="45" r="9.6" fill="#1b1111" stroke="#17100b" stroke-width="1.3"/><circle cx="45" cy="45" r="8.35" fill="#be5d9b" stroke="#ffb1e5" stroke-width="1.5"/> <path d="M44.1 40.0 H46.0 V43.9 H49.9 V45.8 H46.0 V49.7 H44.1 V45.8 H40.2 V43.9 H44.1 Z" fill="#20141a" opacity=".75" transform="translate(0 0.8)"/>
+ <path d="M44.1 40.0 H46.0 V43.9 H49.9 V45.8 H46.0 V49.7 H44.1 V45.8 H40.2 V43.9 H44.1 Z" fill="#fff5d8"/>
+ </svg>

@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Died">
+ <title>de: Died</title>
+ <defs>
+ <linearGradient id="rim" x1="0" x2="0.9" y1="0" y2="1"><stop offset="0" stop-color="#fff2a4"/><stop offset=".15" stop-color="#eecb64"/><stop offset=".5" stop-color="#a66b2d"/><stop offset=".75" stop-color="#f6d26e"/><stop offset="1" stop-color="#69401f"/></linearGradient>
+ <radialGradient id="face" cx=".40" cy=".29" r=".80"><stop offset="0" stop-color="#462329"/><stop offset=".65" stop-color="#281a20"/><stop offset="1" stop-color="#0c1015"/></radialGradient>
+ <linearGradient id="goldGlyph" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fff4d1"/><stop offset=".48" stop-color="#ffe1a0"/><stop offset="1" stop-color="#faa173"/></linearGradient>
+ </defs>
+ <circle cx="32" cy="33.0" r="29.4" fill="#0a0909" opacity=".35"/>
+ <circle cx="32" cy="31.4" r="29.0" fill="#0e0c0f" stroke="#1f110b" stroke-width="2"/>
+ <circle cx="32" cy="31.4" r="27.0" fill="url(#rim)" stroke="#f9da83" stroke-width=".75"/>
+ <circle cx="32" cy="31.4" r="24.6" fill="#803d2c" stroke="#422b1e" stroke-width=".8"/>
+ <circle cx="32" cy="31.4" r="22.5" fill="url(#face)" stroke="#0d151c" stroke-width="1.3"/>
+ <path d="M 9 24.6 A 25 25 0 0 1 49 12" fill="none" stroke="#fff4be" stroke-width="1" opacity=".72" stroke-linecap="round"/>
+ <path d="M 15 49 A 25 25 0 0 0 54 39" fill="none" stroke="#4f2a17" stroke-width="1.3" opacity=".85"/>
+ <path d="M 18 11.2 A 23 23 0 0 1 46 11.2" fill="none" stroke="#ff746e" stroke-width=".65" opacity=".42"/>
+ <g opacity=".84" fill="#090b0e" transform="translate(17.12500 16.30000) scale(0.06640625)"><path d="M368 128c0 44.4-25.4 83.5-64 106.4l0 21.6c0 17.7-14.3 32-32 32l-96 0c-17.7 0-32-14.3-32-32l0-21.6c-38.6-23-64-62.1-64-106.4C80 57.3 144.5 0 224 0s144 57.3 144 128zM168 176a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm144-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM3.4 273.7c7.9-15.8 27.1-22.2 42.9-14.3L224 348.2l177.7-88.8c15.8-7.9 35-1.5 42.9 14.3s1.5 35-14.3 42.9L295.6 384l134.8 67.4c15.8 7.9 22.2 27.1 14.3 42.9s-27.1 22.2-42.9 14.3L224 419.8 46.3 508.6c-15.8 7.9-35 1.5-42.9-14.3s-1.5-35 14.3-42.9L152.4 384 17.7 316.6C1.9 308.7-4.5 289.5 3.4 273.7z" /></g>
+ <g opacity="1" fill="url(#goldGlyph)" transform="translate(17.12500 15.00000) scale(0.06640625)"><path d="M368 128c0 44.4-25.4 83.5-64 106.4l0 21.6c0 17.7-14.3 32-32 32l-96 0c-17.7 0-32-14.3-32-32l0-21.6c-38.6-23-64-62.1-64-106.4C80 57.3 144.5 0 224 0s144 57.3 144 128zM168 176a32 32 0 1 0 0-64 32 32 0 1 0 0 64zm144-32a32 32 0 1 0 -64 0 32 32 0 1 0 64 0zM3.4 273.7c7.9-15.8 27.1-22.2 42.9-14.3L224 348.2l177.7-88.8c15.8-7.9 35-1.5 42.9 14.3s1.5 35-14.3 42.9L295.6 384l134.8 67.4c15.8 7.9 22.2 27.1 14.3 42.9s-27.1 22.2-42.9 14.3L224 419.8 46.3 508.6c-15.8 7.9-35 1.5-42.9-14.3s-1.5-35 14.3-42.9L152.4 384 17.7 316.6C1.9 308.7-4.5 289.5 3.4 273.7z" /></g>
+ 
+ </svg>

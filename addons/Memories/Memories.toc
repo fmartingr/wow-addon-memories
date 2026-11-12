@@ -51,6 +51,7 @@ UI\Guard.lua
 UI\Options.lua
 UI\LowHealth.lua
 UI\Status.lua
+UI\Map\Icons.lua
 UI\Map\MapData.lua
 UI\Map\Replay.lua
 UI\Map\Overlay.lua

@@ -38,7 +38,8 @@ Overlay.GROUP_ICON = {
 	PvP = "Interface\\Icons\\INV_BannerPVP_02",
 }
 
-Overlay.BIG_PIN_SIZE = 22
+-- The coins read best at this size, in screen units.
+Overlay.PIN_SIZE = 28
 -- A continent or the world packs a whole journey into a small space, so its pins show at this part of their size.
 Overlay.HIGH_MAP_PIN = 0.5
 Overlay.HEAD_SIZE = 22
@@ -65,7 +66,6 @@ Overlay.BURST = {
 -- Only these kinds leave an icon on the map: a level up shows its level in a badge, a death shows a skull. The other
 -- kinds of BURST play their burst and go to the Highlights feed with no icon.
 Overlay.MARK = { lv = true, de = true }
-Overlay.SKULL = "Interface\\TargetingFrame\\UI-TargetingFrame-Skull"
 -- The groups that the replay reads, with the label of each box of the panel.
 Overlay.GROUPS = {
 	{ group = "Progress", label = L["Level ups"] },
@@ -239,18 +239,13 @@ local function newPin()
 	pin.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
 	pin.glow:SetBlendMode("ADD")
 	pin.glow:SetPoint("CENTER")
-	-- A rim in the colour of the kind around a dark face. A death shows a skull on the face, a level up its number.
-	pin.border = pin:CreateTexture(nil, "BORDER")
-	pin.border:SetTexture("Interface\\Buttons\\WHITE8X8")
-	pin.border:SetPoint("CENTER")
-	pin.face = pin:CreateTexture(nil, "ARTWORK", nil, -1)
-	pin.face:SetTexture("Interface\\Buttons\\WHITE8X8")
-	pin.face:SetVertexColor(0.06, 0.05, 0.04, 0.95)
-	pin.face:SetPoint("CENTER")
+	-- The coin of the kind (Icons.lua). It has its own rim, so it shows whole.
 	pin.icon = pin:CreateTexture(nil, "ARTWORK")
+	pin.icon:SetTexCoord(0, 1, 0, 1)
 	pin.icon:SetPoint("CENTER")
-	pin.number = pin:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-	pin.number:SetPoint("CENTER", 0, 0)
+	-- A level up shows its level at the lower right of the coin.
+	pin.number = pin:CreateFontString(nil, "OVERLAY", "NumberFontNormal")
+	pin.number:SetPoint("BOTTOMRIGHT", pin, "BOTTOMRIGHT", 4, -2)
 	-- A pin shows its tooltip but lets the clicks through to the map.
 	if pin.SetMouseClickEnabled then
 		pin:SetMouseClickEnabled(false)
@@ -262,31 +257,24 @@ end
 
 -- The size of a pin in canvas units, with the pop factor k.
 local function sizePin(pin, k)
-	local base = Overlay.BIG_PIN_SIZE * pinScale
-	local size = math.max(base * k, 0.01)
-	local inner = math.max(size - 2 * k * pinScale, 0.01)
+	local size = math.max(Overlay.PIN_SIZE * pinScale * k, 0.01)
 	pin:SetSize(size, size)
-	pin.border:SetSize(size, size)
-	pin.face:SetSize(inner, inner)
-	pin.icon:SetSize(inner, inner)
+	pin.icon:SetSize(size, size)
 	pin.number:SetAlpha(k >= 0.6 and 1 or 0)
 	pin.glow:SetSize(size * 1.9, size * 1.9)
 end
 
--- The face of a pin: a skull for a death, the level for a level up.
+-- The face of a pin: the coin of its kind, and the level for a level up.
 local function facePin(pin, data)
 	local color = Overlay.BURST[data.kind] or DEFAULT_COLOR
-	pin.border:SetVertexColor(color[1], color[2], color[3], 1)
 	pin.glow:SetVertexColor(color[1], color[2], color[3], 1)
-	if data.kind == "de" then
-		pin.icon:SetTexture(Overlay.SKULL)
-		pin.icon:Show()
-		pin.number:Hide()
-	else
-		local level = data.fields and data.fields.level
-		pin.icon:Hide()
-		pin.number:SetText(type(level) == "number" and tostring(level) or "?")
+	pin.icon:SetTexture(ns.MapIcons.Get(data.kind))
+	local level = data.fields and data.fields.level
+	if data.kind == "lv" and type(level) == "number" then
+		pin.number:SetText(tostring(level))
 		pin.number:Show()
+	else
+		pin.number:Hide()
 	end
 end
 
@@ -330,8 +318,13 @@ local function placeLine(i)
 	line:Show()
 end
 
+-- The frame levels over the container: pins, then bursts, then the arrow of the player on top of every mark.
+Overlay.BURST_LEVEL = 40
+Overlay.HEAD_LEVEL = 80
+
 local function newHead()
 	local frame = CreateFrame("Frame", nil, container)
+	frame:SetFrameLevel(container:GetFrameLevel() + Overlay.HEAD_LEVEL)
 	frame.glow = frame:CreateTexture(nil, "BACKGROUND")
 	frame.glow:SetTexture("Interface\\Cooldown\\star4")
 	frame.glow:SetBlendMode("ADD")
@@ -402,11 +395,15 @@ end
 
 local function newBurst()
 	local frame = CreateFrame("Frame", nil, container)
+	frame:SetFrameLevel(container:GetFrameLevel() + Overlay.BURST_LEVEL)
 	frame:SetSize(1, 1)
 	frame.ring = frame:CreateTexture(nil, "BACKGROUND")
 	frame.ring:SetTexture("Interface\\Cooldown\\star4")
 	frame.ring:SetBlendMode("ADD")
 	frame.ring:SetPoint("CENTER")
+	-- An event with no pin shows its coin in the burst.
+	frame.icon = frame:CreateTexture(nil, "ARTWORK")
+	frame.icon:SetPoint("CENTER")
 	frame.label = frame:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	return frame
 end
@@ -445,6 +442,8 @@ local function startBurst(data, now)
 	burst.ring:SetVertexColor(color[1], color[2], color[3], 1)
 	burst.label:SetTextColor(color[1], color[2], color[3], 1)
 	burst.label:SetText(burstLabel(data))
+	burst.icon:SetShown(not Overlay.MARK[data.kind])
+	burst.icon:SetTexture(ns.MapIcons.Get(data.kind))
 	burst:Show()
 end
 
@@ -461,7 +460,7 @@ local function animateBursts(now)
 			else
 				busy = true
 				local grow = 1 - (1 - t) ^ 3
-				local ring = Overlay.BIG_PIN_SIZE * (0.6 + 3.4 * grow)
+				local ring = Overlay.PIN_SIZE * (0.6 + 3.4 * grow)
 				burst:ClearAllPoints()
 				burst:SetPoint("CENTER", container, "TOPLEFT", burst.x * width, -burst.y * height)
 				burst.ring:SetSize(ring, ring)
@@ -470,6 +469,8 @@ local function animateBursts(now)
 				burst.label:SetPoint("CENTER", burst, "CENTER", 0, 18 + 26 * t)
 				local fade = t < 0.15 and t / 0.15 or 1 - ((t - 0.15) / 0.85) ^ 2
 				burst.label:SetAlpha(fade)
+				burst.icon:SetSize(Overlay.PIN_SIZE, Overlay.PIN_SIZE)
+				burst.icon:SetAlpha(fade)
 			end
 		end
 	end

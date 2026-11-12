@@ -1,0 +1,76 @@
+code,group,event,filename_without_extension
+in,Sessions,Login or reload,login_or_reload
+out,Sessions,Logout or reload,logout_or_reload
+pl,Sessions,Total /played,total_played
+gp,Sessions,Unsaved session gap,unsaved_session_gap
+pc,Sessions,Computer this session ran on,computer_this_session_ran_on
+af,Sessions,Away from keyboard,away_from_keyboard
+lv,Progress,Level up,level_up
+xp,Progress,Experience gained,experience_gained
+qt,Progress,Quest turned in,quest_turned_in
+di,Progress,Discovered an area,discovered_an_area
+rs,Progress,Rested state,rested_state
+de,Deaths,Died,died
+gh,Deaths,Released spirit,released_spirit
+al,Deaths,Alive again,alive_again
+cc,Deaths,Close call,close_call
+lh,Deaths,Low-health warning,low_health_warning
+hc,Deaths,Hardcore death,hardcore_death
+zo,Travel,Entered a zone,entered_a_zone
+sz,Travel,Entered a subzone,entered_a_subzone
+ld,Travel,Loading screen started,loading_screen_started
+le,Travel,Loading screen ended,loading_screen_ended
+tx,Travel,Took a flight,took_a_flight
+tl,Travel,Flight landed,flight_landed
+bt,Travel,Boat or zeppelin,boat_or_zeppelin
+hs,Travel,Hearthstone,hearthstone
+so,Travel,Summon offered,summon_offered
+su,Travel,Summoned,summoned
+po,Travel,Portal or teleport,portal_or_teleport
+jp,Travel,Other teleport,other_teleport
+mo,Travel,First mount-up with a mount,first_mount_up_with_a_mount
+ml,Travel,Learned a mount or riding,learned_a_mount_or_riding
+dn,Dungeons,Entered a dungeon or raid,entered_a_dungeon_or_raid
+dx,Dungeons,Left a dungeon or raid,left_a_dungeon_or_raid
+bo,Dungeons,Boss fight ended,boss_fight_ended
+wb,Dungeons,World boss killed,world_boss_killed
+ss,Screenshots,Screenshot saved,screenshot_saved
+sn,Other addons,Screenshot note from another addon,screenshot_note_from_another_addon
+ex,Other addons,Event from another addon,event_from_another_addon
+nt,Other addons,Note from Memories,note_from_memories
+ki,Combat,Killed a creature,killed_a_creature
+ra,Combat,Killed a rare,killed_a_rare
+fi,Combat,Long fight,long_fight
+ga,Gathering,Gathered,gathered
+fs,Gathering,Caught while fishing,caught_while_fishing
+op,Gathering,Opened a container or chest,opened_a_container_or_chest
+pp,Gathering,Picked a pocket,picked_a_pocket
+sk,Character,Skill changed,skill_changed
+lr,Character,Learned a spell,learned_a_spell
+rc,Character,Learned a recipe,learned_a_recipe
+ta,Character,Talent points,talent_points
+cu,Character,Used a consumable,used_a_consumable
+pt,Character,Tamed a beast,tamed_a_beast
+rp,Milestones,Reputation changed,reputation_changed
+qa,Milestones,Quest accepted,quest_accepted
+hb,Milestones,Hearthstone bound,hearthstone_bound
+fp,Milestones,Learned a flight path,learned_a_flight_path
+bk,Milestones,Read a book,read_a_book
+lo,Loot,Loot,loot
+rl,Loot,Group roll ended,group_roll_ended
+ge,Loot,Gear snapshot,gear_snapshot
+eq,Loot,Equipped an item,equipped_an_item
+mn,Money,Money in or out,money_in_or_out
+tb,Money,Trainer purchase,trainer_purchase
+ah,Money,Auction house,auction_house
+ma,Money,Mail,mail
+tr,Money,Traded with someone,traded_with_someone
+gj,Social,Joined a group,joined_a_group
+gl,Social,Left a group,left_a_group
+gu,Social,Own guild changed,own_guild_changed
+ep,PvP,Enemy player met,enemy_player_met
+pk,PvP,PvP kill or death,pvp_kill_or_death
+hk,PvP,Honor gained,honor_gained
+du,PvP,Duel,duel
+bg,PvP,Battleground ended,battleground_ended
+rk,PvP,PvP rank changed,pvp_rank_changed

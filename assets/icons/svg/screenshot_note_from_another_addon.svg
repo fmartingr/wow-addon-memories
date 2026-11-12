@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 64 64" role="img" aria-label="Screenshot note from another addon">
+ <title>sn: Screenshot note from another addon</title>
+ <defs>
+ <linearGradient id="rim" x1="0" x2="0.9" y1="0" y2="1"><stop offset="0" stop-color="#fff2a4"/><stop offset=".15" stop-color="#eecb64"/><stop offset=".5" stop-color="#a66b2d"/><stop offset=".75" stop-color="#f6d26e"/><stop offset="1" stop-color="#69401f"/></linearGradient>
+ <radialGradient id="face" cx=".40" cy=".29" r=".80"><stop offset="0" stop-color="#243a43"/><stop offset=".65" stop-color="#17262d"/><stop offset="1" stop-color="#0c1015"/></radialGradient>
+ <linearGradient id="goldGlyph" x1="0" y1="0" x2=".8" y2="1"><stop offset="0" stop-color="#fff4d1"/><stop offset=".48" stop-color="#ffe1a0"/><stop offset="1" stop-color="#d4d7b1"/></linearGradient>
+ </defs>
+ <circle cx="32" cy="33.0" r="29.4" fill="#0a0909" opacity=".35"/>
+ <circle cx="32" cy="31.4" r="29.0" fill="#0e0c0f" stroke="#1f110b" stroke-width="2"/>
+ <circle cx="32" cy="31.4" r="27.0" fill="url(#rim)" stroke="#f9da83" stroke-width=".75"/>
+ <circle cx="32" cy="31.4" r="24.6" fill="#5e5546" stroke="#422b1e" stroke-width=".8"/>
+ <circle cx="32" cy="31.4" r="22.5" fill="url(#face)" stroke="#0d151c" stroke-width="1.3"/>
+ <path d="M 9 24.6 A 25 25 0 0 1 49 12" fill="none" stroke="#fff4be" stroke-width="1" opacity=".72" stroke-linecap="round"/>
+ <path d="M 15 49 A 25 25 0 0 0 54 39" fill="none" stroke="#4f2a17" stroke-width="1.3" opacity=".85"/>
+ <path d="M 18 11.2 A 23 23 0 0 1 46 11.2" fill="none" stroke="#b1e4ef" stroke-width=".65" opacity=".42"/>
+ <g opacity=".84" fill="#090b0e" transform="translate(19.06250 15.30000) scale(0.06347656)"><path d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM64 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm152 32c5.3 0 10.2 2.6 13.2 6.9l88 128c3.4 4.9 3.7 11.3 1 16.5s-8.2 8.6-14.2 8.6l-88 0-40 0-48 0-48 0c-5.8 0-11.1-3.1-13.9-8.1s-2.8-11.2 .2-16.1l48-80c2.9-4.8 8.1-7.8 13.7-7.8s10.8 2.9 13.7 7.8l12.8 21.4 48.3-70.2c3-4.3 7.9-6.9 13.2-6.9z" /></g>
+ <g opacity="1" fill="url(#goldGlyph)" transform="translate(19.06250 14.00000) scale(0.06347656)"><path d="M64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-288-128 0c-17.7 0-32-14.3-32-32L224 0 64 0zM256 0l0 128 128 0L256 0zM64 256a32 32 0 1 1 64 0 32 32 0 1 1 -64 0zm152 32c5.3 0 10.2 2.6 13.2 6.9l88 128c3.4 4.9 3.7 11.3 1 16.5s-8.2 8.6-14.2 8.6l-88 0-40 0-48 0-48 0c-5.8 0-11.1-3.1-13.9-8.1s-2.8-11.2 .2-16.1l48-80c2.9-4.8 8.1-7.8 13.7-7.8s10.8 2.9 13.7 7.8l12.8 21.4 48.3-70.2c3-4.3 7.9-6.9 13.2-6.9z" /></g>
+ <circle cx="45" cy="45" r="9.6" fill="#1b1111" stroke="#17100b" stroke-width="1.3"/><circle cx="45" cy="45" r="8.35" fill="#3e91a0" stroke="#b1e4ef" stroke-width="1.5"/><g opacity=".74" fill="#171619" transform="translate(40.40000 40.80000) scale(0.01855469)"><path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" /></g><g opacity="1" fill="#f9efcd" transform="translate(40.40000 40.00000) scale(0.01855469)"><path d="M362.7 19.3L314.3 67.7 444.3 197.7l48.4-48.4c25-25 25-65.5 0-90.5L453.3 19.3c-25-25-65.5-25-90.5 0zm-71 71L58.6 323.5c-10.4 10.4-18 23.3-22.2 37.4L1 481.2C-1.5 489.7 .8 498.8 7 505s15.3 8.5 23.7 6.1l120.3-35.4c14.1-4.2 27-11.8 37.4-22.2L421.7 220.3 291.7 90.3z" /></g>
+ </svg>

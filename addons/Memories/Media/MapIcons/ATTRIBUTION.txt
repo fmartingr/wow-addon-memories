@@ -1,0 +1,9 @@
+Memories map event icons
+
+The icon compositions, colours, badges and rims are part of Memories.
+
+The glyphs inside the icons come from Font Awesome Free 6 (Free Solid icons) by Fonticons, Inc.
+https://fontawesome.com
+License: Creative Commons Attribution 4.0 International (CC BY 4.0)
+https://creativecommons.org/licenses/by/4.0/
+The glyphs were placed in new compositions and recoloured.

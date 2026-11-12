@@ -34,10 +34,11 @@ map above the player with art (for example in a dungeon).
 - **Replay:** the trail draws as the playhead passes it. A silver arrow at the head points along the route and turns
   with it. A pin pops in when the playhead passes its event and pulses for 6 played seconds. With no replay running,
   the whole journey shows.
-- **Pins:** only level ups and deaths leave a pin. A level up shows its level in a badge with a gold rim, and a death
-  shows a skull with a red rim. The tooltip shows the time, the kind name and the fields. The other events of the
-  replay (flights, boats, hearthstones, portals, summons, dungeons and bosses) play their burst and go to the
-  Highlights feed, with no pin.
+- **Pins:** only level ups and deaths leave a pin. Each pin is the coin of its kind (a gold rim and a glyph, from
+  `Media/MapIcons`), and a level up shows its level at the lower right of the coin. The tooltip shows the time, the
+  kind name and the fields. The other events of the replay (flights, boats, hearthstones, portals, summons, dungeons
+  and bosses) play their burst with their coin in it and go to the Highlights feed with their coin, with no pin. The
+  arrow of the player draws over every pin and burst.
 - **Highlight animations:** when the playhead passes a level up, a death, a flight, a boat or zeppelin, a hearthstone,
   a portal, a summon, a dungeon or a boss, a ring grows and fades at its pin and a short label rises and fades (about
   1.2 s). At most 4 play at once, and none plays on a seek.

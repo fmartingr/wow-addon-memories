@@ -10,6 +10,11 @@ This spec adds a side tab beside the quest log tab of the world map. The tab is 
 website: a play button, a speed button, a slider and a clock, a trail that draws as time runs, and pins that pop in for
 the events of the journey (level up, death and others).
 
+**Revision 4 (icons).** The player added an icon pack for every kind (`assets/icons`). The pins, the bursts of the
+events with no pin and the feed use these coins, from `Media/MapIcons` (TGA 64), and the arrow of the player draws over
+every mark. The glyphs come from Font Awesome Free (CC BY 4.0), credited in `Media/MapIcons/ATTRIBUTION.txt`. This
+replaces the badge and the skull of revision 3.
+
 **Revision 3 (own window).** The player uses OpenMap, a world map addon that draws its own stitched layout of the
 zones with no API for other addons. An overlay on the world map cannot follow that layout, so the trail vanished when
 the replay moved to another zone. The replay now runs in a Journey window of this addon that draws its own map from

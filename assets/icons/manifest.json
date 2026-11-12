@@ -1,0 +1,1440 @@
+{
+  "name": "Memories Map Event Icons",
+  "version": "1.1",
+  "total": 75,
+  "design": "gold-rimmed fantasy map coins, alpha-background, by-kind glyphs",
+  "source": "https://github.com/fmartingr/wow-addon-memories/blob/main/docs/kinds.md",
+  "license_notes": "See ATTRIBUTION.txt",
+  "events": [
+    {
+      "code": "in",
+      "group": "Sessions",
+      "name": "Login or reload",
+      "icon": "right-to-bracket",
+      "modifier": null,
+      "color": "#a8b5c6",
+      "files": {
+        "svg": "svg/login_or_reload.svg",
+        "png64": "png64/login_or_reload.png",
+        "png32": "png32/login_or_reload.png",
+        "png24": "png24/login_or_reload.png",
+        "png20": "png20/login_or_reload.png",
+        "png16": "png16/login_or_reload.png",
+        "tga64": "tga64/login_or_reload.tga",
+        "tga32": "tga32/login_or_reload.tga"
+      },
+      "slug": "login_or_reload"
+    },
+    {
+      "code": "out",
+      "group": "Sessions",
+      "name": "Logout or reload",
+      "icon": "right-from-bracket",
+      "modifier": null,
+      "color": "#a8b5c6",
+      "files": {
+        "svg": "svg/logout_or_reload.svg",
+        "png64": "png64/logout_or_reload.png",
+        "png32": "png32/logout_or_reload.png",
+        "png24": "png24/logout_or_reload.png",
+        "png20": "png20/logout_or_reload.png",
+        "png16": "png16/logout_or_reload.png",
+        "tga64": "tga64/logout_or_reload.tga",
+        "tga32": "tga32/logout_or_reload.tga"
+      },
+      "slug": "logout_or_reload"
+    },
+    {
+      "code": "pl",
+      "group": "Sessions",
+      "name": "Total /played",
+      "icon": "hourglass-half",
+      "modifier": null,
+      "color": "#a8b5c6",
+      "files": {
+        "svg": "svg/total_played.svg",
+        "png64": "png64/total_played.png",
+        "png32": "png32/total_played.png",
+        "png24": "png24/total_played.png",
+        "png20": "png20/total_played.png",
+        "png16": "png16/total_played.png",
+        "tga64": "tga64/total_played.tga",
+        "tga32": "tga32/total_played.tga"
+      },
+      "slug": "total_played"
+    },
+    {
+      "code": "gp",
+      "group": "Sessions",
+      "name": "Unsaved session gap",
+      "icon": "clock-rotate-left",
+      "modifier": "triangle-exclamation",
+      "color": "#a8b5c6",
+      "files": {
+        "svg": "svg/unsaved_session_gap.svg",
+        "png64": "png64/unsaved_session_gap.png",
+        "png32": "png32/unsaved_session_gap.png",
+        "png24": "png24/unsaved_session_gap.png",
+        "png20": "png20/unsaved_session_gap.png",
+        "png16": "png16/unsaved_session_gap.png",
+        "tga64": "tga64/unsaved_session_gap.tga",
+        "tga32": "tga32/unsaved_session_gap.tga"
+      },
+      "slug": "unsaved_session_gap"
+    },
+    {
+      "code": "pc",
+      "group": "Sessions",
+      "name": "Computer this session ran on",
+      "icon": "desktop",
+      "modifier": null,
+      "color": "#a8b5c6",
+      "files": {
+        "svg": "svg/computer_this_session_ran_on.svg",
+        "png64": "png64/computer_this_session_ran_on.png",
+        "png32": "png32/computer_this_session_ran_on.png",
+        "png24": "png24/computer_this_session_ran_on.png",
+        "png20": "png20/computer_this_session_ran_on.png",
+        "png16": "png16/computer_this_session_ran_on.png",
+        "tga64": "tga64/computer_this_session_ran_on.tga",
+        "tga32": "tga32/computer_this_session_ran_on.tga"
+      },
+      "slug": "computer_this_session_ran_on"
+    },
+    {
+      "code": "af",
+      "group": "Sessions",
+      "name": "Away from keyboard",
+      "icon": "moon",
+      "modifier": "z",
+      "color": "#a8b5c6",
+      "files": {
+        "svg": "svg/away_from_keyboard.svg",
+        "png64": "png64/away_from_keyboard.png",
+        "png32": "png32/away_from_keyboard.png",
+        "png24": "png24/away_from_keyboard.png",
+        "png20": "png20/away_from_keyboard.png",
+        "png16": "png16/away_from_keyboard.png",
+        "tga64": "tga64/away_from_keyboard.tga",
+        "tga32": "tga32/away_from_keyboard.tga"
+      },
+      "slug": "away_from_keyboard"
+    },
+    {
+      "code": "lv",
+      "group": "Progress",
+      "name": "Level up",
+      "icon": "arrow-up",
+      "modifier": "star",
+      "color": "#ffdb5b",
+      "files": {
+        "svg": "svg/level_up.svg",
+        "png64": "png64/level_up.png",
+        "png32": "png32/level_up.png",
+        "png24": "png24/level_up.png",
+        "png20": "png20/level_up.png",
+        "png16": "png16/level_up.png",
+        "tga64": "tga64/level_up.tga",
+        "tga32": "tga32/level_up.tga"
+      },
+      "slug": "level_up"
+    },
+    {
+      "code": "xp",
+      "group": "Progress",
+      "name": "Experience gained",
+      "icon": "star",
+      "modifier": "plus",
+      "color": "#ffdb5b",
+      "files": {
+        "svg": "svg/experience_gained.svg",
+        "png64": "png64/experience_gained.png",
+        "png32": "png32/experience_gained.png",
+        "png24": "png24/experience_gained.png",
+        "png20": "png20/experience_gained.png",
+        "png16": "png16/experience_gained.png",
+        "tga64": "tga64/experience_gained.tga",
+        "tga32": "tga32/experience_gained.tga"
+      },
+      "slug": "experience_gained"
+    },
+    {
+      "code": "qt",
+      "group": "Progress",
+      "name": "Quest turned in",
+      "icon": "scroll",
+      "modifier": "check",
+      "color": "#ffdb5b",
+      "files": {
+        "svg": "svg/quest_turned_in.svg",
+        "png64": "png64/quest_turned_in.png",
+        "png32": "png32/quest_turned_in.png",
+        "png24": "png24/quest_turned_in.png",
+        "png20": "png20/quest_turned_in.png",
+        "png16": "png16/quest_turned_in.png",
+        "tga64": "tga64/quest_turned_in.tga",
+        "tga32": "tga32/quest_turned_in.tga"
+      },
+      "slug": "quest_turned_in"
+    },
+    {
+      "code": "di",
+      "group": "Progress",
+      "name": "Discovered an area",
+      "icon": "compass",
+      "modifier": "star",
+      "color": "#ffdb5b",
+      "files": {
+        "svg": "svg/discovered_an_area.svg",
+        "png64": "png64/discovered_an_area.png",
+        "png32": "png32/discovered_an_area.png",
+        "png24": "png24/discovered_an_area.png",
+        "png20": "png20/discovered_an_area.png",
+        "png16": "png16/discovered_an_area.png",
+        "tga64": "tga64/discovered_an_area.tga",
+        "tga32": "tga32/discovered_an_area.tga"
+      },
+      "slug": "discovered_an_area"
+    },
+    {
+      "code": "rs",
+      "group": "Progress",
+      "name": "Rested state",
+      "icon": "bed",
+      "modifier": "moon",
+      "color": "#ffdb5b",
+      "files": {
+        "svg": "svg/rested_state.svg",
+        "png64": "png64/rested_state.png",
+        "png32": "png32/rested_state.png",
+        "png24": "png24/rested_state.png",
+        "png20": "png20/rested_state.png",
+        "png16": "png16/rested_state.png",
+        "tga64": "tga64/rested_state.tga",
+        "tga32": "tga32/rested_state.tga"
+      },
+      "slug": "rested_state"
+    },
+    {
+      "code": "de",
+      "group": "Deaths",
+      "name": "Died",
+      "icon": "skull-crossbones",
+      "modifier": null,
+      "color": "#ff746e",
+      "files": {
+        "svg": "svg/died.svg",
+        "png64": "png64/died.png",
+        "png32": "png32/died.png",
+        "png24": "png24/died.png",
+        "png20": "png20/died.png",
+        "png16": "png16/died.png",
+        "tga64": "tga64/died.tga",
+        "tga32": "tga32/died.tga"
+      },
+      "slug": "died"
+    },
+    {
+      "code": "gh",
+      "group": "Deaths",
+      "name": "Released spirit",
+      "icon": "ghost",
+      "modifier": null,
+      "color": "#ff746e",
+      "files": {
+        "svg": "svg/released_spirit.svg",
+        "png64": "png64/released_spirit.png",
+        "png32": "png32/released_spirit.png",
+        "png24": "png24/released_spirit.png",
+        "png20": "png20/released_spirit.png",
+        "png16": "png16/released_spirit.png",
+        "tga64": "tga64/released_spirit.tga",
+        "tga32": "tga32/released_spirit.tga"
+      },
+      "slug": "released_spirit"
+    },
+    {
+      "code": "al",
+      "group": "Deaths",
+      "name": "Alive again",
+      "icon": "heart-pulse",
+      "modifier": "plus",
+      "color": "#ff746e",
+      "files": {
+        "svg": "svg/alive_again.svg",
+        "png64": "png64/alive_again.png",
+        "png32": "png32/alive_again.png",
+        "png24": "png24/alive_again.png",
+        "png20": "png20/alive_again.png",
+        "png16": "png16/alive_again.png",
+        "tga64": "tga64/alive_again.tga",
+        "tga32": "tga32/alive_again.tga"
+      },
+      "slug": "alive_again"
+    },
+    {
+      "code": "cc",
+      "group": "Deaths",
+      "name": "Close call",
+      "icon": "heart-crack",
+      "modifier": "bolt",
+      "color": "#ff746e",
+      "files": {
+        "svg": "svg/close_call.svg",
+        "png64": "png64/close_call.png",
+        "png32": "png32/close_call.png",
+        "png24": "png24/close_call.png",
+        "png20": "png20/close_call.png",
+        "png16": "png16/close_call.png",
+        "tga64": "tga64/close_call.tga",
+        "tga32": "tga32/close_call.tga"
+      },
+      "slug": "close_call"
+    },
+    {
+      "code": "lh",
+      "group": "Deaths",
+      "name": "Low-health warning",
+      "icon": "heart",
+      "modifier": "triangle-exclamation",
+      "color": "#ff746e",
+      "files": {
+        "svg": "svg/low_health_warning.svg",
+        "png64": "png64/low_health_warning.png",
+        "png32": "png32/low_health_warning.png",
+        "png24": "png24/low_health_warning.png",
+        "png20": "png20/low_health_warning.png",
+        "png16": "png16/low_health_warning.png",
+        "tga64": "tga64/low_health_warning.tga",
+        "tga32": "tga32/low_health_warning.tga"
+      },
+      "slug": "low_health_warning"
+    },
+    {
+      "code": "hc",
+      "group": "Deaths",
+      "name": "Hardcore death",
+      "icon": "skull",
+      "modifier": "xmark",
+      "color": "#ff746e",
+      "files": {
+        "svg": "svg/hardcore_death.svg",
+        "png64": "png64/hardcore_death.png",
+        "png32": "png32/hardcore_death.png",
+        "png24": "png24/hardcore_death.png",
+        "png20": "png20/hardcore_death.png",
+        "png16": "png16/hardcore_death.png",
+        "tga64": "tga64/hardcore_death.tga",
+        "tga32": "tga32/hardcore_death.tga"
+      },
+      "slug": "hardcore_death"
+    },
+    {
+      "code": "zo",
+      "group": "Travel",
+      "name": "Entered a zone",
+      "icon": "map-location-dot",
+      "modifier": null,
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/entered_a_zone.svg",
+        "png64": "png64/entered_a_zone.png",
+        "png32": "png32/entered_a_zone.png",
+        "png24": "png24/entered_a_zone.png",
+        "png20": "png20/entered_a_zone.png",
+        "png16": "png16/entered_a_zone.png",
+        "tga64": "tga64/entered_a_zone.tga",
+        "tga32": "tga32/entered_a_zone.tga"
+      },
+      "slug": "entered_a_zone"
+    },
+    {
+      "code": "sz",
+      "group": "Travel",
+      "name": "Entered a subzone",
+      "icon": "signs-post",
+      "modifier": null,
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/entered_a_subzone.svg",
+        "png64": "png64/entered_a_subzone.png",
+        "png32": "png32/entered_a_subzone.png",
+        "png24": "png24/entered_a_subzone.png",
+        "png20": "png20/entered_a_subzone.png",
+        "png16": "png16/entered_a_subzone.png",
+        "tga64": "tga64/entered_a_subzone.tga",
+        "tga32": "tga32/entered_a_subzone.tga"
+      },
+      "slug": "entered_a_subzone"
+    },
+    {
+      "code": "ld",
+      "group": "Travel",
+      "name": "Loading screen started",
+      "icon": "circle-notch",
+      "modifier": "arrow-right",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/loading_screen_started.svg",
+        "png64": "png64/loading_screen_started.png",
+        "png32": "png32/loading_screen_started.png",
+        "png24": "png24/loading_screen_started.png",
+        "png20": "png20/loading_screen_started.png",
+        "png16": "png16/loading_screen_started.png",
+        "tga64": "tga64/loading_screen_started.tga",
+        "tga32": "tga32/loading_screen_started.tga"
+      },
+      "slug": "loading_screen_started"
+    },
+    {
+      "code": "le",
+      "group": "Travel",
+      "name": "Loading screen ended",
+      "icon": "circle-check",
+      "modifier": "check",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/loading_screen_ended.svg",
+        "png64": "png64/loading_screen_ended.png",
+        "png32": "png32/loading_screen_ended.png",
+        "png24": "png24/loading_screen_ended.png",
+        "png20": "png20/loading_screen_ended.png",
+        "png16": "png16/loading_screen_ended.png",
+        "tga64": "tga64/loading_screen_ended.tga",
+        "tga32": "tga32/loading_screen_ended.tga"
+      },
+      "slug": "loading_screen_ended"
+    },
+    {
+      "code": "tx",
+      "group": "Travel",
+      "name": "Took a flight",
+      "icon": "feather-pointed",
+      "modifier": "arrow-up",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/took_a_flight.svg",
+        "png64": "png64/took_a_flight.png",
+        "png32": "png32/took_a_flight.png",
+        "png24": "png24/took_a_flight.png",
+        "png20": "png20/took_a_flight.png",
+        "png16": "png16/took_a_flight.png",
+        "tga64": "tga64/took_a_flight.tga",
+        "tga32": "tga32/took_a_flight.tga"
+      },
+      "slug": "took_a_flight"
+    },
+    {
+      "code": "tl",
+      "group": "Travel",
+      "name": "Flight landed",
+      "icon": "feather-pointed",
+      "modifier": "arrow-down",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/flight_landed.svg",
+        "png64": "png64/flight_landed.png",
+        "png32": "png32/flight_landed.png",
+        "png24": "png24/flight_landed.png",
+        "png20": "png20/flight_landed.png",
+        "png16": "png16/flight_landed.png",
+        "tga64": "tga64/flight_landed.tga",
+        "tga32": "tga32/flight_landed.tga"
+      },
+      "slug": "flight_landed"
+    },
+    {
+      "code": "bt",
+      "group": "Travel",
+      "name": "Boat or zeppelin",
+      "icon": "ship",
+      "modifier": null,
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/boat_or_zeppelin.svg",
+        "png64": "png64/boat_or_zeppelin.png",
+        "png32": "png32/boat_or_zeppelin.png",
+        "png24": "png24/boat_or_zeppelin.png",
+        "png20": "png20/boat_or_zeppelin.png",
+        "png16": "png16/boat_or_zeppelin.png",
+        "tga64": "tga64/boat_or_zeppelin.tga",
+        "tga32": "tga32/boat_or_zeppelin.tga"
+      },
+      "slug": "boat_or_zeppelin"
+    },
+    {
+      "code": "hs",
+      "group": "Travel",
+      "name": "Hearthstone",
+      "icon": "gem",
+      "modifier": "house",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/hearthstone.svg",
+        "png64": "png64/hearthstone.png",
+        "png32": "png32/hearthstone.png",
+        "png24": "png24/hearthstone.png",
+        "png20": "png20/hearthstone.png",
+        "png16": "png16/hearthstone.png",
+        "tga64": "tga64/hearthstone.tga",
+        "tga32": "tga32/hearthstone.tga"
+      },
+      "slug": "hearthstone"
+    },
+    {
+      "code": "so",
+      "group": "Travel",
+      "name": "Summon offered",
+      "icon": "hand-sparkles",
+      "modifier": "question",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/summon_offered.svg",
+        "png64": "png64/summon_offered.png",
+        "png32": "png32/summon_offered.png",
+        "png24": "png24/summon_offered.png",
+        "png20": "png20/summon_offered.png",
+        "png16": "png16/summon_offered.png",
+        "tga64": "tga64/summon_offered.tga",
+        "tga32": "tga32/summon_offered.tga"
+      },
+      "slug": "summon_offered"
+    },
+    {
+      "code": "su",
+      "group": "Travel",
+      "name": "Summoned",
+      "icon": "hand-sparkles",
+      "modifier": "check",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/summoned.svg",
+        "png64": "png64/summoned.png",
+        "png32": "png32/summoned.png",
+        "png24": "png24/summoned.png",
+        "png20": "png20/summoned.png",
+        "png16": "png16/summoned.png",
+        "tga64": "tga64/summoned.tga",
+        "tga32": "tga32/summoned.tga"
+      },
+      "slug": "summoned"
+    },
+    {
+      "code": "po",
+      "group": "Travel",
+      "name": "Portal or teleport",
+      "icon": "door-open",
+      "modifier": "wand-magic-sparkles",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/portal_or_teleport.svg",
+        "png64": "png64/portal_or_teleport.png",
+        "png32": "png32/portal_or_teleport.png",
+        "png24": "png24/portal_or_teleport.png",
+        "png20": "png20/portal_or_teleport.png",
+        "png16": "png16/portal_or_teleport.png",
+        "tga64": "tga64/portal_or_teleport.tga",
+        "tga32": "tga32/portal_or_teleport.tga"
+      },
+      "slug": "portal_or_teleport"
+    },
+    {
+      "code": "jp",
+      "group": "Travel",
+      "name": "Other teleport",
+      "icon": "wand-magic-sparkles",
+      "modifier": "arrows-rotate",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/other_teleport.svg",
+        "png64": "png64/other_teleport.png",
+        "png32": "png32/other_teleport.png",
+        "png24": "png24/other_teleport.png",
+        "png20": "png20/other_teleport.png",
+        "png16": "png16/other_teleport.png",
+        "tga64": "tga64/other_teleport.tga",
+        "tga32": "tga32/other_teleport.tga"
+      },
+      "slug": "other_teleport"
+    },
+    {
+      "code": "mo",
+      "group": "Travel",
+      "name": "First mount-up with a mount",
+      "icon": "horse",
+      "modifier": null,
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/first_mount_up_with_a_mount.svg",
+        "png64": "png64/first_mount_up_with_a_mount.png",
+        "png32": "png32/first_mount_up_with_a_mount.png",
+        "png24": "png24/first_mount_up_with_a_mount.png",
+        "png20": "png20/first_mount_up_with_a_mount.png",
+        "png16": "png16/first_mount_up_with_a_mount.png",
+        "tga64": "tga64/first_mount_up_with_a_mount.tga",
+        "tga32": "tga32/first_mount_up_with_a_mount.tga"
+      },
+      "slug": "first_mount_up_with_a_mount"
+    },
+    {
+      "code": "ml",
+      "group": "Travel",
+      "name": "Learned a mount or riding",
+      "icon": "horse",
+      "modifier": "plus",
+      "color": "#70cfff",
+      "files": {
+        "svg": "svg/learned_a_mount_or_riding.svg",
+        "png64": "png64/learned_a_mount_or_riding.png",
+        "png32": "png32/learned_a_mount_or_riding.png",
+        "png24": "png24/learned_a_mount_or_riding.png",
+        "png20": "png20/learned_a_mount_or_riding.png",
+        "png16": "png16/learned_a_mount_or_riding.png",
+        "tga64": "tga64/learned_a_mount_or_riding.tga",
+        "tga32": "tga32/learned_a_mount_or_riding.tga"
+      },
+      "slug": "learned_a_mount_or_riding"
+    },
+    {
+      "code": "dn",
+      "group": "Dungeons",
+      "name": "Entered a dungeon or raid",
+      "icon": "dungeon",
+      "modifier": "arrow-right",
+      "color": "#c6a2ff",
+      "files": {
+        "svg": "svg/entered_a_dungeon_or_raid.svg",
+        "png64": "png64/entered_a_dungeon_or_raid.png",
+        "png32": "png32/entered_a_dungeon_or_raid.png",
+        "png24": "png24/entered_a_dungeon_or_raid.png",
+        "png20": "png20/entered_a_dungeon_or_raid.png",
+        "png16": "png16/entered_a_dungeon_or_raid.png",
+        "tga64": "tga64/entered_a_dungeon_or_raid.tga",
+        "tga32": "tga32/entered_a_dungeon_or_raid.tga"
+      },
+      "slug": "entered_a_dungeon_or_raid"
+    },
+    {
+      "code": "dx",
+      "group": "Dungeons",
+      "name": "Left a dungeon or raid",
+      "icon": "dungeon",
+      "modifier": "arrow-left",
+      "color": "#c6a2ff",
+      "files": {
+        "svg": "svg/left_a_dungeon_or_raid.svg",
+        "png64": "png64/left_a_dungeon_or_raid.png",
+        "png32": "png32/left_a_dungeon_or_raid.png",
+        "png24": "png24/left_a_dungeon_or_raid.png",
+        "png20": "png20/left_a_dungeon_or_raid.png",
+        "png16": "png16/left_a_dungeon_or_raid.png",
+        "tga64": "tga64/left_a_dungeon_or_raid.tga",
+        "tga32": "tga32/left_a_dungeon_or_raid.tga"
+      },
+      "slug": "left_a_dungeon_or_raid"
+    },
+    {
+      "code": "bo",
+      "group": "Dungeons",
+      "name": "Boss fight ended",
+      "icon": "dragon",
+      "modifier": "khanda",
+      "color": "#c6a2ff",
+      "files": {
+        "svg": "svg/boss_fight_ended.svg",
+        "png64": "png64/boss_fight_ended.png",
+        "png32": "png32/boss_fight_ended.png",
+        "png24": "png24/boss_fight_ended.png",
+        "png20": "png20/boss_fight_ended.png",
+        "png16": "png16/boss_fight_ended.png",
+        "tga64": "tga64/boss_fight_ended.tga",
+        "tga32": "tga32/boss_fight_ended.tga"
+      },
+      "slug": "boss_fight_ended"
+    },
+    {
+      "code": "wb",
+      "group": "Dungeons",
+      "name": "World boss killed",
+      "icon": "crown",
+      "modifier": "skull",
+      "color": "#c6a2ff",
+      "files": {
+        "svg": "svg/world_boss_killed.svg",
+        "png64": "png64/world_boss_killed.png",
+        "png32": "png32/world_boss_killed.png",
+        "png24": "png24/world_boss_killed.png",
+        "png20": "png20/world_boss_killed.png",
+        "png16": "png16/world_boss_killed.png",
+        "tga64": "tga64/world_boss_killed.tga",
+        "tga32": "tga32/world_boss_killed.tga"
+      },
+      "slug": "world_boss_killed"
+    },
+    {
+      "code": "ss",
+      "group": "Screenshots",
+      "name": "Screenshot saved",
+      "icon": "camera",
+      "modifier": null,
+      "color": "#faf2d8",
+      "files": {
+        "svg": "svg/screenshot_saved.svg",
+        "png64": "png64/screenshot_saved.png",
+        "png32": "png32/screenshot_saved.png",
+        "png24": "png24/screenshot_saved.png",
+        "png20": "png20/screenshot_saved.png",
+        "png16": "png16/screenshot_saved.png",
+        "tga64": "tga64/screenshot_saved.tga",
+        "tga32": "tga32/screenshot_saved.tga"
+      },
+      "slug": "screenshot_saved"
+    },
+    {
+      "code": "sn",
+      "group": "Other addons",
+      "name": "Screenshot note from another addon",
+      "icon": "file-image",
+      "modifier": "pen",
+      "color": "#b1e4ef",
+      "files": {
+        "svg": "svg/screenshot_note_from_another_addon.svg",
+        "png64": "png64/screenshot_note_from_another_addon.png",
+        "png32": "png32/screenshot_note_from_another_addon.png",
+        "png24": "png24/screenshot_note_from_another_addon.png",
+        "png20": "png20/screenshot_note_from_another_addon.png",
+        "png16": "png16/screenshot_note_from_another_addon.png",
+        "tga64": "tga64/screenshot_note_from_another_addon.tga",
+        "tga32": "tga32/screenshot_note_from_another_addon.tga"
+      },
+      "slug": "screenshot_note_from_another_addon"
+    },
+    {
+      "code": "ex",
+      "group": "Other addons",
+      "name": "Event from another addon",
+      "icon": "puzzle-piece",
+      "modifier": null,
+      "color": "#b1e4ef",
+      "files": {
+        "svg": "svg/event_from_another_addon.svg",
+        "png64": "png64/event_from_another_addon.png",
+        "png32": "png32/event_from_another_addon.png",
+        "png24": "png24/event_from_another_addon.png",
+        "png20": "png20/event_from_another_addon.png",
+        "png16": "png16/event_from_another_addon.png",
+        "tga64": "tga64/event_from_another_addon.tga",
+        "tga32": "tga32/event_from_another_addon.tga"
+      },
+      "slug": "event_from_another_addon"
+    },
+    {
+      "code": "nt",
+      "group": "Other addons",
+      "name": "Note from Memories",
+      "icon": "note-sticky",
+      "modifier": "pen",
+      "color": "#b1e4ef",
+      "files": {
+        "svg": "svg/note_from_memories.svg",
+        "png64": "png64/note_from_memories.png",
+        "png32": "png32/note_from_memories.png",
+        "png24": "png24/note_from_memories.png",
+        "png20": "png20/note_from_memories.png",
+        "png16": "png16/note_from_memories.png",
+        "tga64": "tga64/note_from_memories.tga",
+        "tga32": "tga32/note_from_memories.tga"
+      },
+      "slug": "note_from_memories"
+    },
+    {
+      "code": "ki",
+      "group": "Combat",
+      "name": "Killed a creature",
+      "icon": "khanda",
+      "modifier": null,
+      "color": "#ffac61",
+      "files": {
+        "svg": "svg/killed_a_creature.svg",
+        "png64": "png64/killed_a_creature.png",
+        "png32": "png32/killed_a_creature.png",
+        "png24": "png24/killed_a_creature.png",
+        "png20": "png20/killed_a_creature.png",
+        "png16": "png16/killed_a_creature.png",
+        "tga64": "tga64/killed_a_creature.tga",
+        "tga32": "tga32/killed_a_creature.tga"
+      },
+      "slug": "killed_a_creature"
+    },
+    {
+      "code": "ra",
+      "group": "Combat",
+      "name": "Killed a rare",
+      "icon": "crosshairs",
+      "modifier": "star",
+      "color": "#ffac61",
+      "files": {
+        "svg": "svg/killed_a_rare.svg",
+        "png64": "png64/killed_a_rare.png",
+        "png32": "png32/killed_a_rare.png",
+        "png24": "png24/killed_a_rare.png",
+        "png20": "png20/killed_a_rare.png",
+        "png16": "png16/killed_a_rare.png",
+        "tga64": "tga64/killed_a_rare.tga",
+        "tga32": "tga32/killed_a_rare.tga"
+      },
+      "slug": "killed_a_rare"
+    },
+    {
+      "code": "fi",
+      "group": "Combat",
+      "name": "Long fight",
+      "icon": "stopwatch",
+      "modifier": "fire",
+      "color": "#ffac61",
+      "files": {
+        "svg": "svg/long_fight.svg",
+        "png64": "png64/long_fight.png",
+        "png32": "png32/long_fight.png",
+        "png24": "png24/long_fight.png",
+        "png20": "png20/long_fight.png",
+        "png16": "png16/long_fight.png",
+        "tga64": "tga64/long_fight.tga",
+        "tga32": "tga32/long_fight.tga"
+      },
+      "slug": "long_fight"
+    },
+    {
+      "code": "ga",
+      "group": "Gathering",
+      "name": "Gathered",
+      "icon": "leaf",
+      "modifier": "hand",
+      "color": "#9fe28b",
+      "files": {
+        "svg": "svg/gathered.svg",
+        "png64": "png64/gathered.png",
+        "png32": "png32/gathered.png",
+        "png24": "png24/gathered.png",
+        "png20": "png20/gathered.png",
+        "png16": "png16/gathered.png",
+        "tga64": "tga64/gathered.tga",
+        "tga32": "tga32/gathered.tga"
+      },
+      "slug": "gathered"
+    },
+    {
+      "code": "fs",
+      "group": "Gathering",
+      "name": "Caught while fishing",
+      "icon": "fish-fins",
+      "modifier": "anchor",
+      "color": "#9fe28b",
+      "files": {
+        "svg": "svg/caught_while_fishing.svg",
+        "png64": "png64/caught_while_fishing.png",
+        "png32": "png32/caught_while_fishing.png",
+        "png24": "png24/caught_while_fishing.png",
+        "png20": "png20/caught_while_fishing.png",
+        "png16": "png16/caught_while_fishing.png",
+        "tga64": "tga64/caught_while_fishing.tga",
+        "tga32": "tga32/caught_while_fishing.tga"
+      },
+      "slug": "caught_while_fishing"
+    },
+    {
+      "code": "op",
+      "group": "Gathering",
+      "name": "Opened a container or chest",
+      "icon": "box-open",
+      "modifier": null,
+      "color": "#9fe28b",
+      "files": {
+        "svg": "svg/opened_a_container_or_chest.svg",
+        "png64": "png64/opened_a_container_or_chest.png",
+        "png32": "png32/opened_a_container_or_chest.png",
+        "png24": "png24/opened_a_container_or_chest.png",
+        "png20": "png20/opened_a_container_or_chest.png",
+        "png16": "png16/opened_a_container_or_chest.png",
+        "tga64": "tga64/opened_a_container_or_chest.tga",
+        "tga32": "tga32/opened_a_container_or_chest.tga"
+      },
+      "slug": "opened_a_container_or_chest"
+    },
+    {
+      "code": "pp",
+      "group": "Gathering",
+      "name": "Picked a pocket",
+      "icon": "hand",
+      "modifier": "coins",
+      "color": "#9fe28b",
+      "files": {
+        "svg": "svg/picked_a_pocket.svg",
+        "png64": "png64/picked_a_pocket.png",
+        "png32": "png32/picked_a_pocket.png",
+        "png24": "png24/picked_a_pocket.png",
+        "png20": "png20/picked_a_pocket.png",
+        "png16": "png16/picked_a_pocket.png",
+        "tga64": "tga64/picked_a_pocket.tga",
+        "tga32": "tga32/picked_a_pocket.tga"
+      },
+      "slug": "picked_a_pocket"
+    },
+    {
+      "code": "sk",
+      "group": "Character",
+      "name": "Skill changed",
+      "icon": "chart-line",
+      "modifier": "arrow-up",
+      "color": "#e7dfa0",
+      "files": {
+        "svg": "svg/skill_changed.svg",
+        "png64": "png64/skill_changed.png",
+        "png32": "png32/skill_changed.png",
+        "png24": "png24/skill_changed.png",
+        "png20": "png20/skill_changed.png",
+        "png16": "png16/skill_changed.png",
+        "tga64": "tga64/skill_changed.tga",
+        "tga32": "tga32/skill_changed.tga"
+      },
+      "slug": "skill_changed"
+    },
+    {
+      "code": "lr",
+      "group": "Character",
+      "name": "Learned a spell",
+      "icon": "wand-magic-sparkles",
+      "modifier": "plus",
+      "color": "#e7dfa0",
+      "files": {
+        "svg": "svg/learned_a_spell.svg",
+        "png64": "png64/learned_a_spell.png",
+        "png32": "png32/learned_a_spell.png",
+        "png24": "png24/learned_a_spell.png",
+        "png20": "png20/learned_a_spell.png",
+        "png16": "png16/learned_a_spell.png",
+        "tga64": "tga64/learned_a_spell.tga",
+        "tga32": "tga32/learned_a_spell.tga"
+      },
+      "slug": "learned_a_spell"
+    },
+    {
+      "code": "rc",
+      "group": "Character",
+      "name": "Learned a recipe",
+      "icon": "book-open",
+      "modifier": "plus",
+      "color": "#e7dfa0",
+      "files": {
+        "svg": "svg/learned_a_recipe.svg",
+        "png64": "png64/learned_a_recipe.png",
+        "png32": "png32/learned_a_recipe.png",
+        "png24": "png24/learned_a_recipe.png",
+        "png20": "png20/learned_a_recipe.png",
+        "png16": "png16/learned_a_recipe.png",
+        "tga64": "tga64/learned_a_recipe.tga",
+        "tga32": "tga32/learned_a_recipe.tga"
+      },
+      "slug": "learned_a_recipe"
+    },
+    {
+      "code": "ta",
+      "group": "Character",
+      "name": "Talent points",
+      "icon": "sitemap",
+      "modifier": "star",
+      "color": "#e7dfa0",
+      "files": {
+        "svg": "svg/talent_points.svg",
+        "png64": "png64/talent_points.png",
+        "png32": "png32/talent_points.png",
+        "png24": "png24/talent_points.png",
+        "png20": "png20/talent_points.png",
+        "png16": "png16/talent_points.png",
+        "tga64": "tga64/talent_points.tga",
+        "tga32": "tga32/talent_points.tga"
+      },
+      "slug": "talent_points"
+    },
+    {
+      "code": "cu",
+      "group": "Character",
+      "name": "Used a consumable",
+      "icon": "flask",
+      "modifier": "check",
+      "color": "#e7dfa0",
+      "files": {
+        "svg": "svg/used_a_consumable.svg",
+        "png64": "png64/used_a_consumable.png",
+        "png32": "png32/used_a_consumable.png",
+        "png24": "png24/used_a_consumable.png",
+        "png20": "png20/used_a_consumable.png",
+        "png16": "png16/used_a_consumable.png",
+        "tga64": "tga64/used_a_consumable.tga",
+        "tga32": "tga32/used_a_consumable.tga"
+      },
+      "slug": "used_a_consumable"
+    },
+    {
+      "code": "pt",
+      "group": "Character",
+      "name": "Tamed a beast",
+      "icon": "paw",
+      "modifier": "heart",
+      "color": "#e7dfa0",
+      "files": {
+        "svg": "svg/tamed_a_beast.svg",
+        "png64": "png64/tamed_a_beast.png",
+        "png32": "png32/tamed_a_beast.png",
+        "png24": "png24/tamed_a_beast.png",
+        "png20": "png20/tamed_a_beast.png",
+        "png16": "png16/tamed_a_beast.png",
+        "tga64": "tga64/tamed_a_beast.tga",
+        "tga32": "tga32/tamed_a_beast.tga"
+      },
+      "slug": "tamed_a_beast"
+    },
+    {
+      "code": "rp",
+      "group": "Milestones",
+      "name": "Reputation changed",
+      "icon": "medal",
+      "modifier": "arrow-up",
+      "color": "#ffb1e5",
+      "files": {
+        "svg": "svg/reputation_changed.svg",
+        "png64": "png64/reputation_changed.png",
+        "png32": "png32/reputation_changed.png",
+        "png24": "png24/reputation_changed.png",
+        "png20": "png20/reputation_changed.png",
+        "png16": "png16/reputation_changed.png",
+        "tga64": "tga64/reputation_changed.tga",
+        "tga32": "tga32/reputation_changed.tga"
+      },
+      "slug": "reputation_changed"
+    },
+    {
+      "code": "qa",
+      "group": "Milestones",
+      "name": "Quest accepted",
+      "icon": "exclamation",
+      "modifier": "plus",
+      "color": "#ffb1e5",
+      "files": {
+        "svg": "svg/quest_accepted.svg",
+        "png64": "png64/quest_accepted.png",
+        "png32": "png32/quest_accepted.png",
+        "png24": "png24/quest_accepted.png",
+        "png20": "png20/quest_accepted.png",
+        "png16": "png16/quest_accepted.png",
+        "tga64": "tga64/quest_accepted.tga",
+        "tga32": "tga32/quest_accepted.tga"
+      },
+      "slug": "quest_accepted"
+    },
+    {
+      "code": "hb",
+      "group": "Milestones",
+      "name": "Hearthstone bound",
+      "icon": "house-chimney",
+      "modifier": "gem",
+      "color": "#ffb1e5",
+      "files": {
+        "svg": "svg/hearthstone_bound.svg",
+        "png64": "png64/hearthstone_bound.png",
+        "png32": "png32/hearthstone_bound.png",
+        "png24": "png24/hearthstone_bound.png",
+        "png20": "png20/hearthstone_bound.png",
+        "png16": "png16/hearthstone_bound.png",
+        "tga64": "tga64/hearthstone_bound.tga",
+        "tga32": "tga32/hearthstone_bound.tga"
+      },
+      "slug": "hearthstone_bound"
+    },
+    {
+      "code": "fp",
+      "group": "Milestones",
+      "name": "Learned a flight path",
+      "icon": "location-arrow",
+      "modifier": "plus",
+      "color": "#ffb1e5",
+      "files": {
+        "svg": "svg/learned_a_flight_path.svg",
+        "png64": "png64/learned_a_flight_path.png",
+        "png32": "png32/learned_a_flight_path.png",
+        "png24": "png24/learned_a_flight_path.png",
+        "png20": "png20/learned_a_flight_path.png",
+        "png16": "png16/learned_a_flight_path.png",
+        "tga64": "tga64/learned_a_flight_path.tga",
+        "tga32": "tga32/learned_a_flight_path.tga"
+      },
+      "slug": "learned_a_flight_path"
+    },
+    {
+      "code": "bk",
+      "group": "Milestones",
+      "name": "Read a book",
+      "icon": "book-open",
+      "modifier": null,
+      "color": "#ffb1e5",
+      "files": {
+        "svg": "svg/read_a_book.svg",
+        "png64": "png64/read_a_book.png",
+        "png32": "png32/read_a_book.png",
+        "png24": "png24/read_a_book.png",
+        "png20": "png20/read_a_book.png",
+        "png16": "png16/read_a_book.png",
+        "tga64": "tga64/read_a_book.tga",
+        "tga32": "tga32/read_a_book.tga"
+      },
+      "slug": "read_a_book"
+    },
+    {
+      "code": "lo",
+      "group": "Loot",
+      "name": "Loot",
+      "icon": "sack-dollar",
+      "modifier": "star",
+      "color": "#c9eb77",
+      "files": {
+        "svg": "svg/loot.svg",
+        "png64": "png64/loot.png",
+        "png32": "png32/loot.png",
+        "png24": "png24/loot.png",
+        "png20": "png20/loot.png",
+        "png16": "png16/loot.png",
+        "tga64": "tga64/loot.tga",
+        "tga32": "tga32/loot.tga"
+      },
+      "slug": "loot"
+    },
+    {
+      "code": "rl",
+      "group": "Loot",
+      "name": "Group roll ended",
+      "icon": "dice",
+      "modifier": "check",
+      "color": "#c9eb77",
+      "files": {
+        "svg": "svg/group_roll_ended.svg",
+        "png64": "png64/group_roll_ended.png",
+        "png32": "png32/group_roll_ended.png",
+        "png24": "png24/group_roll_ended.png",
+        "png20": "png20/group_roll_ended.png",
+        "png16": "png16/group_roll_ended.png",
+        "tga64": "tga64/group_roll_ended.tga",
+        "tga32": "tga32/group_roll_ended.tga"
+      },
+      "slug": "group_roll_ended"
+    },
+    {
+      "code": "ge",
+      "group": "Loot",
+      "name": "Gear snapshot",
+      "icon": "shield-halved",
+      "modifier": "camera",
+      "color": "#c9eb77",
+      "files": {
+        "svg": "svg/gear_snapshot.svg",
+        "png64": "png64/gear_snapshot.png",
+        "png32": "png32/gear_snapshot.png",
+        "png24": "png24/gear_snapshot.png",
+        "png20": "png20/gear_snapshot.png",
+        "png16": "png16/gear_snapshot.png",
+        "tga64": "tga64/gear_snapshot.tga",
+        "tga32": "tga32/gear_snapshot.tga"
+      },
+      "slug": "gear_snapshot"
+    },
+    {
+      "code": "eq",
+      "group": "Loot",
+      "name": "Equipped an item",
+      "icon": "shirt",
+      "modifier": "check",
+      "color": "#c9eb77",
+      "files": {
+        "svg": "svg/equipped_an_item.svg",
+        "png64": "png64/equipped_an_item.png",
+        "png32": "png32/equipped_an_item.png",
+        "png24": "png24/equipped_an_item.png",
+        "png20": "png20/equipped_an_item.png",
+        "png16": "png16/equipped_an_item.png",
+        "tga64": "tga64/equipped_an_item.tga",
+        "tga32": "tga32/equipped_an_item.tga"
+      },
+      "slug": "equipped_an_item"
+    },
+    {
+      "code": "mn",
+      "group": "Money",
+      "name": "Money in or out",
+      "icon": "coins",
+      "modifier": "arrows-up-down",
+      "color": "#ffe18b",
+      "files": {
+        "svg": "svg/money_in_or_out.svg",
+        "png64": "png64/money_in_or_out.png",
+        "png32": "png32/money_in_or_out.png",
+        "png24": "png24/money_in_or_out.png",
+        "png20": "png20/money_in_or_out.png",
+        "png16": "png16/money_in_or_out.png",
+        "tga64": "tga64/money_in_or_out.tga",
+        "tga32": "tga32/money_in_or_out.tga"
+      },
+      "slug": "money_in_or_out"
+    },
+    {
+      "code": "tb",
+      "group": "Money",
+      "name": "Trainer purchase",
+      "icon": "graduation-cap",
+      "modifier": "coins",
+      "color": "#ffe18b",
+      "files": {
+        "svg": "svg/trainer_purchase.svg",
+        "png64": "png64/trainer_purchase.png",
+        "png32": "png32/trainer_purchase.png",
+        "png24": "png24/trainer_purchase.png",
+        "png20": "png20/trainer_purchase.png",
+        "png16": "png16/trainer_purchase.png",
+        "tga64": "tga64/trainer_purchase.tga",
+        "tga32": "tga32/trainer_purchase.tga"
+      },
+      "slug": "trainer_purchase"
+    },
+    {
+      "code": "ah",
+      "group": "Money",
+      "name": "Auction house",
+      "icon": "gavel",
+      "modifier": "coins",
+      "color": "#ffe18b",
+      "files": {
+        "svg": "svg/auction_house.svg",
+        "png64": "png64/auction_house.png",
+        "png32": "png32/auction_house.png",
+        "png24": "png24/auction_house.png",
+        "png20": "png20/auction_house.png",
+        "png16": "png16/auction_house.png",
+        "tga64": "tga64/auction_house.tga",
+        "tga32": "tga32/auction_house.tga"
+      },
+      "slug": "auction_house"
+    },
+    {
+      "code": "ma",
+      "group": "Money",
+      "name": "Mail",
+      "icon": "envelope",
+      "modifier": "coins",
+      "color": "#ffe18b",
+      "files": {
+        "svg": "svg/mail.svg",
+        "png64": "png64/mail.png",
+        "png32": "png32/mail.png",
+        "png24": "png24/mail.png",
+        "png20": "png20/mail.png",
+        "png16": "png16/mail.png",
+        "tga64": "tga64/mail.tga",
+        "tga32": "tga32/mail.tga"
+      },
+      "slug": "mail"
+    },
+    {
+      "code": "tr",
+      "group": "Money",
+      "name": "Traded with someone",
+      "icon": "handshake",
+      "modifier": null,
+      "color": "#ffe18b",
+      "files": {
+        "svg": "svg/traded_with_someone.svg",
+        "png64": "png64/traded_with_someone.png",
+        "png32": "png32/traded_with_someone.png",
+        "png24": "png24/traded_with_someone.png",
+        "png20": "png20/traded_with_someone.png",
+        "png16": "png16/traded_with_someone.png",
+        "tga64": "tga64/traded_with_someone.tga",
+        "tga32": "tga32/traded_with_someone.tga"
+      },
+      "slug": "traded_with_someone"
+    },
+    {
+      "code": "gj",
+      "group": "Social",
+      "name": "Joined a group",
+      "icon": "users",
+      "modifier": "plus",
+      "color": "#9cecf0",
+      "files": {
+        "svg": "svg/joined_a_group.svg",
+        "png64": "png64/joined_a_group.png",
+        "png32": "png32/joined_a_group.png",
+        "png24": "png24/joined_a_group.png",
+        "png20": "png20/joined_a_group.png",
+        "png16": "png16/joined_a_group.png",
+        "tga64": "tga64/joined_a_group.tga",
+        "tga32": "tga32/joined_a_group.tga"
+      },
+      "slug": "joined_a_group"
+    },
+    {
+      "code": "gl",
+      "group": "Social",
+      "name": "Left a group",
+      "icon": "users",
+      "modifier": "minus",
+      "color": "#9cecf0",
+      "files": {
+        "svg": "svg/left_a_group.svg",
+        "png64": "png64/left_a_group.png",
+        "png32": "png32/left_a_group.png",
+        "png24": "png24/left_a_group.png",
+        "png20": "png20/left_a_group.png",
+        "png16": "png16/left_a_group.png",
+        "tga64": "tga64/left_a_group.tga",
+        "tga32": "tga32/left_a_group.tga"
+      },
+      "slug": "left_a_group"
+    },
+    {
+      "code": "gu",
+      "group": "Social",
+      "name": "Own guild changed",
+      "icon": "flag",
+      "modifier": "users",
+      "color": "#9cecf0",
+      "files": {
+        "svg": "svg/own_guild_changed.svg",
+        "png64": "png64/own_guild_changed.png",
+        "png32": "png32/own_guild_changed.png",
+        "png24": "png24/own_guild_changed.png",
+        "png20": "png20/own_guild_changed.png",
+        "png16": "png16/own_guild_changed.png",
+        "tga64": "tga64/own_guild_changed.tga",
+        "tga32": "tga32/own_guild_changed.tga"
+      },
+      "slug": "own_guild_changed"
+    },
+    {
+      "code": "ep",
+      "group": "PvP",
+      "name": "Enemy player met",
+      "icon": "user-ninja",
+      "modifier": "eye",
+      "color": "#ff99b5",
+      "files": {
+        "svg": "svg/enemy_player_met.svg",
+        "png64": "png64/enemy_player_met.png",
+        "png32": "png32/enemy_player_met.png",
+        "png24": "png24/enemy_player_met.png",
+        "png20": "png20/enemy_player_met.png",
+        "png16": "png16/enemy_player_met.png",
+        "tga64": "tga64/enemy_player_met.tga",
+        "tga32": "tga32/enemy_player_met.tga"
+      },
+      "slug": "enemy_player_met"
+    },
+    {
+      "code": "pk",
+      "group": "PvP",
+      "name": "PvP kill or death",
+      "icon": "khanda",
+      "modifier": "skull",
+      "color": "#ff99b5",
+      "files": {
+        "svg": "svg/pvp_kill_or_death.svg",
+        "png64": "png64/pvp_kill_or_death.png",
+        "png32": "png32/pvp_kill_or_death.png",
+        "png24": "png24/pvp_kill_or_death.png",
+        "png20": "png20/pvp_kill_or_death.png",
+        "png16": "png16/pvp_kill_or_death.png",
+        "tga64": "tga64/pvp_kill_or_death.tga",
+        "tga32": "tga32/pvp_kill_or_death.tga"
+      },
+      "slug": "pvp_kill_or_death"
+    },
+    {
+      "code": "hk",
+      "group": "PvP",
+      "name": "Honor gained",
+      "icon": "trophy",
+      "modifier": "plus",
+      "color": "#ff99b5",
+      "files": {
+        "svg": "svg/honor_gained.svg",
+        "png64": "png64/honor_gained.png",
+        "png32": "png32/honor_gained.png",
+        "png24": "png24/honor_gained.png",
+        "png20": "png20/honor_gained.png",
+        "png16": "png16/honor_gained.png",
+        "tga64": "tga64/honor_gained.tga",
+        "tga32": "tga32/honor_gained.tga"
+      },
+      "slug": "honor_gained"
+    },
+    {
+      "code": "du",
+      "group": "PvP",
+      "name": "Duel",
+      "icon": "people-arrows",
+      "modifier": "khanda",
+      "color": "#ff99b5",
+      "files": {
+        "svg": "svg/duel.svg",
+        "png64": "png64/duel.png",
+        "png32": "png32/duel.png",
+        "png24": "png24/duel.png",
+        "png20": "png20/duel.png",
+        "png16": "png16/duel.png",
+        "tga64": "tga64/duel.tga",
+        "tga32": "tga32/duel.tga"
+      },
+      "slug": "duel"
+    },
+    {
+      "code": "bg",
+      "group": "PvP",
+      "name": "Battleground ended",
+      "icon": "flag-checkered",
+      "modifier": "khanda",
+      "color": "#ff99b5",
+      "files": {
+        "svg": "svg/battleground_ended.svg",
+        "png64": "png64/battleground_ended.png",
+        "png32": "png32/battleground_ended.png",
+        "png24": "png24/battleground_ended.png",
+        "png20": "png20/battleground_ended.png",
+        "png16": "png16/battleground_ended.png",
+        "tga64": "tga64/battleground_ended.tga",
+        "tga32": "tga32/battleground_ended.tga"
+      },
+      "slug": "battleground_ended"
+    },
+    {
+      "code": "rk",
+      "group": "PvP",
+      "name": "PvP rank changed",
+      "icon": "ranking-star",
+      "modifier": "arrow-up",
+      "color": "#ff99b5",
+      "files": {
+        "svg": "svg/pvp_rank_changed.svg",
+        "png64": "png64/pvp_rank_changed.png",
+        "png32": "png32/pvp_rank_changed.png",
+        "png24": "png24/pvp_rank_changed.png",
+        "png20": "png20/pvp_rank_changed.png",
+        "png16": "png16/pvp_rank_changed.png",
+        "tga64": "tga64/pvp_rank_changed.tga",
+        "tga32": "tga32/pvp_rank_changed.tga"
+      },
+      "slug": "pvp_rank_changed"
+    }
+  ],
+  "filename_convention": "Event description as lowercase snake_case; the original short kind code is in each manifest event.",
+  "change_log": [
+    "Quest accepted icon uses the classic ! glyph, with a small plus badge.",
+    "All individual asset filenames use descriptive event names."
+  ]
+}

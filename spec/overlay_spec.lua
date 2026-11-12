@@ -184,7 +184,7 @@ describe("map overlay", function()
 		assert.equal(O.LINE_WIDTH, line.thickness)
 	end)
 
-	it("shows a level up as a badge with its level and a death as a skull, larger than a plain pin", function()
+	it("shows the coin of its kind on a pin, and the level of a level up", function()
 		boot()
 		local map = attach()
 		journal({
@@ -195,27 +195,48 @@ describe("map overlay", function()
 		step(map)
 		local ps = pins(map)
 		assert.equal(2, #ps)
+		assert.equal(ns.MapIcons.Get("lv"), ps[1].icon.texture)
+		assert.equal(ns.MapIcons.Get("de"), ps[2].icon.texture)
+		assert.same({ 0, 1, 0, 1 }, ps[1].icon.texCoord)
 		assert.equal("5", ps[1].number.text)
 		assert.is_true(ps[1].number.shown)
-		assert.is_false(ps[1].icon.shown)
-		assert.equal(O.SKULL, ps[2].icon.texture)
-		assert.is_true(ps[2].icon.shown)
 		assert.is_false(ps[2].number.shown)
-		assert.same({ O.BIG_PIN_SIZE, O.BIG_PIN_SIZE }, ps[1].size)
-		assert.same({ O.BIG_PIN_SIZE, O.BIG_PIN_SIZE }, ps[2].size)
+		assert.same({ O.PIN_SIZE, O.PIN_SIZE }, ps[1].size)
+		assert.same({ O.PIN_SIZE, O.PIN_SIZE }, ps[2].icon.size)
 		assert.same({ "CENTER", container(map), "TOPLEFT", 200, -50 }, { unpack(ps[2].point, 1, 5) })
-		assert.is_true(ps[2].face.size[1] < O.BIG_PIN_SIZE)
-		assert.same({ O.BURST.lv[1], O.BURST.lv[2], O.BURST.lv[3] }, { unpack(ps[1].border.vertexColor, 1, 3) })
+		assert.same({ O.BURST.de[1], O.BURST.de[2], O.BURST.de[3] }, { unpack(ps[2].glow.vertexColor, 1, 3) })
 	end)
 
-	it("shows a question mark in the badge of a level up with no level", function()
+	it("puts the arrow of the player over every pin and burst", function()
+		boot({ TRAIL })
+		local map = attach()
+		journal({ { t = 1015, m = ZONE, x = 2500, y = 1000, kind = "lv", args = { 5 } } })
+		O.Show(true)
+		frames(map, 2)
+		O.Play()
+		step(map, 0.001)
+		step(map, 0.51)
+		local h = head(map)
+		local base = container(map):GetFrameLevel()
+		assert.equal(base + O.HEAD_LEVEL, h:GetFrameLevel())
+		for _, pin in ipairs(pins(map)) do
+			assert.is_true(pin:GetFrameLevel() < h:GetFrameLevel())
+		end
+		for _, f in ipairs(wow.frames) do
+			if f.ring then
+				assert.is_true(f:GetFrameLevel() < h:GetFrameLevel())
+			end
+		end
+	end)
+
+	it("shows no number on a level up with no level", function()
 		boot()
 		local map = attach()
 		local open = MemoriesCharDB.log.open
 		open[#open + 1] = "10||" .. ZONE .. "|1000|1000|lv"
 		O.Show(true)
 		step(map)
-		assert.equal("?", pins(map)[1].number.text)
+		assert.is_false(pins(map)[1].number.shown)
 	end)
 
 	it("leaves no icon for the other kinds, and reads no kind outside the replay", function()
@@ -239,9 +260,9 @@ describe("map overlay", function()
 		journal({ { t = 10, m = ZONE, x = 1000, y = 1000, kind = "lv", args = { 5 } } })
 		O.Show(true)
 		step(map)
-		local small = O.BIG_PIN_SIZE * O.HIGH_MAP_PIN
+		local small = O.PIN_SIZE * O.HIGH_MAP_PIN
 		assert.same({ small, small }, pins(map)[1].size)
-		assert.is_true(pins(map)[1].face.size[1] > 0 and pins(map)[1].face.size[1] < small)
+		assert.same({ small, small }, pins(map)[1].icon.size)
 	end)
 
 	it("reads only the groups of the panel from the settings", function()
@@ -380,12 +401,12 @@ describe("map overlay", function()
 			local pin = pins(map)[1]
 			assert.is_true(pin.shown)
 			assert.is_not_nil(pin.popAt)
-			assert.is_true(pin.size[1] < O.BIG_PIN_SIZE)
+			assert.is_true(pin.size[1] < O.PIN_SIZE)
 			step(map, 0.1)
 			assert.is_true(pin.size[1] > 0)
 			step(map, O.POP + 0.01)
 			assert.is_nil(pin.popAt)
-			assert.same({ O.BIG_PIN_SIZE, O.BIG_PIN_SIZE }, pin.size)
+			assert.same({ O.PIN_SIZE, O.PIN_SIZE }, pin.size)
 		end)
 
 		it("pulses a new pin while it is new in played time", function()
@@ -1181,6 +1202,63 @@ describe("map overlay", function()
 			local chapters = O.Chapters()
 			assert.equal(2, #chapters)
 			assert.equal(50, chapters[2].c)
+		end)
+	end)
+
+	describe("icons", function()
+		it("has a coin for every kind that the addons register, and a file for every coin", function()
+			wow.boot({
+				login = false,
+				addons = {
+					"Memories",
+					"Memories_Combat",
+					"Memories_Gathering",
+					"Memories_Character",
+					"Memories_Economy",
+					"Memories_Social",
+				},
+			})
+			local core = wow.ns.Memories
+			for _, spec in ipairs(core.Kinds.All()) do
+				assert.is_string(core.MapIcons.Get(spec.kind), spec.kind)
+			end
+			for kind, file in pairs(core.MapIcons.FILES) do
+				local f = io.open("addons/Memories/Media/MapIcons/" .. file .. ".tga", "rb")
+				assert.is_not_nil(f, kind)
+				f:close()
+			end
+			assert.is_nil(core.MapIcons.Get("zz"))
+		end)
+
+		it("shows the coin in the burst of an event with no pin, and none for a pin", function()
+			boot({ TRAIL })
+			local map = attach()
+			journal({
+				{ t = 1015, m = ZONE, x = 5000, y = 5000, kind = "hs", args = { 1, 2, "Home" } },
+				{ t = 1035, m = ZONE, x = 6000, y = 5000, kind = "de", args = { "Wolf" } },
+			})
+			O.Show(true)
+			frames(map, 2)
+			O.Play()
+			step(map, 0.001)
+			step(map, 0.51)
+			local list = {}
+			for _, f in ipairs(wow.frames) do
+				if f.ring and f.startAt then
+					list[#list + 1] = f
+				end
+			end
+			assert.equal(1, #list)
+			assert.equal(ns.MapIcons.Get("hs"), list[1].icon.texture)
+			assert.is_true(list[1].icon.shown)
+			step(map, 0.5)
+			local death
+			for _, f in ipairs(wow.frames) do
+				if f.ring and f.startAt and f.icon.texture == ns.MapIcons.Get("de") then
+					death = f
+				end
+			end
+			assert.is_false(death.icon.shown)
 		end)
 	end)
 end)

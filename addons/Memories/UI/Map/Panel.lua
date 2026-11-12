@@ -351,7 +351,7 @@ function Panel.HighlightText(pin)
 			break
 		end
 	end
-	local icon = ns.Overlay.GROUP_ICON[pin.group]
+	local icon = ns.MapIcons.Get(pin.kind) or ns.Overlay.GROUP_ICON[pin.group]
 	return icon and ("|T%s:14|t %s"):format(icon, text) or text
 end
 
