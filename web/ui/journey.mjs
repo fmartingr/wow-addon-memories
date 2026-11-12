@@ -326,8 +326,6 @@ export function paintData(root) {
   for (const el of root.querySelectorAll('[data-c]')) el.style.setProperty('--c', el.dataset.c);
 }
 
-const reducedMotion = () => globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches === true;
-
 export function createJourneyTab(panel, ctx) {
   const $ = (id) => panel.querySelector('#' + id);
   const state = { c: 0, playing: false, speed: 1, follow: false, followScale: null, show: {}, sel: null };
@@ -426,13 +424,6 @@ export function createJourneyTab(panel, ctx) {
     }, 3500);
     toastTimers.add(t);
   }
-  function flash() {
-    if (reducedMotion()) return;
-    const f = $('flash');
-    f.classList.remove('go');
-    void f.offsetWidth;
-    f.classList.add('go');
-  }
   function notifyCrossed(from, to) {
     if (to <= from || to - from > 90) return;
     const list = crossed(model, from, to).filter((e) => NOTE[e.k] && state.show[CAT[e.k]] !== false);
@@ -440,7 +431,6 @@ export function createJourneyTab(panel, ctx) {
       const [text, colour] = noteOf(e);
       toast(text, colour);
     }
-    if (list.some((e) => e.k === 'ss')) flash();
   }
 
   /* ---------------------------------------------------------------- hud and log */
