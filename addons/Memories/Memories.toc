@@ -14,13 +14,14 @@
 ## Title-ptBR: Memories
 ## Notes-ptBR: Registra a sua jornada.
 ## Author: Felipe M.
-## Version: 0.1.0
+## Version: @project-version@
 ## SavedVariables: MemoriesDB
 ## SavedVariablesPerCharacter: MemoriesCharDB
 ## LoadSavedVariablesFirst: 1
 ## AddonCompartmentFunc: Memories_OnAddonCompartmentClick
 ## IconTexture: Interface\AddOns\Memories\Media\icon
 ## Category: Map
+## X-Curse-Project-ID: 1798189
 
 Locales.lua
 Core\Core.lua

@@ -14,7 +14,7 @@
 ## Title-ptBR: Memories - Coleta
 ## Notes-ptBR: Registra coleta, pesca, aberturas e furtos.
 ## Author: Felipe M.
-## Version: 0.1.0
+## Version: @project-version@
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesGatheringCharDB

@@ -14,7 +14,7 @@
 ## Title-ptBR: Memories - Social
 ## Notes-ptBR: Registra membros do grupo, sua guilda, jogadores inimigos, abates e mortes em JxJ, honra, duelos, campos de batalha e patente de JxJ.
 ## Author: Felipe M.
-## Version: 0.1.0
+## Version: @project-version@
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesSocialCharDB

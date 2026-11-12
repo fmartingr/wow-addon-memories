@@ -1,2 +1,34 @@
+package-as: Memories
 optional-dependencies:
   - paparazzi
+move-folders:
+  Memories/addons/Memories: Memories
+  Memories/addons/Memories_Character: Memories_Character
+  Memories/addons/Memories_Combat: Memories_Combat
+  Memories/addons/Memories_Economy: Memories_Economy
+  Memories/addons/Memories_Gathering: Memories_Gathering
+  Memories/addons/Memories_Social: Memories_Social
+ignore:
+  - .busted
+  - .claude
+  - .dockerignore
+  - .fvmrc
+  - .github
+  - .luacheckrc
+  - .luacov
+  - .stylua.toml
+  - .styluaignore
+  - LICENSE
+  - Makefile
+  - README.md
+  - app
+  - assets
+  - deploy
+  - docs
+  - packages
+  - scripts
+  - server
+  - spec
+  - specs
+  - testdata
+  - web

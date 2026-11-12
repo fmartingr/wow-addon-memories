@@ -29,25 +29,12 @@
 
 ## CurseForge
 
-The `curseforge` job runs after `publish` on a tag. `scripts/curseforge-upload.sh` uploads
-`Memories-addons-<version>.zip` to the CurseForge project as a new file named `Memories <version>`. A tag with a
-pre-release part uploads a beta file; another tag uploads a release file. The changelog links to the GitHub release.
-
-| Setting | Kind | Value |
-|---|---|---|
-| `CF_API_TOKEN` | Repository secret | A CurseForge API token, from the CurseForge author settings (API Tokens). |
-| `CURSEFORGE_PROJECT_ID` | Repository variable | The project id, shown on the CurseForge project page ("Project ID"). |
-| `CURSEFORGE_GAME_VERSIONS` | Repository variable, optional | Game version ids, comma-separated, in place of the lookup. |
-
-- **Game version:** the script reads `## Interface` of `addons/Memories/Memories.toc` and turns it into the game
-  version: `16001` is `1.60.1`. It looks the version up in the CurseForge list (`/api/game/versions`) and sends every
-  id with that name. When CurseForge has no such name, the job fails and names the version; set
-  `CURSEFORGE_GAME_VERSIONS` then.
-- **Failure:** a missing secret or variable fails the job with a message that names it. The GitHub release is already
-  out by then, so re-run only the `curseforge` job after the fix.
-- **Test:** `make test-scripts` runs `scripts/test-curseforge-upload.sh` with a fake `curl`.
-
-Set the variable with the GitHub CLI: `gh variable set CURSEFORGE_PROJECT_ID --body <id>`.
+The `curseforge` job runs after `publish` on a tag. `BigWigsMods/packager` builds the addon zip from `.pkgmeta`
+(`move-folders` takes the 6 folders of `addons/`) and uploads it to the CurseForge project that
+`## X-Curse-Project-ID` names in `addons/Memories/Memories.toc`. It fills `@project-version@` in the TOC files from
+the tag and finds the game version from `## Interface`. It needs only the repository secret `CF_API_TOKEN`. It gets
+no GitHub token, so it does not change the GitHub release. When it fails, the GitHub release is already out: re-run
+only the `curseforge` job.
 
 ## Server image
 

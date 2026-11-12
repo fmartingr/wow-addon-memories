@@ -14,7 +14,7 @@
 ## Title-ptBR: Memories - Personagem
 ## Notes-ptBR: Registra habilidades, feitiços, receitas, talentos, consumíveis, feras domadas, reputação, missões, lares, rotas de voo e livros.
 ## Author: Felipe M.
-## Version: 0.1.0
+## Version: @project-version@
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesCharacterCharDB

@@ -94,10 +94,9 @@ test: test-lua test-scripts server-test web-test dart-test app-test ## Run all t
 test-lua: ## Run the busted tests
 	busted $(BUSTED_FLAGS)
 
-test-scripts: ## Test the release scripts (addon zip, release version, CurseForge upload)
+test-scripts: ## Test the release scripts (addon zip, release version)
 	bash scripts/test-package-addons.sh
 	bash scripts/test-release-version.sh
-	bash scripts/test-curseforge-upload.sh
 
 server-test: ## Run the Go server tests with the race detector (FUZZ=1 also fuzzes the upload check for 30 s)
 	cd server && go test -race ./...

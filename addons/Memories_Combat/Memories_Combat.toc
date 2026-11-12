@@ -14,7 +14,7 @@
 ## Title-ptBR: Memories - Combate
 ## Notes-ptBR: Registra mortes, raros mortos e lutas longas.
 ## Author: Felipe M.
-## Version: 0.1.0
+## Version: @project-version@
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesCombatCharDB

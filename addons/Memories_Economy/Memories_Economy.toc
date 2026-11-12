@@ -14,7 +14,7 @@
 ## Title-ptBR: Memories - Economia
 ## Notes-ptBR: Registra saque, rolagens de grupo, equipamento, dinheiro, instrutores, a casa de leilões, o correio e negociações.
 ## Author: Felipe M.
-## Version: 0.1.0
+## Version: @project-version@
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesEconomyCharDB
