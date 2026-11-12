@@ -14,6 +14,7 @@
    ```
 
 3. The workflow builds the 4 files (the macOS file is optional until the signing secrets exist), then the `publish` job creates the release with notes generated from the commits.
+4. After the release, the `curseforge` job uploads the addon zip to CurseForge (see below).
 
 - **Version:** the tag without `v` (`v1.2.3` gives `1.2.3`). The tag must be `v` + semver: `vMAJOR.MINOR.PATCH`,
   with an optional pre-release part (`v1.2.3-rc.1`). Build metadata (`v1.2.3+build.5`) is refused, because Flutter
@@ -25,6 +26,28 @@
 - **Addon version:** each TOC in the zip gets `## Version: <version>`. The TOCs in `addons/` keep their version.
 - **Re-run:** re-run the failed jobs in the Actions tab. When the release exists, the `publish` job replaces its files
   and does not fail.
+
+## CurseForge
+
+The `curseforge` job runs after `publish` on a tag. `scripts/curseforge-upload.sh` uploads
+`Memories-addons-<version>.zip` to the CurseForge project as a new file named `Memories <version>`. A tag with a
+pre-release part uploads a beta file; another tag uploads a release file. The changelog links to the GitHub release.
+
+| Setting | Kind | Value |
+|---|---|---|
+| `CF_API_TOKEN` | Repository secret | A CurseForge API token, from the CurseForge author settings (API Tokens). |
+| `CURSEFORGE_PROJECT_ID` | Repository variable | The project id, shown on the CurseForge project page ("Project ID"). |
+| `CURSEFORGE_GAME_VERSIONS` | Repository variable, optional | Game version ids, comma-separated, in place of the lookup. |
+
+- **Game version:** the script reads `## Interface` of `addons/Memories/Memories.toc` and turns it into the game
+  version: `16001` is `1.60.1`. It looks the version up in the CurseForge list (`/api/game/versions`) and sends every
+  id with that name. When CurseForge has no such name, the job fails and names the version; set
+  `CURSEFORGE_GAME_VERSIONS` then.
+- **Failure:** a missing secret or variable fails the job with a message that names it. The GitHub release is already
+  out by then, so re-run only the `curseforge` job after the fix.
+- **Test:** `make test-scripts` runs `scripts/test-curseforge-upload.sh` with a fake `curl`.
+
+Set the variable with the GitHub CLI: `gh variable set CURSEFORGE_PROJECT_ID --body <id>`.
 
 ## Server image
 

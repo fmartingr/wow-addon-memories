@@ -307,3 +307,25 @@ jobs:
             if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
             gh release create "$TAG" "${files[@]}" "${flags[@]}"
           fi
+
+  # After the GitHub release, the addon zip goes to CurseForge. CF_API_TOKEN is a repository secret and
+  # CURSEFORGE_PROJECT_ID a repository variable; see docs/releasing.md.
+  curseforge:
+    needs: [version, publish]
+    if: github.event_name == 'push' && github.ref_type == 'tag'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-addons
+          path: dist
+      - name: Upload the addon zip to CurseForge
+        env:
+          CF_API_TOKEN: ${{ secrets.CF_API_TOKEN }}
+          CURSEFORGE_PROJECT_ID: ${{ vars.CURSEFORGE_PROJECT_ID }}
+          CURSEFORGE_GAME_VERSIONS: ${{ vars.CURSEFORGE_GAME_VERSIONS }}
+          VERSION: ${{ needs.version.outputs.version }}
+          PRERELEASE: ${{ needs.version.outputs.prerelease }}
+          RELEASE_URL: ${{ github.server_url }}/${{ github.repository }}/releases/tag/${{ github.ref_name }}
+        run: bash scripts/curseforge-upload.sh "dist/Memories-addons-$VERSION.zip" "$VERSION" "$PRERELEASE"
