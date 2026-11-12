@@ -104,3 +104,15 @@ test('the ruler step grows with the length of the journey', async () => {
   assert.ok(long >= 86400 && (long * 1000) / 864000 >= 64);
   assert.ok((rulerStep(1e9, 1000) * 1000) / 1e9 >= 64);
 });
+
+test('drawMarks draws each mark at one size whatever the time, with no pulse', () => {
+  const m = buildModel(char, [{ t: 1100, k: 'lv', level: 2, m: 1438, x: 5000, y: 5000 }], []);
+  const v = { ...view, x: m.marks[0].wx, y: m.marks[0].wy };
+  const sizes = [0, 45, 90, 135].map((now) => {
+    const arcs = [];
+    const ctx = new Proxy({}, { get: (t, k) => (k === 'arc' ? (...a) => arcs.push(a[2]) : () => {}), set: () => true });
+    drawMarks(ctx, v, m, {}, m.marks[0].c, now);
+    return arcs[0];
+  });
+  assert.equal(new Set(sizes).size, 1);
+});

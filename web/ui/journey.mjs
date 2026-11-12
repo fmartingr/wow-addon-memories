@@ -82,18 +82,16 @@ export function drawTrail(ctx, view, model, bounds, uptoC = Infinity, dimRest = 
 }
 
 // drawMarks draws the event markers that pass the filter and returns the hit list [{ x, y, r, ev }].
-export function drawMarks(ctx, view, model, show, uptoC = Infinity, now = 0) {
+export function drawMarks(ctx, view, model, show, uptoC = Infinity) {
   const hits = [];
   const r = clamp(5 + view.rel * 0.6, 6, 9);
   for (const e of model.marks) {
     if (e.c > uptoC || show[CAT[e.k]] === false) continue;
     const sx = (e.wx - view.x) * view.s + view.w / 2, sy = (e.wy - view.y) * view.s + view.h / 2;
     if (sx < -20 || sy < -20 || sx > view.w + 20 || sy > view.h + 20) continue;
-    const age = uptoC - e.c;
-    const pulse = age >= 0 && age < 6 ? 1 + 0.5 * Math.sin(now / 90) * (1 - age / 6) : 1;
     const ox = e.k === 'ss' ? r * 1.7 : e.k === 'bo' ? r * 0.8 * (((e.encounter || 0) % 3) - 1) : 0;
     const oy = e.k === 'ss' ? -r * 1.2 : e.k === 'bo' ? -r * 1.4 : 0;
-    icon(ctx, e.k, sx + ox, sy + oy, r * pulse, 1);
+    icon(ctx, e.k, sx + ox, sy + oy, r, 1);
     hits.push({ x: sx + ox, y: sy + oy, r: r + 3, ev: e });
   }
   return hits;
@@ -644,7 +642,7 @@ export function createJourneyTab(panel, ctx) {
     });
     view.draw((c, v, now) => {
       drawTrail(c, v, model, bounds, state.c, state.c < model.total);
-      mapHits = drawMarks(c, v, model, state.show, state.c, now);
+      mapHits = drawMarks(c, v, model, state.show, state.c);
       if (state.sel?.wx != null) {
         const sx = (state.sel.wx - v.x) * v.s + v.w / 2, sy = (state.sel.wy - v.y) * v.s + v.h / 2;
         c.strokeStyle = '#fff';
