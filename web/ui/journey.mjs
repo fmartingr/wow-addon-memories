@@ -9,7 +9,7 @@ import { t } from '../lib/i18n.mjs';
 import { CAT, FLAG, LANES } from '../lib/model.mjs';
 import { advance, crossed, eventId, findEvent, goldAt, levelAt, placeAt, posAt, SPEEDS, spanAt } from '../lib/playback.mjs';
 import { ZONES } from '../zones.mjs';
-import { icon } from './icons.mjs';
+import { icon, onIconsLoaded } from './icons.mjs';
 import { MapView, MAX_S, nextZoom } from './mapview.mjs';
 import { createSheet } from './shell.mjs';
 
@@ -636,6 +636,11 @@ export function createJourneyTab(panel, ctx) {
         else hideTip();
         $('journeyMap').style.cursor = h ? 'pointer' : '';
       },
+    });
+    // An icon that loads after the first draw shows on the next one.
+    onIconsLoaded(() => {
+      view.invalidate();
+      drawTl();
     });
     view.draw((c, v, now) => {
       drawTrail(c, v, model, bounds, state.c, state.c < model.total);

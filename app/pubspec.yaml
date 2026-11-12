@@ -40,6 +40,7 @@ flutter:
     - assets/viewer/
     - assets/viewer/fonts/
     - assets/viewer/i18n/
+    - assets/viewer/icons/
     - assets/viewer/lib/
     - assets/viewer/map/
     - assets/viewer/map/art/
