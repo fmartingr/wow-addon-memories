@@ -6,7 +6,9 @@ import { clamp } from '../lib/format.mjs';
 import { currentLang, own, t } from '../lib/i18n.mjs';
 import ZONE_NAMES from '../i18n/zones.mjs';
 
-export const MAX_S = 40;
+// The closest zoom, in screen px for each world unit. The sharpest tiles hold about 16 to 22 px for each unit, so the
+// closest zooms enlarge them.
+export const MAX_S = 120;
 
 // The official name of a zone in a language; a zone with no translation shows its English name. A mapId that is not in
 // the zone table has no name.
@@ -75,7 +77,7 @@ export const levelName = (s, w, h) => {
 // The scale steps of the zoom buttons, from the world view to the closest zoom.
 export const zoomSteps = (w, h) => {
   const f = fitScale(w, h);
-  return [f, f * 2.6, f * 7, f * 18, f * 45].filter((x) => x < MAX_S * 0.9).concat(MAX_S);
+  return [f, f * 2.6, f * 7, f * 18, f * 45, f * 110].filter((x) => x < MAX_S * 0.9).concat(MAX_S);
 };
 
 export function nextZoom(s, dir, w, h) {
