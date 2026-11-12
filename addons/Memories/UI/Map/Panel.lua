@@ -2,10 +2,10 @@ local _, ns = ...
 
 local L = ns.L
 
--- The Journey panel of the world map: a check box for each group of kinds and for the trail, the colour of the
+-- The Journey panel of the Journey window: a check box for each group of kinds and for the trail, the colour of the
 -- trail, a list of chapters to jump to or of sessions to show, the counts of the last draw, and the Highlights feed
--- of the events that the replay passed. The player bar sits at the bottom of the map: play and pause, the speed, a
--- slider and the clock of the replay. Both are plain frames, so they never taint a game frame.
+-- of the events that the replay passed. The player bar sits under the map: play and pause, the speed, a slider and
+-- the clock of the replay. Both are plain frames, so they never taint a game frame.
 local Panel = {}
 ns.MapPanel = Panel
 
@@ -14,13 +14,11 @@ Panel.ROW = 18
 Panel.LIST_HEIGHT = 110
 Panel.VISIBLE = math.ceil(Panel.LIST_HEIGHT / Panel.ROW) + 1
 Panel.BOX = 22
--- The boxes sit in two columns, so the core and every sub-addon group still fit in the height of the quest log.
+-- The boxes sit in two columns, so the core and every sub-addon group still fit in the height of the map.
 Panel.COLUMN = 125
 Panel.BAR_WIDTH, Panel.BAR_HEIGHT = 520, 48
--- The bar lies over the map. The map lays its pins at the levels of its pin manager, near 2000 and up, so the bar sits
--- above the topmost of them, and at least this far above the map.
+-- The panel and the bar sit this far above the window, over the levels of the map, its trail and its pins.
 Panel.BAR_LEVEL = 500
-Panel.ABOVE_PINS = 10
 
 local frame
 local bar
@@ -36,13 +34,6 @@ Panel.FEED_SIZE = 6
 
 function Panel.Frame()
 	return frame
-end
-
-local function groupLabel(group)
-	if group == "" then
-		return L["Other"]
-	end
-	return ns.Options.GROUPS[group] or group
 end
 
 local function check(parent, text, slot, onClick)
@@ -234,17 +225,9 @@ function Panel.Bar()
 	return bar
 end
 
--- The level for a frame of this addon that lies over the canvas of map. Another addon can add pin levels, so each show
--- asks again.
-function Panel.LevelOver(map)
-	local base = (map:GetFrameLevel() or 1) + Panel.BAR_LEVEL
-	if type(map.GetPinFrameLevelsManager) ~= "function" then
-		return base
-	end
-	local ok, level = pcall(function()
-		return map:GetPinFrameLevelsManager():GetValidFrameLevel("PIN_FRAME_LEVEL_TOPMOST", math.huge)
-	end)
-	return ok and type(level) == "number" and math.max(base, level + Panel.ABOVE_PINS) or base
+-- The level for the panel and the bar: above the map of the window, its trail and its pins, so they take the clicks.
+function Panel.LevelOver(parent)
+	return (parent:GetFrameLevel() or 1) + Panel.BAR_LEVEL
 end
 
 -- Sets the bar from the replay: the text of the play button, the speed, the slider and the clock.
@@ -294,7 +277,7 @@ local function buildBar(parent)
 	-- The level is set before the children exist, so they take theirs above it.
 	b:SetFrameLevel(Panel.LevelOver(parent))
 	b:EnableMouse(true)
-	b:SetPoint("BOTTOM", parent.ScrollContainer or parent, "BOTTOM", 0, 14)
+	b:SetPoint("BOTTOM", parent, "BOTTOM", 0, 14)
 	b.bg = b:CreateTexture(nil, "BACKGROUND")
 	b.bg:SetAllPoints()
 	b.bg:SetColorTexture(0.05, 0.04, 0.03, 0.85)
@@ -403,7 +386,7 @@ function Panel.Create(parent)
 	f:Hide()
 	f:SetFrameLevel(Panel.LevelOver(parent))
 	f:SetWidth(Panel.WIDTH)
-	-- The panel lies over the quest log, so it takes the clicks and the wheel that would reach the log under it.
+	-- The panel takes the clicks and the wheel, so none reaches the map under it.
 	f:EnableMouse(true)
 	f:EnableMouseWheel(true)
 	f.bg = f:CreateTexture(nil, "BACKGROUND")
@@ -415,9 +398,9 @@ function Panel.Create(parent)
 	-- Refresh sets each box from the settings when the panel shows.
 	local built = { trail = check(f, L["Trail"], 0, setter("map.trail")), groups = {} }
 	local slot = 0
-	for _, group in ipairs(ns.MapData.Groups()) do
+	for _, item in ipairs(ns.Overlay.GROUPS) do
 		slot = slot + 1
-		built.groups[group] = check(f, groupLabel(group), slot, setter("map.groups." .. group))
+		built.groups[item.group] = check(f, item.label, slot, setter("map.groups." .. item.group))
 	end
 	slot = slot + 1
 	built.blind = check(f, L["Colorblind palette"], slot, setter("map.colorblind"))

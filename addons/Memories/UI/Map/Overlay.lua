@@ -2,9 +2,9 @@ local _, ns = ...
 
 local L = ns.L
 
--- Draws the trail and the pins of MapData on the world map, and replays them. One data provider owns the drawing: the
--- map calls it when the map changes, when it clears its data and when its canvas changes, so the overlay follows each
--- zoom with no hook on a game function. Lines and pins sit in pools. A replay moves a playhead along the timeline of
+-- Draws the trail and the pins of MapData on the map of the Journey window, and replays them. The window is the host:
+-- it gives the map id and the canvas, it shows a map for Follow, and it asks for a draw when its map changes. Lines and
+-- pins sit in pools. A replay moves a playhead along the timeline of
 -- Replay: a step of the trail shows when the playhead passes it, and a pin pops in with an animation. With no replay
 -- running, the whole journey shows.
 local Overlay = {}
@@ -18,22 +18,6 @@ Overlay.LINE_WIDTH = 2
 -- The colour of each way of travel, as the website's trail colours.
 Overlay.WAY_COLOR = ns.Replay.WAY_COLOR
 
-Overlay.GROUP_COLOR = {
-	Sessions = { 0.7, 0.7, 0.7 },
-	Progress = { 1, 0.82, 0 },
-	Deaths = { 1, 0.25, 0.2 },
-	Travel = { 0.4, 0.75, 1 },
-	Dungeons = { 0.78, 0.55, 1 },
-	Screenshots = { 1, 1, 1 },
-	Combat = { 1, 0.5, 0.2 },
-	Gathering = { 0.4, 0.9, 0.4 },
-	Character = { 0.9, 0.9, 0.5 },
-	Milestones = { 1, 0.6, 0.9 },
-	Loot = { 0.65, 0.85, 0.3 },
-	Money = { 1, 0.85, 0.3 },
-	Social = { 0.5, 0.9, 0.9 },
-	PvP = { 0.9, 0.3, 0.5 },
-}
 local DEFAULT_COLOR = { 0.85, 0.85, 0.85 }
 
 -- The icon of each group, from the game's own icons of the Classic client.
@@ -53,10 +37,8 @@ Overlay.GROUP_ICON = {
 	Social = "Interface\\Icons\\INV_Letter_01",
 	PvP = "Interface\\Icons\\INV_BannerPVP_02",
 }
-local DEFAULT_ICON = "Interface\\Icons\\INV_Misc_QuestionMark"
 
-Overlay.BIG_KINDS = { de = true, lv = true }
-Overlay.PIN_SIZE, Overlay.BIG_PIN_SIZE = 16, 24
+Overlay.BIG_PIN_SIZE = 22
 -- A continent or the world packs a whole journey into a small space, so its pins show at this part of their size.
 Overlay.HIGH_MAP_PIN = 0.5
 Overlay.HEAD_SIZE = 22
@@ -80,10 +62,27 @@ Overlay.BURST = {
 	bo = { 0.78, 0.55, 1 },
 	wb = { 1, 0.5, 0.2 },
 }
--- The size of a pin or a line is in screen units. The canvas scale of the map is clamped to this range.
-Overlay.MIN_SCALE, Overlay.MAX_SCALE = 0.1, 10
+-- Only these kinds leave an icon on the map: a level up shows its level in a badge, a death shows a skull. The other
+-- kinds of BURST play their burst and go to the Highlights feed with no icon.
+Overlay.MARK = { lv = true, de = true }
+Overlay.SKULL = "Interface\\TargetingFrame\\UI-TargetingFrame-Skull"
+-- The groups that the replay reads, with the label of each box of the panel.
+Overlay.GROUPS = {
+	{ group = "Progress", label = L["Level ups"] },
+	{ group = "Deaths", label = L["Deaths"] },
+	{ group = "Travel", label = L["Travel"] },
+	{ group = "Dungeons", label = L["Dungeons"] },
+}
+-- The kinds that MapData reads: those that leave an icon or play a burst.
+local KINDS = {}
+for kind in pairs(Overlay.MARK) do
+	KINDS[kind] = true
+end
+for kind in pairs(Overlay.BURST) do
+	KINDS[kind] = true
+end
 
-local provider
+local host
 local container
 local head
 local enabled = false
@@ -99,8 +98,8 @@ local linePool, pinPool, burstPool = {}, {}, {}
 local timeline
 local pos, playing, speed = 0, false, ns.Replay.SPEEDS[1]
 local shownEdges, shownPins = 0, 0
--- The canvas size, and the canvas units of one screen unit.
-local width, height, unit = 0, 0, 1
+-- The canvas size.
+local width, height = 0, 0
 -- The size factor of the pins on the map shown.
 local pinScale = 1
 -- Follow: with the clock of the whole journey, the replay shows the map of the playhead. It waits this long after it
@@ -159,41 +158,28 @@ function Overlay.Speed()
 	return speed
 end
 
--- The filter of MapData from the settings and the session choice.
+-- The filter of MapData from the settings and the session choice: the groups of GROUPS whose box is on, and the kinds
+-- that leave an icon or play a burst.
 function Overlay.Filter()
 	local groups = {}
-	for _, group in ipairs(ns.MapData.Groups()) do
-		if ns.Settings.Get("map.groups." .. group) ~= false then
-			groups[group] = true
+	for _, item in ipairs(Overlay.GROUPS) do
+		if ns.Settings.Get("map.groups." .. item.group) ~= false then
+			groups[item.group] = true
 		end
 	end
-	return { trail = ns.Settings.Get("map.trail") ~= false, groups = groups, session = session }
+	return { trail = ns.Settings.Get("map.trail") ~= false, groups = groups, kinds = KINDS, session = session }
 end
 
 local function changed()
 	ns.Emit("MAP_REPLAY_CHANGED")
 end
 
-local function canvasScale(map, canvas)
-	local scale
-	if type(map.GetCanvasScale) == "function" then
-		local ok, value = pcall(map.GetCanvasScale, map)
-		scale = ok and value or nil
-	end
-	if type(scale) ~= "number" and canvas.GetScale then
-		scale = canvas:GetScale()
-	end
-	if type(scale) ~= "number" or scale ~= scale then
-		return 1
-	end
-	return math.min(math.max(scale, Overlay.MIN_SCALE), Overlay.MAX_SCALE)
-end
-
 local function release()
 	for _, line in ipairs(linePool) do
 		line:Hide()
 	end
-	for _, pin in ipairs(pinPool) do
+	-- An event with no icon leaves a hole in the pool.
+	for _, pin in pairs(pinPool) do
 		pin:Hide()
 		pin.popAt = nil
 	end
@@ -214,7 +200,7 @@ local function clear()
 		container:SetScript("OnUpdate", nil)
 	end
 	timeline, playing, pos, pauseLeft = nil, false, 0, 0
-	stats ={ lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
+	stats = { lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }
 end
 
 function Overlay.Clear()
@@ -253,13 +239,19 @@ local function newPin()
 	pin.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
 	pin.glow:SetBlendMode("ADD")
 	pin.glow:SetPoint("CENTER")
+	-- A rim in the colour of the kind around a dark face. A death shows a skull on the face, a level up its number.
 	pin.border = pin:CreateTexture(nil, "BORDER")
 	pin.border:SetTexture("Interface\\Buttons\\WHITE8X8")
 	pin.border:SetPoint("CENTER")
+	pin.face = pin:CreateTexture(nil, "ARTWORK", nil, -1)
+	pin.face:SetTexture("Interface\\Buttons\\WHITE8X8")
+	pin.face:SetVertexColor(0.06, 0.05, 0.04, 0.95)
+	pin.face:SetPoint("CENTER")
 	pin.icon = pin:CreateTexture(nil, "ARTWORK")
-	pin.icon:SetTexCoord(0.08, 0.92, 0.08, 0.92)
 	pin.icon:SetPoint("CENTER")
-	-- A pin shows its tooltip but lets the clicks through, so the map still zooms in and out under it.
+	pin.number = pin:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+	pin.number:SetPoint("CENTER", 0, 0)
+	-- A pin shows its tooltip but lets the clicks through to the map.
 	if pin.SetMouseClickEnabled then
 		pin:SetMouseClickEnabled(false)
 	end
@@ -270,31 +262,56 @@ end
 
 -- The size of a pin in canvas units, with the pop factor k.
 local function sizePin(pin, k)
-	local base = (Overlay.BIG_KINDS[pin.data.kind] and Overlay.BIG_PIN_SIZE or Overlay.PIN_SIZE) * pinScale
-	local size = math.max(base * unit * k, 0.01)
-	local inner = math.max(size - 2 * unit * k * pinScale, 0.01)
+	local base = Overlay.BIG_PIN_SIZE * pinScale
+	local size = math.max(base * k, 0.01)
+	local inner = math.max(size - 2 * k * pinScale, 0.01)
 	pin:SetSize(size, size)
 	pin.border:SetSize(size, size)
+	pin.face:SetSize(inner, inner)
 	pin.icon:SetSize(inner, inner)
+	pin.number:SetAlpha(k >= 0.6 and 1 or 0)
 	pin.glow:SetSize(size * 1.9, size * 1.9)
 end
 
+-- The face of a pin: a skull for a death, the level for a level up.
+local function facePin(pin, data)
+	local color = Overlay.BURST[data.kind] or DEFAULT_COLOR
+	pin.border:SetVertexColor(color[1], color[2], color[3], 1)
+	pin.glow:SetVertexColor(color[1], color[2], color[3], 1)
+	if data.kind == "de" then
+		pin.icon:SetTexture(Overlay.SKULL)
+		pin.icon:Show()
+		pin.number:Hide()
+	else
+		local level = data.fields and data.fields.level
+		pin.icon:Hide()
+		pin.number:SetText(type(level) == "number" and tostring(level) or "?")
+		pin.number:Show()
+	end
+end
+
+-- Shows the pin of an event of a kind of MARK. An event of another kind has no icon, so its slot of the pool stays
+-- empty.
 local function placePin(i, animate)
 	local data = timeline.pins[i]
 	local pin = pinPool[i]
+	if not Overlay.MARK[data.kind] then
+		if pin then
+			pin:Hide()
+			pin.data, pin.popAt = nil, nil
+		end
+		return
+	end
 	if not pin then
 		pin = newPin()
 		pinPool[i] = pin
 	end
 	pin.data = data
-	local color = Overlay.GROUP_COLOR[data.group] or DEFAULT_COLOR
-	pin.border:SetVertexColor(color[1], color[2], color[3], 1)
-	pin.glow:SetVertexColor(color[1], color[2], color[3], 1)
-	pin.icon:SetTexture(Overlay.GROUP_ICON[data.group] or DEFAULT_ICON)
+	facePin(pin, data)
 	pin:ClearAllPoints()
 	pin:SetPoint("CENTER", container, "TOPLEFT", data.x * width, -data.y * height)
 	pin.popAt = animate and GetTime() or nil
-	pin.glow:SetAlpha(Overlay.BIG_KINDS[data.kind] and 0.4 or 0)
+	pin.glow:SetAlpha(0.4)
 	sizePin(pin, animate and 0 or 1)
 	pin:Show()
 end
@@ -306,7 +323,7 @@ local function placeLine(i)
 		line = container:CreateLine(nil, "ARTWORK")
 		linePool[i] = line
 	end
-	line:SetThickness(Overlay.LINE_WIDTH * unit)
+	line:SetThickness(Overlay.LINE_WIDTH)
 	line:SetColorTexture(ns.Replay.Color(e, look.mode, look.blind))
 	line:SetStartPoint("TOPLEFT", container, e.x1 * width, -e.y1 * height)
 	line:SetEndPoint("TOPLEFT", container, e.x2 * width, -e.y2 * height)
@@ -335,7 +352,7 @@ local function placeHead(now)
 		return
 	end
 	local pulse = 0.5 + 0.5 * math.sin(now * 5)
-	local size = Overlay.HEAD_SIZE * unit
+	local size = Overlay.HEAD_SIZE
 	head:SetSize(size, size)
 	head.arrow:SetSize(size, size)
 	-- The arrow art points up and SetRotation turns it counterclockwise. The step is in map units, so it turns on the
@@ -356,25 +373,29 @@ local function animatePins(now)
 	local busy = false
 	for i = 1, shownPins do
 		local pin = pinPool[i]
-		local k = 1
-		if pin.popAt then
-			local t = (now - pin.popAt) / Overlay.POP
-			if t >= 1 then
-				pin.popAt = nil
-			else
-				k = 1 + 2.70158 * (t - 1) ^ 3 + 1.70158 * (t - 1) ^ 2
-				busy = true
+		-- An event with no icon has no pin to animate.
+		if pin and pin.data then
+			if pin.popAt then
+				local t = (now - pin.popAt) / Overlay.POP
+				local k = 1
+				if t >= 1 then
+					pin.popAt = nil
+				else
+					k = 1 + 2.70158 * (t - 1) ^ 3 + 1.70158 * (t - 1) ^ 2
+					busy = true
+				end
+				sizePin(pin, k)
 			end
-			sizePin(pin, k)
+			local age = pos - pin.data.c
+			local fresh = playing and age >= 0 and age < ns.Replay.PULSE
+			if fresh then
+				pin.glow:SetAlpha(0.5 + 0.5 * math.sin(now * 9))
+				busy = true
+			elseif pin.glowing then
+				pin.glow:SetAlpha(0.4)
+			end
+			pin.glowing = fresh
 		end
-		local age = pos - pin.data.c
-		if playing and age >= 0 and age < ns.Replay.PULSE then
-			pin.glow:SetAlpha(0.5 + 0.5 * math.sin(now * 9))
-			busy = true
-		elseif pin.glowing then
-			pin.glow:SetAlpha(Overlay.BIG_KINDS[pin.data.kind] and 0.4 or 0)
-		end
-		pin.glowing = playing and age >= 0 and age < ns.Replay.PULSE
 	end
 	return busy
 end
@@ -441,9 +462,8 @@ local function animateBursts(now)
 				busy = true
 				local grow = 1 - (1 - t) ^ 3
 				local ring = Overlay.BIG_PIN_SIZE * (0.6 + 3.4 * grow)
-				burst:SetScale(unit)
 				burst:ClearAllPoints()
-				burst:SetPoint("CENTER", container, "TOPLEFT", burst.x * width / unit, -burst.y * height / unit)
+				burst:SetPoint("CENTER", container, "TOPLEFT", burst.x * width, -burst.y * height)
 				burst.ring:SetSize(ring, ring)
 				burst.ring:SetAlpha((1 - t) ^ 1.2)
 				burst.label:ClearAllPoints()
@@ -460,7 +480,7 @@ local function finish()
 	ns.Emit("MAP_OVERLAY_DRAWN", Overlay.Stats())
 end
 
--- A failed draw leaves the map as the game drew it.
+-- A failed draw leaves the map with its art and no journey.
 local function fail()
 	resume = nil
 	Overlay.Clear()
@@ -485,15 +505,15 @@ local function goTo()
 	if shows[m] then
 		return false
 	end
-	local map = provider and provider:GetMap()
+	local map = host
 	local from, before = drawnMap, timeline
 	-- A map that cannot be shown leaves following off, so the replay does not ask for it again and again.
 	hold = true
-	-- The game's SetMapID sizes the canvas from the art layers of the map and raises an error for a map with none.
+	-- The window shows only a map with art layers.
 	local art = C_Map.GetMapArtLayers
 	if map and type(map.SetMapID) == "function" and (type(art) ~= "function" or (art(m) or {})[1]) then
 		resume, expectedMap = { pos = pos, playing = playing }, m
-		-- The game's SetMapID calls OnMapChanged of each provider before it returns, so the draw is done here.
+		-- The window's SetMapID draws the new map before it returns.
 		pcall(map.SetMapID, map, m)
 		if drawnMap == m then
 			hold = false
@@ -501,7 +521,7 @@ local function goTo()
 			return true
 		end
 		resume, expectedMap = nil, nil
-		-- An error inside SetMapID leaves the map on the new id with the art of the old map.
+		-- An error inside SetMapID can leave the map on the new id with the art of the old map.
 		if map:GetMapID() ~= from then
 			pcall(map.SetMapID, map, from)
 		end
@@ -514,7 +534,6 @@ end
 -- animates. It stops its own OnUpdate once nothing moves.
 local function update(dt)
 	if not timeline or width <= 0 or height <= 0 then
-		-- A canvas with no size wakes the replay again from Relayout.
 		container:SetScript("OnUpdate", nil)
 		return
 	end
@@ -550,8 +569,11 @@ local function update(dt)
 	end
 	if wantPins < shownPins then
 		for i = wantPins + 1, shownPins do
-			pinPool[i]:Hide()
-			pinPool[i].popAt = nil
+			local pin = pinPool[i]
+			if pin then
+				pin:Hide()
+				pin.popAt = nil
+			end
 		end
 		shownPins = wantPins
 		ns.Emit("MAP_REPLAY_RESET")
@@ -660,19 +682,6 @@ local function count(set)
 	return n
 end
 
--- The map stacks its own layers, such as the art of the explored areas, by the levels of its pin manager. A plain child
--- of the canvas sits under them, so the overlay takes the level of the game's area pins. Another addon can add levels,
--- so each draw asks again.
-local function pinLevel(map)
-	if type(map.GetPinFrameLevelsManager) ~= "function" then
-		return nil
-	end
-	local ok, level = pcall(function()
-		return map:GetPinFrameLevelsManager():GetValidFrameLevel("PIN_FRAME_LEVEL_AREA_POI")
-	end)
-	return ok and type(level) == "number" and level or nil
-end
-
 -- The pins and the segments of mapID for the current filter, with the counts of the panel.
 local function query(mapID, filter)
 	local skipped = {}
@@ -701,14 +710,13 @@ local function query(mapID, filter)
 	return data
 end
 
-local function measure(map, canvas)
+local function measure(canvas)
 	local w, h = canvas:GetSize()
 	width, height = tonumber(w) or 0, tonumber(h) or 0
-	unit = 1 / canvasScale(map, canvas)
 end
 
 local function draw()
-	local map = provider and provider:GetMap()
+	local map = host
 	if not enabled or not map then
 		fail()
 		return
@@ -717,8 +725,9 @@ local function draw()
 	local keepPos, keepPlaying = pos, playing
 	-- The panel empties its feed only when the playhead does not stay.
 	clear()
-	-- A hidden map draws again from RefreshAllData when it shows, with the filter of that time.
-	if not map:IsShown() then
+	-- A hidden window draws again when it shows, with the filter of that time. A window with no map has nothing to draw.
+	local mapID = map:GetMapID()
+	if not map:IsShown() or not mapID then
 		ns.Emit("MAP_REPLAY_RESET")
 		finish()
 		changed()
@@ -735,13 +744,8 @@ local function draw()
 		head = newHead()
 		head:Hide()
 	end
-	local level = pinLevel(map)
-	if level then
-		container:SetFrameLevel(level)
-	end
 	container:Show()
-	measure(map, canvas)
-	local mapID = map:GetMapID()
+	measure(canvas)
 	pinScale = ns.IsSkippedMap(mapID) and Overlay.HIGH_MAP_PIN or 1
 	look = { mode = ns.Settings.Get("map.color"), blind = ns.Settings.Get("map.colorblind") == true }
 	local filter = Overlay.Filter()
@@ -793,10 +797,10 @@ local function draw()
 	changed()
 end
 
--- Draws again for the map shown, from the saved data. A failure goes to /memories errors and leaves the map as the game
--- drew it.
+-- Draws again for the map shown, from the saved data. A failure goes to /memories errors and leaves the map with its
+-- art and no journey.
 function Overlay.Draw()
-	if not provider then
+	if not host then
 		return
 	end
 	if not ns.Safe("map overlay", draw) then
@@ -816,97 +820,16 @@ function Overlay.SetSession(value)
 	Overlay.Draw()
 end
 
--- Places the lines and the pins that show again for a new canvas size, with no change of the playhead. A new zoom
--- (sizeOnly) keeps the canvas offsets and only sizes them again, as the map fires it on each frame of a zoom.
-function Overlay.Relayout(sizeOnly)
-	local map = provider and provider:GetMap()
-	if not (enabled and timeline and container and map and map:IsShown()) then
-		return
-	end
-	local ok = ns.Safe("map overlay:relayout", function()
-		measure(map, map:GetCanvas())
-		if width <= 0 or height <= 0 then
-			return
-		end
-		for i = 1, shownEdges do
-			if sizeOnly then
-				linePool[i]:SetThickness(Overlay.LINE_WIDTH * unit)
-			else
-				placeLine(i)
-			end
-		end
-		for i = 1, shownPins do
-			local pin = pinPool[i]
-			if not sizeOnly then
-				pin:ClearAllPoints()
-				pin:SetPoint("CENTER", container, "TOPLEFT", pin.data.x * width, -pin.data.y * height)
-			end
-			sizePin(pin, 1)
-		end
-		wake()
-	end)
-	if not ok then
-		fail()
-	end
-end
-
 function Overlay.Show(on)
 	enabled = on == true
 	Overlay.Draw()
 end
 
-local function newProvider()
-	local p = CreateFromMixins(MapCanvasDataProviderMixin)
-	function p:OnMapChanged()
-		Overlay.Draw()
-	end
-	function p:RefreshAllData()
-		Overlay.Draw()
-	end
-	function p:RemoveAllData()
-		ns.Safe("map overlay:clear", Overlay.Clear)
-		finish()
-		changed()
-	end
-	-- The lines and the pins sit at offsets from the canvas size and show at a size that follows the zoom.
-	function p:OnCanvasSizeChanged()
-		Overlay.Relayout()
-	end
-	function p:OnCanvasScaleChanged()
-		Overlay.Relayout(true)
-	end
-	return p
+-- The host draws the map: the Journey window. It gives GetMapID, GetCanvas, IsShown and SetMapID, and it calls Draw
+-- when its map changes.
+function Overlay.SetHost(h)
+	host = h
 end
-
--- Adds the provider to the world map once. It returns false while the map or its API is missing.
-function Overlay.Attach()
-	if provider then
-		return true
-	end
-	if
-		type(WorldMapFrame) ~= "table"
-		or type(WorldMapFrame.AddDataProvider) ~= "function"
-		or type(MapCanvasDataProviderMixin) ~= "table"
-		or type(CreateFromMixins) ~= "function"
-	then
-		return false
-	end
-	local p = newProvider()
-	WorldMapFrame:AddDataProvider(p)
-	provider = p
-	return true
-end
-
-ns.Listen("LOGIN", function()
-	if not Overlay.Attach() then
-		local handle
-		handle = ns.On("ADDON_LOADED", function(_, name)
-			if name == "Blizzard_WorldMap" and Overlay.Attach() then
-				ns.Off("ADDON_LOADED", handle)
-			end
-		end, "map overlay")
-	end
-end, "map overlay")
 
 ns.Listen("JOURNAL_OPENED", function()
 	if enabled then

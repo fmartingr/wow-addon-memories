@@ -10,6 +10,13 @@ This spec adds a side tab beside the quest log tab of the world map. The tab is 
 website: a play button, a speed button, a slider and a clock, a trail that draws as time runs, and pins that pop in for
 the events of the journey (level up, death and others).
 
+**Revision 3 (own window).** The player uses OpenMap, a world map addon that draws its own stitched layout of the
+zones with no API for other addons. An overlay on the world map cannot follow that layout, so the trail vanished when
+the replay moved to another zone. The replay now runs in a Journey window of this addon that draws its own map from
+the game's map data, and the world map only has a button that opens it. The player also asked for fewer icons: only
+level ups (a badge with the level) and deaths (a skull) leave a pin. AC18 and task 10 record this, and they replace
+AC1, AC3, AC6 and AC13 where these differ.
+
 **Revision 2 (look and feel).** The player wants the replay to look and feel like the best replay players for the
 game: a trail with a readable colour scheme, a marker that points along the route, arcs for the trips that skip the
 trail, a list of chapters to jump to, a feed of highlights, and an animation for each big moment. AC14 to AC16 and tasks
@@ -77,6 +84,16 @@ zoomed out, and a wrong tab and panel layout. AC10 to AC13 and the decisions bel
   player makes during a replay turns following off until the next Play, seek or change of the box. A map that cannot be
   shown turns following off in the same way. With Follow off, the replay plays the map shown only.
 
+- **AC18 — Journey window:** a button under the side tabs of the world map (or on its right edge) opens and closes a
+  Journey window of this addon, and is lit while it is open. The window draws its own map: the art tiles of the map,
+  scaled to its map area, and the explored areas over them. It opens on the map of the player, or on the first map of
+  the trail when that one has no art. A left click on a zone opens the zone, and a right click or the Up button goes
+  to the map that holds it. The panel sits at the right of the map and the player bar under it. Escape closes the
+  window and the title bar moves it. Memories draws nothing on the world map, so the window works the same with
+  OpenMap or another world map addon. Only level ups and deaths leave a pin: a level up is a badge with its level and
+  a gold rim, a death is a skull with a red rim. The other kinds of the replay play their burst and go to the feed
+  with no pin. The panel boxes are Level ups, Deaths, Travel and Dungeons. The saved setting of the last tab is gone.
+
 ## Constraints
 
 - **Must:**
@@ -126,6 +143,10 @@ zoomed out, and a wrong tab and panel layout. AC10 to AC13 and the decisions bel
 | Follow uses one clock for the whole journey, built from the time range of each trail chunk: real time inside a chunk and at most 20 s for each gap between chunks. | The chunk records give the range with no full decode, so the clock costs two numbers for each chunk, and it is the same on each map. |
 | Follow switches the map with `WorldMapFrame:SetMapID`, a public call, and keeps the playhead through the redraw. | The provider redraws the map by itself, so no game function is changed. |
 | A map change that the overlay did not ask for during a replay turns following off, not the saved setting. | The replay never fights the player for the map. |
+| The replay runs in a window of this addon, not on the world map. | A world map addon such as OpenMap draws its own layout and changes maps on its own, with no API. Only a map of our own gives Follow and the trail a fixed place. |
+| The window draws the map art from `C_Map.GetMapArtLayers`, `C_Map.GetMapArtLayerTextures` and `C_MapExplorationInfo.GetExploredMapTextures`. | These are the public calls the game's own map uses, so the art matches the projection of the trail. |
+| The overlay draws into a host (the window), which gives the map id, the canvas and `SetMapID`. | The overlay, the replay and Follow stay as they are; only the host changed. |
+| Only level ups and deaths leave a pin; the death pin is the game's skull texture, and the level pin is text in a badge. | The map stays readable, and no art of our own is needed. |
 | Every texture has its own size and one anchor. A pin takes no clicks, only the tooltip. | A texture with `SetAllPoints` in a frame of size 0 can fill the canvas. |
 | The tab icon is the addon icon `Media\icon`. | The file exists in the addon already. |
 
@@ -320,6 +341,20 @@ Coverage: `make coverage-lua` must not drop.
   a continent that stays; a change by the player and a failure hold following; Play clears the hold; Follow off plays
   one map; the box saves the setting.
 - **Verify:** `make test-lua lint-lua fmt-check`; in the game, rows U28 to U30.
+
+### [x] 10. The Journey window and fewer pins
+
+- **Outcome:** AC18.
+- **Depends on:** 9.
+- **Covers:** AC18, AC8, AC9; risk "another map addon".
+- **Files:** `UI/Map/Window.lua` (new), `Overlay.lua` (host, pins, filter), `Panel.lua` (groups), `Tab.lua` (button),
+  `MapData.lua` (`filter.kinds`), `Data/Settings.lua` (no `tab`), `Memories.toc`, `Locales.lua`, `.luacheckrc`, `docs/*`,
+  `spec/maptab_spec.lua`, `spec/overlay_spec.lua`, `spec/settings_spec.lua`, `spec/helpers/wow.lua`.
+- **Tests:** the button places and toggles the window; the first map; the tiles and the explored pieces with their
+  sizes, offsets and texture coordinates; Up, right click and a left click on a zone; a map with no art; Follow switches
+  the window map; the pins: badge, skull, no pin for other kinds; the filter reads only the panel groups.
+- **Verify:** `make test-lua lint-lua fmt-check`; in the game, rows U1, U2, U4, U7, U8, U12, U14, U18, U19, U21 and U28
+  to U31.
 
 ## Validation
 

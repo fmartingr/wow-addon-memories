@@ -148,6 +148,7 @@ read_globals = {
 	"C_EncodingUtil",
 	"C_GameRules",
 	"C_Map",
+	"C_MapExplorationInfo",
 	"C_QuestLog",
 	"C_Spell",
 	"C_Timer",

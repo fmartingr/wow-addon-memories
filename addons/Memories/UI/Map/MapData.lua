@@ -282,6 +282,7 @@ end
 -- The lines of every open journal that have a position on mapID, as { t, kind, group, x, y, fields }, in journal order
 -- with the core journal first. filter.groups holds the shown groups. filter.limit stops the list; the second result is
 -- the number of lines that match, the third the set of zones with no position on mapID.
+-- filter.kinds, when set, keeps only the kinds in it, before a line is decoded.
 function MapData.Pins(mapID, filter)
 	filter = filter or {}
 	local groups = filter.groups or {}
@@ -294,7 +295,7 @@ function MapData.Pins(mapID, filter)
 			if type(line) == "string" then
 				t, m, x, y, kind = head(line)
 			end
-			local group = kind and m and x and y and groupOf(kind)
+			local group = kind and m and x and y and (not filter.kinds or filter.kinds[kind]) and groupOf(kind)
 			if group and groups[group] and x <= SCALE and y <= SCALE and inSession(filter.session, t or 0) then
 				local fx, fy = target:Place(m, x / SCALE, y / SCALE)
 				if fx then

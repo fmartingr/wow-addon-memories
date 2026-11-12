@@ -1,25 +1,27 @@
 local wow = require("helpers.wow")
 
-describe("map journey tab", function()
+describe("journey window", function()
 	wow.pin_locale("enUS", before_each, after_each)
 
-	local ns, Tab, Panel, O
-	local ZONE = 1453
+	local ns, Tab, Panel, O, W
+	local ZONE, OTHER, CONT = 1453, 1454, 12
 
 	local function boot(opts)
 		opts = opts or {}
-		for _, name in ipairs({
-			"WorldMapFrame",
-			"QuestMapFrame",
-			"EventRegistry",
-			"MapCanvasDataProviderMixin",
-			"CreateFromMixins",
-		}) do
+		for _, name in ipairs({ "WorldMapFrame", "QuestMapFrame", "MemoriesJourneyFrame" }) do
 			_G[name] = nil
 		end
 		ns = wow.boot({
 			login = false,
-			maps = { [ZONE] = { mapType = 3 } },
+			maps = opts.maps or {
+				[CONT] = { mapType = 2, name = "Continent" },
+				[ZONE] = { mapType = 3, name = "Zone", parentMapID = CONT },
+				[OTHER] = { mapType = 3, name = "Other", parentMapID = CONT },
+			},
+			art = opts.art,
+			explored = opts.explored,
+			zoneAt = opts.zoneAt,
+			projections = opts.projections,
 			saved = opts.saved or {
 				MemoriesCharDB = {
 					trail = {
@@ -29,40 +31,15 @@ describe("map journey tab", function()
 				},
 			},
 		})
-		Tab, Panel, O = ns.MapTab, ns.MapPanel, ns.Overlay
+		Tab, Panel, O, W = ns.MapTab, ns.MapPanel, ns.Overlay, ns.MapWindow
+		_G.UISpecialFrames = {}
 		ns.Store.Reopen()
 	end
 
 	-- A fake world map with a quest log that has two tabs.
 	local function fakeMap(opts)
 		opts = opts or {}
-		local canvas = CreateFrame("Frame")
-		canvas:SetSize(1000, 500)
 		local map = CreateFrame("Frame", "WorldMapFrame")
-		map.providers = {}
-		map.mapID = ZONE
-		function map:AddDataProvider(p)
-			self.providers[#self.providers + 1] = p
-			p.owningMap = self
-		end
-		function map:GetMapID()
-			return self.mapID
-		end
-		function map:GetCanvas()
-			return canvas
-		end
-		_G.MapCanvasDataProviderMixin = {
-			GetMap = function(self)
-				return self.owningMap
-			end,
-		}
-		_G.CreateFromMixins = function(mixin)
-			local out = {}
-			for k, v in pairs(mixin) do
-				out[k] = v
-			end
-			return out
-		end
 		map.shown = opts.shown == true
 		if opts.log ~= false then
 			local log = CreateFrame("Frame", "QuestMapFrame")
@@ -74,16 +51,6 @@ describe("map journey tab", function()
 			end
 			log.shown = opts.logShown ~= false
 		end
-		if opts.registry ~= false then
-			local registry = { callbacks = {} }
-			function registry:RegisterCallback(event, fn, owner)
-				self.callbacks[event] = { fn = fn, owner = owner }
-			end
-			function registry:Fire(event, ...)
-				self.callbacks[event].fn(...)
-			end
-			_G.EventRegistry = registry
-		end
 		return map
 	end
 
@@ -94,173 +61,341 @@ describe("map journey tab", function()
 		return map
 	end
 
-	local function click(frame)
-		frame.scripts.OnClick(frame)
+	local function click(frame, button)
+		frame.scripts.OnClick(frame, button)
 	end
 
-	it("puts the tab under the lowest shown game tab", function()
-		start()
-		local point = Tab.Button().point
-		assert.same({ "TOP", _G.QuestMapFrame.TabButtons[2], "BOTTOM", 0, -Tab.GAP }, { unpack(point, 1, 5) })
-		_G.QuestMapFrame.TabButtons[2].shown = false
-		Tab.Place()
-		assert.equal(_G.QuestMapFrame.TabButtons[1], Tab.Button().point[2])
-	end)
-
-	it("puts the tab under the last game tab of the list before the game lays them out", function()
-		start({ bottoms = {} })
-		local log = _G.QuestMapFrame
-		for i = 1, 2 do
-			log.TabButtons[i] = CreateFrame("Button", nil, log)
-		end
-		Tab.Place()
-		assert.equal(log.TabButtons[2], Tab.Button().point[2])
-	end)
-
-	it("follows the quest log when it hides and shows with the map open", function()
-		start({ shown = true })
-		click(Tab.Button())
-		QuestMapFrame:Hide()
-		assert.same({ "TOPLEFT", WorldMapFrame, "TOPRIGHT", 0, Tab.DOCK_OFFSET }, { unpack(Tab.Button().point, 1, 5) })
-		assert.same(
-			{ "BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0 },
-			{ unpack(Panel.Frame().point, 1, 5) }
-		)
-		QuestMapFrame:Show()
-		assert.equal(_G.QuestMapFrame.TabButtons[2], Tab.Button().point[2])
-		assert.equal(0, #ns.Errors())
-	end)
-
-	it("docks the open panel again when the quest log changed while the map was closed", function()
-		start({ shown = true })
-		click(Tab.Button())
-		WorldMapFrame:Hide()
-		_G.QuestMapFrame.shown = false
-		WorldMapFrame:Show()
-		assert.same(
-			{ "BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0 },
-			{ unpack(Panel.Frame().point, 1, 5) }
-		)
-	end)
-
-	it("follows a quest log that comes after the map", function()
-		boot()
-		fakeMap()
-		local log = _G.QuestMapFrame
-		_G.QuestMapFrame = nil
-		wow.login()
-		_G.QuestMapFrame = log
-		WorldMapFrame:Show()
-		assert.equal(log.TabButtons[2], Tab.Button().point[2])
-		log:Hide()
-		assert.same({ "TOPLEFT", WorldMapFrame, "TOPRIGHT", 0, Tab.DOCK_OFFSET }, { unpack(Tab.Button().point, 1, 5) })
-	end)
-
-	it("puts the tab on the map edge when no game tab is shown", function()
-		start({ log = false })
-		assert.same({ "TOPLEFT", WorldMapFrame, "TOPRIGHT", 0, Tab.DOCK_OFFSET }, { unpack(Tab.Button().point, 1, 5) })
-	end)
-
-	it("reads the named tabs of a quest log with no tab list", function()
-		start()
-		_G.QuestMapFrame.TabButtons = nil
-		_G.QuestMapFrame.QuestsTab = CreateFrame("Button", nil, QuestMapFrame)
-		_G.QuestMapFrame.QuestsTab.bottom = 100
-		Tab.Place()
-		assert.equal(_G.QuestMapFrame.QuestsTab, Tab.Button().point[2])
-	end)
-
-	it("shows the panel and turns the overlay on with a click, and off with the next one", function()
-		start()
-		click(Tab.Button())
-		assert.is_true(Tab.Selected())
-		assert.is_true(O.Enabled())
-		assert.is_true(Panel.Frame().shown)
-		assert.is_true(Tab.Button().selected.shown)
-		assert.equal("journey", MemoriesDB.settings.map.tab)
-		click(Tab.Button())
-		assert.is_false(Tab.Selected())
-		assert.is_false(O.Enabled())
-		assert.is_false(Panel.Frame().shown)
-		assert.equal("quest", MemoriesDB.settings.map.tab)
-	end)
-
-	it("docks the panel beside the map, never over the quest log", function()
-		start()
-		click(Tab.Button())
-		assert.same(
-			{ "BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0 },
-			{ unpack(Panel.Frame().point, 1, 5) }
-		)
-		assert.is_nil(Panel.Frame().allPoints)
-		assert.is_true(Panel.Frame().clamped)
-	end)
-
-	it(
-		"lays the panel over the right side of a maximized map, and beside it again when the map is made small",
-		function()
-			boot()
-			local map = fakeMap({ log = false, shown = true })
-			map.ScrollContainer = CreateFrame("ScrollFrame", nil, map)
-			map.maximized = true
-			function map:IsMaximized()
-				return self.maximized
+	local function textures(layer)
+		local out = {}
+		for _, f in ipairs(wow.frames) do
+			if f.kind == "Texture" and f.parent == W.Canvas() and f.layer == layer and f.shown then
+				out[#out + 1] = f
 			end
-			function map:SynchronizeDisplayState() end
-			wow.login()
+		end
+		return out
+	end
+
+	describe("the button on the world map", function()
+		it("sits under the lowest shown game tab", function()
+			start()
+			local point = Tab.Button().point
+			assert.same({ "TOP", _G.QuestMapFrame.TabButtons[2], "BOTTOM", 0, -Tab.GAP }, { unpack(point, 1, 5) })
+			_G.QuestMapFrame.TabButtons[2].shown = false
+			Tab.Place()
+			assert.equal(_G.QuestMapFrame.TabButtons[1], Tab.Button().point[2])
+		end)
+
+		it("sits under the last game tab of the list before the game lays them out", function()
+			start({ bottoms = {} })
+			local log = _G.QuestMapFrame
+			for i = 1, 2 do
+				log.TabButtons[i] = CreateFrame("Button", nil, log)
+			end
+			Tab.Place()
+			assert.equal(log.TabButtons[2], Tab.Button().point[2])
+		end)
+
+		it("sits on the map edge with no game tab or a hidden quest log, and moves when the map shows", function()
+			start({ log = false })
+			assert.same(
+				{ "TOPLEFT", WorldMapFrame, "TOPRIGHT", 0, Tab.DOCK_OFFSET },
+				{ unpack(Tab.Button().point, 1, 5) }
+			)
+			local log = CreateFrame("Frame", "QuestMapFrame")
+			log.TabButtons = { CreateFrame("Button", nil, log) }
+			log.shown = false
+			WorldMapFrame:Show()
+			assert.equal(WorldMapFrame, Tab.Button().point[2])
+			log.shown = true
+			WorldMapFrame:Show()
+			assert.equal(log.TabButtons[1], Tab.Button().point[2])
+		end)
+
+		it("reads the named tabs of a quest log with no tab list", function()
+			start()
+			_G.QuestMapFrame.TabButtons = nil
+			_G.QuestMapFrame.QuestsTab = CreateFrame("Button", nil, _G.QuestMapFrame)
+			_G.QuestMapFrame.QuestsTab.bottom = 100
+			Tab.Place()
+			assert.equal(_G.QuestMapFrame.QuestsTab, Tab.Button().point[2])
+		end)
+
+		it("opens the Journey window with a click, closes it with the next one, and is lit while it is open", function()
+			start()
 			click(Tab.Button())
-			assert.same(
-				{ "BOTTOMRIGHT", map.ScrollContainer, "BOTTOMRIGHT", 0, 0 },
-				{ unpack(Panel.Frame().point, 1, 5) }
-			)
-			assert.is_true(Tab.Button().clamped)
-			assert.is_true(Panel.Frame().clamped)
-			map.maximized = false
-			map:SynchronizeDisplayState()
-			assert.same(
-				{ "BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0 },
-				{ unpack(Panel.Frame().point, 1, 5) }
-			)
+			assert.is_true(W.Shown())
+			assert.is_true(O.Enabled())
+			assert.is_true(Panel.Frame().shown)
+			assert.is_true(Tab.Button().selected.shown)
+			click(Tab.Button())
+			assert.is_false(W.Shown())
+			assert.is_false(O.Enabled())
+			assert.is_false(Panel.Frame().shown)
+			assert.is_false(Tab.Button().selected.shown)
+		end)
+
+		it("shows a tooltip", function()
+			start()
+			local tab = Tab.Button()
+			tab.scripts.OnEnter(tab)
+			assert.same({ "Journey" }, wow.tooltip.lines)
+			tab.scripts.OnLeave(tab)
+			assert.is_false(GameTooltip.shown)
+		end)
+
+		it("waits for the world map when it is not there at login", function()
+			boot()
+			wow.login()
+			assert.is_false(Tab.Attach())
+			fakeMap()
+			wow.fire("ADDON_LOADED", "Blizzard_Other")
+			assert.is_nil(Tab.Button())
+			wow.fire("ADDON_LOADED", "Blizzard_WorldMap")
+			assert.is_not_nil(Tab.Button())
+			assert.is_true(Tab.Attach())
+		end)
+
+		it("keeps a failed click out of the map", function()
+			start()
+			ns.MapWindow.Toggle = function()
+				error("boom")
+			end
+			assert.has_no.errors(function()
+				click(Tab.Button())
+			end)
+			assert.equal(1, #ns.Errors())
+		end)
+	end)
+
+	describe("the window", function()
+		it("opens on the map of the player, with its name, and closes with Escape", function()
+			start()
+			W.Toggle()
+			assert.equal(ZONE, W.MapID())
+			assert.equal("Zone", W.Frame().mapName.text)
+			assert.same({ "MemoriesJourneyFrame" }, UISpecialFrames)
+			assert.equal("Journey", W.Frame().TitleText and W.Frame().TitleText.text or "Journey")
+		end)
+
+		it("opens on the first map of the trail when the map of the player has no art", function()
+			start({ boot = { art = { [ZONE] = false } } })
+			wow.map.id = ZONE
+			local saved = MemoriesCharDB.trail.chunks
+			saved[#saved + 1] = { s = 1, t = 2000, m = OTHER, n = 2, d = "0,1000,1000;2,2000,1000" }
+			W.Toggle()
+			assert.equal(OTHER, W.MapID())
+		end)
+
+		it("opens on the nearest map above the player with art, in an instance with no trail", function()
+			local DUNGEON = 999
+			start({
+				boot = {
+					saved = { MemoriesCharDB = { trail = { v = 1, chunks = {} } } },
+					maps = {
+						[CONT] = { mapType = 2, name = "Continent" },
+						[ZONE] = { mapType = 3, name = "Zone", parentMapID = CONT },
+						[DUNGEON] = { mapType = 4, name = "Dungeon", parentMapID = ZONE },
+					},
+					art = { [DUNGEON] = false },
+				},
+			})
+			wow.map.id = DUNGEON
+			W.Toggle()
+			assert.equal(ZONE, W.MapID())
+			assert.equal("Zone", W.Frame().mapName.text)
+		end)
+
+		it("opens with no map, no name and no Up when nothing has art", function()
+			start({ boot = { art = { [ZONE] = false, [CONT] = false, [OTHER] = false } } })
+			wow.map.id = ZONE
+			assert.has_no.errors(W.Toggle)
+			assert.is_true(W.Shown())
+			assert.is_nil(W.MapID())
+			assert.is_false(W.Frame().up.enabled)
+			assert.equal(0, #textures("BACKGROUND"))
 			assert.equal(0, #ns.Errors())
-		end
-	)
+		end)
 
-	it("lays the panel, the bar and the tab above the topmost pins of the map", function()
-		local map = start({ shown = true })
-		function map:GetPinFrameLevelsManager()
-			return {
-				GetValidFrameLevel = function(_, name, index)
-					assert.equal("PIN_FRAME_LEVEL_TOPMOST", name)
-					assert.equal(math.huge, index)
-					return 2600
-				end,
-			}
-		end
-		click(Tab.Button())
-		assert.equal(2600 + Panel.ABOVE_PINS, Panel.Frame():GetFrameLevel())
-		assert.equal(2600 + Panel.ABOVE_PINS, Panel.Bar():GetFrameLevel())
-		WorldMapFrame:Hide()
-		WorldMapFrame:Show()
-		assert.equal(2600 + Panel.ABOVE_PINS + Tab.ABOVE_PANEL, Tab.Button():GetFrameLevel())
-	end)
+		it("draws the tiles of the map art in rows, scaled to the canvas", function()
+			start()
+			W.Toggle()
+			local tiles = textures("BACKGROUND")
+			assert.equal(12, #tiles)
+			local sx, sy = W.MAP_W / 1002, W.MAP_H / 668
+			assert.equal(ZONE * 100 + 1, tiles[1].texture)
+			assert.same({ 256 * sx, 256 * sy }, tiles[1].size)
+			assert.same({ "TOPLEFT", W.Canvas(), "TOPLEFT", 0, 0 }, { unpack(tiles[1].point, 1, 5) })
+			assert.same({ "TOPLEFT", W.Canvas(), "TOPLEFT", 256 * sx, -256 * sy }, { unpack(tiles[6].point, 1, 5) })
+		end)
 
-	it("keeps the bar above the map when the pin levels cannot be read", function()
-		local map = start({ shown = true })
-		function map:GetPinFrameLevelsManager()
-			error("boom")
-		end
-		click(Tab.Button())
-		assert.equal(map:GetFrameLevel() + Panel.BAR_LEVEL, Panel.Bar():GetFrameLevel())
-	end)
+		it("draws the explored areas over the tiles, in pieces, with the last ones cut to their files", function()
+			start({
+				boot = {
+					explored = {
+						[ZONE] = {
+							{
+								textureWidth = 300,
+								textureHeight = 100,
+								offsetX = 10,
+								offsetY = 20,
+								fileDataIDs = { 7, 8 },
+							},
+							{
+								textureWidth = 50,
+								textureHeight = 50,
+								offsetX = 0,
+								offsetY = 0,
+								fileDataIDs = { 9 },
+								isShownByMouseOver = true,
+							},
+							{ textureWidth = 10, textureHeight = 256, offsetX = 0, offsetY = 0, fileDataIDs = { 11 } },
+						},
+					},
+				},
+			})
+			W.Toggle()
+			local pieces = textures("BORDER")
+			assert.equal(3, #pieces)
+			local sx, sy = W.MAP_W / 1002, W.MAP_H / 668
+			assert.equal(7, pieces[1].texture)
+			assert.same({ 256 * sx, 100 * sy }, pieces[1].size)
+			assert.same({ 0, 1, 0, 100 / 128 }, pieces[1].texCoord)
+			assert.same({ 44 * sx, 100 * sy }, pieces[2].size)
+			assert.same({ 0, 44 / 64, 0, 100 / 128 }, pieces[2].texCoord)
+			assert.same({ "TOPLEFT", W.Canvas(), "TOPLEFT", 266 * sx, -20 * sy }, { unpack(pieces[2].point, 1, 5) })
+			-- A piece narrower than 16 sits in a file of 16, and a piece as tall as a tile fills its file.
+			assert.equal(11, pieces[3].texture)
+			assert.same({ 10 * sx, 256 * sy }, pieces[3].size)
+			assert.same({ 0, 10 / 16, 0, 1 }, pieces[3].texCoord)
+		end)
 
-	it("shows the player bar with the panel, at the bottom of the map", function()
-		start()
-		click(Tab.Button())
-		local bar = Panel.Bar()
-		assert.is_true(bar.shown)
-		assert.same({ "BOTTOM", WorldMapFrame, "BOTTOM", 0, 14 }, { unpack(bar.point, 1, 5) })
-		click(Tab.Button())
-		assert.is_false(bar.shown)
+		it("hides the explored areas of the last map when it shows another one", function()
+			start({
+				boot = {
+					explored = {
+						[ZONE] = {
+							{ textureWidth = 100, textureHeight = 100, offsetX = 0, offsetY = 0, fileDataIDs = { 7 } },
+						},
+					},
+				},
+			})
+			W.Toggle()
+			assert.equal(1, #textures("BORDER"))
+			W.ShowMap(OTHER)
+			assert.equal(0, #textures("BORDER"))
+		end)
+
+		it("goes up to the map that holds it with the Up button and a right click, and not past the top", function()
+			start()
+			W.Toggle()
+			assert.is_true(W.Frame().up.enabled)
+			click(W.Frame().up)
+			assert.equal(CONT, W.MapID())
+			assert.equal("Continent", W.Frame().mapName.text)
+			assert.is_false(W.Frame().up.enabled)
+			W.ShowMap(ZONE)
+			W.Canvas().scripts.OnMouseUp(W.Canvas(), "RightButton")
+			assert.equal(CONT, W.MapID())
+			W.Up()
+			assert.equal(CONT, W.MapID())
+		end)
+
+		it("opens the zone under the cursor with a left click", function()
+			start({
+				boot = {
+					zoneAt = function(mapID, x)
+						if mapID == CONT and x > 0.5 then
+							return OTHER
+						end
+						return mapID == CONT and ZONE or nil
+					end,
+				},
+			})
+			W.Toggle()
+			W.ShowMap(CONT)
+			local canvas = W.Canvas()
+			canvas.left, canvas.topEdge = 100, 700
+			wow.cursor = { 100 + 0.75 * W.MAP_W, 700 - 0.5 * W.MAP_H }
+			canvas.scripts.OnMouseUp(canvas, "LeftButton")
+			assert.equal(OTHER, W.MapID())
+			wow.cursor = { 0, 0 }
+			canvas.scripts.OnMouseUp(canvas, "LeftButton")
+			assert.equal(OTHER, W.MapID())
+		end)
+
+		it("does not change for a map with no art", function()
+			start({ boot = { art = { [OTHER] = false } } })
+			W.Toggle()
+			assert.is_false(W.ShowMap(OTHER))
+			assert.is_false(W.ShowMap("x"))
+			assert.equal(ZONE, W.MapID())
+		end)
+
+		it("draws the journey on the map it shows", function()
+			start()
+			W.Toggle()
+			assert.equal(1, O.Stats().lines)
+			W.ShowMap(OTHER)
+			assert.equal(0, O.Stats().lines)
+		end)
+
+		it("follows the replay into another zone on its own map", function()
+			start({
+				boot = {
+					saved = {
+						MemoriesCharDB = {
+							trail = {
+								v = 1,
+								chunks = {
+									{ s = 1, t = 1000, m = ZONE, n = 3, d = "0,1000,1000;10,2000,1000;20,3000,1000" },
+									{ s = 1, t = 1040, m = OTHER, n = 3, d = "0,1000,2000;10,2000,2000;20,3000,2000" },
+								},
+							},
+						},
+					},
+				},
+			})
+			W.Toggle()
+			O.Play()
+			local function frameStep(dt)
+				wow.advance(dt)
+				for _, f in ipairs(wow.frames) do
+					if f.kind == "Frame" and f.scripts.OnUpdate and f.parent == W.Canvas() then
+						f.scripts.OnUpdate(f, dt)
+					end
+				end
+			end
+			frameStep(0.001)
+			frameStep(0.5)
+			frameStep(0.5)
+			assert.equal(OTHER, W.MapID())
+			assert.equal("Other", W.Frame().mapName.text)
+			assert.is_true(O.Playing())
+			assert.near(40, O.Position(), 0.1)
+		end)
+
+		it("puts the panel beside the map and the player bar under it", function()
+			start()
+			W.Toggle()
+			local view = W.Canvas():GetParent()
+			assert.same(
+				{ "BOTTOMLEFT", view, "BOTTOMRIGHT", W.PAD, -(W.GAP + Panel.BAR_HEIGHT) },
+				{ unpack(Panel.Frame().point, 1, 5) }
+			)
+			assert.same({ "TOPLEFT", view, "BOTTOMLEFT", 0, -W.GAP }, { unpack(Panel.Bar().point, 1, 5) })
+			assert.is_true(Panel.Bar().shown)
+		end)
+
+		it("keeps a failed show out of the game", function()
+			start()
+			ns.Overlay.Show = function()
+				error("boom")
+			end
+			assert.has_no.errors(function()
+				W.Toggle()
+			end)
+			assert.equal(1, #ns.Errors())
+		end)
 	end)
 
 	describe("player bar", function()
@@ -377,151 +512,6 @@ describe("map journey tab", function()
 		end)
 	end)
 
-	it("turns the overlay off with a click on a game tab", function()
-		start()
-		click(Tab.Button())
-		_G.QuestMapFrame.TabButtons[1].scripts.OnClick(_G.QuestMapFrame.TabButtons[1])
-		assert.is_false(Tab.Selected())
-		assert.is_false(O.Enabled())
-		assert.is_false(Panel.Frame().shown)
-		assert.equal("quest", MemoriesDB.settings.map.tab)
-	end)
-
-	it("turns the overlay off when the quest log changes its display mode", function()
-		start()
-		click(Tab.Button())
-		EventRegistry:Fire("QuestLog.SetDisplayMode", 1)
-		assert.is_false(O.Enabled())
-		assert.is_false(Panel.Frame().shown)
-		EventRegistry:Fire("QuestLog.SetDisplayMode", 1)
-		assert.is_false(Tab.Selected())
-		assert.equal("journey", MemoriesDB.settings.map.tab)
-	end)
-
-	it("saves the quest log as the last tab when a game tab click follows a display mode change", function()
-		start()
-		click(Tab.Button())
-		EventRegistry:Fire("QuestLog.SetDisplayMode", 1)
-		_G.QuestMapFrame.TabButtons[1].scripts.OnClick(_G.QuestMapFrame.TabButtons[1])
-		assert.is_false(Tab.Selected())
-		assert.equal("quest", MemoriesDB.settings.map.tab)
-	end)
-
-	it("opens the map on the tab used last", function()
-		start({ boot = { saved = { MemoriesDB = { settings = { map = { tab = "journey" } } } } } })
-		assert.is_false(Tab.Selected())
-		WorldMapFrame:Show()
-		assert.is_true(Tab.Selected())
-		assert.is_true(O.Enabled())
-		assert.is_true(Panel.Frame().shown)
-		assert.equal("journey", MemoriesDB.settings.map.tab)
-	end)
-
-	it("restores at once when the map is already shown", function()
-		start({ shown = true, boot = { saved = { MemoriesDB = { settings = { map = { tab = "journey" } } } } } })
-		assert.is_true(Tab.Selected())
-	end)
-
-	it("stays on the quest log when that was the last tab", function()
-		start()
-		WorldMapFrame:Show()
-		assert.is_false(Tab.Selected())
-		assert.is_nil(Panel.Frame())
-	end)
-
-	it("hooks each game tab once", function()
-		start()
-		WorldMapFrame:Hide()
-		WorldMapFrame:Show()
-		WorldMapFrame:Show()
-		click(Tab.Button())
-		local writes = 0
-		local set = ns.Settings.Set
-		ns.Settings.Set = function(path, ...)
-			if path == "map.tab" then
-				writes = writes + 1
-			end
-			return set(path, ...)
-		end
-		_G.QuestMapFrame.TabButtons[1].scripts.OnClick(_G.QuestMapFrame.TabButtons[1])
-		ns.Settings.Set = set
-		assert.equal(1, writes)
-		assert.is_false(Tab.Selected())
-		assert.equal(0, #ns.Errors())
-	end)
-
-	it("leaves Journey on a left mouse up inside a game tab that is a plain frame", function()
-		start()
-		local tab = CreateFrame("Frame", nil, QuestMapFrame)
-		_G.QuestMapFrame.TabButtons[3] = tab
-		click(Tab.Button())
-		assert.is_nil(tab.scripts.OnClick)
-		tab.scripts.OnMouseUp(tab, "RightButton", true)
-		tab.scripts.OnMouseUp(tab, "LeftButton", false)
-		assert.is_true(Tab.Selected())
-		tab.scripts.OnMouseUp(tab, "LeftButton", true)
-		assert.is_false(Tab.Selected())
-		assert.equal("quest", MemoriesDB.settings.map.tab)
-		assert.equal(0, #ns.Errors())
-	end)
-
-	it("works with no EventRegistry", function()
-		start({ registry = false })
-		click(Tab.Button())
-		assert.is_true(Tab.Selected())
-	end)
-
-	it("waits for the world map when it is not there at login", function()
-		boot()
-		wow.login()
-		assert.is_false(Tab.Attach())
-		fakeMap()
-		wow.fire("ADDON_LOADED", "Blizzard_Other")
-		assert.is_nil(Tab.Button())
-		wow.fire("ADDON_LOADED", "Blizzard_WorldMap")
-		assert.is_not_nil(Tab.Button())
-		assert.is_true(Tab.Attach())
-	end)
-
-	it("shows a tooltip on the tab", function()
-		start()
-		local tab = Tab.Button()
-		tab.scripts.OnEnter(tab)
-		assert.same({ "Journey" }, wow.tooltip.lines)
-		tab.scripts.OnLeave(tab)
-		assert.is_false(GameTooltip.shown)
-	end)
-
-	it("stays off and builds the panel again after a failed build", function()
-		start()
-		local create = CreateFrame
-		_G.CreateFrame = function(kind, ...)
-			if kind == "ScrollFrame" then
-				error("no template")
-			end
-			return create(kind, ...)
-		end
-		click(Tab.Button())
-		_G.CreateFrame = create
-		assert.is_false(Tab.Selected())
-		assert.is_nil(Panel.Frame())
-		assert.equal(1, #ns.Errors())
-		click(Tab.Button())
-		assert.is_true(Tab.Selected())
-		assert.is_true(Panel.Frame().shown)
-	end)
-
-	it("keeps a failed click out of the map", function()
-		start()
-		ns.Overlay.Show = function()
-			error("boom")
-		end
-		assert.has_no.errors(function()
-			click(Tab.Button())
-		end)
-		assert.equal(1, #ns.Errors())
-	end)
-
 	describe("panel", function()
 		local function boxes()
 			local out = {}
@@ -557,9 +547,9 @@ describe("map journey tab", function()
 			ns.Settings.Set("map.groups.Deaths", false)
 			click(Tab.Button())
 			assert.is_true(byLabel("Trail").checked)
-			assert.is_true(byLabel("Progress").checked)
+			assert.is_true(byLabel("Level ups").checked)
 			assert.is_false(byLabel("Deaths").checked)
-			assert.equal(#ns.MapData.Groups() + 3, #boxes())
+			assert.equal(#ns.Overlay.GROUPS + 3, #boxes())
 		end)
 
 		it("saves a group box and draws again", function()
@@ -665,16 +655,6 @@ describe("map journey tab", function()
 			click(deaths)
 			assert.is_nil(MemoriesDB.settings)
 			assert.is_false(ns.Settings.Get("map.groups.Deaths"))
-			assert.equal("journey", ns.Settings.Get("map.tab"))
-		end)
-
-		it("names a kind group with no group Other, and an unknown group by its token", function()
-			start()
-			ns.Kinds.Register("zq", { addon = "Memories", name = "Zq" })
-			ns.Kinds.Register("zr", { addon = "Memories", group = "Mystery", name = "Zr" })
-			click(Tab.Button())
-			assert.is_not_nil(byLabel("Other"))
-			assert.is_not_nil(byLabel("Mystery"))
 		end)
 
 		it("cycles the colour of the trail with the colour button and draws again", function()
@@ -730,7 +710,7 @@ describe("map journey tab", function()
 				wow.advance(dt)
 				local c
 				for _, f in ipairs(wow.frames) do
-					if f.kind == "Frame" and f.scripts.OnUpdate and f.parent == WorldMapFrame:GetCanvas() then
+					if f.kind == "Frame" and f.scripts.OnUpdate and f.parent == ns.MapWindow.Canvas() then
 						c = f
 					end
 				end

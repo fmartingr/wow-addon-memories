@@ -2,25 +2,16 @@ local _, ns = ...
 
 local L = ns.L
 
--- The Journey tab of the world map. The tab and the panel are frames of this addon: the game's tab list is read and
--- never changed. A click on a game tab turns the overlay off.
+-- The Journey button of the world map: a click opens the Journey window, or closes it. The button is a frame of this
+-- addon. The game's tab list is read to place it, and never changed.
 local Tab = {}
 ns.MapTab = Tab
 
 Tab.SIZE = 36
 Tab.GAP = 4
 Tab.DOCK_OFFSET = -60
--- The screen can push the tab onto the panel, so the tab sits above the panel and its boxes.
-Tab.ABOVE_PANEL = 20
 
 local button
-local hookGameTabs
-local selected = false
-local hooked = {}
-
-function Tab.Selected()
-	return selected
-end
 
 function Tab.Button()
 	return button
@@ -73,7 +64,7 @@ local function lastTab()
 	return last
 end
 
--- Puts the tab under the last game tab, or on the right edge of the map when it has none.
+-- Puts the button under the last game tab, or on the right edge of the map when it has none.
 function Tab.Place()
 	if not button then
 		return
@@ -87,66 +78,10 @@ function Tab.Place()
 	end
 end
 
--- The maximized map takes the whole height of the screen and leaves too little room beside it for the panel.
-local function maximized()
-	return type(WorldMapFrame.IsMaximized) == "function" and WorldMapFrame:IsMaximized() and true or false
-end
-
--- The panel docks beside the map, past the column of side tabs, so it never lies over a game frame or the tab. On a
--- maximized map it lies over the right side of the map instead. The screen keeps it in view.
-local function dock(panel)
-	panel:ClearAllPoints()
-	local scroll = WorldMapFrame.ScrollContainer
-	if scroll and maximized() then
-		panel:SetPoint("TOPRIGHT", scroll, "TOPRIGHT", 0, 0)
-		panel:SetPoint("BOTTOMRIGHT", scroll, "BOTTOMRIGHT", 0, 0)
-	else
-		panel:SetPoint("TOPLEFT", WorldMapFrame, "TOPRIGHT", Tab.SIZE + Tab.GAP, 0)
-		panel:SetPoint("BOTTOMLEFT", WorldMapFrame, "BOTTOMRIGHT", Tab.SIZE + Tab.GAP, 0)
-	end
-	panel:SetClampedToScreen(true)
-end
-
-local function look()
+-- The button is lit while the Journey window is open.
+function Tab.Look()
 	if button then
-		button.selected:SetShown(selected)
-	end
-end
-
--- Turns the Journey view on or off. save keeps the choice as the tab the map opens on. The state changes only once the
--- panel is in place, so a failed build leaves the tab off.
-function Tab.Select(on, save)
-	on = on == true
-	local panel = ns.MapPanel.Frame()
-	if on then
-		ns.Safe("map tab:hooks", hookGameTabs)
-		panel = ns.MapPanel.Create(WorldMapFrame)
-		dock(panel)
-		panel:Show()
-	elseif panel then
-		panel:Hide()
-	end
-	selected = on
-	ns.Overlay.Show(selected)
-	look()
-	if save ~= false then
-		ns.Settings.Set("map.tab", selected and "journey" or "quest")
-	end
-end
-
--- A click on a game tab makes it the tab the map opens on, even when the game left Journey before this hook ran.
-local function onGameTab()
-	if selected then
-		Tab.Select(false)
-	else
-		ns.Settings.Set("map.tab", "quest")
-	end
-end
-
--- The game also changes the display mode on its own, such as to show a quest, so the saved tab stays as it is.
-local function onDisplayMode()
-	if selected then
-		Tab.Select(false, false)
+		button.selected:SetShown(ns.MapWindow.Shown())
 	end
 end
 
@@ -163,7 +98,7 @@ local function create()
 	button.selected:SetColorTexture(1, 0.82, 0, 0.3)
 	button.selected:Hide()
 	button:SetScript("OnClick", function()
-		ns.Safe("map tab:click", Tab.Select, not selected)
+		ns.Safe("map tab:click", ns.MapWindow.Toggle)
 	end)
 	button:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -176,58 +111,7 @@ local function create()
 	Tab.Place()
 end
 
--- The quest log can show or hide while the map is open, so the tab and the panel follow it.
-local function follow()
-	Tab.Place()
-	button:SetFrameLevel(ns.MapPanel.LevelOver(WorldMapFrame) + Tab.ABOVE_PANEL)
-	local panel = ns.MapPanel.Frame()
-	if selected and panel then
-		dock(panel)
-	end
-end
-
--- A click on a game tab leaves the Journey view, and the quest log moves the tab and the panel as it shows or hides.
--- HookScript runs after the game's own script and changes nothing in it. Each map show hooks again what came since.
-function hookGameTabs()
-	local log = QuestMapFrame
-	if type(log) == "table" and not hooked[log] and log.HookScript then
-		for _, script in ipairs({ "OnShow", "OnHide" }) do
-			log:HookScript(script, function()
-				ns.Safe("map tab:quest log", follow)
-			end)
-		end
-		hooked[log] = true
-	end
-	for _, tab in ipairs(gameTabs()) do
-		if not hooked[tab] and tab.HookScript and tab.HasScript then
-			-- A side tab can be a plain frame that switches the mode on a mouse up inside it, with no OnClick script.
-			if tab:HasScript("OnClick") then
-				tab:HookScript("OnClick", function()
-					ns.Safe("map tab:game tab", onGameTab)
-				end)
-			elseif tab:HasScript("OnMouseUp") then
-				tab:HookScript("OnMouseUp", function(_, mouse, upInside)
-					if mouse == "LeftButton" and upInside ~= false then
-						ns.Safe("map tab:game tab", onGameTab)
-					end
-				end)
-			end
-			hooked[tab] = true
-		end
-	end
-end
-
--- The map opens on the tab that was used last. The quest log can change while the map is closed, so the tab and an open
--- panel take their places again.
-function Tab.Restore()
-	follow()
-	ns.Safe("map tab:hooks", hookGameTabs)
-	if ns.Settings.Get("map.tab") == "journey" and not selected then
-		Tab.Select(true, false)
-	end
-end
-
--- Adds the tab to the map once. It returns false while the map is missing.
+-- Adds the button to the world map once. It returns false while the map is missing.
 function Tab.Attach()
 	if button then
 		return true
@@ -236,24 +120,16 @@ function Tab.Attach()
 		return false
 	end
 	create()
-	if WorldMapFrame.HookScript then
-		WorldMapFrame:HookScript("OnShow", function()
-			ns.Safe("map tab:show", Tab.Restore)
-		end)
-	end
-	-- The map of Classic Era is maximized and made small again while it is open.
-	if type(WorldMapFrame.SynchronizeDisplayState) == "function" and type(hooksecurefunc) == "function" then
-		hooksecurefunc(WorldMapFrame, "SynchronizeDisplayState", function()
-			ns.Safe("map tab:display state", follow)
-		end)
-	end
-	if type(EventRegistry) == "table" and EventRegistry.RegisterCallback then
-		EventRegistry:RegisterCallback("QuestLog.SetDisplayMode", function()
-			ns.Safe("map tab:display mode", onDisplayMode)
-		end, Tab)
-	end
-	if WorldMapFrame:IsShown() then
-		Tab.Restore()
+	-- The quest log can show or hide while the map is open, and the button follows its tabs. HookScript runs after the
+	-- game's own script and changes nothing in it.
+	for _, owner in ipairs({ WorldMapFrame, QuestMapFrame }) do
+		if type(owner) == "table" and owner.HookScript then
+			for _, script in ipairs(owner == WorldMapFrame and { "OnShow" } or { "OnShow", "OnHide" }) do
+				owner:HookScript(script, function()
+					ns.Safe("map tab:place", Tab.Place)
+				end)
+			end
+		end
 	end
 	return true
 end

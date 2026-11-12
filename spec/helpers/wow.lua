@@ -104,6 +104,7 @@ for _, name in ipairs({
 	"RegisterForClicks",
 	"RegisterForDrag",
 	"SetAutoFocus",
+	"SetClipsChildren",
 	"SetDesaturated",
 	"SetBlendMode",
 	"SetFontObject",
@@ -117,10 +118,9 @@ for _, name in ipairs({
 	"SetObeyStepOnDrag",
 	"SetOrientation",
 	"SetThumbTexture",
+	"SetToplevel",
 	"SetPushedTexture",
 	"SetScrollChild",
-	"SetTexCoord",
-	"SetVertexColor",
 	"SetWidth",
 	"StartMoving",
 	"StopMovingOrSizing",
@@ -263,8 +263,9 @@ function Frame:SetPoint(...)
 	self.point = pack(...)
 end
 
-function Frame:CreateTexture(name)
+function Frame:CreateTexture(name, layer)
 	local texture = new_frame("Texture", name, self)
+	texture.layer = layer
 	self.textures = self.textures or {}
 	self.textures[#self.textures + 1] = texture
 	return texture
@@ -317,6 +318,14 @@ function Frame:SetTextColor(...)
 	self.textColor = pack(...)
 end
 
+function Frame:SetVertexColor(...)
+	self.vertexColor = pack(...)
+end
+
+function Frame:SetTexCoord(...)
+	self.texCoord = { ... }
+end
+
 function Frame:SetRotation(angle)
 	self.rotation = angle
 end
@@ -327,6 +336,14 @@ end
 
 function Frame:GetFrameLevel()
 	return self.frameLevel or 1
+end
+
+function Frame:GetLeft()
+	return self.left
+end
+
+function Frame:GetTop()
+	return self.topEdge
 end
 
 function Frame:GetBottom()
@@ -898,6 +915,27 @@ local function install_units()
 		end,
 		GetMapInfo = function(mapID)
 			return wow.maps[mapID]
+		end,
+		-- A map of wow.maps has art: one layer of 1002 x 668 in tiles of 256, unless wow.art[map] says otherwise
+		-- (false for none).
+		GetMapArtLayers = function(mapID)
+			local art = wow.art[mapID]
+			if art == false or (art == nil and not wow.maps[mapID]) then
+				return {}
+			end
+			return { art or { layerWidth = 1002, layerHeight = 668, tileWidth = 256, tileHeight = 256 } }
+		end,
+		GetMapArtLayerTextures = function(mapID)
+			local out = {}
+			for i = 1, 12 do
+				out[i] = mapID * 100 + i
+			end
+			return out
+		end,
+		-- wow.zoneAt(mapID, x, y) gives the map under a point of a map.
+		GetMapInfoAtPosition = function(mapID, x, y)
+			local id = wow.zoneAt and wow.zoneAt(mapID, x, y)
+			return id and { mapID = id, name = "Zone " .. id } or nil
 		end,
 		-- wow.projections[map] = { continent, x0, y0, x1, y1 }: the rectangle of the map in world units.
 		GetWorldPosFromMapPos = function(mapID, v)
@@ -1710,6 +1748,14 @@ function wow.reset(opts)
 	wow.map = merge({ id = 1453, x = 0.5, y = 0.25 }, opts.map)
 	wow.maps = opts.maps or {}
 	wow.projections = opts.projections or {}
+	wow.art = opts.art or {}
+	wow.explored = opts.explored or {}
+	wow.zoneAt = opts.zoneAt
+	_G.C_MapExplorationInfo = {
+		GetExploredMapTextures = function(mapID)
+			return wow.explored[mapID] or {}
+		end,
+	}
 	wow.spells = opts.spells or {}
 	wow.addon_state = merge({}, opts.installed)
 	wow.flags = merge({}, opts.flags)

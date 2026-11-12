@@ -6,18 +6,12 @@ describe("map overlay", function()
 	local ns, O
 	local ZONE, OTHER, CONT = 1453, 1454, 12
 
-	-- A fake world map: a canvas of 1000 x 500 and the provider calls of the game.
+	-- A fake host, as the Journey window: a canvas of 1000 x 500, the map id, and a SetMapID that draws the new map at
+	-- once. refuse makes SetMapID raise an error.
 	local function fakeMap(mapID)
 		local canvas = CreateFrame("Frame", "FakeCanvas")
 		canvas:SetSize(1000, 500)
-		local map = { providers = {}, mapID = mapID or ZONE, shown = true, scale = 1 }
-		function map:GetCanvasScale()
-			return self.scale
-		end
-		function map:AddDataProvider(p)
-			self.providers[#self.providers + 1] = p
-			p.owningMap = self
-		end
+		local map = { mapID = mapID or ZONE, shown = true, set = {} }
 		function map:GetMapID()
 			return self.mapID
 		end
@@ -27,38 +21,17 @@ describe("map overlay", function()
 		function map:IsShown()
 			return self.shown
 		end
-		-- SetMapID changes the map and draws it again before it returns, as the game does. refuse makes it raise an
-		-- error before the change; broken takes the id first and then raises, as the game does for a map with no art.
-		map.set = {}
 		function map:SetMapID(id)
-			if self.mapID == id then
-				return
-			end
 			self.set[#self.set + 1] = id
 			if self.refuse then
 				error("no such map")
 			end
 			self.mapID = id
+			-- A map with no art takes the id and then raises, as the game's own map does.
 			if self.broken and self.broken[id] then
-				error("attempt to index a nil value")
+				error("no art")
 			end
-			self.providers[1]:OnMapChanged()
-		end
-		_G.WorldMapFrame = map
-		_G.MapCanvasDataProviderMixin = {
-			GetMap = function(self)
-				return self.owningMap
-			end,
-			OnMapChanged = function() end,
-			RefreshAllData = function() end,
-			RemoveAllData = function() end,
-		}
-		_G.CreateFromMixins = function(mixin)
-			local out = {}
-			for k, v in pairs(mixin) do
-				out[k] = v
-			end
-			return out
+			O.Draw()
 		end
 		return map
 	end
@@ -69,9 +42,6 @@ describe("map overlay", function()
 
 	local function boot(chunks, opts)
 		opts = opts or {}
-		_G.WorldMapFrame = nil
-		_G.MapCanvasDataProviderMixin = nil
-		_G.CreateFromMixins = nil
 		ns = wow.boot({
 			login = false,
 			maps = opts.maps or { [ZONE] = { mapType = 3 }, [OTHER] = { mapType = 3 } },
@@ -84,8 +54,8 @@ describe("map overlay", function()
 
 	local function attach(mapID)
 		local map = fakeMap(mapID)
-		assert.is_true(O.Attach())
-		return map, map.providers[1]
+		O.SetHost(map)
+		return map
 	end
 
 	local function rgba(color, a)
@@ -162,41 +132,6 @@ describe("map overlay", function()
 		return container(map).scripts.OnUpdate == nil
 	end
 
-	it("adds one provider to the world map at login", function()
-		boot()
-		local map = fakeMap()
-		wow.login()
-		assert.equal(1, #map.providers)
-		assert.is_true(O.Attach())
-		assert.equal(1, #map.providers)
-	end)
-
-	it("waits for the world map when it is not there at login", function()
-		boot()
-		wow.login()
-		assert.is_false(O.Attach())
-		local map = fakeMap()
-		wow.fire("ADDON_LOADED", "Blizzard_Other")
-		assert.equal(0, #map.providers)
-		wow.fire("ADDON_LOADED", "Blizzard_WorldMap")
-		assert.equal(1, #map.providers)
-	end)
-
-	it("adds the provider again after the map refused it", function()
-		boot()
-		local map = fakeMap()
-		local add = map.AddDataProvider
-		map.AddDataProvider = function()
-			error("refused")
-		end
-		assert.has_error(function()
-			O.Attach()
-		end)
-		map.AddDataProvider = add
-		assert.is_true(O.Attach())
-		assert.equal(1, #map.providers)
-	end)
-
 	it("lets the clicks on a pin through to the map", function()
 		boot()
 		local map = attach()
@@ -208,8 +143,8 @@ describe("map overlay", function()
 
 	it("draws nothing while it is off", function()
 		boot({ TRAIL })
-		local map, p = attach()
-		p:OnMapChanged()
+		local map = attach()
+		O.Draw()
 		assert.is_nil(container(map))
 		assert.is_false(O.Enabled())
 	end)
@@ -249,53 +184,73 @@ describe("map overlay", function()
 		assert.equal(O.LINE_WIDTH, line.thickness)
 	end)
 
-	it("gives each pin the icon and the colour of its group, and a larger size to a death and a level up", function()
+	it("shows a level up as a badge with its level and a death as a skull, larger than a plain pin", function()
 		boot()
 		local map = attach()
 		journal({
 			{ t = 10, m = ZONE, x = 1000, y = 1000, kind = "lv", args = { 5 } },
 			{ t = 11, m = ZONE, x = 2000, y = 1000, kind = "de", args = { "Wolf" } },
-			{ t = 12, m = ZONE, x = 3000, y = 1000, kind = "di", args = { "Elwynn" } },
 		})
 		O.Show(true)
 		step(map)
 		local ps = pins(map)
-		assert.equal(3, #ps)
-		assert.equal(O.GROUP_ICON.Progress, ps[1].icon.texture)
-		assert.equal(O.GROUP_ICON.Deaths, ps[2].icon.texture)
+		assert.equal(2, #ps)
+		assert.equal("5", ps[1].number.text)
+		assert.is_true(ps[1].number.shown)
+		assert.is_false(ps[1].icon.shown)
+		assert.equal(O.SKULL, ps[2].icon.texture)
+		assert.is_true(ps[2].icon.shown)
+		assert.is_false(ps[2].number.shown)
 		assert.same({ O.BIG_PIN_SIZE, O.BIG_PIN_SIZE }, ps[1].size)
 		assert.same({ O.BIG_PIN_SIZE, O.BIG_PIN_SIZE }, ps[2].size)
-		assert.same({ O.PIN_SIZE, O.PIN_SIZE }, ps[3].size)
-		assert.same({ "CENTER", container(map), "TOPLEFT", 300, -50 }, { unpack(ps[3].point, 1, 5) })
-		assert.same({ O.PIN_SIZE, O.PIN_SIZE }, ps[3].border.size)
-		assert.is_true(ps[3].icon.size[1] < O.PIN_SIZE)
+		assert.same({ "CENTER", container(map), "TOPLEFT", 200, -50 }, { unpack(ps[2].point, 1, 5) })
+		assert.is_true(ps[2].face.size[1] < O.BIG_PIN_SIZE)
+		assert.same({ O.BURST.lv[1], O.BURST.lv[2], O.BURST.lv[3] }, { unpack(ps[1].border.vertexColor, 1, 3) })
+	end)
+
+	it("shows a question mark in the badge of a level up with no level", function()
+		boot()
+		local map = attach()
+		local open = MemoriesCharDB.log.open
+		open[#open + 1] = "10||" .. ZONE .. "|1000|1000|lv"
+		O.Show(true)
+		step(map)
+		assert.equal("?", pins(map)[1].number.text)
+	end)
+
+	it("leaves no icon for the other kinds, and reads no kind outside the replay", function()
+		boot()
+		local map = attach()
+		journal({
+			{ t = 10, m = ZONE, x = 1000, y = 1000, kind = "hs", args = { 1, 2, "Home" } },
+			{ t = 11, m = ZONE, x = 2000, y = 1000, kind = "di", args = { "Elwynn" } },
+			{ t = 12, m = ZONE, x = 3000, y = 1000, kind = "lv", args = { 6 } },
+		})
+		O.Show(true)
+		step(map)
+		assert.equal(1, #pins(map))
+		assert.equal(2, O.Stats().pins)
+		assert.equal("6", pins(map)[1].number.text)
 	end)
 
 	it("shows the pins at a smaller size on a continent, where a whole journey packs together", function()
 		boot(nil, { maps = { [ZONE] = { mapType = 2 }, [OTHER] = { mapType = 3 } } })
 		local map = attach()
-		journal({
-			{ t = 10, m = ZONE, x = 1000, y = 1000, kind = "lv", args = { 5 } },
-			{ t = 12, m = ZONE, x = 3000, y = 1000, kind = "di", args = { "Elwynn" } },
-		})
+		journal({ { t = 10, m = ZONE, x = 1000, y = 1000, kind = "lv", args = { 5 } } })
 		O.Show(true)
 		step(map)
-		local ps = pins(map)
-		local small = O.PIN_SIZE * O.HIGH_MAP_PIN
-		assert.same({ O.BIG_PIN_SIZE * O.HIGH_MAP_PIN, O.BIG_PIN_SIZE * O.HIGH_MAP_PIN }, ps[1].size)
-		assert.same({ small, small }, ps[2].size)
-		assert.is_true(ps[2].icon.size[1] > 0 and ps[2].icon.size[1] < small)
+		local small = O.BIG_PIN_SIZE * O.HIGH_MAP_PIN
+		assert.same({ small, small }, pins(map)[1].size)
+		assert.is_true(pins(map)[1].face.size[1] > 0 and pins(map)[1].face.size[1] < small)
 	end)
 
-	it("uses a question mark for a group without an icon", function()
+	it("reads only the groups of the panel from the settings", function()
 		boot()
-		local map = attach()
-		ns.Kinds.Register("zq", { addon = "Memories", name = "Zq" })
-		journal({ { t = 10, m = ZONE, x = 1000, y = 1000, kind = "zq" } })
-		ns.Settings.Set("map.groups.", true)
-		O.Show(true)
-		step(map)
-		assert.truthy(pins(map)[1].icon.texture:find("QuestionMark", 1, true))
+		ns.Settings.Set("map.groups.Deaths", false)
+		local filter = O.Filter()
+		assert.same({ Progress = true, Travel = true, Dungeons = true }, filter.groups)
+		assert.is_true(filter.kinds.lv and filter.kinds.de and filter.kinds.hs)
+		assert.is_nil(filter.kinds.di)
 	end)
 
 	it("shows the time, the kind name and the fields in the tooltip of a pin", function()
@@ -579,102 +534,26 @@ describe("map overlay", function()
 		end)
 	end)
 
-	describe("zoom", function()
-		it("keeps pins and lines at a screen size, at the zoom of the map", function()
-			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000") })
-			local map, p = attach()
-			map.scale = 0.5
-			journal({ { t = 1005, m = ZONE, x = 1000, y = 1000, kind = "di", args = { "a" } } })
-			O.Show(true)
-			step(map)
-			assert.same({ O.PIN_SIZE * 2, O.PIN_SIZE * 2 }, pins(map)[1].size)
-			assert.equal(O.LINE_WIDTH * 2, lines(map)[1].thickness)
-			map.scale = 4
-			p:OnCanvasScaleChanged()
-			assert.same({ O.PIN_SIZE / 4, O.PIN_SIZE / 4 }, pins(map)[1].size)
-			assert.equal(O.LINE_WIDTH / 4, lines(map)[1].thickness)
-		end)
-
-		it("clamps a scale that is out of range, and reads the canvas scale without a map call", function()
-			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000") })
-			local map, p = attach()
-			map.scale = 0
-			O.Show(true)
-			step(map)
-			assert.equal(O.LINE_WIDTH * 10, lines(map)[1].thickness)
-			map.GetCanvasScale = nil
-			map:GetCanvas().GetScale = function()
-				return 2
-			end
-			p:OnCanvasScaleChanged()
-			assert.equal(O.LINE_WIDTH / 2, lines(map)[1].thickness)
-			map:GetCanvas().GetScale = function()
-				return "x"
-			end
-			p:OnCanvasScaleChanged()
-			assert.equal(O.LINE_WIDTH, lines(map)[1].thickness)
-		end)
-
-		it("places the lines again when the canvas size changes, and keeps the playhead", function()
-			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000;20,3000,1000") })
-			local map, p = attach()
-			O.Show(true)
-			step(map)
-			O.Seek(10)
-			step(map)
-			assert.equal(1, visible(lines(map)))
-			map:GetCanvas():SetSize(2000, 1000)
-			p:OnCanvasSizeChanged()
-			assert.same({ "TOPLEFT", container(map), 200, -100 }, { unpack(lines(map)[1].startPoint, 1, 4) })
-			assert.equal(10, (O.Position()))
-			assert.equal(1, visible(lines(map)))
-		end)
-
-		it("waits for a canvas that has no size yet", function()
-			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000") })
-			local map, p = attach()
-			map:GetCanvas():SetSize(0, 0)
-			O.Show(true)
-			assert.equal(0, #lines(map))
-			assert.is_true(idle(map))
-			p:OnCanvasSizeChanged()
-			assert.equal(0, #lines(map))
-			map:GetCanvas():SetSize(1000, 500)
-			p:OnCanvasSizeChanged()
-			step(map)
-			assert.equal(1, visible(lines(map)))
-		end)
-
-		it("ignores a size change while the overlay is off", function()
-			boot({ TRAIL })
-			local _, p = attach()
-			assert.has_no.errors(function()
-				p:OnCanvasSizeChanged()
-				p:OnCanvasScaleChanged()
-			end)
-		end)
-	end)
-
 	describe("map events", function()
 		it("clears the pools and starts again when the map changes", function()
 			boot({ TRAIL, chunk(OTHER, 2000, "0,1000,1000;10,2000,1000") })
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			frames(map, 2)
 			assert.equal(4, visible(lines(map)))
 			map.mapID = OTHER
-			p:OnMapChanged()
+			O.Draw()
 			frames(map, 2)
 			assert.equal(1, visible(lines(map)))
 			assert.equal(1, O.Stats().lines)
 		end)
 
-		it("clears the drawing when the map clears its data", function()
+		it("clears the stats and the clock when it is turned off", function()
 			boot({ TRAIL })
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			frames(map, 2)
-			p:RemoveAllData()
+			O.Show(false)
 			assert.equal(0, visible(lines(map)))
 			assert.same({ lines = 0, pins = 0, cutLines = 0, cutPins = 0, zones = 0 }, O.Stats())
 			assert.same({ 0, 0 }, { O.Position(), select(2, O.Position()) })
@@ -697,26 +576,26 @@ describe("map overlay", function()
 
 		it("only clears while the map is hidden", function()
 			boot({ TRAIL })
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			frames(map, 2)
 			map.shown = false
-			p:RefreshAllData()
+			O.Draw()
 			assert.equal(0, visible(lines(map)))
 			map.shown = true
-			p:RefreshAllData()
+			O.Draw()
 			frames(map, 2)
 			assert.equal(4, visible(lines(map)))
 		end)
 
 		it("reuses its lines for the next draw", function()
 			boot({ chunk(ZONE, 1000, "0,1000,1000;10,2000,1000") })
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			step(map)
-			p:OnMapChanged()
+			O.Draw()
 			step(map)
-			p:RefreshAllData()
+			O.Draw()
 			step(map)
 			assert.equal(1, #lines(map))
 		end)
@@ -747,7 +626,7 @@ describe("map overlay", function()
 
 		it("builds a new container when the canvas changes", function()
 			boot({ TRAIL })
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			step(map)
 			local first = container(map)
@@ -756,50 +635,23 @@ describe("map overlay", function()
 			map.GetCanvas = function()
 				return canvas
 			end
-			p:OnMapChanged()
+			O.Draw()
 			assert.is_not.equal(first, container(map))
 			assert.is_false(first.shown)
-		end)
-
-		it("takes the frame level of the area pins of the map", function()
-			boot({ TRAIL })
-			local map = attach()
-			map.GetPinFrameLevelsManager = function()
-				return {
-					GetValidFrameLevel = function(_, name)
-						assert.equal("PIN_FRAME_LEVEL_AREA_POI", name)
-						return 77
-					end,
-				}
-			end
-			O.Show(true)
-			assert.equal(77, container(map):GetFrameLevel())
-		end)
-
-		it("keeps the default level when the level manager fails", function()
-			boot({ TRAIL })
-			local map = attach()
-			map.GetPinFrameLevelsManager = function()
-				error("no manager")
-			end
-			assert.has_no.errors(function()
-				O.Show(true)
-			end)
-			assert.is_true(container(map).shown)
 		end)
 	end)
 
 	describe("failures", function()
 		it("leaves the map working when a draw fails", function()
 			boot({ TRAIL })
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			frames(map, 2)
 			ns.MapData.Segments = function()
 				error("boom")
 			end
 			assert.has_no.errors(function()
-				p:OnMapChanged()
+				O.Draw()
 			end)
 			assert.equal(1, #ns.Errors())
 			assert.equal(0, visible(lines(map)))
@@ -828,7 +680,6 @@ describe("map overlay", function()
 			assert.has_no.errors(function()
 				O.Show(true)
 				O.SetSession(nil)
-				O.Relayout()
 			end)
 		end)
 	end)
@@ -947,7 +798,7 @@ describe("map overlay", function()
 			local list = bursts(map)
 			assert.equal(1, #list)
 			assert.equal("Level 12", list[1].label.text)
-			assert.same({ unpack(O.BURST.lv, 1, 3) }, { unpack(list[1].ring.vertexColor or O.BURST.lv, 1, 3) })
+			assert.same({ unpack(O.BURST.lv, 1, 3) }, { unpack(list[1].ring.vertexColor, 1, 3) })
 			assert.is_true(list[1].shown)
 			assert.same({ "lv" }, seen)
 		end)
@@ -995,19 +846,17 @@ describe("map overlay", function()
 			assert.is_not_nil(burst.startAt)
 		end)
 
-		it("scales a burst to the screen and anchors it at its pin", function()
+		it("anchors a burst at its pin", function()
 			local map = setup(EVENTS)
-			map.scale = 0.5
 			O.Show(true)
 			frames(map, 2)
 			O.Play()
 			step(map, 0.001)
 			step(map, 0.51)
 			local burst = bursts(map)[1]
-			assert.equal(2, burst.scale)
 			assert.same({ "CENTER", container(map), "TOPLEFT" }, { unpack(burst.point, 1, 3) })
-			assert.near(500 / 2, burst.point[4], 1e-6)
-			assert.near(-250 / 2, burst.point[5], 1e-6)
+			assert.near(500, burst.point[4], 1e-6)
+			assert.near(-250, burst.point[5], 1e-6)
 		end)
 
 		it("plays at most a few bursts at once", function()
@@ -1092,12 +941,12 @@ describe("map overlay", function()
 
 		local function play(chunks, opts)
 			boot(chunks, opts)
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			frames(map, 2)
 			O.Play()
 			step(map, 0.001)
-			return map, p
+			return map
 		end
 
 		it("shows the map of the playhead, keeps the playhead and waits before it goes on", function()
@@ -1164,10 +1013,10 @@ describe("map overlay", function()
 		end)
 
 		it("stops following when the player changes the map during the replay, until the next Play", function()
-			local map, p = play(TWO)
+			local map = play(TWO)
 			step(map, 0.2)
 			map.mapID = OTHER
-			p:OnMapChanged()
+			O.Draw()
 			assert.is_true(O.Playing())
 			frames(map, 3, 0.1)
 			assert.same({}, map.set)
@@ -1178,10 +1027,10 @@ describe("map overlay", function()
 		end)
 
 		it("stops following after a seek and after a change of the box too, and starts again with them", function()
-			local map, p = play(TWO)
+			local map = play(TWO)
 			step(map, 0.2)
 			map.mapID = OTHER
-			p:OnMapChanged()
+			O.Draw()
 			O.Seek(10)
 			step(map, 0.01)
 			assert.same({ ZONE }, map.set)
@@ -1233,7 +1082,7 @@ describe("map overlay", function()
 				{ t = 1000, m = ZONE, x = 1000, y = 1000, kind = "lv", args = { 2 } },
 				{ t = 1010, m = ZONE, x = 2000, y = 1000, kind = "lv", args = { 3 } },
 			})
-			local map, p = attach()
+			local map = attach()
 			O.Show(true)
 			frames(map, 2)
 			assert.equal(10, select(2, O.Position()))
@@ -1242,7 +1091,7 @@ describe("map overlay", function()
 			step(map, 0.1)
 			assert.is_true(O.Playing())
 			map.mapID = OTHER
-			p:OnMapChanged()
+			O.Draw()
 			assert.is_false(O.Playing())
 		end)
 

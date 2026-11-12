@@ -55,5 +55,6 @@ UI\Map\MapData.lua
 UI\Map\Replay.lua
 UI\Map\Overlay.lua
 UI\Map\Panel.lua
+UI\Map\Window.lua
 UI\Map\Tab.lua
 Init.lua
