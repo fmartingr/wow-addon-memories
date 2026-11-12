@@ -10,8 +10,6 @@ ns.Replay = Replay
 Replay.BASE_RATE = 40
 Replay.SPEEDS = { 1, 2, 4, 8, 16 }
 Replay.GAP = 20
--- A pin of a new event pulses for this many played seconds.
-Replay.PULSE = 6
 
 -- The colour of each way of travel. The colourblind palette keeps the five ways apart for the common types of colour
 -- blindness, as it uses the luminance and the hue together.

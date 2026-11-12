@@ -32,7 +32,7 @@ map above the player with art (for example in a dungeon).
   time. At 1× the replay runs 40 played seconds for each real second, as on the website. Play at the end starts again
   from the start.
 - **Replay:** the trail draws as the playhead passes it. A silver arrow at the head points along the route and turns
-  with it. A pin pops in when the playhead passes its event and pulses for 6 played seconds. With no replay running,
+  with it. A pin pops in when the playhead passes its event and pulses in size for 1.5 s, with no frame around the coin. With no replay running,
   the whole journey shows.
 - **Pins:** only level ups and deaths leave a pin. Each pin is the coin of its kind (a gold rim and a glyph, from
   `Media/MapIcons`), and a level up shows its level at the lower right of the coin. The tooltip shows the time, the

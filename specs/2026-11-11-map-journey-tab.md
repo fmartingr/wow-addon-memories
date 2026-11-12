@@ -58,8 +58,9 @@ zoomed out, and a wrong tab and panel layout. AC10 to AC13 and the decisions bel
   longer than 20 s counts as 20 s. At 1x the replay runs 40 played seconds for each real second, as the website. Play
   at the end starts again from the start. With nothing to play, the controls are off.
 - **AC11 — Replay:** the trail draws as the playhead passes it, with a glowing marker at the head that moves along the
-  trail. A pin pops in with a short grow animation when the playhead passes its event, then pulses for 6 played
-  seconds. A seek back hides the lines and pins after the playhead. With no replay running, the whole journey shows.
+  trail. A pin pops in with a short grow animation when the playhead passes its event, then pulses in size for 1.5 s.
+  A pin has no frame or glow around its coin. A seek back hides the lines and pins after the playhead. With no replay
+  running, the whole journey shows.
 - **AC12 — Zoom and size:** pins, lines and the head marker keep their screen size at each canvas scale and each map
   size. On a continent or world map the pins are half size. No icon covers the map, and no texture stretches.
 - **AC13 — Layout:** the panel stays on screen and never lies over a game frame that it does not own. On the

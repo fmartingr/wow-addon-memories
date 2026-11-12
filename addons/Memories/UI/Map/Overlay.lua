@@ -18,8 +18,6 @@ Overlay.LINE_WIDTH = 2
 -- The colour of each way of travel, as the website's trail colours.
 Overlay.WAY_COLOR = ns.Replay.WAY_COLOR
 
-local DEFAULT_COLOR = { 0.85, 0.85, 0.85 }
-
 -- The icon of each group, from the game's own icons of the Classic client.
 Overlay.GROUP_ICON = {
 	Sessions = "Interface\\Icons\\INV_Misc_PocketWatch_01",
@@ -43,6 +41,9 @@ Overlay.PIN_SIZE = 28
 -- A continent or the world packs a whole journey into a small space, so its pins show at this part of their size.
 Overlay.HIGH_MAP_PIN = 0.5
 Overlay.HEAD_SIZE = 22
+-- A new pin pulses for this many seconds after it pops in, and grows this much at the top of its pulse.
+Overlay.PULSE_TIME = 1.5
+Overlay.PULSE_GROW = 0.15
 -- Seconds of the pop of a new pin.
 Overlay.POP = 0.45
 -- A pin that pops in while the replay jumps over many pins at once shows with no pop beyond this count.
@@ -235,10 +236,6 @@ end
 
 local function newPin()
 	local pin = CreateFrame("Button", nil, container)
-	pin.glow = pin:CreateTexture(nil, "BACKGROUND")
-	pin.glow:SetTexture("Interface\\Buttons\\UI-ActionButton-Border")
-	pin.glow:SetBlendMode("ADD")
-	pin.glow:SetPoint("CENTER")
 	-- The coin of the kind (Icons.lua). It has its own rim, so it shows whole.
 	pin.icon = pin:CreateTexture(nil, "ARTWORK")
 	pin.icon:SetTexCoord(0, 1, 0, 1)
@@ -261,13 +258,10 @@ local function sizePin(pin, k)
 	pin:SetSize(size, size)
 	pin.icon:SetSize(size, size)
 	pin.number:SetAlpha(k >= 0.6 and 1 or 0)
-	pin.glow:SetSize(size * 1.9, size * 1.9)
 end
 
 -- The face of a pin: the coin of its kind, and the level for a level up.
 local function facePin(pin, data)
-	local color = Overlay.BURST[data.kind] or DEFAULT_COLOR
-	pin.glow:SetVertexColor(color[1], color[2], color[3], 1)
 	pin.icon:SetTexture(ns.MapIcons.Get(data.kind))
 	local level = data.fields and data.fields.level
 	if data.kind == "lv" and type(level) == "number" then
@@ -299,7 +293,6 @@ local function placePin(i, animate)
 	pin:ClearAllPoints()
 	pin:SetPoint("CENTER", container, "TOPLEFT", data.x * width, -data.y * height)
 	pin.popAt = animate and GetTime() or nil
-	pin.glow:SetAlpha(0.4)
 	sizePin(pin, animate and 0 or 1)
 	pin:Show()
 end
@@ -366,28 +359,23 @@ local function animatePins(now)
 	local busy = false
 	for i = 1, shownPins do
 		local pin = pinPool[i]
-		-- An event with no icon has no pin to animate.
-		if pin and pin.data then
-			if pin.popAt then
-				local t = (now - pin.popAt) / Overlay.POP
-				local k = 1
-				if t >= 1 then
-					pin.popAt = nil
-				else
-					k = 1 + 2.70158 * (t - 1) ^ 3 + 1.70158 * (t - 1) ^ 2
-					busy = true
-				end
-				sizePin(pin, k)
-			end
-			local age = pos - pin.data.c
-			local fresh = playing and age >= 0 and age < ns.Replay.PULSE
-			if fresh then
-				pin.glow:SetAlpha(0.5 + 0.5 * math.sin(now * 9))
+		-- An event with no icon has no pin to animate. popAt is the start of the pop and of the pulse.
+		if pin and pin.data and pin.popAt then
+			local t = now - pin.popAt
+			local k = 1
+			if t >= Overlay.PULSE_TIME then
+				pin.popAt = nil
+			else
 				busy = true
-			elseif pin.glowing then
-				pin.glow:SetAlpha(0.4)
+				if t < Overlay.POP then
+					local u = t / Overlay.POP - 1
+					k = 1 + 2.70158 * u ^ 3 + 1.70158 * u ^ 2
+				end
+				-- The coin has its own round rim, so the pulse is in its size, with no frame around it.
+				local fade = 1 - t / Overlay.PULSE_TIME
+				k = k * (1 + Overlay.PULSE_GROW * (0.5 + 0.5 * math.sin(t * 9)) * fade)
 			end
-			pin.glowing = fresh
+			sizePin(pin, k)
 		end
 	end
 	return busy
