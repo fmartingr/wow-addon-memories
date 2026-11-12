@@ -121,6 +121,8 @@ assert_shots_status() {
 	done
 }
 
+# The CurseForge and example links of the home page point to neutral addresses in this run (see the server start),
+# so a match below is a link to a character of this site.
 assert_home_has_no_character_link() {
 	curl_ -f -o "$TMP/home.html" "$SITE/" || fail "GET / did not answer 200."
 	if grep -Eiq 'href="[^"]*(/wow/|brumamar|nandu|los-errantes)' "$TMP/home.html"; then
@@ -154,6 +156,8 @@ MEMORIES_REGISTRATION=open \
 	MEMORIES_PUBLIC_ADDR="127.0.0.1:$PUBLIC_PORT" \
 	MEMORIES_ADMIN_ADDR="127.0.0.1:$ADMIN_PORT" \
 	MEMORIES_SITE_URL="$SITE" \
+	MEMORIES_CURSEFORGE_URL="https://addons.example.test/memories" \
+	MEMORIES_EXAMPLE_URL="https://journey.example.test/sample" \
 	"$SERVER_BIN" >"$TMP/server.log" 2>&1 &
 SERVER_PID=$!
 ready=0
