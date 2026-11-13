@@ -36,6 +36,11 @@ the tag and finds the game version from `## Interface`. It needs only the reposi
 no GitHub token, so it does not change the GitHub release. When it fails, the GitHub release is already out: re-run
 only the `curseforge` job.
 
+The job uploads only when the addon files changed. `scripts/addons-changed.sh` compares `addons/` and `.pkgmeta` of the
+tag with the previous release tag. A release tag skips the pre-release tags in this comparison, so `v1.3.0` after
+`v1.3.0-rc.1` compares with `v1.2.x`. A pre-release tag compares with the previous tag of any kind. With no change, the
+job writes a notice and uploads nothing. The GitHub release still has the addon zip.
+
 ## Server image
 
 `.github/workflows/server-image.yml` builds the server image for `linux/amd64` and `linux/arm64` and pushes it to

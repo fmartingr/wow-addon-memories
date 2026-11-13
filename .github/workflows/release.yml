@@ -321,6 +321,16 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
-      - uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+      # CurseForge gets a new file only when the addon files changed since the previous release tag.
+      - id: addons
+        env:
+          TAG: ${{ github.ref_name }}
+        run: bash scripts/addons-changed.sh "$TAG" | tee -a "$GITHUB_OUTPUT"
+      - if: steps.addons.outputs.changed != 'true'
+        env:
+          PREVIOUS: ${{ steps.addons.outputs.previous }}
+        run: echo "::notice::The addon files did not change since $PREVIOUS, so nothing is uploaded to CurseForge."
+      - if: steps.addons.outputs.changed == 'true'
+        uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         with:
           pandoc: false
