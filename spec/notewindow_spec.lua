@@ -114,6 +114,22 @@ describe("note window", function()
 		assert.is_false(frame:IsShown())
 	end)
 
+	it("moves with a drag of the left button", function()
+		boot()
+		ns.NoteWindow.Open()
+		local frame = _G.MemoriesNoteFrame
+		local calls = {}
+		frame.StartMoving = function()
+			calls[#calls + 1] = "start"
+		end
+		frame.StopMovingOrSizing = function()
+			calls[#calls + 1] = "stop"
+		end
+		frame.scripts.OnDragStart(frame)
+		frame.scripts.OnDragStop(frame)
+		assert.same({ "start", "stop" }, calls)
+	end)
+
 	it("keeps the draft on a second open, clears it after a close, and makes no second frame", function()
 		boot()
 		ns.NoteWindow.Open()
