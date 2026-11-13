@@ -52,7 +52,7 @@ exit code 2. The size limits and quotas other than the rate limits apply to the 
 | `MEMORIES_MAX_SHOT_BYTES` | 15 MiB | Largest screenshot request. |
 | `MEMORIES_MAX_PIXELS` | 50,000,000 | Largest screenshot, in pixels. |
 | `MEMORIES_MAX_DECODED_BYTES` | 64 MiB | Largest upload after gzip is undone. |
-| `MEMORIES_MAX_TEXT` | 512 | Longest text value in an upload, in bytes. |
+| `MEMORIES_MAX_TEXT` | 512 | Longest text value in an upload, in bytes. Keep it at 400 or more: a player note (`un`) has up to 400 bytes. |
 | `MEMORIES_MAX_RECORDS` | 500,000 | Journey records in one upload. |
 | `MEMORIES_MAX_CHUNKS` | 50,000 | Trail chunks in one upload. |
 | `MEMORIES_MAX_POINTS` | 20,000 | Points in one trail chunk. |
