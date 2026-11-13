@@ -15,11 +15,16 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/admin"
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
+	"github.com/fmartingr/wow-addon-memories/server/internal/openreg"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
 
 const shutdownTimeout = 10 * time.Second
+
+// gateInterval is how often the server reads the open registration settings and the free disk space. An admin change
+// applies at once; a low disk closes open registration within this time.
+const gateInterval = time.Minute
 
 // newServer routes the errors of net/http itself (a handler panic, an accept error) to log, so that every log line is JSON.
 func newServer(addr string, h http.Handler, log *slog.Logger) *http.Server {
@@ -68,10 +73,18 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	// MEMORIES_REGISTRATION sets the switch on the first start only. The admin page changes it from then on.
+	if err := st.SeedOpen(context.WithoutCancel(ctx), cfg.Registration == config.RegistrationOpen); err != nil {
+		return fmt.Errorf("could not save the open registration setting: %w", err)
+	}
+	gate := openreg.New(st, cfg.DataDir, log)
+	if _, err := gate.Refresh(context.WithoutCancel(ctx)); err != nil {
+		return fmt.Errorf("could not read the open registration settings: %w", err)
+	}
 	chars := characters.New(st, blobs, log)
-	public := newServer(cfg.PublicAddr, NewPublic(cfg, static, pages, st, chars, log), log)
+	public := newServer(cfg.PublicAddr, NewPublic(cfg, static, pages, st, chars, gate, log), log)
 	adm, err := admin.New(admin.Options{
-		Addr: cfg.AdminAddr, SiteURL: cfg.SiteURL, Store: st, Chars: chars, NotFound: static.NotFound(), Log: log,
+		Addr: cfg.AdminAddr, SiteURL: cfg.SiteURL, Store: st, Chars: chars, Gate: gate, NotFound: static.NotFound(), Log: log,
 	})
 	if err != nil {
 		return err
@@ -102,6 +115,11 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 		defer close(purged)
 		st.PurgeLoop(purgeCtx, time.Minute, func(err error) { log.Error("nonce purge failed", "err", err.Error()) })
 	}()
+	gated := make(chan struct{})
+	go func() {
+		defer close(gated)
+		gate.Loop(purgeCtx, gateInterval)
+	}()
 
 	failed := make(chan error, len(servers))
 	for i, srv := range servers {
@@ -130,6 +148,7 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 	wg.Wait()
 	stopPurge()
 	<-purged
+	<-gated
 	if runErr == nil {
 		runErr = errors.Join(shutdownErrs...)
 	}

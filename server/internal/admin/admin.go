@@ -22,6 +22,7 @@ import (
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/ids"
+	"github.com/fmartingr/wow-addon-memories/server/internal/openreg"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
 
@@ -54,6 +55,7 @@ type Options struct {
 	SiteURL  string
 	Store    *store.Store
 	Chars    *characters.Service
+	Gate     *openreg.Gate
 	NotFound http.Handler
 	Log      *slog.Logger
 }
@@ -122,6 +124,7 @@ func (a *Admin) Handler() http.Handler {
 	mux.HandleFunc("GET /keys", a.page("keys", a.keysPage))
 	mux.HandleFunc("GET /invites", a.page("invites", a.invitesPage))
 	mux.HandleFunc("GET /characters", a.page("characters", a.charactersPage))
+	mux.HandleFunc("GET /settings", a.page("settings", a.settingsPage))
 	for pattern, h := range map[string]http.HandlerFunc{
 		"/requests/approve":  a.approve,
 		"/requests/deny":     a.deny,
@@ -131,6 +134,7 @@ func (a *Admin) Handler() http.Handler {
 		"/invites/revoke":    a.revokeInvite,
 		"/characters/delete": a.deleteCharacter,
 		"/characters/move":   a.moveCharacter,
+		"/settings/save":     a.saveSettings,
 	} {
 		mux.Handle("POST "+pattern, a.protect(h))
 	}
@@ -510,6 +514,45 @@ func (a *Admin) moveCharacter(w http.ResponseWriter, r *http.Request) {
 		a.opt.Log.Info("admin action", "action", "move claim", "path", p.String(), "to", target.Fingerprint())
 		a.done(w, r, "characters", okMsg("%s now belongs to key %s. The old key can no longer upload it.", p, target.Fingerprint()))
 	}
+}
+
+const maxMinFreePercent = 99
+
+// saveSettings stores the open registration settings. It refuses to turn open registration on while the data disk is
+// at the free space limit or below it, because the gate would turn it off again at its next check. The gate reads the
+// saved settings at once, so the change applies to the next request.
+func (a *Admin) saveSettings(w http.ResponseWriter, r *http.Request) {
+	mib, err := strconv.ParseInt(strings.TrimSpace(r.PostForm.Get("max_data_mib")), 10, 64)
+	if err != nil || mib < 1 || mib > 1<<30 {
+		a.done(w, r, "settings", errMsg("Data per open key must be a whole number of MiB, 1 or more."))
+		return
+	}
+	pct, err := strconv.ParseInt(strings.TrimSpace(r.PostForm.Get("min_free_percent")), 10, 64)
+	if err != nil || pct < 0 || pct > maxMinFreePercent {
+		a.done(w, r, "settings", errMsg("Free disk space must be a whole number from 0 to %d.", maxMinFreePercent))
+		return
+	}
+	o := store.OpenSettings{Open: r.PostForm.Get("open") == "1", MaxDataBytes: mib << 20, MinFreePercent: pct}
+	if o.Open {
+		if free, known := a.opt.Gate.Disk(); known && free <= float64(pct) {
+			a.done(w, r, "settings", errMsg("The data disk has %.1f%% free space, which is at the limit of %d%% or below it, so the settings stay as they were. Free some space or lower the limit.", free, pct))
+			return
+		}
+	}
+	if err := a.opt.Store.SetOpenSettings(r.Context(), o); err != nil {
+		a.internal(w, r, "settings", "save the settings", err)
+		return
+	}
+	if _, err := a.opt.Gate.Refresh(r.Context()); err != nil {
+		a.internal(w, r, "settings", "apply the settings", err)
+		return
+	}
+	a.opt.Log.Info("admin action", "action", "save settings", "open", o.Open, "max_data_bytes", o.MaxDataBytes, "min_free_percent", o.MinFreePercent)
+	state := "off"
+	if o.Open {
+		state = "on"
+	}
+	a.done(w, r, "settings", okMsg("The settings are saved. Open registration is %s.", state))
 }
 
 // count writes a number of characters: "1 character", "2 characters".

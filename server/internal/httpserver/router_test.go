@@ -2,6 +2,7 @@ package httpserver
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"io"
 	"log/slog"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
+	"github.com/fmartingr/wow-addon-memories/server/internal/openreg"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
@@ -63,6 +65,13 @@ func newHandlers(t *testing.T, cfg config.Config, logs io.Writer) (public, admin
 // newStack is newHandlers that also returns the store, for tests that change the state behind the handlers.
 func newStack(t *testing.T, cfg config.Config, logs io.Writer) (public, admin http.Handler, st *store.Store) {
 	t.Helper()
+	public, admin, st, _ = newGatedStack(t, cfg, logs)
+	return public, admin, st
+}
+
+// newGatedStack is newStack that also returns the open registration gate.
+func newGatedStack(t *testing.T, cfg config.Config, logs io.Writer) (public, admin http.Handler, st *store.Store, gate *openreg.Gate) {
+	t.Helper()
 	s, err := site.New(siteOptions(cfg))
 	if err != nil {
 		t.Fatal(err)
@@ -81,7 +90,15 @@ func newStack(t *testing.T, cfg config.Config, logs io.Writer) (public, admin ht
 	if err != nil {
 		t.Fatal(err)
 	}
-	return NewPublic(cfg, s, pages, st, characters.New(st, blobs, log), log), NewAdmin(s.NotFound(), log), st
+	if err := st.SeedOpen(context.Background(), cfg.Registration == config.RegistrationOpen); err != nil {
+		t.Fatal(err)
+	}
+	gate = openreg.New(st, cfg.DataDir, log)
+	gate.SetDiskProbe(func(string) (float64, bool) { return 50, true })
+	if _, err := gate.Refresh(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	return NewPublic(cfg, s, pages, st, characters.New(st, blobs, log), gate, log), NewAdmin(s.NotFound(), log), st, gate
 }
 
 func do(h http.Handler, method, target string) *httptest.ResponseRecorder {
@@ -166,6 +183,30 @@ func TestHomeUploadStepsFollowTheRegistrationMode(t *testing.T) {
 		body := do(public, http.MethodGet, "/").Body.String()
 		if got := strings.Contains(body, "invite code"); got != wantInvite {
 			t.Errorf("%s: home page mentions an invite code = %v, want %v", mode, got, wantInvite)
+		}
+	}
+}
+
+func TestHomeAndInfoFollowTheAdminSwitch(t *testing.T) {
+	public, _, st, gate := newGatedStack(t, loadConfig(t, nil), io.Discard)
+	for _, open := range []bool{true, false} {
+		o := store.DefaultOpenSettings()
+		o.Open = open
+		if err := st.SetOpenSettings(context.Background(), o); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := gate.Refresh(context.Background()); err != nil {
+			t.Fatal(err)
+		}
+		if got := strings.Contains(do(public, http.MethodGet, "/").Body.String(), "invite code"); got == open {
+			t.Errorf("open %v: home page mentions an invite code = %v", open, got)
+		}
+		want := `"registration":"invite"`
+		if open {
+			want = `"registration":"open"`
+		}
+		if body := do(public, http.MethodGet, "/api/v1/info").Body.String(); !strings.Contains(body, want) {
+			t.Errorf("open %v: info = %s, want %s", open, body, want)
 		}
 	}
 }

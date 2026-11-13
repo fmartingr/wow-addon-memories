@@ -11,6 +11,7 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/apierr"
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
+	"github.com/fmartingr/wow-addon-memories/server/internal/openreg"
 	"github.com/fmartingr/wow-addon-memories/server/internal/ratelimit"
 	"github.com/fmartingr/wow-addon-memories/server/internal/reporting"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
@@ -18,19 +19,23 @@ import (
 )
 
 // NewPublic returns the handler of the public listener.
-func NewPublic(cfg config.Config, s *site.Site, pages *site.Pages, st *store.Store, chars *characters.Service, log *slog.Logger) http.Handler {
+func NewPublic(cfg config.Config, s *site.Site, pages *site.Pages, st *store.Store, chars *characters.Service, gate *openreg.Gate, log *slog.Logger) http.Handler {
 	mux := http.NewServeMux()
-	mux.Handle("GET /{$}", s.Home())
+	mux.Handle("GET /{$}", s.HomeFor(func(*http.Request) bool { return gate.IsOpen() }))
 	mux.Handle("GET /robots.txt", s.Robots())
 	mux.Handle("GET "+site.CSSPath, s.CSS())
 	mux.HandleFunc("GET /api/v1/info", func(w http.ResponseWriter, r *http.Request) {
+		registration := config.RegistrationInvite
+		if gate.IsOpen() {
+			registration = config.RegistrationOpen
+		}
 		apierr.JSON(w, http.StatusOK, map[string]any{
 			"api":          1,
 			"name":         cfg.SiteName,
-			"registration": cfg.Registration,
+			"registration": registration,
 		})
 	})
-	api.New(cfg, st, chars, log).Routes(mux)
+	api.New(cfg, st, chars, gate, log).Routes(mux)
 	mux.HandleFunc("/api/", func(w http.ResponseWriter, r *http.Request) {
 		apierr.Write(w, http.StatusNotFound, "not_found", "There is no such API path. Check the address of the request.")
 	})

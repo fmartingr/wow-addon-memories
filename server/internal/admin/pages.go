@@ -28,6 +28,7 @@ type view struct {
 	Invites    []inviteView
 	Characters []characterView
 	DefaultDay int
+	Settings   settingsView
 
 	// Query, PageNo, Pages, Total and the links drive the search box and the pager of a list. Return is where the
 	// forms of the page send the admin back to after a change.
@@ -49,9 +50,18 @@ type keyView struct {
 	Note        string
 	Screenshots string
 	Revoked     bool
+	Open        bool
 	Characters  int64
 	DataBytes   int64
 	ShotBytes   int64
+}
+
+type settingsView struct {
+	Open           bool
+	MaxDataMiB     int64
+	MinFreePercent int64
+	FreePercent    string
+	Low            bool
 }
 
 type inviteView struct {
@@ -98,7 +108,7 @@ var funcs = template.FuncMap{
 	},
 }
 
-var pageNames = []string{"requests", "keys", "invites", "characters"}
+var pageNames = []string{"requests", "keys", "invites", "characters", "settings"}
 
 func parseTemplates() (map[string]*template.Template, error) {
 	pages := map[string]*template.Template{}
@@ -140,7 +150,7 @@ func toKeyViews(rows []store.KeyRow) []keyView {
 	for _, k := range rows {
 		kv := keyView{
 			ID: k.ID, Fingerprint: k.Fingerprint(), Created: time.Unix(k.Created, 0), Note: k.InviteNote,
-			Screenshots: k.Screenshots, Revoked: k.Revoked, Characters: k.Characters, DataBytes: k.DataBytes, ShotBytes: k.ShotBytes,
+			Screenshots: k.Screenshots, Revoked: k.Revoked, Open: k.Open, Characters: k.Characters, DataBytes: k.DataBytes, ShotBytes: k.ShotBytes,
 		}
 		if k.LastSeen != 0 {
 			kv.LastSeen = time.Unix(k.LastSeen, 0)
@@ -215,7 +225,7 @@ func (a *Admin) keysPage(r *http.Request, v *view) error {
 		return err
 	}
 	v.Keys = toKeyViews(l.Rows)
-	setPager(v, q, "Fingerprint, invite note or screenshot state", l)
+	setPager(v, q, "Fingerprint, invite note, screenshot state or open", l)
 	return nil
 }
 
@@ -243,6 +253,25 @@ func (a *Admin) invitesPage(r *http.Request, v *view) error {
 	}
 	v.DefaultDay = defaultInviteDays
 	setPager(v, q, "Note or state: unused, used, expired, revoked", l)
+	return nil
+}
+
+// settingsPage reads the status through the gate, so the page shows a switch that the low disk turned off.
+func (a *Admin) settingsPage(r *http.Request, v *view) error {
+	st, err := a.opt.Gate.Refresh(r.Context())
+	if err != nil {
+		return err
+	}
+	v.Settings = settingsView{
+		Open:           st.Settings.Open,
+		MaxDataMiB:     st.Settings.MaxDataBytes >> 20,
+		MinFreePercent: st.Settings.MinFreePercent,
+		FreePercent:    "unknown",
+		Low:            st.Low(),
+	}
+	if st.FreeKnown {
+		v.Settings.FreePercent = fmt.Sprintf("%.1f%%", st.FreePercent)
+	}
 	return nil
 }
 

@@ -1,0 +1,20 @@
+{{define "title"}}Settings{{end}}
+{{define "content"}}
+<h2>Settings</h2>
+<h3>Open registration</h3>
+<p>With open registration, the app registers a key with no invite code. An open key cannot upload screenshots, and it holds at most the data below. A key with an invite code keeps the normal limits.</p>
+<p>The data disk has <strong>{{.Settings.FreePercent}}</strong> free space.{{if .Settings.Low}} This is at the limit or below it, so open registration is off.{{end}}</p>
+<form method="post" action="/settings/save">
+<input type="hidden" name="csrf" value="{{.CSRF}}">
+<p><label><input type="checkbox" name="open" value="1"{{if .Settings.Open}} checked{{end}}> Open registration</label></p>
+<p><label>Data per open key, in MiB <input type="number" name="max_data_mib" min="1" value="{{.Settings.MaxDataMiB}}" required></label></p>
+<p><label>Close open registration at this free disk space, in percent <input type="number" name="min_free_percent" min="0" max="99" value="{{.Settings.MinFreePercent}}" required></label></p>
+<button type="submit">Save</button>
+</form>
+<h3>What the settings do</h3>
+<ul>
+<li><strong>Open registration</strong> lets a new key register with no invite code. When it is off, a new key needs an invite code. A key that registered before keeps working in both cases, and so does its data.</li>
+<li><strong>Data per open key</strong> is the most journey data that one open key can store. It replaces <code>MEMORIES_MAX_DATA_BYTES_PER_KEY</code>, which applies to keys with an invite code. An upload past it gets <code>507</code>.</li>
+<li><strong>Close open registration</strong>: the server checks the free space of the data disk once a minute. When it is at this percent or less, the server turns open registration off. It stays off until you turn it on here again. At 0, it closes only when the disk is full.</li>
+</ul>
+{{end}}

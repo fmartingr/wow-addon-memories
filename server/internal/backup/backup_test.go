@@ -31,7 +31,7 @@ func addClaims(t *testing.T, st *store.Store, n int) int64 {
 	t.Helper()
 	ctx := context.Background()
 	pub := bytes.Repeat([]byte{7}, 32)
-	if _, err := st.Register(ctx, store.RegisterInput{Public: pub, Nonce: bytes.Repeat([]byte{7}, 16)}); err != nil {
+	if _, err := st.Register(ctx, store.RegisterInput{Public: pub, Nonce: bytes.Repeat([]byte{7}, 16), AllowOpen: true}); err != nil {
 		t.Fatal(err)
 	}
 	key, err := st.KeyByPublic(ctx, pub)

@@ -34,6 +34,10 @@ func (a *API) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 		a.internal(w, "screenshot claim", err)
 		return
 	}
+	if id.Key.Open {
+		screenshotsUnavailable(w)
+		return
+	}
 	if id.Key.Screenshots != store.ShotsApproved {
 		apierr.Write(w, http.StatusForbidden, "screenshots_not_approved",
 			"This key has no approval to upload screenshots. Use Request screenshots in the app, then wait for the website admin to approve it.")
@@ -92,6 +96,11 @@ func (a *API) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 func unsupportedImage(w http.ResponseWriter) {
 	apierr.Write(w, http.StatusUnsupportedMediaType, "unsupported_image",
 		"The file is not an 8-bit colour or grey JPEG or PNG image whose content matches its file name, or it is damaged. The website does not take TGA, CMYK or 16-bit files.")
+}
+
+func screenshotsUnavailable(w http.ResponseWriter) {
+	apierr.Write(w, http.StatusForbidden, "screenshots_unavailable",
+		"This key registered without an invite, and the website takes screenshots only from keys that registered with an invite code.")
 }
 
 func notReferenced(w http.ResponseWriter) {

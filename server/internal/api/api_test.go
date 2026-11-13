@@ -19,6 +19,7 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/auth"
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
+	"github.com/fmartingr/wow-addon-memories/server/internal/openreg"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
 
@@ -39,11 +40,14 @@ type env struct {
 	api   *API
 	wrap  func(store.Blobs) store.Blobs
 	chars *characters.Service
+	gate  *openreg.Gate
+	// freePercent is the free space of the data disk that the gate sees.
+	freePercent float64
 }
 
 func newEnv(t *testing.T, vars map[string]string) *env {
 	t.Helper()
-	e := &env{t: t, logs: &bytes.Buffer{}, data: t.TempDir(), clock: &fakeClock{t: time.Unix(1794000000, 0)}}
+	e := &env{t: t, logs: &bytes.Buffer{}, data: t.TempDir(), clock: &fakeClock{t: time.Unix(1794000000, 0)}, freePercent: 50}
 	cfg, err := config.Load(func(k string) string { return vars[k] })
 	if err != nil {
 		t.Fatal(err)
@@ -75,7 +79,15 @@ func (e *env) start() {
 	log := slog.New(slog.NewJSONHandler(e.logs, nil))
 	e.chars = characters.New(st, b, log)
 	mux := http.NewServeMux()
-	e.api = New(e.cfg, st, e.chars, log)
+	if err := st.SeedOpen(context.Background(), e.cfg.Registration == config.RegistrationOpen); err != nil {
+		e.t.Fatal(err)
+	}
+	e.gate = openreg.New(st, e.data, log)
+	e.gate.SetDiskProbe(func(string) (float64, bool) { return e.freePercent, true })
+	if _, err := e.gate.Refresh(context.Background()); err != nil {
+		e.t.Fatal(err)
+	}
+	e.api = New(e.cfg, st, e.chars, e.gate, log)
 	e.api.Routes(mux)
 	e.h = mux
 }

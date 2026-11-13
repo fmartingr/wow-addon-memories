@@ -51,7 +51,11 @@ func newFixture(t *testing.T) *fixture {
 func (f *fixture) key(n byte) store.Key {
 	f.t.Helper()
 	pub := bytes.Repeat([]byte{n}, 32)
-	if _, err := f.st.Register(ctx, store.RegisterInput{Public: pub, Nonce: bytes.Repeat([]byte{n}, 16)}); err != nil {
+	_, code, err := f.st.CreateInvite(ctx, "", time.Hour)
+	if err != nil {
+		f.t.Fatal(err)
+	}
+	if _, err := f.st.Register(ctx, store.RegisterInput{Public: pub, Nonce: bytes.Repeat([]byte{n}, 16), Invite: code}); err != nil {
 		f.t.Fatal(err)
 	}
 	k, err := f.st.KeyByPublic(ctx, pub)

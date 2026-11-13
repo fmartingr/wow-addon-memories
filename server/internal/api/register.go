@@ -8,7 +8,6 @@ import (
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/apierr"
 	"github.com/fmartingr/wow-addon-memories/server/internal/auth"
-	"github.com/fmartingr/wow-addon-memories/server/internal/config"
 	"github.com/fmartingr/wow-addon-memories/server/internal/ratelimit"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
@@ -39,10 +38,10 @@ func (a *API) handleRegister(w http.ResponseWriter, r *http.Request) {
 
 	id, _ := auth.FromContext(r.Context())
 	created, err := a.store.Register(r.Context(), store.RegisterInput{
-		Public:        id.Public,
-		Nonce:         id.Nonce,
-		Invite:        req.Invite,
-		RequireInvite: a.cfg.Registration == config.RegistrationInvite,
+		Public:    id.Public,
+		Nonce:     id.Nonce,
+		Invite:    req.Invite,
+		AllowOpen: a.gate.IsOpen(),
 	})
 	switch {
 	case errors.Is(err, store.ErrInviteInvalid):

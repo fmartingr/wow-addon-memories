@@ -31,7 +31,7 @@ type Options struct {
 	// The home page leaves out a link with no address.
 	CurseForgeURL string
 	ExampleURL    string
-	// OpenRegistration drops the invite code step from the upload steps.
+	// OpenRegistration drops the invite code step from the upload steps of Home. HomeFor chooses it per request.
 	OpenRegistration bool
 }
 
@@ -67,9 +67,11 @@ type pageData struct {
 	Langs            []LangLink
 }
 
-// Site holds the pages, rendered once at start for each language.
+// Site holds the pages, rendered once at start for each language. The home page has a copy for open registration and
+// a copy for invite registration.
 type Site struct {
-	home     map[Lang][]byte
+	open     bool
+	home     map[bool]map[Lang][]byte
 	notFound map[Lang][]byte
 }
 
@@ -79,26 +81,31 @@ func New(opt Options) (*Site, error) {
 	if err != nil {
 		return nil, fmt.Errorf("parse the page templates: %w", err)
 	}
-	s := &Site{home: map[Lang][]byte{}, notFound: map[Lang][]byte{}}
+	s := &Site{open: opt.OpenRegistration, home: map[bool]map[Lang][]byte{true: {}, false: {}}, notFound: map[Lang][]byte{}}
 	for _, l := range Langs {
 		tpl, err := base.Clone()
 		if err != nil {
 			return nil, fmt.Errorf("copy the page templates: %w", err)
 		}
 		tpl.Funcs(langFuncs(l))
-		data := pageData{Name: opt.Name, Lang: l, CSS: CSSPath, BaseCSS: BaseCSSPath, GitHubURL: opt.GitHubURL, CurseForgeURL: opt.CurseForgeURL, ExampleURL: opt.ExampleURL, OpenRegistration: opt.OpenRegistration, Addons: Addons}
+		data := pageData{Name: opt.Name, Lang: l, CSS: CSSPath, BaseCSS: BaseCSSPath, GitHubURL: opt.GitHubURL, CurseForgeURL: opt.CurseForgeURL, ExampleURL: opt.ExampleURL, Addons: Addons}
 		for _, other := range Langs {
 			data.Langs = append(data.Langs, LangLink{Code: other, Name: LangNames[other], Current: other == l})
 		}
 		if opt.GitHubURL != "" {
 			data.ReleasesURL = opt.GitHubURL + "/releases/latest"
 		}
-		for name, dst := range map[string]map[Lang][]byte{"home.html": s.home, "notfound.html": s.notFound} {
+		for _, page := range []struct {
+			name string
+			open bool
+			dst  map[Lang][]byte
+		}{{"home.html", false, s.home[false]}, {"home.html", true, s.home[true]}, {"notfound.html", false, s.notFound}} {
+			data.OpenRegistration = page.open
 			var buf bytes.Buffer
-			if err := tpl.ExecuteTemplate(&buf, name, data); err != nil {
-				return nil, fmt.Errorf("render %s in %s: %w", name, l, err)
+			if err := tpl.ExecuteTemplate(&buf, page.name, data); err != nil {
+				return nil, fmt.Errorf("render %s in %s: %w", page.name, l, err)
 			}
-			dst[l] = buf.Bytes()
+			page.dst[l] = buf.Bytes()
 		}
 	}
 	return s, nil
@@ -113,8 +120,14 @@ func langFuncs(l Lang) template.FuncMap {
 	}
 }
 
-// Home serves the home page in the language of the request.
-func (s *Site) Home() http.Handler { return localized(http.StatusOK, s.home) }
+// Home serves the home page in the language of the request, with the registration of Options.
+func (s *Site) Home() http.Handler { return localized(http.StatusOK, s.home[s.open]) }
+
+// HomeFor serves the home page in the language of the request, with the registration that open gives for the request.
+func (s *Site) HomeFor(open func(*http.Request) bool) http.Handler {
+	pages := map[bool]http.Handler{true: localized(http.StatusOK, s.home[true]), false: localized(http.StatusOK, s.home[false])}
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { pages[open(r)].ServeHTTP(w, r) })
+}
 
 // NotFound serves the generic 404 page in the language of the request. An unknown path and a deleted character give
 // the same page.

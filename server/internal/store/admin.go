@@ -76,13 +76,13 @@ func paged[T any](ctx context.Context, s *Store, from string, args []any, page, 
 const keyFrom = `FROM keys k LEFT JOIN invites i ON i.id = k.invite_id`
 
 // ListKeys returns one page of the keys, newest first. A q other than "" keeps the keys whose fingerprint, invite note
-// or screenshot state contains it, ignoring case.
+// or screenshot state contains it, ignoring case; "open" also finds the open keys.
 func (s *Store) ListKeys(ctx context.Context, q string, page, size int) (Listing[KeyRow], error) {
 	where, args := ``, []any(nil)
 	if strings.TrimSpace(q) != "" {
 		like := likePattern(q, false)
-		where = ` WHERE (fingerprint(k.public_key) LIKE ? ESCAPE '\' OR COALESCE(i.note, '') LIKE ? ESCAPE '\' OR k.screenshots LIKE ? ESCAPE '\')`
-		args = []any{like, like, like}
+		where = ` WHERE (fingerprint(k.public_key) LIKE ? ESCAPE '\' OR COALESCE(i.note, '') LIKE ? ESCAPE '\' OR k.screenshots LIKE ? ESCAPE '\' OR (k.open = 1 AND 'open' LIKE ? ESCAPE '\'))`
+		args = []any{like, like, like, like}
 	}
 	return s.listKeys(ctx, where, args, `k.id DESC`, page, size)
 }
@@ -105,7 +105,7 @@ func (s *Store) listKeys(ctx context.Context, where string, args []any, order st
 		return l, err
 	}
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT k.id, k.public_key, k.created, k.screenshots, k.revoked, COALESCE(k.last_seen, 0), COALESCE(i.note, ''),
+		`SELECT k.id, k.public_key, k.created, k.screenshots, k.revoked, COALESCE(k.last_seen, 0), k.open, COALESCE(i.note, ''),
 		        COALESCE(c.n, 0), COALESCE(c.data, 0), COALESCE(c.shots, 0)
 		 `+keyFrom+`
 		 LEFT JOIN (SELECT key_id, COUNT(*) AS n, SUM(data_bytes) AS data, SUM(shot_bytes) AS shots
@@ -117,12 +117,12 @@ func (s *Store) listKeys(ctx context.Context, where string, args []any, order st
 	defer rows.Close()
 	for rows.Next() {
 		var r KeyRow
-		var revoked int
-		if err := rows.Scan(&r.ID, &r.Public, &r.Created, &r.Screenshots, &revoked, &r.LastSeen, &r.InviteNote,
+		var revoked, open int
+		if err := rows.Scan(&r.ID, &r.Public, &r.Created, &r.Screenshots, &revoked, &r.LastSeen, &open, &r.InviteNote,
 			&r.Characters, &r.DataBytes, &r.ShotBytes); err != nil {
 			return l, err
 		}
-		r.Revoked = revoked != 0
+		r.Revoked, r.Open = revoked != 0, open != 0
 		l.Rows = append(l.Rows, r)
 	}
 	return l, rows.Err()
@@ -131,7 +131,7 @@ func (s *Store) listKeys(ctx context.Context, where string, args []any, order st
 // KeyByID returns the key, or ErrNotFound.
 func (s *Store) KeyByID(ctx context.Context, id int64) (Key, error) {
 	return scanKey(s.db.QueryRowContext(ctx,
-		`SELECT id, public_key, created, screenshots, revoked, COALESCE(last_seen, 0) FROM keys WHERE id = ?`, id))
+		`SELECT `+keyColumns+` FROM keys WHERE id = ?`, id))
 }
 
 // KeyByFingerprint returns the key with this fingerprint, or ErrNotFound. SQLite has no SHA-256, so it compares in Go.
@@ -169,7 +169,7 @@ func (s *Store) KeyByFingerprint(ctx context.Context, fingerprint string) (Key, 
 // when the key is not pending or is revoked, so a stale form cannot undo a later decision.
 func (s *Store) DecideScreenshots(ctx context.Context, id int64, state string) (bool, error) {
 	res, err := s.db.ExecContext(ctx,
-		`UPDATE keys SET screenshots = ? WHERE id = ? AND screenshots = 'pending' AND revoked = 0`, state, id)
+		`UPDATE keys SET screenshots = ? WHERE id = ? AND screenshots = 'pending' AND revoked = 0 AND open = 0`, state, id)
 	if err != nil {
 		return false, err
 	}

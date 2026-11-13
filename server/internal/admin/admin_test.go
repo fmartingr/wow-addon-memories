@@ -27,6 +27,7 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/auth"
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
+	"github.com/fmartingr/wow-addon-memories/server/internal/openreg"
 	"github.com/fmartingr/wow-addon-memories/server/internal/site"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
@@ -54,6 +55,9 @@ type env struct {
 	logs  *bytes.Buffer
 	clock *time.Time
 	seq   uint64
+	gate  *openreg.Gate
+	// freePercent is the free space of the data disk that the gate sees.
+	freePercent float64
 }
 
 // newEnv builds the public handler (API and pages) and the admin handler over one store, one blob folder and one
@@ -73,7 +77,7 @@ func newEnvWith(t *testing.T, wrap func(store.Blobs) store.Blobs) *env {
 		t.Fatal(err)
 	}
 	now := time.Unix(1794000000, 0)
-	e := &env{t: t, logs: &bytes.Buffer{}, clock: &now}
+	e := &env{t: t, logs: &bytes.Buffer{}, clock: &now, freePercent: 50}
 	if e.st, err = store.Open(filepath.Join(data, "memories.db")); err != nil {
 		t.Fatal(err)
 	}
@@ -107,13 +111,21 @@ func newEnvWith(t *testing.T, wrap func(store.Blobs) store.Blobs) *env {
 	if err != nil {
 		t.Fatal(err)
 	}
+	if err := e.st.SeedOpen(bg, cfg.Registration == config.RegistrationOpen); err != nil {
+		t.Fatal(err)
+	}
+	e.gate = openreg.New(e.st, t.TempDir(), log)
+	e.gate.SetDiskProbe(func(string) (float64, bool) { return e.freePercent, true })
+	if _, err := e.gate.Refresh(bg); err != nil {
+		t.Fatal(err)
+	}
 	mux := http.NewServeMux()
-	api.New(cfg, e.st, e.chars, log).Routes(mux)
+	api.New(cfg, e.st, e.chars, e.gate, log).Routes(mux)
 	pages.Routes(mux)
 	e.pub = mux
 
 	e.admin, err = New(Options{
-		Addr: adminHost, SiteURL: cfg.SiteURL, Store: e.st, Chars: e.chars, NotFound: static.NotFound(), Log: log,
+		Addr: adminHost, SiteURL: cfg.SiteURL, Store: e.st, Chars: e.chars, Gate: e.gate, NotFound: static.NotFound(), Log: log,
 	})
 	if err != nil {
 		t.Fatal(err)
@@ -169,11 +181,16 @@ func (e *env) register(c *client, invite string) *httptest.ResponseRecorder {
 	return e.signed(c, "POST", "/api/v1/register", []byte(`{"invite":"`+invite+`"}`))
 }
 
-// registered registers a new key in open mode and returns it with its store row.
+// registered registers a new key with a new invite and returns it with its store row. An invite makes a key that can
+// upload screenshots.
 func (e *env) registered(n byte) (*client, store.Key) {
 	e.t.Helper()
 	c := newClient(n)
-	if rec := e.register(c, ""); rec.Code != http.StatusCreated {
+	_, code, err := e.st.CreateInvite(bg, "", time.Hour)
+	if err != nil {
+		e.t.Fatal(err)
+	}
+	if rec := e.register(c, code); rec.Code != http.StatusCreated {
 		e.t.Fatalf("registration: %d %s", rec.Code, rec.Body)
 	}
 	return c, e.row(c)
@@ -656,7 +673,7 @@ func TestKeysPageShowsTheKeyFigures(t *testing.T) {
 		t.Fatal(err)
 	}
 	c := newClient(1)
-	if _, err := e.st.Register(bg, store.RegisterInput{Public: c.public(), Nonce: bytes.Repeat([]byte{1}, 16), Invite: code, RequireInvite: true}); err != nil {
+	if _, err := e.st.Register(bg, store.RegisterInput{Public: c.public(), Nonce: bytes.Repeat([]byte{1}, 16), Invite: code}); err != nil {
 		t.Fatal(err)
 	}
 	e.mustUpload(c, "eu-brumamar-nandu")
@@ -1103,7 +1120,7 @@ func TestInviteStatesAndRevoke(t *testing.T) {
 	revokedCode := create("one-revoked")
 	spend := func(code string, n byte) {
 		// The server in these tests runs in open mode, where a code is ignored, so spend it in the store.
-		if _, err := e.st.Register(bg, store.RegisterInput{Public: bytes.Repeat([]byte{n}, 32), Nonce: bytes.Repeat([]byte{n}, 16), Invite: code, RequireInvite: true}); err != nil {
+		if _, err := e.st.Register(bg, store.RegisterInput{Public: bytes.Repeat([]byte{n}, 32), Nonce: bytes.Repeat([]byte{n}, 16), Invite: code}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -1130,7 +1147,7 @@ func TestInviteStatesAndRevoke(t *testing.T) {
 		}
 	}
 	mustContain(t, br.get("/invites").Body.String(), "Used by key "+store.Fingerprint(bytes.Repeat([]byte{5}, 32)))
-	if _, err := e.st.Register(bg, store.RegisterInput{Public: bytes.Repeat([]byte{7}, 32), Nonce: bytes.Repeat([]byte{7}, 16), Invite: revokedCode, RequireInvite: true}); !errors.Is(err, store.ErrInviteInvalid) {
+	if _, err := e.st.Register(bg, store.RegisterInput{Public: bytes.Repeat([]byte{7}, 32), Nonce: bytes.Repeat([]byte{7}, 16), Invite: revokedCode}); !errors.Is(err, store.ErrInviteInvalid) {
 		t.Errorf("a revoked code registered a key: %v", err)
 	}
 	for _, bad := range []string{"", "x", "99999"} {

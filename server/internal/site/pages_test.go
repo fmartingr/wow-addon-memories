@@ -79,7 +79,7 @@ func newRig(t *testing.T) *rig {
 func (r *rig) claim() int64 {
 	r.t.Helper()
 	pub := bytes.Repeat([]byte{1}, 32)
-	if _, err := r.st.Register(context.Background(), store.RegisterInput{Public: pub, Nonce: pub[:16]}); err != nil {
+	if _, err := r.st.Register(context.Background(), store.RegisterInput{Public: pub, Nonce: pub[:16], AllowOpen: true}); err != nil {
 		r.t.Fatal(err)
 	}
 	key, err := r.st.KeyByPublic(context.Background(), pub)

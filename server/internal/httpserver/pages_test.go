@@ -54,7 +54,12 @@ func newSiteWith(t *testing.T, vars map[string]string) *fixture {
 		t.Fatal(err)
 	}
 	s := &fixture{t: t, public: public, st: st, priv: priv}
-	if rec := s.signed("POST", "/api/v1/register", []byte("{}"), false); rec.Code != http.StatusCreated {
+	// An invite makes a key that can upload screenshots.
+	_, code, err := st.CreateInvite(t.Context(), "", time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if rec := s.signed("POST", "/api/v1/register", []byte(`{"invite":"`+code+`"}`), false); rec.Code != http.StatusCreated {
 		t.Fatalf("register: %d %s", rec.Code, rec.Body)
 	}
 	return s

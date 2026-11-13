@@ -37,7 +37,19 @@ func nonce(n byte) []byte { return bytes.Repeat([]byte{n}, 16) }
 
 func register(t *testing.T, s *Store, pub []byte, invite string) (bool, error) {
 	t.Helper()
-	return s.Register(ctx, RegisterInput{Public: pub, Nonce: nonce(pub[0]), Invite: invite, RequireInvite: true})
+	return s.Register(ctx, RegisterInput{Public: pub, Nonce: nonce(pub[0]), Invite: invite})
+}
+
+// registerInvited registers pub with a new invite, so the key is not an open key.
+func registerInvited(t *testing.T, s *Store, pub []byte) {
+	t.Helper()
+	_, code, err := s.CreateInvite(ctx, "", time.Hour)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := register(t, s, pub, code); err != nil {
+		t.Fatal(err)
+	}
 }
 
 func mustKey(t *testing.T, s *Store, pub []byte) Key {
@@ -233,14 +245,82 @@ func TestInviteValidity(t *testing.T) {
 	}
 }
 
-func TestRegisterInOpenModeIgnoresTheCode(t *testing.T) {
+func TestRegisterOpen(t *testing.T) {
 	s, _ := openTest(t)
-	for _, invite := range []string{"", "garbage"} {
-		pub := pubKey(byte(len(invite) + 1))
-		created, err := s.Register(ctx, RegisterInput{Public: pub, Nonce: nonce(1), Invite: invite})
-		if err != nil || !created {
-			t.Errorf("open registration with %q = %v, %v", invite, created, err)
+	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)}); !errors.Is(err, ErrInviteInvalid) {
+		t.Errorf("registration with no invite and no open registration = %v", err)
+	}
+	if created, err := s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true}); err != nil || !created {
+		t.Fatalf("open registration = %v, %v", created, err)
+	}
+	if !mustKey(t, s, pubKey(1)).Open {
+		t.Error("a key with no invite is not an open key")
+	}
+	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(2), Nonce: nonce(2), Invite: "garbage", AllowOpen: true}); err != nil {
+		t.Errorf("open registration with a bad code = %v", err)
+	}
+	_, used, _ := s.CreateInvite(ctx, "", time.Hour)
+	registerInvited(t, s, pubKey(5))
+	register(t, s, pubKey(6), used)
+	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(7), Nonce: nonce(7), Invite: used, AllowOpen: true}); err != nil {
+		t.Errorf("open registration with a used code = %v", err)
+	}
+	for _, n := range []byte{2, 7} {
+		if !mustKey(t, s, pubKey(n)).Open {
+			t.Errorf("key %d with a code that does not work is not an open key", n)
 		}
+	}
+	_, code, _ := s.CreateInvite(ctx, "", time.Hour)
+	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(3), Nonce: nonce(3), Invite: code, AllowOpen: true}); err != nil {
+		t.Fatal(err)
+	}
+	if mustKey(t, s, pubKey(3)).Open {
+		t.Error("a key with an invite is an open key")
+	}
+	// A registered open key registers again after open registration closes.
+	if created, err := s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(4)}); err != nil || created {
+		t.Errorf("a second registration of an open key = %v, %v", created, err)
+	}
+}
+
+func TestOpenKeyCannotAskForScreenshots(t *testing.T) {
+	s, _ := openTest(t)
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true})
+	k := mustKey(t, s, pubKey(1))
+	if state, err := s.RequestScreenshots(ctx, k.ID); err != nil || state != ShotsNone {
+		t.Errorf("request of an open key = %q, %v; want none", state, err)
+	}
+}
+
+func TestOpenSettings(t *testing.T) {
+	s, _ := openTest(t)
+	if o, err := s.OpenSettings(ctx); err != nil || o != DefaultOpenSettings() {
+		t.Fatalf("settings before any save = %+v, %v", o, err)
+	}
+	if err := s.SeedOpen(ctx, true); err != nil {
+		t.Fatal(err)
+	}
+	if err := s.SeedOpen(ctx, false); err != nil {
+		t.Fatal(err)
+	}
+	if o, _ := s.OpenSettings(ctx); !o.Open {
+		t.Error("a second seed changed the switch")
+	}
+	want := OpenSettings{Open: true, MaxDataBytes: 1000, MinFreePercent: 25}
+	if err := s.SetOpenSettings(ctx, want); err != nil {
+		t.Fatal(err)
+	}
+	if o, err := s.OpenSettings(ctx); err != nil || o != want {
+		t.Errorf("settings = %+v, %v; want %+v", o, err, want)
+	}
+	if closed, err := s.CloseOpen(ctx); !closed || err != nil {
+		t.Errorf("CloseOpen = %v, %v", closed, err)
+	}
+	if closed, err := s.CloseOpen(ctx); closed || err != nil {
+		t.Errorf("a second CloseOpen = %v, %v", closed, err)
+	}
+	if o, _ := s.OpenSettings(ctx); o.Open || o.MaxDataBytes != 1000 {
+		t.Errorf("settings after CloseOpen = %+v", o)
 	}
 }
 
@@ -304,7 +384,7 @@ func TestRegisterTheSameKeyTwiceAtOnce(t *testing.T) {
 	created := 0
 	for range 6 {
 		wg.Go(func() {
-			c, err := s.Register(ctx, RegisterInput{Public: pubKey(5), Nonce: nonce(5)})
+			c, err := s.Register(ctx, RegisterInput{Public: pubKey(5), Nonce: nonce(5), AllowOpen: true})
 			if err != nil {
 				t.Error(err)
 			}
@@ -324,7 +404,7 @@ func TestRegisterTheSameKeyTwiceAtOnce(t *testing.T) {
 func TestNonces(t *testing.T) {
 	s, clock := openTest(t)
 	for id := range 2 {
-		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(byte(id + 1)), Nonce: nonce(0xee)}); err != nil {
+		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(byte(id + 1)), Nonce: nonce(0xee), AllowOpen: true}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -356,7 +436,7 @@ func TestNonces(t *testing.T) {
 func TestNonceSeen(t *testing.T) {
 	s, clock := openTest(t)
 	for id := range 2 {
-		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(byte(id + 1)), Nonce: nonce(0xee)}); err != nil {
+		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(byte(id + 1)), Nonce: nonce(0xee), AllowOpen: true}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -382,7 +462,7 @@ func TestNonceSeen(t *testing.T) {
 
 func TestStaleNonceRowCountsAsUnseenBeforeThePurge(t *testing.T) {
 	s, clock := openTest(t)
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(0xee)})
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(0xee), AllowOpen: true})
 	k := mustKey(t, s, pubKey(1))
 	s.UseNonce(ctx, k.ID, nonce(1))
 	clock.Advance(NonceTTL + time.Second)
@@ -400,7 +480,7 @@ func TestNoncesSurviveARestart(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(0xee)})
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(0xee), AllowOpen: true})
 	k := mustKey(t, s, pubKey(1))
 	s.UseNonce(ctx, k.ID, nonce(7))
 	s.Close()
@@ -417,7 +497,7 @@ func TestNoncesSurviveARestart(t *testing.T) {
 
 func TestPurgeLoop(t *testing.T) {
 	s, clock := openTest(t)
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true})
 	clock.Advance(NonceTTL + time.Second)
 
 	loopCtx, cancel := context.WithCancel(ctx)
@@ -463,7 +543,7 @@ func TestPurgeLoopReportsErrors(t *testing.T) {
 
 func TestRequestScreenshots(t *testing.T) {
 	s, _ := openTest(t)
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
+	registerInvited(t, s, pubKey(1))
 	k := mustKey(t, s, pubKey(1))
 	for _, tc := range []struct{ from, want string }{
 		{ShotsNone, ShotsPending},
@@ -486,7 +566,7 @@ func TestRequestScreenshots(t *testing.T) {
 
 func TestTouchKey(t *testing.T) {
 	s, clock := openTest(t)
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true})
 	k := mustKey(t, s, pubKey(1))
 	clock.Advance(90 * time.Second)
 	if err := s.TouchKey(ctx, k.ID); err != nil {
@@ -499,8 +579,8 @@ func TestTouchKey(t *testing.T) {
 
 func TestClaims(t *testing.T) {
 	s, _ := openTest(t)
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
-	s.Register(ctx, RegisterInput{Public: pubKey(2), Nonce: nonce(2)})
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true})
+	s.Register(ctx, RegisterInput{Public: pubKey(2), Nonce: nonce(2), AllowOpen: true})
 	a, b := mustKey(t, s, pubKey(1)), mustKey(t, s, pubKey(2))
 
 	for _, c := range []Claim{
@@ -529,8 +609,8 @@ func TestClaims(t *testing.T) {
 
 func TestClaimUpdateQuotaAndDelete(t *testing.T) {
 	s, clock := openTest(t)
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
-	s.Register(ctx, RegisterInput{Public: pubKey(2), Nonce: nonce(2)})
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true})
+	s.Register(ctx, RegisterInput{Public: pubKey(2), Nonce: nonce(2), AllowOpen: true})
 	a, b := mustKey(t, s, pubKey(1)), mustKey(t, s, pubKey(2))
 	claim := func(name string, key int64) Claim {
 		return Claim{Flavor: "wow", Region: "eu", Realm: "zul", Name: name, GUID: "Player-1-00000001", KeyID: key}
@@ -616,7 +696,7 @@ func TestMigrationV2AddsShotsToAVersion1File(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.db.Exec(`DROP TABLE shots; PRAGMA user_version = 1`); err != nil {
+	if _, err := s.db.Exec(`DROP TABLE shots; DROP TABLE settings; ALTER TABLE keys DROP COLUMN open; PRAGMA user_version = 1`); err != nil {
 		t.Fatal(err)
 	}
 	s.Close()
@@ -632,7 +712,7 @@ func TestMigrationV2AddsShotsToAVersion1File(t *testing.T) {
 
 func TestShots(t *testing.T) {
 	s, _ := openTest(t)
-	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)})
+	s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true})
 	a := mustKey(t, s, pubKey(1))
 	one, _ := s.CreateClaim(ctx, Claim{Flavor: "wow", Region: "eu", Realm: "zul", Name: "one", GUID: "g1", KeyID: a.ID})
 	two, _ := s.CreateClaim(ctx, Claim{Flavor: "wow", Region: "eu", Realm: "zul", Name: "two", GUID: "g2", KeyID: a.ID})

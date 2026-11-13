@@ -246,7 +246,7 @@ func TestScreenshotNeedsApprovalAndOwnership(t *testing.T) {
 func TestKeyWithoutApprovalHasNoScreenshotRecordToUpload(t *testing.T) {
 	e := newEnv(t, openMode)
 	c := newClient(1)
-	e.registered2(c)
+	e.registered(c)
 	e.ok(e.uploadDir(c, filepath.Join(expectedDir, "eu-brumamar-nandu")))
 	e.fail(e.putShot(c, brumamar, shotA, readFile(t, filepath.Join(imagesDir, "small.jpg"))), http.StatusForbidden, "screenshots_not_approved")
 }

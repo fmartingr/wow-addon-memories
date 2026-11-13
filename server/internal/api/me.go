@@ -35,11 +35,15 @@ func (a *API) handleMe(w http.ResponseWriter, r *http.Request) {
 			Updated: c.Updated,
 		})
 	}
-	apierr.JSON(w, http.StatusOK, map[string]any{"screenshots": id.Key.Screenshots, "characters": chars})
+	apierr.JSON(w, http.StatusOK, map[string]any{"screenshots": id.Key.Screenshots, "open": id.Key.Open, "characters": chars})
 }
 
 func (a *API) handleScreenshotsRequest(w http.ResponseWriter, r *http.Request) {
 	id, _ := auth.FromContext(r.Context())
+	if id.Key.Open {
+		screenshotsUnavailable(w)
+		return
+	}
 	state, err := a.store.RequestScreenshots(r.Context(), id.Key.ID)
 	if err != nil {
 		a.internal(w, "screenshots request", err)

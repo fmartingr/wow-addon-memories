@@ -60,6 +60,12 @@ var migrations = []string{
 		bytes INTEGER NOT NULL,
 		PRIMARY KEY(claim_id, file)
 	);`,
+	// keys.open marks a key that registered without an invite. settings holds the values that the admin page changes.
+	`ALTER TABLE keys ADD COLUMN open INTEGER NOT NULL DEFAULT 0;
+	CREATE TABLE settings (
+		name TEXT PRIMARY KEY,
+		value TEXT NOT NULL
+	);`,
 }
 
 func (s *Store) migrate(ctx context.Context) error {

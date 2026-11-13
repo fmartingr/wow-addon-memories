@@ -45,7 +45,7 @@ func newFixture(t *testing.T, perKey int64) *fixture {
 func (f *fixture) register(priv ed25519.PrivateKey) store.Key {
 	f.t.Helper()
 	pub := priv.Public().(ed25519.PublicKey)
-	if _, err := f.st.Register(bg, store.RegisterInput{Public: pub, Nonce: make([]byte, 16)}); err != nil {
+	if _, err := f.st.Register(bg, store.RegisterInput{Public: pub, Nonce: make([]byte, 16), AllowOpen: true}); err != nil {
 		f.t.Fatal(err)
 	}
 	k, err := f.st.KeyByPublic(bg, pub)

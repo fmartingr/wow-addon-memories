@@ -20,7 +20,11 @@ func (e *env) addKeys(n int) []store.Key {
 	for i := 1; i <= n; i++ {
 		pub, nonce := bytes.Repeat([]byte{byte(i)}, 32), bytes.Repeat([]byte{byte(i)}, 16)
 		pub[0] = 0xAA
-		if _, err := e.st.Register(bg, store.RegisterInput{Public: pub, Nonce: nonce}); err != nil {
+		_, code, err := e.st.CreateInvite(bg, "", time.Hour)
+		if err != nil {
+			e.t.Fatal(err)
+		}
+		if _, err := e.st.Register(bg, store.RegisterInput{Public: pub, Nonce: nonce, Invite: code}); err != nil {
 			e.t.Fatal(err)
 		}
 		k, err := e.st.KeyByPublic(bg, pub)
@@ -143,7 +147,7 @@ func TestSearchOnEveryList(t *testing.T) {
 	e := newEnv(t)
 	_, code, _ := e.st.CreateInvite(bg, "for Ana", time.Hour)
 	ana := newClient(1)
-	if _, err := e.st.Register(bg, store.RegisterInput{Public: ana.public(), Nonce: bytes.Repeat([]byte{1}, 16), Invite: code, RequireInvite: true}); err != nil {
+	if _, err := e.st.Register(bg, store.RegisterInput{Public: ana.public(), Nonce: bytes.Repeat([]byte{1}, 16), Invite: code}); err != nil {
 		t.Fatal(err)
 	}
 	ben, kBen := e.registered(2)

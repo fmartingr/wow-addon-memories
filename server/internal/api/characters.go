@@ -81,9 +81,14 @@ func (a *API) handleUpload(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// An open key has the data limit of the admin settings, and a key with an invite the one of the config.
+	maxData := a.cfg.MaxDataBytesPerKey
+	if id.Key.Open {
+		maxData = a.gate.Current().Settings.MaxDataBytes
+	}
 	res, err := a.chars.Save(r.Context(), *id.Key, up, characters.Quotas{
 		MaxCharacters:     a.cfg.MaxCharactersPerKey,
-		MaxDataBytes:      a.cfg.MaxDataBytesPerKey,
+		MaxDataBytes:      maxData,
 		MaxCharacterBytes: maxCharacterBytes(a.cfg.MaxDecodedBytes),
 	})
 	switch {

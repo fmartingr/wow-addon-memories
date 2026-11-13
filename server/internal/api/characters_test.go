@@ -163,9 +163,10 @@ func (e *env) stored(path, name string) []byte {
 func itoa(n int64) string { return strconv.FormatInt(n, 10) }
 
 // approved registers a client and approves its screenshots.
+// approved registers c with an invite, so that the key is not an open key, and approves its screenshots.
 func (e *env) approved(c *client) {
 	e.t.Helper()
-	e.registered2(c)
+	e.registered(c)
 	k, err := e.st.KeyByPublic(bg, c.public())
 	if err != nil {
 		e.t.Fatal(err)
@@ -480,7 +481,7 @@ func TestCharacterSizeLimit(t *testing.T) {
 func TestDataQuota(t *testing.T) {
 	e := newEnv(t, openMode)
 	c := newClient(1)
-	e.registered2(c)
+	e.registered(c)
 	e.ok(e.uploadDir(c, filepath.Join(mergeDir, "old")))
 	path := "wow/eu/brumamar/nandu"
 	claim, _ := e.claim(path)

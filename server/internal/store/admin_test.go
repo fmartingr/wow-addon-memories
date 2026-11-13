@@ -21,7 +21,7 @@ func TestFingerprintIsTheFirst16HexOfTheSHA256(t *testing.T) {
 func openWithKey(t *testing.T) *Store {
 	t.Helper()
 	s, _ := openTest(t)
-	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)}); err != nil {
+	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1), AllowOpen: true}); err != nil {
 		t.Fatal(err)
 	}
 	return s
@@ -36,12 +36,8 @@ func TestListKeysAndLookups(t *testing.T) {
 	if _, err := register(t, s, pubKey(1), code); err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(2), Nonce: nonce(2)}); err != nil {
-		t.Fatal(err)
-	}
-	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(3), Nonce: nonce(3)}); err != nil {
-		t.Fatal(err)
-	}
+	registerInvited(t, s, pubKey(2))
+	registerInvited(t, s, pubKey(3))
 	k1, k2, k3 := mustKey(t, s, pubKey(1)), mustKey(t, s, pubKey(2)), mustKey(t, s, pubKey(3))
 	if _, err := s.CreateClaim(ctx, Claim{Flavor: "wow", Region: "eu", Realm: "r", Name: "n", GUID: "g", KeyID: k1.ID, DataBytes: 10, ShotBytes: 5}); err != nil {
 		t.Fatal(err)
@@ -129,9 +125,7 @@ func TestListKeysAndLookups(t *testing.T) {
 
 func TestDecideScreenshotsOnlyMovesAPendingKey(t *testing.T) {
 	s, _ := openTest(t)
-	if _, err := s.Register(ctx, RegisterInput{Public: pubKey(1), Nonce: nonce(1)}); err != nil {
-		t.Fatal(err)
-	}
+	registerInvited(t, s, pubKey(1))
 	k := mustKey(t, s, pubKey(1))
 	if ok, err := s.DecideScreenshots(ctx, k.ID, ShotsApproved); ok || err != nil {
 		t.Errorf("approve of a key with no request = %v, %v", ok, err)
@@ -197,7 +191,7 @@ func TestListInvitesStates(t *testing.T) {
 func TestSearchClaimsMoveAndClearShots(t *testing.T) {
 	s, _ := openTest(t)
 	for n := byte(1); n <= 2; n++ {
-		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(n), Nonce: nonce(n)}); err != nil {
+		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(n), Nonce: nonce(n), AllowOpen: true}); err != nil {
 			t.Fatal(err)
 		}
 	}
@@ -250,7 +244,7 @@ func TestSearchClaimsMoveAndClearShots(t *testing.T) {
 		t.Errorf("move of a missing claim = %v", err)
 	}
 	k3 := func() Key {
-		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(3), Nonce: nonce(3)}); err != nil {
+		if _, err := s.Register(ctx, RegisterInput{Public: pubKey(3), Nonce: nonce(3), AllowOpen: true}); err != nil {
 			t.Fatal(err)
 		}
 		return mustKey(t, s, pubKey(3))

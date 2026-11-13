@@ -9,6 +9,7 @@ import (
 	"github.com/fmartingr/wow-addon-memories/server/internal/auth"
 	"github.com/fmartingr/wow-addon-memories/server/internal/characters"
 	"github.com/fmartingr/wow-addon-memories/server/internal/config"
+	"github.com/fmartingr/wow-addon-memories/server/internal/openreg"
 	"github.com/fmartingr/wow-addon-memories/server/internal/ratelimit"
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
 )
@@ -24,6 +25,7 @@ type API struct {
 	chars    *characters.Service
 	auth     *auth.Middleware
 	register *ratelimit.Limiter
+	gate     *openreg.Gate
 
 	// slots holds one token for each upload that is being decoded and stored. A decoded upload of the largest size takes
 	// about 800 MB, and a save also decodes the stored character (see maxCharacterBytes), so the server runs only
@@ -37,11 +39,12 @@ type API struct {
 // defaultUploadWait is how long an upload waits for a free slot before the server answers 503.
 const defaultUploadWait = 10 * time.Second
 
-// New builds the API from the config. The rate limits come from the config.
-func New(cfg config.Config, st *store.Store, chars *characters.Service, log *slog.Logger) *API {
+// New builds the API from the config. The rate limits come from the config, and gate decides open registration.
+func New(cfg config.Config, st *store.Store, chars *characters.Service, gate *openreg.Gate, log *slog.Logger) *API {
 	return &API{
 		cfg:   cfg,
 		store: st,
+		gate:  gate,
 		log:   log,
 		auth: &auth.Middleware{
 			Store:  st,
