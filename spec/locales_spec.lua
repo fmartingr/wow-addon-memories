@@ -362,6 +362,7 @@ describe("addon strings", function()
 				"Memories — Mazmorras",
 				"Memories — Capturas de pantalla",
 				"Memories — Otros addons",
+				"Memories — Notas",
 			}, headers)
 		end)
 

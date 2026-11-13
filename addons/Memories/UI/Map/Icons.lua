@@ -55,6 +55,7 @@ MapIcons.FILES = {
 	["sn"] = "screenshot_note_from_another_addon",
 	["ex"] = "event_from_another_addon",
 	["nt"] = "note_from_memories",
+	["un"] = "note_from_memories",
 	-- Combat
 	["ki"] = "killed_a_creature",
 	["ra"] = "killed_a_rare",

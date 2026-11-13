@@ -43,6 +43,7 @@ Record\Trail.lua
 Record\Progress.lua
 Record\Deaths.lua
 Record\Screenshots.lua
+Record\Notes.lua
 Record\Travel.lua
 Record\Dungeons.lua
 UI\Slash.lua

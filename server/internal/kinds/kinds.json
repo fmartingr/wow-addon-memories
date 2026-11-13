@@ -580,6 +580,12 @@
       "to": "text"
     }
   },
+  "un": {
+    "addon": "Memories",
+    "fields": {
+      "text": "text"
+    }
+  },
   "wb": {
     "addon": "Memories",
     "fields": {

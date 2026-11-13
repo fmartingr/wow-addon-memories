@@ -8,7 +8,8 @@ Back to the [documentation index](README.md).
   - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Save reminder", "Minimap button"
     and "Low-health flash" (all on).
   - **Kinds:** one checkbox per kind under `<addon> — <group>`, with "Enable all" and "Disable all" for each group.
-    Every kind is on by default. A kind that is off writes no line, but its counts go on.
+    Every kind is on by default. A kind that is off writes no line, but its counts go on. The kind `un` (Notes) holds
+    the notes that the player writes; a note has at most 400 bytes.
   - **New findings only:** Gathering (`ga`, `fs`), Kills (`ki`), Loot (`lo`) and Consumables (`cu`), all off. When a
     box is on, its kinds write a line only for a first finding or a rare one.
 - **Journey window:** the choices of the panel are saved per account in `MemoriesDB.settings.map`: `groups` (the

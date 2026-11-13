@@ -161,6 +161,7 @@ describe("settings page", function()
 			"Memories — Dungeons",
 			"Memories — Screenshots",
 			"Memories — Other addons",
+			"Memories — Notes",
 			"Memories_Test — Test",
 		}, headers)
 		assert.same({

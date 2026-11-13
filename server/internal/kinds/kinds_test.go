@@ -101,7 +101,7 @@ func TestAddons(t *testing.T) {
 }
 
 func TestCatalogHasEveryKind(t *testing.T) {
-	if n := len(catalog()); n != 75 {
-		t.Errorf("the catalog has %d kinds, want 75", n)
+	if n := len(catalog()); n != 76 {
+		t.Errorf("the catalog has %d kinds, want 76", n)
 	}
 }

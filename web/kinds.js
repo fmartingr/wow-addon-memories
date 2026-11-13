@@ -190,6 +190,11 @@ window.KINDS = {
   "group": "Other addons",
   "name": "Event from another addon"
  },
+ "un": {
+  "addon": "Memories",
+  "group": "Notes",
+  "name": "Note"
+ },
  "nt": {
   "addon": "Memories",
   "group": "(not toggleable)",

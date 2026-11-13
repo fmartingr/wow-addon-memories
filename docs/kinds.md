@@ -19,6 +19,10 @@ The fields of every kind match the Kind catalog of
 the catalog: `nt` ("Note from Memories"), `bk` ("Read a book", a line for the first read of each title) and `gj`
 ("Joined a group"). `mo` is written only for the first mount-up with each mount, so it always has `on` = `1`.
 
+A `un` line is a note that the player writes (`/memories note`). `text` has at most 400 bytes. A link to an item or a
+quest is a token in the text: `{item:<id>:<name>}` or `{quest:<id>:<title>}`. A token has no `|`, `{` or `}` in its
+name.
+
 "New findings only" boxes (all off by default; every event is still counted):
 
 | Box | Kinds | Addon |
@@ -70,6 +74,7 @@ the catalog: `nt` ("Note from Memories"), `bk` ("Read a book", a line for the fi
 | `ss` | Screenshots | Screenshot saved | `why`, `result`, `file` |
 | `sn` | Other addons | Screenshot note from another addon | `source`, `note`, `file` |
 | `ex` | Other addons | Event from another addon | `source`, `what`, `detail` |
+| `un` | Notes | Note | `text` |
 | `nt` | (not toggleable) | Note from Memories | `what`, `detail` |
 
 ## Memories_Combat

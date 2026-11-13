@@ -144,6 +144,7 @@ local CORE = {
 	{ "Screenshots", "ss", L["Screenshot saved"], "why", "result", "file" },
 	{ "Other addons", "sn", L["Screenshot note from another addon"], "source", "note", "file" },
 	{ "Other addons", "ex", L["Event from another addon"], "source", "what", "detail" },
+	{ "Notes", "un", L["Note"], "text" },
 }
 
 for _, row in ipairs(CORE) do

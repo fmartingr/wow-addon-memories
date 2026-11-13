@@ -137,7 +137,7 @@ describe("store", function()
 		for _ in pairs(kinds) do
 			n = n + 1
 		end
-		assert.equal(39, n)
+		assert.equal(40, n)
 	end)
 
 	it("moves the data of an old character with the same name to the orphans", function()

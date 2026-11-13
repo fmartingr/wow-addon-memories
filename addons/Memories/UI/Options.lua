@@ -95,6 +95,7 @@ local GROUPS = {
 	Dungeons = L["Dungeons"],
 	Screenshots = L["Screenshots"],
 	["Other addons"] = L["Other addons"],
+	Notes = L["Notes"],
 	Combat = L["Combat"],
 	Gathering = L["Gathering"],
 	Character = L["Character"],
