@@ -16,6 +16,7 @@ globals = {
 }
 
 read_globals = {
+	"IsShiftKeyDown",
 	"GetCursorInfo",
 	"ClearCursor",
 	"ChatEdit_GetActiveWindow",

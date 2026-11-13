@@ -1784,6 +1784,7 @@ function wow.reset(opts)
 	wow.quests = opts.quests or {}
 	wow.rules = opts.rules
 	wow.played_asks = 0
+	wow.shift = false
 	wow.jumps = 0
 	wow.tocs = {}
 	wow.tocs_by_name = {}
@@ -1904,6 +1905,9 @@ function wow.reset(opts)
 			return wow.spells[id]
 		end,
 	}
+	_G.IsShiftKeyDown = function()
+		return wow.shift == true
+	end
 	_G.C_UI = {
 		Reload = function()
 			wow.reloads = wow.reloads + 1

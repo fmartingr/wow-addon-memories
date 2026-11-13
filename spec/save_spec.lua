@@ -3,7 +3,7 @@ local wow = require("helpers.wow")
 describe("save reminder and minimap button", function()
 	wow.pin_locale("enUS", before_each, after_each)
 
-	local REMINDER = "Memories: 1 hour since the last save. Click the minimap button to save (reloads the UI)."
+	local REMINDER = "Memories: 1 hour since the last save. Shift-click the minimap button to save (reloads the UI)."
 
 	local function count(list, text)
 		local n = 0
@@ -71,14 +71,44 @@ describe("save reminder and minimap button", function()
 			assert.is_true(button():IsShown())
 		end)
 
-		it("saves on a left click, out of combat only", function()
+		it("opens the Note window on a left click and does not reload", function()
 			wow.boot()
+			button():GetScript("OnClick")(button(), "LeftButton")
+			assert.equal(0, wow.reloads)
+			assert.is_true(_G.MemoriesNoteFrame:IsShown())
+		end)
+
+		it("opens the Note window again on a left click while it is shown, and keeps one frame", function()
+			wow.boot()
+			button():GetScript("OnClick")(button(), "LeftButton")
+			local frame = _G.MemoriesNoteFrame
+			button():GetScript("OnClick")(button(), "LeftButton")
+			assert.equal(frame, _G.MemoriesNoteFrame)
+			assert.is_true(frame:IsShown())
+		end)
+
+		it("saves on a shift + left click, out of combat only", function()
+			wow.boot()
+			wow.shift = true
 			wow.combat = true
 			button():GetScript("OnClick")(button(), "LeftButton")
 			assert.equal(0, wow.reloads)
 			assert.same({ "Memories: cannot save in combat." }, wow.chat())
 			wow.combat = false
 			button():GetScript("OnClick")(button(), "LeftButton")
+			assert.equal(1, wow.reloads)
+			assert.is_nil(_G.MemoriesNoteFrame)
+		end)
+
+		it("does not open the Note window on a right click", function()
+			wow.boot()
+			button():GetScript("OnClick")(button(), "RightButton")
+			assert.is_nil(_G.MemoriesNoteFrame)
+		end)
+
+		it("keeps the left click of the addon compartment as save", function()
+			wow.boot()
+			Memories_OnAddonCompartmentClick(nil, "LeftButton")
 			assert.equal(1, wow.reloads)
 		end)
 
@@ -96,7 +126,8 @@ describe("save reminder and minimap button", function()
 			assert.same({
 				"Memories",
 				"25 min since the last save",
-				"Left click: save (reload)",
+				"Left click: write a note",
+				"Shift + left click: save (reload)",
 				"Right click: settings",
 			}, wow.tooltip.lines)
 			assert.is_true(GameTooltip:IsShown())

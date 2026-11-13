@@ -26,7 +26,7 @@ function Save.Now()
 	return true
 end
 
--- The left and right click of the minimap button and of the addon compartment entry.
+-- The left and right click of the addon compartment entry.
 function Save.Click(button)
 	if button == "RightButton" then
 		ns.Options.Open()
@@ -44,7 +44,7 @@ function Save.Check()
 		ticker:Cancel()
 		ticker = nil
 	end
-	ns.Print(L["1 hour since the last save. Click the minimap button to save (reloads the UI)."])
+	ns.Print(L["1 hour since the last save. Shift-click the minimap button to save (reloads the UI)."])
 	ns.Emit("SAVE_REMINDER")
 end
 

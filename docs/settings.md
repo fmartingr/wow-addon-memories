@@ -24,8 +24,9 @@ Back to the [documentation index](README.md).
 - `/mem status` shows each addon of the set (on, off, missing, failed or newer api), its lines, the number of its kinds
   that are off and the age of its backup, then the login time.
 - `/mem errors` shows the saved errors, ready to copy.
-- The minimap button and the addon compartment entry save (reload) with a left click and open the Settings page with a
-  right click.
+- The minimap button opens the Note window with a left click, saves (reloads the UI) with a shift + left click, and
+  opens the Settings page with a right click. The addon compartment entry saves with a left click and opens the
+  Settings page with a right click.
 - After 1 hour with no save, a chat line and the pulsing minimap button remind you to save (save reminder).
 - Each journal has a rolling backup in `MemoriesDB.backups`. When a journal loads empty and its backup has lines, a
   popup asks you to restore the backup or start fresh (data guard).

@@ -280,7 +280,7 @@ Commit each task on its own with the repository's commit convention, on `main`. 
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 3. Minimap click: left = note, shift+left = save
+### [x] 3. Minimap click: left = note, shift+left = save
 - **Outcome:** a left click on the minimap button opens the Note window. A shift+left click saves.
 - **Depends on:** Task 2 (`ns.NoteWindow.Open`).
 - **Covers:** AC8, AC10 (tooltip texts), AC11 (settings and checklist docs), risk "left click changes meaning".

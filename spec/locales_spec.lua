@@ -299,7 +299,7 @@ describe("addon strings", function()
 			boot()
 			wow.advance(60 * 60 + 60)
 			local text = "Memories: 1 hora desde el último guardado. "
-				.. "Haz clic en el botón del minimapa para guardar (recarga la interfaz)."
+				.. "Haz clic con Mayús en el botón del minimapa para guardar (recarga la interfaz)."
 			local found = false
 			for _, line in ipairs(wow.chat()) do
 				found = found or line == text
@@ -313,7 +313,8 @@ describe("addon strings", function()
 			assert.same({
 				"Memories",
 				"0 min desde el último guardado",
-				"Clic izquierdo: guardar (recargar)",
+				"Clic izquierdo: escribir una nota",
+				"Mayús + clic izquierdo: guardar (recargar)",
 				"Clic derecho: opciones",
 			}, wow.tooltip.lines)
 		end)

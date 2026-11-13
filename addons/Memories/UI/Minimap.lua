@@ -48,11 +48,22 @@ function MinimapButton.Drag()
 	place(t.angle)
 end
 
+function MinimapButton.Click(which)
+	if which == "RightButton" then
+		ns.Options.Open()
+	elseif IsShiftKeyDown() then
+		ns.Save.Now()
+	else
+		ns.NoteWindow.Open()
+	end
+end
+
 function MinimapButton.Tooltip(owner)
 	GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
 	GameTooltip:SetText("Memories")
 	GameTooltip:AddLine(L["%d min since the last save"]:format(math.floor(ns.Save.Age() / 60)), 1, 1, 1)
-	GameTooltip:AddLine(L["Left click: save (reload)"])
+	GameTooltip:AddLine(L["Left click: write a note"])
+	GameTooltip:AddLine(L["Shift + left click: save (reload)"])
 	GameTooltip:AddLine(L["Right click: settings"])
 	GameTooltip:Show()
 end
@@ -110,7 +121,7 @@ function MinimapButton.Create()
 	button.glow = glow
 
 	button:SetScript("OnClick", function(_, which)
-		ns.Safe("minimap:click", ns.Save.Click, which)
+		ns.Safe("minimap:click", MinimapButton.Click, which)
 	end)
 	button:SetScript("OnEnter", function(self)
 		ns.Safe("minimap:tooltip", MinimapButton.Tooltip, self)
