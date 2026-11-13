@@ -48,6 +48,7 @@ Record\Travel.lua
 Record\Dungeons.lua
 UI\Slash.lua
 UI\Save.lua
+UI\NoteWindow.lua
 UI\Minimap.lua
 UI\Guard.lua
 UI\Options.lua

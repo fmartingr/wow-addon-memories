@@ -237,10 +237,28 @@ end
 
 function Frame:SetFocus()
 	self.focused = true
+	if self.scripts.OnEditFocusGained then
+		self.scripts.OnEditFocusGained(self)
+	end
 end
 
 function Frame:ClearFocus()
 	self.focused = false
+	if self.scripts.OnEditFocusLost then
+		self.scripts.OnEditFocusLost(self)
+	end
+end
+
+function Frame:HasFocus()
+	return self.focused == true
+end
+
+function Frame:SetMaxBytes(n)
+	self.maxBytes = n
+end
+
+function Frame:Insert(text)
+	self.text = (self.text or "") .. text
 end
 
 function Frame:HighlightText()

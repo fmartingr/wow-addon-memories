@@ -3,6 +3,9 @@
 Back to the [documentation index](README.md).
 
 - `/memories` (or `/mem`) lists the commands.
+- `/mem note [text]` opens the Note window. The player writes a note of at most 400 bytes, and Save writes it as a `un`
+  line with the place of the player. A shift-click on an item or a quest, or a drag of an item, adds a link to the
+  note. The window also works in combat.
 - `/mem options` (or `/mem settings`) opens the Settings page (Options > AddOns > Memories). Settings are
   account-wide, in `MemoriesDB.settings`:
   - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Save reminder", "Minimap button"

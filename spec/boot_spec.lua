@@ -141,10 +141,11 @@ describe("boot", function()
 				"  /memories errors - show the saved errors, ready to copy",
 				"  /memories options - open the settings page",
 				"  /memories settings - open the settings page",
+				"  /memories note - write a note in the journey",
 				"  /memories status - show the state of each Memories addon",
 			}, wow.chat())
 			SlashCmdList.MEMORIES("nope")
-			assert.equal(10, #wow.chat())
+			assert.equal(12, #wow.chat())
 		end)
 
 		it("opens the settings page on a right click of the addon compartment", function()

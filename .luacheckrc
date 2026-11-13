@@ -16,6 +16,11 @@ globals = {
 }
 
 read_globals = {
+	"GetCursorInfo",
+	"ClearCursor",
+	"ChatEdit_GetActiveWindow",
+	"ChatEdit_DeactivateChat",
+	"ChatEdit_InsertLink",
 	"UNKNOWNOBJECT",
 	"GetNumGroupMembers",
 	"IsInRaid",

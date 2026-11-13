@@ -41,7 +41,7 @@ order: run them from top to bottom. Run A has all 6 addons on. Run B (section T)
 | B1 | 3, 16 | Group in the AddOn list | Start the game and open the AddOn list on the character screen. | The 6 addons show as one group "Memories": "Memories", "Memories - Character", "Memories - Combat", "Memories - Economy", "Memories - Gathering" and "Memories - Social". | not run |
 | B2 | 1 | All addons load | Enable the 6 addons and log in. | No Lua error. | not run |
 | B3 | 5 | Status | Type `/mem status`. | "Memories: status:", then one `on` line for each of the 6 addons with `<n> lines, <n> kinds off, ...`, then `login time: init <n> ms, login <n> ms, world <n> ms`. | not run |
-| B4 | 1 | Command list | Type `/mem`, then `/memories`. | Each prints "Memories: commands:" and the `errors`, `options`, `settings` and `status` lines. | not run |
+| B4 | 1 | Command list | Type `/mem`, then `/memories`. | Each prints "Memories: commands:" and the `errors`, `options`, `settings`, `note` and `status` lines. | not run |
 | B5 | 1 | Errors box, none | On a clean install, type `/mem errors`. | It prints "Memories: no saved errors." | not run |
 | B6 | 3 | Public global | Type `/dump Memories.API_VERSION, Memories.VERSION`. | It prints `1` and the TOC version. | not run |
 
@@ -370,6 +370,19 @@ in the window.
 | U29 | AC17 | Follow on a continent | Open the map of a continent in the window, keep Follow on, click Play on a journey that crossed zones of that continent, then a flight to another continent. | The map stays on the continent while its zones are on it. It changes to a zone map only when the playhead leaves the continent. | not run |
 | U30 | AC17 | The player moves the map | During a replay, open another map in the window yourself. Then click Pause and Play. | The replay keeps playing on your map and does not take the map back. After Pause and Play, or a seek, it follows again. Turn Follow off: the replay stays on the map shown. | not run |
 | U31 | spec AC18 | Window edge cases | Maximize the world map and click Journey. Then go into a dungeon and open the window. | The window opens in front of the maximized map and comes to the front on a click. In the dungeon it opens on the first map of the trail (with no trail: on the zone or continent that holds the dungeon), with no Lua error. | not run |
+
+## V. Notes
+
+| ID | Source | Check | Steps | Expected | Result |
+|---|---|---|---|---|---|
+| V1 | 2 | Open the window | Type `/mem note`. | The Note window opens with an empty box that has the focus, a counter `0 / 400`, and Save off. Escape closes it. | not run |
+| V2 | 2 | Write and save | Type `/mem note first note`, then click Save. | The window closes. The chat shows "Memories: note saved." After `/reload`, the file holds `\|un\|first note`. | not run |
+| V3 | 2 | Counter and limit | Paste 500 characters in the box. | The box stops at 400 bytes and the counter shows `400 / 400` in red. | not run |
+| V4 | 2 | Link by shift-click | With the box focused, shift-click an item in the bags, then a quest in the quest log. | The box holds `{item:<id>:<name>}` and `{quest:<id>:<title>}`. The chat box does not stay open and takes no text. | not run |
+| V5 | 2 | Link by drag | Drag an item from the bags onto the box. | The box holds the item token and the item is back in its bag slot (the cursor is empty). | not run |
+| V6 | 2 | Pipe character | Type `a|b` in the box and save. | The line holds `a/b`. If the typed `\|` reaches the addon as `\|\|`, the saved text has one `/`. | not run |
+| V7 | 2 | In combat | Start a fight, type `/mem note in a fight`, click Save. | The note saves. No taint error shows. | not run |
+| V8 | 2 | Kind off | Turn off the kind "Note" in the Settings page, then save a note. | The window stays open and the chat shows "Memories: notes are off in the settings." | not run |
 
 ## Validation map
 

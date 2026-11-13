@@ -158,7 +158,7 @@ Commit each task on its own with the repository's commit convention, on `main`. 
 
 ## Tasks
 
-### [ ] 1. Kind `un`, the link token, and the write function
+### [x] 1. Kind `un`, the link token, and the write function
 - **Outcome:** `ns.Notes.Add(text)` writes an `un` line. `ns.Notes.Tokens` makes and reads link tokens. The catalogs
   and docs list the kind.
 - **Depends on:** None.
@@ -215,7 +215,7 @@ Commit each task on its own with the repository's commit convention, on `main`. 
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 2. The Note window, linking, and `/memories note`
+### [x] 2. The Note window, linking, and `/memories note`
 - **Outcome:** `/memories note` opens a window where the player writes a note, links items and quests, and saves it
   to the journey.
 - **Depends on:** Task 1 (`ns.Notes.Add`, token makers, `Notes.MAX`).

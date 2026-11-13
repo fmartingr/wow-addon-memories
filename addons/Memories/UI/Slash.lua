@@ -100,6 +100,9 @@ end
 
 Slash.Add("options", options, L["open the settings page"])
 Slash.Add("settings", options, L["open the settings page"])
+Slash.Add("note", function(rest)
+	ns.NoteWindow.Open(rest)
+end, L["write a note in the journey"])
 Slash.Add("status", function()
 	ns.Status.Print()
 end, L["show the state of each Memories addon"])
