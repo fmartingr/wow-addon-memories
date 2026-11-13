@@ -150,7 +150,7 @@ ADMIN="http://127.0.0.1:$ADMIN_PORT"
 
 step "start the server on $SITE (admin on $ADMIN)"
 mkdir -p "$TMP/data"
-MEMORIES_REGISTRATION=open \
+MEMORIES_REGISTRATION=invite \
 	MEMORIES_DATA_DIR="$TMP/data" \
 	MEMORIES_WEB_DIR="$ROOT/web" \
 	MEMORIES_PUBLIC_ADDR="127.0.0.1:$PUBLIC_PORT" \
@@ -175,8 +175,24 @@ done
 cp -R "$EXPECTED" "$TMP/latest"
 chmod -R u+w "$TMP/latest"
 
-step "1. upload the fixture with the CLI"
-run_upload --latest "$TMP/latest" || fail "memories-upload exited with an error."
+# A key that registers with no invite is an open key, and an open key cannot upload screenshots (step 6). The run
+# makes an invite on the admin page, as an admin does, and the CLI registers with it.
+step "make an invite on the admin page"
+curl_ -f -c "$TMP/admin.cookies" -b "$TMP/admin.cookies" -o "$TMP/invites.html" "$ADMIN/invites" \
+	|| fail "GET the admin invites page failed."
+csrf="$(sed -n '/name="csrf" value="/{s/.*name="csrf" value="\([^"]*\)".*/\1/p;q;}' "$TMP/invites.html")"
+[ -n "$csrf" ] || fail "the admin invites page has no CSRF token."
+code="$(curl_ -c "$TMP/admin.cookies" -b "$TMP/admin.cookies" \
+	--data-urlencode "csrf=$csrf" --data-urlencode "note=e2e" \
+	-o /dev/null -w '%{http_code}' "$ADMIN/invites/create")"
+[ "$code" = 303 ] || fail "the invite form answered $code, not 303."
+curl_ -f -c "$TMP/admin.cookies" -b "$TMP/admin.cookies" -o "$TMP/invite.html" "$ADMIN/invites" \
+	|| fail "GET the admin invites page after the invite failed."
+INVITE="$(sed -n 's/.*<code>\([0-9A-Z]\{4\}\(-[0-9A-Z]\{4\}\)\{3\}\)<\/code>.*/\1/p' "$TMP/invite.html" | head -n 1)"
+[ -n "$INVITE" ] || fail "the admin page does not show the new invite code."
+
+step "1. register with the invite and upload the fixture with the CLI"
+run_upload --invite "$INVITE" --latest "$TMP/latest" || fail "memories-upload exited with an error."
 grep -q "^uploaded $CHAR_PATH:" <<<"$OUT" || fail "the report does not say that $CHAR_PATH was uploaded."
 grep -q "^uploaded $OTHER_PATH:" <<<"$OUT" || fail "the report does not say that $OTHER_PATH was uploaded."
 
