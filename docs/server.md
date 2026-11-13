@@ -7,7 +7,7 @@ and the signed API below, and answers every other path with one 404 page (a JSON
 headers. Run it with `make server-run`, then open <http://localhost:8080/>. The admin page listens on
 `MEMORIES_ADMIN_ADDR` (default `127.0.0.1:8081`; the log warns when the address is not loopback). It has plain HTML
 forms and no JavaScript, and it accepts only `localhost:<port>` and `127.0.0.1:<port>` as `Host`, so reach it with an
-SSH tunnel. There the admin makes and revokes invite codes, approves, denies and revokes screenshots, revokes keys
+SSH tunnel. There the admin makes and revokes invite codes, approves, denies and revokes screenshots (also for a key that sent no request), revokes keys
 (a revoked key loses all its characters and screenshots), deletes characters, moves a claim to another key, sets the storage limits of one key and sets open registration. Every list
 searches (`?q=`) and shows 25 rows a page.
 

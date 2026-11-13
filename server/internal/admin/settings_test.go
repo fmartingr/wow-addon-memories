@@ -1,6 +1,7 @@
 package admin
 
 import (
+	"strings"
 	"testing"
 
 	"github.com/fmartingr/wow-addon-memories/server/internal/store"
@@ -78,5 +79,30 @@ func TestKeyLimitsForm(t *testing.T) {
 	br.act("/keys/limits", form("key", id(k), "data_mib", "0", "shot_mib", "0"))
 	if got := e.row(c); got.MaxDataBytes != 0 || got.MaxShotBytes != 0 {
 		t.Errorf("limits after a reset = %d and %d", got.MaxDataBytes, got.MaxShotBytes)
+	}
+}
+
+func TestApproveScreenshotsWithoutARequest(t *testing.T) {
+	e := newEnv(t)
+	c, k := e.registered(1)
+	br := e.browser()
+	mustContain(t, br.get("/keys").Body.String(), `action="/keys/approve"`)
+
+	mustContain(t, br.act("/keys/approve", form("key", id(k))), "Screenshots approved for key "+c.fingerprint())
+	if got := e.row(c).Screenshots; got != store.ShotsApproved {
+		t.Fatalf("screenshots = %q, want approved", got)
+	}
+	if strings.Contains(br.get("/keys").Body.String(), `action="/keys/approve"`) {
+		t.Error("an approved key still shows the approve button")
+	}
+	mustContain(t, br.act("/keys/approve", form("key", id(k))), "nothing changed")
+
+	open := newClient(2)
+	if rec := e.register(open, ""); rec.Code != 201 {
+		t.Fatalf("open registration: %d %s", rec.Code, rec.Body)
+	}
+	mustContain(t, br.act("/keys/approve", form("key", id(e.row(open)))), "nothing changed")
+	if got := e.row(open).Screenshots; got != store.ShotsNone {
+		t.Errorf("an open key got screenshots %q", got)
 	}
 }

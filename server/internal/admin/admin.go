@@ -134,6 +134,7 @@ func (a *Admin) Handler() http.Handler {
 		"/requests/deny":     a.deny,
 		"/keys/revoke":       a.revokeKey,
 		"/keys/screenshots":  a.revokeScreenshots,
+		"/keys/approve":      a.approveScreenshots,
 		"/keys/limits":       a.setKeyLimits,
 		"/invites/create":    a.createInvite,
 		"/invites/revoke":    a.revokeInvite,
@@ -381,6 +382,24 @@ func (a *Admin) revokeKey(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	a.done(w, r, "keys", okMsg("Key %s is revoked and %s deleted, screenshots included.", k.Fingerprint(), count(n)))
+}
+
+// approveScreenshots approves screenshots for a key that did not ask for them. A revoked or open key cannot get them.
+func (a *Admin) approveScreenshots(w http.ResponseWriter, r *http.Request) {
+	k, ok := a.formKey(w, r, "keys")
+	if !ok {
+		return
+	}
+	changed, err := a.opt.Store.ApproveScreenshots(r.Context(), k.ID)
+	switch {
+	case err != nil:
+		a.internal(w, r, "keys", "approve the screenshots", err)
+	case !changed:
+		a.done(w, r, "keys", errMsg("Key %s is revoked, open or approved already, so nothing changed. An open key cannot upload screenshots.", k.Fingerprint()))
+	default:
+		a.opt.Log.Info("admin action", "action", "screenshots approved without a request", "key", k.Fingerprint())
+		a.done(w, r, "keys", okMsg("Screenshots approved for key %s. The app uploads them at its next upload.", k.Fingerprint()))
+	}
 }
 
 func (a *Admin) revokeScreenshots(w http.ResponseWriter, r *http.Request) {

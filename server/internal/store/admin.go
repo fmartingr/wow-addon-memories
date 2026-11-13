@@ -177,6 +177,18 @@ func (s *Store) DecideScreenshots(ctx context.Context, id int64, state string) (
 	return n > 0, err
 }
 
+// ApproveScreenshots approves screenshots for a key in any state, with no request. It changes nothing, and returns
+// false, when the key is revoked or open, or approved already.
+func (s *Store) ApproveScreenshots(ctx context.Context, id int64) (bool, error) {
+	res, err := s.db.ExecContext(ctx,
+		`UPDATE keys SET screenshots = 'approved' WHERE id = ? AND screenshots <> 'approved' AND revoked = 0 AND open = 0`, id)
+	if err != nil {
+		return false, err
+	}
+	n, err := res.RowsAffected()
+	return n > 0, err
+}
+
 // InviteRow is an invite as the admin page lists it.
 type InviteRow struct {
 	ID      int64

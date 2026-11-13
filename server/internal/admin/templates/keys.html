@@ -27,6 +27,14 @@
 <span class="hint">This blocks the key and deletes all its characters and screenshots.</span>
 </form>
 {{end}}
+{{if and (not .Revoked) (not .Open) (ne .Screenshots "approved")}}
+<form method="post" action="/keys/approve">
+<input type="hidden" name="csrf" value="{{$.CSRF}}">
+<input type="hidden" name="key" value="{{.ID}}">
+<input type="hidden" name="return" value="{{$.Return}}">
+<button type="submit">Approve screenshots</button>
+</form>
+{{end}}
 <form method="post" action="/keys/screenshots">
 <input type="hidden" name="csrf" value="{{$.CSRF}}">
 <input type="hidden" name="key" value="{{.ID}}">
@@ -57,6 +65,7 @@
 <li><strong>Revoke key</strong> stops every signed request of the key and deletes every character of the key, with its files and screenshots. Each character page then gives a 404. If the deletion fails part way, the key stays revoked: use Revoke key again to finish.</li>
 <li>An <strong>open</strong> key registered without an invite code. It cannot upload screenshots, and the Settings page sets its data limit.</li>
 <li><strong>Save limits</strong> sets the storage limits of the key, in MiB. 0 is the default limit: the Data per open key setting for an open key, else <code>MEMORIES_MAX_DATA_BYTES_PER_KEY</code> and <code>MEMORIES_MAX_SHOT_BYTES_PER_KEY</code>. When the key holds more than a new limit, the stored data stays, and the server refuses each upload that would leave the key over the limit.</li>
+<li><strong>Approve screenshots</strong> lets the key upload screenshots with no request from the app. It shows for a key that is not revoked, not open and not approved.</li>
 <li><strong>Revoke screenshots</strong> denies screenshots for the key, deletes the image files and removes the screenshot links from its characters.</li>
 </ul>
 {{end}}
