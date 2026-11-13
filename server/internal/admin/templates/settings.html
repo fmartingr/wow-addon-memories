@@ -2,7 +2,7 @@
 {{define "content"}}
 <h2>Settings</h2>
 <h3>Open registration</h3>
-<p>With open registration, the app registers a key with no invite code. An open key cannot upload screenshots, and it holds at most the data below. A key with an invite code keeps the normal limits.</p>
+<p>With open registration, the app registers a key with no invite code. An open key cannot ask for screenshots (the admin can approve them on the Keys page), and it holds at most the data below. A key with an invite code keeps the normal limits.</p>
 <p>The data disk has <strong>{{.Settings.FreePercent}}</strong> free space.{{if .Settings.Low}} This is at the limit or below it, so open registration is off.{{end}}</p>
 <form method="post" action="/settings/save">
 <input type="hidden" name="csrf" value="{{.CSRF}}">

@@ -85,7 +85,8 @@ Settings page. `MEMORIES_REGISTRATION` sets the first value only, on the first s
 
 A key that registers with no code is an **open key**:
 
-- An open key cannot upload screenshots, and it cannot ask for screenshot approval.
+- An open key cannot ask for screenshot approval. The admin can approve screenshots for it with **Approve
+  screenshots** on the Keys page.
 - An open key holds at most **Data per open key** of journey data. The default is 64 MiB. A key with an invite code
   keeps `MEMORIES_MAX_DATA_BYTES_PER_KEY`.
 - The Keys page marks it with the tag `open`. Search for `open` to list the open keys.

@@ -58,7 +58,7 @@ func TestKeysPageMarksOpenKeys(t *testing.T) {
 		t.Fatalf("open registration: %d %s", rec.Code, rec.Body)
 	}
 	body := e.browser().get("/keys?q=open").Body.String()
-	mustContain(t, body, c.fingerprint(), `<strong class="tag">open</strong>`, "not allowed", "1 result")
+	mustContain(t, body, c.fingerprint(), `<strong class="tag">open</strong>`, `action="/keys/approve"`, "1 result")
 }
 
 func TestKeyLimitsForm(t *testing.T) {
@@ -101,8 +101,8 @@ func TestApproveScreenshotsWithoutARequest(t *testing.T) {
 	if rec := e.register(open, ""); rec.Code != 201 {
 		t.Fatalf("open registration: %d %s", rec.Code, rec.Body)
 	}
-	mustContain(t, br.act("/keys/approve", form("key", id(e.row(open)))), "nothing changed")
-	if got := e.row(open).Screenshots; got != store.ShotsNone {
-		t.Errorf("an open key got screenshots %q", got)
+	mustContain(t, br.act("/keys/approve", form("key", id(e.row(open)))), "Screenshots approved for key "+open.fingerprint())
+	if got := e.row(open).Screenshots; got != store.ShotsApproved {
+		t.Errorf("an open key has screenshots %q after the approval", got)
 	}
 }

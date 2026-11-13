@@ -120,3 +120,23 @@ func TestKeyShotLimitReplacesTheDefault(t *testing.T) {
 	src := readFile(t, filepath.Join(imagesDir, "small.jpg"))
 	e.fail(e.putShot(c, brumamar, shotA, src), http.StatusInsufficientStorage, "quota")
 }
+
+func TestApprovedOpenKeyUploadsScreenshots(t *testing.T) {
+	e := newEnv(t, openMode)
+	c := newClient(1)
+	e.registered2(c)
+	k, err := e.st.KeyByPublic(bg, c.public())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if ok, err := e.st.ApproveScreenshots(bg, k.ID); !ok || err != nil {
+		t.Fatalf("ApproveScreenshots of an open key = %v, %v", ok, err)
+	}
+	e.ok(e.uploadDir(c, filepath.Join(expectedDir, "eu-brumamar-nandu")))
+	src := readFile(t, filepath.Join(imagesDir, "small.jpg"))
+	if rec := e.putShot(c, brumamar, shotA, src); rec.Code != http.StatusCreated {
+		t.Fatalf("screenshot of an approved open key: %d %s", rec.Code, rec.Body)
+	}
+	// The app still cannot ask: only the admin approves an open key.
+	expectError(t, e.do(c, "POST", "/api/v1/screenshots/request", ""), http.StatusForbidden, "screenshots_unavailable")
+}

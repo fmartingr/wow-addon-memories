@@ -34,7 +34,7 @@ func (a *API) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 		a.internal(w, "screenshot claim", err)
 		return
 	}
-	if id.Key.Open {
+	if id.Key.Open && id.Key.Screenshots != store.ShotsApproved {
 		screenshotsUnavailable(w)
 		return
 	}
@@ -100,7 +100,7 @@ func unsupportedImage(w http.ResponseWriter) {
 
 func screenshotsUnavailable(w http.ResponseWriter) {
 	apierr.Write(w, http.StatusForbidden, "screenshots_unavailable",
-		"This key registered without an invite, and the website takes screenshots only from keys that registered with an invite code.")
+		"This key registered without an invite, so it cannot ask for screenshots. The website admin can approve them for this key.")
 }
 
 func notReferenced(w http.ResponseWriter) {

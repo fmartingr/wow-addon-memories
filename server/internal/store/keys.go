@@ -22,7 +22,8 @@ type Key struct {
 	Screenshots string
 	Revoked     bool
 	LastSeen    int64
-	// Open is true for a key that registered without an invite. An open key can never upload screenshots.
+	// Open is true for a key that registered without an invite. An open key cannot ask for screenshots; only the admin
+	// can approve them.
 	Open bool
 	// MaxDataBytes and MaxShotBytes are the storage limits that the admin set for this key. 0 means the default limit.
 	MaxDataBytes int64
