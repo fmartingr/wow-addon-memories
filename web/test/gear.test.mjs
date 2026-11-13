@@ -182,3 +182,15 @@ test('the paper doll links to the Wowhead page of the page language', () => {
   }
   assert.match(dollHtml(gear, 5), /classic\/item=1380"/);
 });
+
+test('wowheadUrl uses the forever database for the forever flavor only', () => {
+  assert.equal(wowheadUrl(248005, 'en', 'forever'), 'https://www.wowhead.com/forever/item=248005');
+  assert.equal(wowheadUrl(248005, 'de', 'forever'), 'https://www.wowhead.com/forever/de/item=248005');
+  for (const flavor of ['wow', 'classic', null, undefined]) assert.equal(wowheadUrl(1380, 'en', flavor), 'https://www.wowhead.com/classic/item=1380');
+  assert.equal(wowheadUrl(0, 'en', 'forever'), null);
+});
+
+test('the paper doll links to the forever database for a forever character', () => {
+  const gear = deriveGear({}, [{ k: 'ge', t: 1, ids: ids([16, 248005]) }]);
+  assert.match(dollHtml(gear, 16, 'forever'), /wowhead\.com\/forever\/item=248005"/);
+});

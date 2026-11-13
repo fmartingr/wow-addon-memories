@@ -24,10 +24,10 @@ export function loadWidget(doc = document) {
 
 const refreshWidget = () => globalThis.$WowheadPower?.refreshLinks?.();
 
-function slotHtml(s, selected) {
+function slotHtml(s, selected, flavor) {
   const sel = selected === s.slot ? ' selected' : '';
   const label = `<span class="slot-label">${esc(slotLabel(s.slot))}</span>`;
-  const url = wowheadUrl(s.item);
+  const url = wowheadUrl(s.item, undefined, flavor);
   if (!url) {
     return `<div class="slot-cell">${label}<button type="button" class="slot empty${sel}" data-slot="${s.slot}" aria-label="${esc(t('gear.empty', { slot: slotLabel(s.slot) }))}"></button></div>`;
   }
@@ -35,10 +35,10 @@ function slotHtml(s, selected) {
   return `<div class="slot-cell">${label}<a class="slot${q}${sel}" data-slot="${s.slot}" href="${url}" target="_blank" rel="noopener noreferrer">${esc(t('gear.item', { id: s.item }))}</a></div>`;
 }
 
-function detailHtml(s) {
+function detailHtml(s, flavor) {
   if (!s) return '';
   const title = esc(slotLabel(s.slot));
-  const url = wowheadUrl(s.item);
+  const url = wowheadUrl(s.item, undefined, flavor);
   if (!url) return `<h4>${title}</h4><p class="sub">${esc(t('gear.nothing'))}</p>`;
   return `<h4>${title}</h4><p>${esc(t('gear.item', { id: s.item }))} <span class="q-name q${Number.isInteger(s.quality) ? s.quality : 1}">${esc(s.quality == null ? '' : qualityName(s.quality))}</span></p>
 <p><a class="wh-link" href="${url}" target="_blank" rel="noopener noreferrer" data-wh-rename-link="false" data-wh-icon-add="false">${esc(t('gear.open'))}</a></p>`;
@@ -55,23 +55,24 @@ export function paintDoll(root) {
   }
 }
 
-export function dollHtml(gear, selected) {
+export function dollHtml(gear, selected, flavor = null) {
   const order = (name) => SLOTS.filter((s) => s.side === name).map((s) => gear.find((g) => g.slot === s.n));
-  const column = (name) => `<div class="doll-col ${name}">${order(name).map((s) => slotHtml(s, selected)).join('')}</div>`;
+  const column = (name) => `<div class="doll-col ${name}">${order(name).map((s) => slotHtml(s, selected, flavor)).join('')}</div>`;
   return `<h3 class="panel-title">${esc(t('gear.title'))}</h3>
 <div class="doll">${column('left')}${column('right')}</div>
-<div class="doll-bottom">${order('bottom').map((s) => slotHtml(s, selected)).join('')}</div>
-<div class="slot-detail" aria-live="polite">${detailHtml(gear.find((g) => g.slot === selected))}</div>`;
+<div class="doll-bottom">${order('bottom').map((s) => slotHtml(s, selected, flavor)).join('')}</div>
+<div class="slot-detail" aria-live="polite">${detailHtml(gear.find((g) => g.slot === selected), flavor)}</div>`;
 }
 
 // mountPaperDoll renders into el. show(slot) must run when the Summary tab is visible: it loads the widget the first
 // time there is an item to show, and selects the slot of the hash.
-export function mountPaperDoll(el, gear, { setParams }) {
+export function mountPaperDoll(el, gear, { setParams, data }) {
+  const flavor = data?.char?.flavor ?? null;
   el.classList.add('panel', 'paperdoll');
   let selected = null;
   const hasItems = gear.some((g) => g.item > 0);
   const render = () => {
-    el.innerHTML = dollHtml(gear, selected);
+    el.innerHTML = dollHtml(gear, selected, flavor);
     paintDoll(el);
     refreshWidget();
   };

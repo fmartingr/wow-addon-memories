@@ -77,8 +77,10 @@ export function deriveGear(char, steps) {
 
 // The Wowhead page of an item. English has the plain URL; the other languages have their code in the path, which the
 // tooltip script reads to show the translated item name. An unknown code gives the English URL.
-export function wowheadUrl(id, code = currentLang()) {
+// The forever flavor has its own Wowhead database; every other flavor uses the classic one.
+export function wowheadUrl(id, code = currentLang(), flavor = null) {
   if (!Number.isSafeInteger(id) || id <= 0) return null;
   const lang = code !== 'en' && LANGS.includes(code) ? code + '/' : '';
-  return `https://www.wowhead.com/classic/${lang}item=${id}`;
+  const game = flavor === 'forever' ? 'forever' : 'classic';
+  return `https://www.wowhead.com/${game}/${lang}item=${id}`;
 }
