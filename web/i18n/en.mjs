@@ -50,6 +50,7 @@ export default {
   'filter.find': 'Finds, loot',
   'filter.world': 'Reputation, world',
   'filter.shot': 'Screenshots',
+  'filter.note': 'Notes',
   'lane.level': 'Levels',
   'lane.danger': 'Danger',
   'lane.dungeon': 'Dungeons',
@@ -57,6 +58,7 @@ export default {
   'lane.find': 'Finds',
   'lane.world': 'World',
   'lane.shot': 'Shots',
+  'lane.note': 'Notes',
   'layer.title': 'Layer',
   'layer.presence': 'Presence',
   'layer.kills': 'Kills',
@@ -233,6 +235,7 @@ export default {
   'fallback.family': 'beast',
   'fallback.questTitle': 'Quest',
   'fallback.beastTitle': 'Beast',
+  'fallback.note': 'a note without text',
   'kind.chest': 'Chest',
   'kind.container': 'Container',
 
@@ -268,6 +271,7 @@ export default {
   'note.bk': 'Read {title}',
   'note.pt': 'Tamed {name}',
   'note.rc': 'Recipe: {name}',
+  'note.un': 'Note: {text}',
 
   'tip.lvTitle': 'Level {level}',
   'tip.lv': 'You reached a new level.',
@@ -319,4 +323,5 @@ export default {
   'tip.pt': 'Tamed a {family}.',
   'tip.ptLevel': 'Tamed a {family} (level {level}).',
   'tip.rc': 'Recipe learned.',
+  'tip.unTitle': 'Note',
 };

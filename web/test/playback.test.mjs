@@ -112,7 +112,7 @@ test('XSS: the tooltip of each hostile event has no markup from the data', () =>
   const steps = kinds.map((k, i) => ({
     k, t: 1010 + i, m: 1438, x: 1, y: 1, name: HOSTILE, title: HOSTILE, killer: HOSTILE, place: HOSTILE, zone: HOSTILE, area: HOSTILE, to: HOSTILE, from: HOSTILE,
     why: HOSTILE, result: HOSTILE, prof: HOSTILE, node: HOSTILE, who: HOSTILE, faction: HOSTILE, label: HOSTILE, home: HOSTILE, family: HOSTILE, itype: HOSTILE,
-    class: HOSTILE, level: HOSTILE, klevel: HOSTILE, seconds: HOSTILE, size: HOSTILE, xp: HOSTILE, roll: HOSTILE, success: 1, quality: 3, count: 2, item: 5,
+    text: HOSTILE, class: HOSTILE, level: HOSTILE, klevel: HOSTILE, seconds: HOSTILE, size: HOSTILE, xp: HOSTILE, roll: HOSTILE, success: 1, quality: 3, count: 2, item: 5,
   }));
   steps.push({ k: 'zo', t: 1005, zone: HOSTILE });
   const m = buildModel(char, steps, []);

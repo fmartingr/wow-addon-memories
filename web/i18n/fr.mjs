@@ -49,6 +49,7 @@ export default {
   'filter.find': 'Trouvailles, butin',
   'filter.world': 'Réputation, monde',
   'filter.shot': 'Captures d’écran',
+  'filter.note': 'Notes',
   'lane.level': 'Niveaux',
   'lane.danger': 'Danger',
   'lane.dungeon': 'Donjons',
@@ -56,6 +57,7 @@ export default {
   'lane.find': 'Trouvailles',
   'lane.world': 'Monde',
   'lane.shot': 'Images',
+  'lane.note': 'Notes',
   'layer.title': 'Couche',
   'layer.presence': 'Présence',
   'layer.kills': 'Victoires',
@@ -232,6 +234,7 @@ export default {
   'fallback.family': 'bête',
   'fallback.questTitle': 'Quête',
   'fallback.beastTitle': 'Bête',
+  'fallback.note': 'une note sans texte',
   'kind.chest': 'Coffre',
   'kind.container': 'Conteneur',
 
@@ -267,6 +270,7 @@ export default {
   'note.bk': '{title} lu',
   'note.pt': '{name} apprivoisé',
   'note.rc': 'Recette : {name}',
+  'note.un': 'Note : {text}',
 
   'tip.lvTitle': 'Niveau {level}',
   'tip.lv': 'Vous avez gagné un niveau.',
@@ -318,4 +322,5 @@ export default {
   'tip.pt': 'Apprivoisé : {family}.',
   'tip.ptLevel': 'Apprivoisé : {family} (niveau {level}).',
   'tip.rc': 'Recette apprise.',
+  'tip.unTitle': 'Note',
 };

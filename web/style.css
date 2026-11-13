@@ -152,7 +152,7 @@ td { padding: 6px 8px; border-bottom: 1px solid #36372e; }
 .readout { margin-left: auto; text-align: right; min-width: 0; line-height: 1.25; }
 .time { font: 700 1.2rem var(--display); color: var(--gold-light); font-variant-numeric: tabular-nums; letter-spacing: 0.05em; }
 .readout .sub { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 36ch; }
-.track-wrap { position: relative; height: 224px; }
+.track-wrap { position: relative; height: 246px; }
 #tl { position: absolute; inset: 0; width: 100%; height: 100%; display: block; cursor: pointer; touch-action: none; }
 
 .banner { position: absolute; left: 50%; top: 16px; transform: translateX(-50%); text-align: center; pointer-events: none; opacity: 0; transition: opacity 0.6s; z-index: 2; width: max-content; max-width: 80%; }
@@ -162,7 +162,7 @@ td { padding: 6px 8px; border-bottom: 1px solid #36372e; }
 .toasts { position: absolute; left: 50%; top: 92px; transform: translateX(-50%); display: grid; gap: 6px; justify-items: center; pointer-events: none; width: min(84%, 420px); z-index: 2; }
 .toast { padding: 6px 16px; background: #000c; border: 1px solid var(--edge); border-left: 4px solid var(--c, var(--gold)); font: 700 0.9rem var(--display); color: var(--c, var(--gold)); letter-spacing: 0.04em; text-shadow: 0 1px 0 #000; animation: toast 3.4s ease-out forwards; max-width: 100%; overflow-wrap: anywhere; }
 @keyframes toast { 0% { opacity: 0; transform: translateY(-8px); } 8% { opacity: 1; transform: none; } 80% { opacity: 1; } 100% { opacity: 0; } }
-.tip { position: absolute; z-index: 5; pointer-events: none; max-width: 280px; padding: 8px 10px; background: linear-gradient(180deg, #0b1020f2, #05060af2); border: 1px solid #8a7a50; border-radius: 4px; box-shadow: 0 0 0 1px #000, 0 6px 18px #000c; font-size: 0.9rem; }
+.tip { position: absolute; z-index: 5; pointer-events: none; max-width: 280px; padding: 8px 10px; background: linear-gradient(180deg, #0b1020f2, #05060af2); border: 1px solid #8a7a50; border-radius: 4px; box-shadow: 0 0 0 1px #000, 0 6px 18px #000c; font-size: 0.9rem; overflow-wrap: anywhere; }
 .tip.detail { pointer-events: auto; padding-right: 30px; }
 .tip-title { display: block; font: 700 1rem var(--display); color: var(--c, var(--gold)); overflow-wrap: anywhere; }
 .tip .dim { color: var(--muted); }

@@ -7,10 +7,10 @@ import { toWorld } from './geo.mjs';
 export const CAT = {
   lv: 'level', de: 'danger', cc: 'danger', pk: 'danger', dn: 'dungeon', bo: 'dungeon', qt: 'quest', di: 'quest', hs: 'quest', tx: 'quest',
   ss: 'shot', ga: 'find', fs: 'find', op: 'find', pp: 'find', rl: 'find', rp: 'world', qa: 'world', hb: 'world', fp: 'world', bk: 'world',
-  pt: 'world', rc: 'world',
+  pt: 'world', rc: 'world', un: 'note',
 };
 export const LANES = [
-  ['level', 'lv'], ['danger', 'de'], ['dungeon', 'dn'], ['quest', 'qt'], ['find', 'ga'], ['world', 'rp'], ['shot', 'ss'],
+  ['level', 'lv'], ['danger', 'de'], ['dungeon', 'dn'], ['quest', 'qt'], ['find', 'ga'], ['world', 'rp'], ['shot', 'ss'], ['note', 'un'],
 ];
 
 // Bits of the trail flags: ghost, taxi, combat, mounted.

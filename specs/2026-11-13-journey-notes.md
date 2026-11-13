@@ -324,7 +324,7 @@ Commit each task on its own with the repository's commit convention, on `main`. 
   - [ ] Docs and config that describe the changed behavior are updated.
   - [ ] Task heading checkbox ticked; changes committed.
 
-### [ ] 4. Viewer: show notes with Wowhead links
+### [x] 4. Viewer: show notes with Wowhead links
 - **Outcome:** the web viewer and the app viewer show an `un` event with its text, and tokens as Wowhead links.
 - **Depends on:** Task 1 (the kind, the token format, the catalogs, the icon).
 - **Covers:** AC9, AC10 (viewer texts), risk "fake token", risk "old viewer or server".

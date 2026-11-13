@@ -49,6 +49,7 @@ export default {
   'filter.find': 'Achados, saque',
   'filter.world': 'Reputação, mundo',
   'filter.shot': 'Capturas de tela',
+  'filter.note': 'Notas',
   'lane.level': 'Níveis',
   'lane.danger': 'Perigo',
   'lane.dungeon': 'Masmorras',
@@ -56,6 +57,7 @@ export default {
   'lane.find': 'Achados',
   'lane.world': 'Mundo',
   'lane.shot': 'Imagens',
+  'lane.note': 'Notas',
   'layer.title': 'Camada',
   'layer.presence': 'Presença',
   'layer.kills': 'Abates',
@@ -232,6 +234,7 @@ export default {
   'fallback.family': 'uma fera',
   'fallback.questTitle': 'Missão',
   'fallback.beastTitle': 'Fera',
+  'fallback.note': 'uma nota sem texto',
   'kind.chest': 'Baú',
   'kind.container': 'Recipiente',
 
@@ -267,6 +270,7 @@ export default {
   'note.bk': 'Lido: {title}',
   'note.pt': 'Domado: {name}',
   'note.rc': 'Receita: {name}',
+  'note.un': 'Nota: {text}',
 
   'tip.lvTitle': 'Nível {level}',
   'tip.lv': 'Você alcançou um novo nível.',
@@ -318,4 +322,5 @@ export default {
   'tip.pt': 'Você domou {family}.',
   'tip.ptLevel': 'Você domou {family} (nível {level}).',
   'tip.rc': 'Receita aprendida.',
+  'tip.unTitle': 'Nota',
 };

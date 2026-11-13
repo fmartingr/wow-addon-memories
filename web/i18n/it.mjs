@@ -49,6 +49,7 @@ export default {
   'filter.find': 'Scoperte, bottino',
   'filter.world': 'Reputazione, mondo',
   'filter.shot': 'Screenshot',
+  'filter.note': 'Note',
   'lane.level': 'Livelli',
   'lane.danger': 'Pericolo',
   'lane.dungeon': 'Spedizioni',
@@ -56,6 +57,7 @@ export default {
   'lane.find': 'Scoperte',
   'lane.world': 'Mondo',
   'lane.shot': 'Immagini',
+  'lane.note': 'Note',
   'layer.title': 'Livello',
   'layer.presence': 'Presenza',
   'layer.kills': 'Uccisioni',
@@ -232,6 +234,7 @@ export default {
   'fallback.family': 'una bestia',
   'fallback.questTitle': 'Missione',
   'fallback.beastTitle': 'Bestia',
+  'fallback.note': 'una nota senza testo',
   'kind.chest': 'Forziere',
   'kind.container': 'Contenitore',
 
@@ -267,6 +270,7 @@ export default {
   'note.bk': 'Letto: {title}',
   'note.pt': 'Domato: {name}',
   'note.rc': 'Ricetta: {name}',
+  'note.un': 'Nota: {text}',
 
   'tip.lvTitle': 'Livello {level}',
   'tip.lv': 'Hai raggiunto un nuovo livello.',
@@ -318,4 +322,5 @@ export default {
   'tip.pt': 'Hai domato {family}.',
   'tip.ptLevel': 'Hai domato {family} (livello {level}).',
   'tip.rc': 'Ricetta appresa.',
+  'tip.unTitle': 'Nota',
 };

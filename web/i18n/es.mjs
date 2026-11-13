@@ -49,6 +49,7 @@ export default {
   'filter.find': 'Hallazgos, botín',
   'filter.world': 'Reputación, mundo',
   'filter.shot': 'Capturas de pantalla',
+  'filter.note': 'Notas',
   'lane.level': 'Niveles',
   'lane.danger': 'Peligro',
   'lane.dungeon': 'Mazmorras',
@@ -56,6 +57,7 @@ export default {
   'lane.find': 'Hallazgos',
   'lane.world': 'Mundo',
   'lane.shot': 'Capturas',
+  'lane.note': 'Notas',
   'layer.title': 'Capa',
   'layer.presence': 'Presencia',
   'layer.kills': 'Bajas',
@@ -232,6 +234,7 @@ export default {
   'fallback.family': 'una bestia',
   'fallback.questTitle': 'Misión',
   'fallback.beastTitle': 'Bestia',
+  'fallback.note': 'una nota sin texto',
   'kind.chest': 'Cofre',
   'kind.container': 'Contenedor',
 
@@ -267,6 +270,7 @@ export default {
   'note.bk': 'Leído: {title}',
   'note.pt': 'Domado: {name}',
   'note.rc': 'Receta: {name}',
+  'note.un': 'Nota: {text}',
 
   'tip.lvTitle': 'Nivel {level}',
   'tip.lv': 'Has subido de nivel.',
@@ -318,4 +322,5 @@ export default {
   'tip.pt': 'Domaste a {family}.',
   'tip.ptLevel': 'Domaste a {family} (nivel {level}).',
   'tip.rc': 'Receta aprendida.',
+  'tip.unTitle': 'Nota',
 };

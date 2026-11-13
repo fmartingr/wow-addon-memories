@@ -75,12 +75,20 @@ export function deriveGear(char, steps) {
   });
 }
 
-// The Wowhead page of an item. English has the plain URL; the other languages have their code in the path, which the
-// tooltip script reads to show the translated item name. An unknown code gives the English URL.
+// The Wowhead page of a database entry (item or quest). English has the plain URL; the other languages have their code
+// in the path, which the tooltip script reads to show the translated name. An unknown code gives the English URL.
 // The forever flavor has its own Wowhead database; every other flavor uses the classic one.
-export function wowheadUrl(id, code = currentLang(), flavor = null) {
+function wowheadPage(kind, id, code, flavor) {
   if (!Number.isSafeInteger(id) || id <= 0) return null;
   const lang = code !== 'en' && LANGS.includes(code) ? code + '/' : '';
   const game = flavor === 'forever' ? 'forever' : 'classic';
-  return `https://www.wowhead.com/${game}/${lang}item=${id}`;
+  return `https://www.wowhead.com/${game}/${lang}${kind}=${id}`;
+}
+
+export function wowheadUrl(id, code = currentLang(), flavor = null) {
+  return wowheadPage('item', id, code, flavor);
+}
+
+export function questUrl(id, code = currentLang(), flavor = null) {
+  return wowheadPage('quest', id, code, flavor);
 }

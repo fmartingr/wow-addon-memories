@@ -49,6 +49,7 @@ export default {
   'filter.find': 'Funde, Beute',
   'filter.world': 'Ruf, Welt',
   'filter.shot': 'Screenshots',
+  'filter.note': 'Notizen',
   'lane.level': 'Stufen',
   'lane.danger': 'Gefahr',
   'lane.dungeon': 'Dungeons',
@@ -56,6 +57,7 @@ export default {
   'lane.find': 'Funde',
   'lane.world': 'Welt',
   'lane.shot': 'Bilder',
+  'lane.note': 'Notizen',
   'layer.title': 'Ebene',
   'layer.presence': 'Anwesenheit',
   'layer.kills': 'Kills',
@@ -232,6 +234,7 @@ export default {
   'fallback.family': 'Tier',
   'fallback.questTitle': 'Quest',
   'fallback.beastTitle': 'Tier',
+  'fallback.note': 'eine Notiz ohne Text',
   'kind.chest': 'Truhe',
   'kind.container': 'Behälter',
 
@@ -267,6 +270,7 @@ export default {
   'note.bk': '{title} gelesen',
   'note.pt': '{name} gezähmt',
   'note.rc': 'Rezept: {name}',
+  'note.un': 'Notiz: {text}',
 
   'tip.lvTitle': 'Stufe {level}',
   'tip.lv': 'Du hast eine neue Stufe erreicht.',
@@ -318,4 +322,5 @@ export default {
   'tip.pt': '{family} gezähmt.',
   'tip.ptLevel': '{family} gezähmt (Stufe {level}).',
   'tip.rc': 'Rezept gelernt.',
+  'tip.unTitle': 'Notiz',
 };

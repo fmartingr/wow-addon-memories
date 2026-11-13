@@ -85,12 +85,13 @@ test('drawTimeline returns hits for the markers and the purse band, in the full 
   ];
   const m = buildModel(c, steps, []);
   const ctx = new Proxy({}, { get: (t, k) => (k === 'createLinearGradient' ? () => ({ addColorStop() {} }) : () => {}), set: () => true });
-  const full = drawTimeline(ctx, 900, 224, 1, m, { c: 50, show: { danger: false } });
+  const full = drawTimeline(ctx, 900, 246, 1, m, { c: 50, show: { danger: false } });
   assert.ok(full.hits.some((h) => h.ev.k === 'lv'));
   assert.ok(!full.hits.some((h) => h.ev.k === 'de'), 'a hidden category has no hit');
   assert.ok(full.hits.some((h) => h.ev.k === 'dn'), 'a dungeon span has a hit');
   assert.ok(!full.hits.some((h) => h.ev.k === 'di'));
   assert.ok(full.gold.y1 > full.gold.y0 && full.x1 > full.x0);
+  assert.ok(full.gold.y1 <= 246, 'the gold band fits in the track height of web/style.css');
   const compact = drawTimeline(ctx, 360, 64, 2, m, { c: 0, show: {} });
   assert.ok(compact.hits.length >= 3);
   assert.ok(compact.gold.y1 - compact.gold.y0 >= 12);

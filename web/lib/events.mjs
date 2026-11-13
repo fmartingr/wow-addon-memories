@@ -2,6 +2,7 @@
 // esc(). The only markup that is not text is built from numbers and fixed strings.
 import { className, clock, esc, fmtDate, fmtNum, moneyText, qualityColour } from './format.mjs';
 import { PROFESSIONS } from './heat.mjs';
+import { noteHtml, plainNote } from './notes.mjs';
 import { t, tr } from './i18n.mjs';
 import { lastBefore } from './playback.mjs';
 import { standingName } from './summary.mjs';
@@ -9,7 +10,7 @@ import { standingName } from './summary.mjs';
 export const EVENT_COLOURS = {
   lv: '#ffd100', de: '#ff5a43', cc: '#ff8a1c', pk: '#ff6b57', dn: '#c58cff', bo: '#e0486b', qt: '#ffd100', di: '#5ec9ff', hs: '#6fa6ff', tx: '#6fa6ff',
   ss: '#dfe8f3', ga: '#35c9a0', fs: '#4fa8e0', op: '#c28a49', pp: '#a77ad0', rl: '#f2ead6', rp: '#3fbf6a', qa: '#ffd100', hb: '#e08a3c', fp: '#6fa6ff',
-  bk: '#c9a06a', pt: '#7acb4a', rc: '#e8d9a8',
+  bk: '#c9a06a', pt: '#7acb4a', rc: '#e8d9a8', un: '#8fc4ff',
 };
 
 const itemColour = (q) => qualityColour(Number.isInteger(q) ? q : 1);
@@ -31,6 +32,12 @@ export const shotWhy = (e) => (Array.isArray(e.notes) && e.notes.length ? e.note
 
 // The screenshot records that name a file, in the order of the steps.
 export const shotEvents = (steps) => steps.filter((s) => s.k === 'ss' && s.screenshot);
+
+// The first 60 characters of a note, with each link as its name.
+const noteLine = (e) => {
+  const chars = Array.from(plainNote(e.text).trim());
+  return chars.length ? chars.slice(0, 60).join('') + (chars.length > 60 ? '…' : '') : t('fallback.note');
+};
 
 // The toast and log line of each kind: [text, colour].
 export const NOTE = {
@@ -60,6 +67,7 @@ export const NOTE = {
   bk: (e) => [t('note.bk', { title: e.title }), EVENT_COLOURS.bk],
   pt: (e) => [t('note.pt', { name: e.name || t('fallback.beast') }), EVENT_COLOURS.pt],
   rc: (e) => [t('note.rc', { name: e.name }), EVENT_COLOURS.rc],
+  un: (e) => [t('note.un', { text: noteLine(e) }), EVENT_COLOURS.un],
 };
 
 export function noteOf(e) {
@@ -121,6 +129,7 @@ export function tipHtml(model, e, shotUrl = null) {
     case 'bk': title = e.title; body = line('tip.bk'); break;
     case 'pt': title = e.name || t('fallback.beastTitle'); body = line(e.level ? 'tip.ptLevel' : 'tip.pt', { family: e.family || t('fallback.family'), level: e.level }); break;
     case 'rc': title = e.name; body = line('tip.rc'); break;
+    case 'un': title = t('tip.unTitle'); body = plainNote(e.text).trim() ? `<div>${noteHtml(e.text, model.char?.flavor ?? null)}</div>` : line('fallback.note', {}, 'dim'); break;
   }
   return `<b class="tip-title" data-c="${esc(col)}">${esc(title)}</b>${body}${where}${when}`;
 }
