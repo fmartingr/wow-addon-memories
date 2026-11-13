@@ -89,6 +89,7 @@ A key that registers with no code is an **open key**:
 - An open key holds at most **Data per open key** of journey data. The default is 64 MiB. A key with an invite code
   keeps `MEMORIES_MAX_DATA_BYTES_PER_KEY`.
 - The Keys page marks it with the tag `open`. Search for `open` to list the open keys.
+- The Keys page can set a data limit and a screenshot limit for one key, open or not. 0 is the default limit.
 
 The server checks the settings and the free space of the data disk once a minute. It turns open registration off when
 the free space is at **Close open registration** percent or less. The default is 10%. A save on the Settings page
@@ -132,8 +133,8 @@ The image sets `MEMORIES_WEB_DIR`, `MEMORIES_DATA_DIR` and `MEMORIES_ADMIN_ADDR`
 | `MEMORIES_MAX_CHUNKS` | 50,000 | Trail chunks in one upload. |
 | `MEMORIES_MAX_POINTS` | 20,000 | Points in one trail chunk. |
 | `MEMORIES_MAX_CHARACTERS_PER_KEY` | 50 | Characters of one key. |
-| `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key with an invite. The admin Settings page sets the limit of an open key. |
-| `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |
+| `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key with an invite. The admin Settings page sets the limit of an open key. A limit set for one key on the Keys page replaces both. |
+| `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. A limit set for one key on the Keys page replaces it. |
 | `MEMORIES_MAX_CONCURRENT_UPLOADS` | 2 | Uploads handled at the same time. A full-size upload takes about 800 MB of memory. |
 | `MEMORIES_RATE_SIGNED_PER_MINUTE` | 30 | Signed requests a minute for one key. |
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |

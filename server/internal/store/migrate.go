@@ -66,6 +66,9 @@ var migrations = []string{
 		name TEXT PRIMARY KEY,
 		value TEXT NOT NULL
 	);`,
+	// The limits of one key. 0 means the default limit.
+	`ALTER TABLE keys ADD COLUMN max_data_bytes INTEGER NOT NULL DEFAULT 0;
+	ALTER TABLE keys ADD COLUMN max_shot_bytes INTEGER NOT NULL DEFAULT 0;`,
 }
 
 func (s *Store) migrate(ctx context.Context) error {

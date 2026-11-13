@@ -105,7 +105,7 @@ func (s *Store) listKeys(ctx context.Context, where string, args []any, order st
 		return l, err
 	}
 	rows, err := s.db.QueryContext(ctx,
-		`SELECT k.id, k.public_key, k.created, k.screenshots, k.revoked, COALESCE(k.last_seen, 0), k.open, COALESCE(i.note, ''),
+		`SELECT k.id, k.public_key, k.created, k.screenshots, k.revoked, COALESCE(k.last_seen, 0), k.open, k.max_data_bytes, k.max_shot_bytes, COALESCE(i.note, ''),
 		        COALESCE(c.n, 0), COALESCE(c.data, 0), COALESCE(c.shots, 0)
 		 `+keyFrom+`
 		 LEFT JOIN (SELECT key_id, COUNT(*) AS n, SUM(data_bytes) AS data, SUM(shot_bytes) AS shots
@@ -118,7 +118,7 @@ func (s *Store) listKeys(ctx context.Context, where string, args []any, order st
 	for rows.Next() {
 		var r KeyRow
 		var revoked, open int
-		if err := rows.Scan(&r.ID, &r.Public, &r.Created, &r.Screenshots, &revoked, &r.LastSeen, &open, &r.InviteNote,
+		if err := rows.Scan(&r.ID, &r.Public, &r.Created, &r.Screenshots, &revoked, &r.LastSeen, &open, &r.MaxDataBytes, &r.MaxShotBytes, &r.InviteNote,
 			&r.Characters, &r.DataBytes, &r.ShotBytes); err != nil {
 			return l, err
 		}

@@ -69,7 +69,7 @@ func (a *API) handleScreenshot(w http.ResponseWriter, r *http.Request) {
 
 	created, err := a.chars.SaveScreenshot(r.Context(), *id.Key, p, file, body.Bytes(), characters.ShotLimits{
 		MaxPixels:   a.cfg.MaxPixels,
-		MaxKeyBytes: a.cfg.MaxShotBytesPerKey,
+		MaxKeyBytes: id.Key.ShotLimit(a.cfg.MaxShotBytesPerKey),
 	})
 	switch {
 	case errors.Is(err, store.ErrNotFound):

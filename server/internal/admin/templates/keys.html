@@ -15,8 +15,8 @@
 <td>{{.Note}}</td>
 <td>{{if .Open}}not allowed{{else}}{{.Screenshots}}{{end}}</td>
 <td>{{if .Characters}}<a href="/characters?q={{.Fingerprint}}">{{.Characters}}</a>{{else}}0{{end}}</td>
-<td>{{size .DataBytes}}</td>
-<td>{{size .ShotBytes}}</td>
+<td>{{size .DataBytes}} of {{size .DataLimit}}{{if .CustomDataMiB}} <strong class="tag">custom</strong>{{end}}</td>
+<td>{{size .ShotBytes}} of {{size .ShotLimit}}{{if .CustomShotMiB}} <strong class="tag">custom</strong>{{end}}</td>
 <td class="actions">
 {{if or (not .Revoked) .Characters}}
 <form method="post" action="/keys/revoke">
@@ -33,6 +33,14 @@
 <input type="hidden" name="return" value="{{$.Return}}">
 <button type="submit" class="danger">Revoke screenshots</button>
 </form>
+<form method="post" action="/keys/limits">
+<input type="hidden" name="csrf" value="{{$.CSRF}}">
+<input type="hidden" name="key" value="{{.ID}}">
+<input type="hidden" name="return" value="{{$.Return}}">
+<label>Data MiB <input type="number" name="data_mib" min="0" value="{{.CustomDataMiB}}"></label>
+<label>Screenshots MiB <input type="number" name="shot_mib" min="0" value="{{.CustomShotMiB}}"></label>
+<button type="submit">Save limits</button>
+</form>
 </td>
 </tr>
 {{end}}
@@ -48,6 +56,7 @@
 <ul>
 <li><strong>Revoke key</strong> stops every signed request of the key and deletes every character of the key, with its files and screenshots. Each character page then gives a 404. If the deletion fails part way, the key stays revoked: use Revoke key again to finish.</li>
 <li>An <strong>open</strong> key registered without an invite code. It cannot upload screenshots, and the Settings page sets its data limit.</li>
+<li><strong>Save limits</strong> sets the storage limits of the key, in MiB. 0 is the default limit: the Data per open key setting for an open key, else <code>MEMORIES_MAX_DATA_BYTES_PER_KEY</code> and <code>MEMORIES_MAX_SHOT_BYTES_PER_KEY</code>. When the key holds more than a new limit, the stored data stays, and the server refuses each upload that would leave the key over the limit.</li>
 <li><strong>Revoke screenshots</strong> denies screenshots for the key, deletes the image files and removes the screenshot links from its characters.</li>
 </ul>
 {{end}}

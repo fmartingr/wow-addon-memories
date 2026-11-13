@@ -52,12 +52,16 @@ type Options struct {
 	// Addr is the listen address of the admin server. Its port is the only port that the Host check accepts.
 	Addr string
 	// SiteURL is the public address of the site, for the links to character pages.
-	SiteURL  string
-	Store    *store.Store
-	Chars    *characters.Service
-	Gate     *openreg.Gate
-	NotFound http.Handler
-	Log      *slog.Logger
+	SiteURL string
+	Store   *store.Store
+	Chars   *characters.Service
+	Gate    *openreg.Gate
+	// DataLimit and ShotLimit are the default storage limits of a key with an invite: MEMORIES_MAX_DATA_BYTES_PER_KEY
+	// and MEMORIES_MAX_SHOT_BYTES_PER_KEY.
+	DataLimit int64
+	ShotLimit int64
+	NotFound  http.Handler
+	Log       *slog.Logger
 }
 
 // Admin serves the admin pages.
@@ -130,6 +134,7 @@ func (a *Admin) Handler() http.Handler {
 		"/requests/deny":     a.deny,
 		"/keys/revoke":       a.revokeKey,
 		"/keys/screenshots":  a.revokeScreenshots,
+		"/keys/limits":       a.setKeyLimits,
 		"/invites/create":    a.createInvite,
 		"/invites/revoke":    a.revokeInvite,
 		"/characters/delete": a.deleteCharacter,
@@ -398,6 +403,36 @@ func (a *Admin) revokeScreenshots(w http.ResponseWriter, r *http.Request) {
 	a.done(w, r, "keys", okMsg("Screenshots are revoked for key %s. The images and their links are removed from %s.", k.Fingerprint(), count(n)))
 }
 
+// maxLimitMiB bounds a limit of the form, so that the bytes fit in an int64.
+const maxLimitMiB = 1 << 30
+
+// setKeyLimits sets the storage limits of one key. An empty field or 0 is the default limit.
+func (a *Admin) setKeyLimits(w http.ResponseWriter, r *http.Request) {
+	k, ok := a.formKey(w, r, "keys")
+	if !ok {
+		return
+	}
+	var limits [2]int64
+	for i, field := range []string{"data_mib", "shot_mib"} {
+		raw := strings.TrimSpace(r.PostForm.Get(field))
+		if raw == "" {
+			continue
+		}
+		n, err := strconv.ParseInt(raw, 10, 64)
+		if err != nil || n < 0 || n > maxLimitMiB {
+			a.done(w, r, "keys", errMsg("A limit must be a whole number of MiB, 0 or more. 0 is the default limit."))
+			return
+		}
+		limits[i] = n << 20
+	}
+	if err := a.opt.Store.SetKeyLimits(r.Context(), k.ID, limits[0], limits[1]); err != nil {
+		a.internal(w, r, "keys", "save the limits", err)
+		return
+	}
+	a.opt.Log.Info("admin action", "action", "set key limits", "key", k.Fingerprint(), "max_data_bytes", limits[0], "max_shot_bytes", limits[1])
+	a.done(w, r, "keys", okMsg("The limits of key %s are saved. The next upload of the key uses them.", k.Fingerprint()))
+}
+
 func (a *Admin) createInvite(w http.ResponseWriter, r *http.Request) {
 	days := defaultInviteDays
 	if raw := strings.TrimSpace(r.PostForm.Get("days")); raw != "" {
@@ -523,7 +558,7 @@ const maxMinFreePercent = 99
 // saved settings at once, so the change applies to the next request.
 func (a *Admin) saveSettings(w http.ResponseWriter, r *http.Request) {
 	mib, err := strconv.ParseInt(strings.TrimSpace(r.PostForm.Get("max_data_mib")), 10, 64)
-	if err != nil || mib < 1 || mib > 1<<30 {
+	if err != nil || mib < 1 || mib > maxLimitMiB {
 		a.done(w, r, "settings", errMsg("Data per open key must be a whole number of MiB, 1 or more."))
 		return
 	}

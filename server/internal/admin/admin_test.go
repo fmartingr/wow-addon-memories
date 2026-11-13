@@ -125,7 +125,8 @@ func newEnvWith(t *testing.T, wrap func(store.Blobs) store.Blobs) *env {
 	e.pub = mux
 
 	e.admin, err = New(Options{
-		Addr: adminHost, SiteURL: cfg.SiteURL, Store: e.st, Chars: e.chars, Gate: e.gate, NotFound: static.NotFound(), Log: log,
+		Addr: adminHost, SiteURL: cfg.SiteURL, Store: e.st, Chars: e.chars, Gate: e.gate,
+		DataLimit: cfg.MaxDataBytesPerKey, ShotLimit: cfg.MaxShotBytesPerKey, NotFound: static.NotFound(), Log: log,
 	})
 	if err != nil {
 		t.Fatal(err)

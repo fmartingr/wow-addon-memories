@@ -59,3 +59,24 @@ func TestKeysPageMarksOpenKeys(t *testing.T) {
 	body := e.browser().get("/keys?q=open").Body.String()
 	mustContain(t, body, c.fingerprint(), `<strong class="tag">open</strong>`, "not allowed", "1 result")
 }
+
+func TestKeyLimitsForm(t *testing.T) {
+	e := newEnv(t)
+	c, k := e.registered(1)
+	br := e.browser()
+	mustContain(t, br.get("/keys").Body.String(), "0 B of 512.0 MiB", "0 B of 5.0 GiB")
+
+	mustContain(t, br.act("/keys/limits", form("key", id(k), "data_mib", "100", "shot_mib", "")), "The limits of key "+c.fingerprint()+" are saved.")
+	if got := e.row(c); got.MaxDataBytes != 100<<20 || got.MaxShotBytes != 0 {
+		t.Errorf("limits = %d and %d", got.MaxDataBytes, got.MaxShotBytes)
+	}
+	mustContain(t, br.get("/keys").Body.String(), "0 B of 100.0 MiB", `<strong class="tag">custom</strong>`, `name="data_mib" min="0" value="100"`)
+
+	for _, bad := range []string{"-1", "x", "1.5"} {
+		mustContain(t, br.act("/keys/limits", form("key", id(k), "data_mib", bad)), "must be a whole number of MiB")
+	}
+	br.act("/keys/limits", form("key", id(k), "data_mib", "0", "shot_mib", "0"))
+	if got := e.row(c); got.MaxDataBytes != 0 || got.MaxShotBytes != 0 {
+		t.Errorf("limits after a reset = %d and %d", got.MaxDataBytes, got.MaxShotBytes)
+	}
+}

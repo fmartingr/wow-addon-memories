@@ -8,7 +8,7 @@ headers. Run it with `make server-run`, then open <http://localhost:8080/>. The 
 `MEMORIES_ADMIN_ADDR` (default `127.0.0.1:8081`; the log warns when the address is not loopback). It has plain HTML
 forms and no JavaScript, and it accepts only `localhost:<port>` and `127.0.0.1:<port>` as `Host`, so reach it with an
 SSH tunnel. There the admin makes and revokes invite codes, approves, denies and revokes screenshots, revokes keys
-(a revoked key loses all its characters and screenshots), deletes characters, moves a claim to another key and sets open registration. Every list
+(a revoked key loses all its characters and screenshots), deletes characters, moves a claim to another key, sets the storage limits of one key and sets open registration. Every list
 searches (`?q=`) and shows 25 rows a page.
 
 A character page `/<flavor>/<region>/<realm>/<name>/` shows the viewer of `web/` with three tabs: Summary, Journey map and
@@ -57,8 +57,8 @@ exit code 2. The size limits and quotas other than the rate limits apply to the 
 | `MEMORIES_MAX_CHUNKS` | 50,000 | Trail chunks in one upload. |
 | `MEMORIES_MAX_POINTS` | 20,000 | Points in one trail chunk. |
 | `MEMORIES_MAX_CHARACTERS_PER_KEY` | 50 | Characters of one key. |
-| `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key with an invite. The admin Settings page sets the limit of an open key. |
-| `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. |
+| `MEMORIES_MAX_DATA_BYTES_PER_KEY` | 512 MiB | Journey data of one key with an invite. The admin Settings page sets the limit of an open key. A limit set for one key on the Keys page replaces both. |
+| `MEMORIES_MAX_SHOT_BYTES_PER_KEY` | 5 GiB | Screenshots of one key. A limit set for one key on the Keys page replaces it. |
 | `MEMORIES_MAX_CONCURRENT_UPLOADS` | 2 | Uploads that the server unpacks and stores at the same time. A full-size upload takes about 800 MB of memory while it is handled; a further upload waits up to 10 s for a free place, then gets `503` with `Retry-After`. |
 | `MEMORIES_RATE_SIGNED_PER_MINUTE` | 30 | Signed requests a minute for one key. |
 | `MEMORIES_RATE_REGISTER_PER_HOUR` | 10 | Registrations an hour from one IP. |

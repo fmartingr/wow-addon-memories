@@ -24,9 +24,32 @@ type Key struct {
 	LastSeen    int64
 	// Open is true for a key that registered without an invite. An open key can never upload screenshots.
 	Open bool
+	// MaxDataBytes and MaxShotBytes are the storage limits that the admin set for this key. 0 means the default limit.
+	MaxDataBytes int64
+	MaxShotBytes int64
 }
 
-const keyColumns = `id, public_key, created, screenshots, revoked, COALESCE(last_seen, 0), open`
+// DataLimit is the most journey data that the key may hold: its own limit, else openLimit for an open key, else
+// defaultLimit.
+func (k Key) DataLimit(openLimit, defaultLimit int64) int64 {
+	switch {
+	case k.MaxDataBytes > 0:
+		return k.MaxDataBytes
+	case k.Open:
+		return openLimit
+	}
+	return defaultLimit
+}
+
+// ShotLimit is the most screenshot data that the key may hold: its own limit, else defaultLimit.
+func (k Key) ShotLimit(defaultLimit int64) int64 {
+	if k.MaxShotBytes > 0 {
+		return k.MaxShotBytes
+	}
+	return defaultLimit
+}
+
+const keyColumns = `id, public_key, created, screenshots, revoked, COALESCE(last_seen, 0), open, max_data_bytes, max_shot_bytes`
 
 // KeyByPublic returns the key with the given 32-byte public key, or ErrNotFound.
 func (s *Store) KeyByPublic(ctx context.Context, pub []byte) (Key, error) {
@@ -37,7 +60,7 @@ func (s *Store) KeyByPublic(ctx context.Context, pub []byte) (Key, error) {
 func scanKey(row *sql.Row) (Key, error) {
 	var k Key
 	var revoked, open int
-	err := row.Scan(&k.ID, &k.Public, &k.Created, &k.Screenshots, &revoked, &k.LastSeen, &open)
+	err := row.Scan(&k.ID, &k.Public, &k.Created, &k.Screenshots, &revoked, &k.LastSeen, &open, &k.MaxDataBytes, &k.MaxShotBytes)
 	if errors.Is(err, sql.ErrNoRows) {
 		return Key{}, ErrNotFound
 	}
@@ -132,6 +155,12 @@ func (s *Store) RequestScreenshots(ctx context.Context, id int64) (string, error
 		return err
 	})
 	return state, err
+}
+
+// SetKeyLimits sets the storage limits of the key. 0 means the default limit. It returns ErrNotFound for an id that
+// does not exist.
+func (s *Store) SetKeyLimits(ctx context.Context, id, maxDataBytes, maxShotBytes int64) error {
+	return s.execOne(ctx, `UPDATE keys SET max_data_bytes = ?, max_shot_bytes = ? WHERE id = ?`, maxDataBytes, maxShotBytes, id)
 }
 
 // RevokeKey blocks the key. It returns ErrNotFound for an id that does not exist.

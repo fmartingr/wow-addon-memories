@@ -84,7 +84,8 @@ func Run(ctx context.Context, cfg config.Config, log *slog.Logger) error {
 	chars := characters.New(st, blobs, log)
 	public := newServer(cfg.PublicAddr, NewPublic(cfg, static, pages, st, chars, gate, log), log)
 	adm, err := admin.New(admin.Options{
-		Addr: cfg.AdminAddr, SiteURL: cfg.SiteURL, Store: st, Chars: chars, Gate: gate, NotFound: static.NotFound(), Log: log,
+		Addr: cfg.AdminAddr, SiteURL: cfg.SiteURL, Store: st, Chars: chars, Gate: gate,
+		DataLimit: cfg.MaxDataBytesPerKey, ShotLimit: cfg.MaxShotBytesPerKey, NotFound: static.NotFound(), Log: log,
 	})
 	if err != nil {
 		return err

@@ -54,6 +54,12 @@ type keyView struct {
 	Characters  int64
 	DataBytes   int64
 	ShotBytes   int64
+	// DataLimit and ShotLimit are the limits that apply to the key. CustomDataMiB and CustomShotMiB are the limits set
+	// for the key, in MiB; 0 means the default limit.
+	DataLimit     int64
+	ShotLimit     int64
+	CustomDataMiB int64
+	CustomShotMiB int64
 }
 
 type settingsView struct {
@@ -145,12 +151,19 @@ func (a *Admin) page(name string, fill func(r *http.Request, v *view) error) htt
 	}
 }
 
-func toKeyViews(rows []store.KeyRow) []keyView {
+// ceilMiB rounds a byte count up to whole MiB, so that a limit below 1 MiB still shows as custom and is not reset to the
+// default by the next save of the form.
+func ceilMiB(n int64) int64 { return (n + 1<<20 - 1) >> 20 }
+
+func (a *Admin) toKeyViews(rows []store.KeyRow) []keyView {
 	out := make([]keyView, 0, len(rows))
+	openData := a.opt.Gate.Current().Settings.MaxDataBytes
 	for _, k := range rows {
 		kv := keyView{
 			ID: k.ID, Fingerprint: k.Fingerprint(), Created: time.Unix(k.Created, 0), Note: k.InviteNote,
 			Screenshots: k.Screenshots, Revoked: k.Revoked, Open: k.Open, Characters: k.Characters, DataBytes: k.DataBytes, ShotBytes: k.ShotBytes,
+			DataLimit: k.DataLimit(openData, a.opt.DataLimit), ShotLimit: k.ShotLimit(a.opt.ShotLimit),
+			CustomDataMiB: ceilMiB(k.MaxDataBytes), CustomShotMiB: ceilMiB(k.MaxShotBytes),
 		}
 		if k.LastSeen != 0 {
 			kv.LastSeen = time.Unix(k.LastSeen, 0)
@@ -213,7 +226,7 @@ func (a *Admin) requestsPage(r *http.Request, v *view) error {
 	if err != nil {
 		return err
 	}
-	v.Requests = toKeyViews(l.Rows)
+	v.Requests = a.toKeyViews(l.Rows)
 	setPager(v, q, "Fingerprint or invite note", l)
 	return nil
 }
@@ -224,7 +237,7 @@ func (a *Admin) keysPage(r *http.Request, v *view) error {
 	if err != nil {
 		return err
 	}
-	v.Keys = toKeyViews(l.Rows)
+	v.Keys = a.toKeyViews(l.Rows)
 	setPager(v, q, "Fingerprint, invite note, screenshot state or open", l)
 	return nil
 }

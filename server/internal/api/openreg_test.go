@@ -84,3 +84,39 @@ func TestOpenKeyLimitIsTheSettingOnly(t *testing.T) {
 	e.registered2(c)
 	e.ok(e.uploadDir(c, filepath.Join(expectedDir, "eu-brumamar-nandu")))
 }
+
+func TestKeyLimitReplacesTheDefault(t *testing.T) {
+	e := newEnv(t, openMode)
+	open, invited := newClient(1), newClient(2)
+	e.registered2(open)
+	e.registered(invited)
+	for c, dir := range map[*client]string{open: "eu-brumamar-nandu", invited: "eu-los-errantes-nandu"} {
+		k, err := e.st.KeyByPublic(bg, c.public())
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := e.st.SetKeyLimits(bg, k.ID, 100, 0); err != nil {
+			t.Fatal(err)
+		}
+		e.fail(e.uploadDir(c, filepath.Join(expectedDir, dir)), http.StatusInsufficientStorage, "quota")
+		if err := e.st.SetKeyLimits(bg, k.ID, 1<<30, 0); err != nil {
+			t.Fatal(err)
+		}
+		e.ok(e.uploadDir(c, filepath.Join(expectedDir, dir)))
+	}
+}
+
+func TestKeyShotLimitReplacesTheDefault(t *testing.T) {
+	e := newEnv(t, openMode)
+	c := newClient(1)
+	e.approvedWithShots(c)
+	k, err := e.st.KeyByPublic(bg, c.public())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := e.st.SetKeyLimits(bg, k.ID, 0, 10); err != nil {
+		t.Fatal(err)
+	}
+	src := readFile(t, filepath.Join(imagesDir, "small.jpg"))
+	e.fail(e.putShot(c, brumamar, shotA, src), http.StatusInsufficientStorage, "quota")
+}

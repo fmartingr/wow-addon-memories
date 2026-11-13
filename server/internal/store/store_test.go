@@ -696,7 +696,7 @@ func TestMigrationV2AddsShotsToAVersion1File(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := s.db.Exec(`DROP TABLE shots; DROP TABLE settings; ALTER TABLE keys DROP COLUMN open; PRAGMA user_version = 1`); err != nil {
+	if _, err := s.db.Exec(`DROP TABLE shots; DROP TABLE settings; ALTER TABLE keys DROP COLUMN open; ALTER TABLE keys DROP COLUMN max_data_bytes; ALTER TABLE keys DROP COLUMN max_shot_bytes; PRAGMA user_version = 1`); err != nil {
 		t.Fatal(err)
 	}
 	s.Close()
@@ -757,5 +757,23 @@ func TestShots(t *testing.T) {
 	}
 	if n, _ := s.ShotBytesOfKey(ctx, a.ID); n != 7 {
 		t.Errorf("ShotBytesOfKey after the delete = %d; want 7", n)
+	}
+}
+
+func TestSetKeyLimits(t *testing.T) {
+	s, _ := openTest(t)
+	registerInvited(t, s, pubKey(1))
+	k := mustKey(t, s, pubKey(1))
+	if k.MaxDataBytes != 0 || k.MaxShotBytes != 0 {
+		t.Fatalf("a new key has limits %d and %d, want 0 and 0", k.MaxDataBytes, k.MaxShotBytes)
+	}
+	if err := s.SetKeyLimits(ctx, k.ID, 100, 200); err != nil {
+		t.Fatal(err)
+	}
+	if k := mustKey(t, s, pubKey(1)); k.MaxDataBytes != 100 || k.MaxShotBytes != 200 {
+		t.Errorf("limits = %d and %d, want 100 and 200", k.MaxDataBytes, k.MaxShotBytes)
+	}
+	if err := s.SetKeyLimits(ctx, 12345, 1, 1); !errors.Is(err, ErrNotFound) {
+		t.Errorf("SetKeyLimits of a missing id = %v", err)
 	}
 }
