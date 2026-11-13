@@ -29,6 +29,9 @@ const rollKey = (e) => 'note.rl' + (e.type === 'greed' ? 'Greed' : 'Need') + (e.
 // The reason of a screenshot: the notes of other addons, else the reason Memories wrote. A manual shot has none.
 export const shotWhy = (e) => (Array.isArray(e.notes) && e.notes.length ? e.notes.map((n) => n.note).join('; ') : e.why === 'by hand' ? '' : e.why || '');
 
+// The screenshot records that name a file, in the order of the steps.
+export const shotEvents = (steps) => steps.filter((s) => s.k === 'ss' && s.screenshot);
+
 // The toast and log line of each kind: [text, colour].
 export const NOTE = {
   lv: (e) => [t('note.lv', { level: e.level }), EVENT_COLOURS.lv],

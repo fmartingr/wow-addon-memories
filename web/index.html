@@ -25,6 +25,7 @@
     <button id="tab-summary" class="tab" role="tab" data-tab="summary" aria-controls="panel-summary" aria-selected="true" data-i18n="tab.summary">Summary</button>
     <button id="tab-journey" class="tab" role="tab" data-tab="journey" aria-controls="panel-journey" aria-selected="false" tabindex="-1" data-i18n="tab.journey">Journey map</button>
     <button id="tab-heatmaps" class="tab" role="tab" data-tab="heatmaps" aria-controls="panel-heatmaps" aria-selected="false" tabindex="-1" data-i18n="tab.heatmaps">Heatmaps</button>
+    <button id="tab-screenshots" class="tab" role="tab" data-tab="screenshots" aria-controls="panel-screenshots" aria-selected="false" tabindex="-1" data-i18n="tab.screenshots">Screenshots</button>
   </nav>
 
   <main class="panels">
@@ -87,9 +88,6 @@
           </div>
         </aside>
       </div>
-      <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot" data-i18n-aria="aria.screenshot" hidden>
-        <figure><img id="lightboxImg" alt=""><figcaption id="lightboxCap"></figcaption></figure>
-      </div>
     </section>
     <section id="panel-heatmaps" class="tabpanel fill" role="tabpanel" aria-labelledby="tab-heatmaps" hidden>
       <div class="heat">
@@ -136,7 +134,12 @@
         </aside>
       </div>
     </section>
+    <section id="panel-screenshots" class="tabpanel" role="tabpanel" aria-labelledby="tab-screenshots" hidden></section>
   </main>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Screenshot" data-i18n-aria="aria.screenshot" hidden>
+    <figure><img id="lightboxImg" alt=""><figcaption id="lightboxCap"></figcaption></figure>
+  </div>
 
   <p class="legal" id="legal"></p>
   <footer class="foot">

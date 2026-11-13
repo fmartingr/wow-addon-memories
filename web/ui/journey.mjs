@@ -335,7 +335,7 @@ export function createJourneyTab(panel, ctx) {
   let tw = 0, th = 0, tdpr = 1;
   let lastPlace = null, lastFeed = '';
   let toastTimers = new Set();
-  let bannerTimer = 0, lightboxAt = 0, detailEv = null;
+  let bannerTimer = 0, detailEv = null;
   const tlCanvas = $('tl'), tlCtx = tlCanvas.getContext('2d');
   const stage = $('journeyStage');
 
@@ -372,23 +372,8 @@ export function createJourneyTab(panel, ctx) {
     $('detail').hidden = true;
   }
   function openShot(e) {
-    const url = shotOf(e);
-    const img = $('lightboxImg');
-    img.hidden = false;
-    img.onerror = () => {
-      img.hidden = true;
-      $('lightboxCap').textContent = t('lightbox.missing');
-    };
-    if (url) img.src = url;
-    else img.onerror();
-    if (url) $('lightboxCap').textContent = shotCaption(e);
-    $('lightbox').hidden = false;
-    lightboxAt = performance.now();
+    ctx.lightbox.open(shotOf(e), shotCaption(e));
     hideTip();
-  }
-  function closeShot() {
-    $('lightbox').hidden = true;
-    $('lightboxImg').removeAttribute('src');
   }
 
   function selectEvent(e) {
@@ -587,10 +572,7 @@ export function createJourneyTab(panel, ctx) {
 
   function onKey(e) {
     if (!active) return;
-    if (!$('lightbox').hidden) {
-      if (e.code === 'Escape') closeShot();
-      return;
-    }
+    if (ctx.lightbox.isOpen()) return;
     if (e.code === 'Escape') closeDetail();
     if (e.target.matches?.('input, select, textarea') || e.target.closest?.('[role="tablist"]') || e.ctrlKey || e.metaKey || e.altKey) return;
     if (e.code === 'Space' && !e.target.closest?.('button, a')) {
@@ -688,9 +670,6 @@ export function createJourneyTab(panel, ctx) {
         view.invalidate();
         drawTl();
       }
-    });
-    $('lightbox').addEventListener('click', () => {
-      if (performance.now() - lightboxAt > 250) closeShot();
     });
     $('feed').addEventListener('click', (e) => {
       const li = e.target.closest('li[data-i]');
@@ -790,7 +769,7 @@ export function createJourneyTab(panel, ctx) {
       active = false;
       closeDetail();
       hideTip();
-      closeShot();
+      ctx.lightbox.close();
       toastTimers.forEach(clearTimeout);
       toastTimers.clear();
       $('toasts').replaceChildren();

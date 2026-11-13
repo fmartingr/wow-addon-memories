@@ -9,6 +9,8 @@ import { applyTexts, mountShell, syncPicker } from './ui/shell.mjs';
 import { buildModel } from './lib/model.mjs';
 import { createHeatmapsTab } from './ui/heatmaps.mjs';
 import { createJourneyTab } from './ui/journey.mjs';
+import { createLightbox } from './ui/lightbox.mjs';
+import { createScreenshotsTab } from './ui/screenshots.mjs';
 import { mountSummary } from './ui/summary.mjs';
 
 const REPLACE_EVERY_MS = 500;
@@ -99,7 +101,7 @@ async function main() {
   let model = null;
   // The map tabs share one model; it is built when the first of them opens.
   const getModel = () => (model ??= buildModel(data.char, data.steps, data.trail));
-  const ctx = { data, summary, setParams, status, legal: $('legal'), model: getModel };
+  const ctx = { data, summary, setParams, status, legal: $('legal'), model: getModel, lightbox: createLightbox() };
 
   const shell = mountShell({
     onTab(tab) {
@@ -116,6 +118,7 @@ async function main() {
     summary: mountSummary(shell.panel('summary'), summary, deriveGear(data.char, data.steps), ctx),
     journey: createJourneyTab(shell.panel('journey'), ctx),
     heatmaps: createHeatmapsTab(shell.panel('heatmaps'), ctx),
+    screenshots: createScreenshotsTab(shell.panel('screenshots'), ctx),
   };
 
   let shown = null;

@@ -1,7 +1,7 @@
 // The hash of the page: #<tab>[/<layer>][?<params>]. See the hash format table of the redesign spec.
 import { H, W } from '../zones.mjs';
 
-export const TABS = ['summary', 'journey', 'heatmaps'];
+export const TABS = ['summary', 'journey', 'heatmaps', 'screenshots'];
 export const LAYERS = ['presence', 'kills', 'deaths', 'gathering', 'fishing', 'quests', 'loot'];
 export const PROFS = ['all', 'mining', 'herbalism', 'skinning', 'other'];
 
