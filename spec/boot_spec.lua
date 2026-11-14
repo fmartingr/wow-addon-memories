@@ -140,12 +140,12 @@ describe("boot", function()
 			SlashCmdList.MEMORIES("")
 			assert.same({
 				"Memories: commands:",
-				"  /memories errors - show the saved errors, ready to copy",
-				"  /memories options - open the settings page",
-				"  /memories settings - open the settings page",
-				"  /memories note - write a note in the journey",
-				"  /memories status - show the state of each Memories addon",
-				"  /memories minimap - show or hide the minimap button",
+				"Memories: /memories errors - show the saved errors, ready to copy",
+				"Memories: /memories options - open the settings page",
+				"Memories: /memories settings - open the settings page",
+				"Memories: /memories note - write a note in the journey",
+				"Memories: /memories status - show the state of each Memories addon",
+				"Memories: /memories minimap - show or hide the minimap button",
 			}, wow.chat())
 			SlashCmdList.MEMORIES("nope")
 			assert.equal(14, #wow.chat())
@@ -193,7 +193,7 @@ describe("boot", function()
 			SlashCmdList.MEMORIES("backup")
 			assert.is_true(ran)
 			SlashCmdList.MEMORIES("")
-			assert.equal("  /memories backup - ", wow.chat()[#wow.chat()])
+			assert.equal("Memories: /memories backup - ", wow.chat()[#wow.chat()])
 		end)
 
 		it("shows a logged error in a copyable box", function()

@@ -91,6 +91,6 @@ end
 function Status.Print()
 	ns.Print(L["status:"])
 	for _, line in ipairs(Status.Lines()) do
-		DEFAULT_CHAT_FRAME:AddMessage("  " .. line)
+		ns.Print(line)
 	end
 end

@@ -16,7 +16,7 @@ end
 function Slash.Help()
 	ns.Print(L["commands:"])
 	for _, c in ipairs(Slash.commands) do
-		DEFAULT_CHAT_FRAME:AddMessage("  /memories " .. c.name .. " - " .. c.help)
+		ns.Print("/memories " .. c.name .. " - " .. c.help)
 	end
 end
 
