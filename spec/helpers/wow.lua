@@ -1829,13 +1829,18 @@ local function install_libs()
 	end
 end
 
-function wow.reset(opts)
-	opts = opts or {}
+-- Puts _G back to the globals that existed before the first boot. A spec calls it in after_each.
+function wow.restore()
 	for k in pairs(_G) do
 		if not baseline[k] then
 			_G[k] = nil
 		end
 	end
+end
+
+function wow.reset(opts)
+	opts = opts or {}
+	wow.restore()
 
 	wow.opts = opts
 	wow.clock = opts.clock or 0

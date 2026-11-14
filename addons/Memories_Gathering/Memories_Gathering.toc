@@ -1,20 +1,24 @@
 ## Interface: 16001
+## AllowLoadGameType: camelot
 ## Title: Memories - Gathering
 ## Notes: Records gathering, fishing, opening and pick pocket.
 ## Title-deDE: Memories - Sammeln
 ## Notes-deDE: Zeichnet Sammeln, Angeln, Öffnen und Taschendiebstahl auf.
-## Title-frFR: Memories - Récolte
-## Notes-frFR: Enregistre la récolte, la pêche, les ouvertures et le vol à la tire.
 ## Title-esES: Memories - Recolección
 ## Notes-esES: Registra la recolección, la pesca, las aperturas y el robo de bolsillos.
 ## Title-esMX: Memories - Recolección
 ## Notes-esMX: Registra la recolección, la pesca, las aperturas y el robo de bolsillos.
+## Title-frFR: Memories - Récolte
+## Notes-frFR: Enregistre la récolte, la pêche, les ouvertures et le vol à la tire.
 ## Title-itIT: Memories - Raccolta
 ## Notes-itIT: Registra raccolta, pesca, aperture e borseggio.
 ## Title-ptBR: Memories - Coleta
 ## Notes-ptBR: Registra coleta, pesca, aberturas e furtos.
 ## Author: Felipe M.
 ## Version: @project-version@
+## X-License: GPL-3.0
+## X-Curse-Project-ID: 1798189
+## IconTexture: Interface\AddOns\Memories\assets\icon
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesGatheringCharDB

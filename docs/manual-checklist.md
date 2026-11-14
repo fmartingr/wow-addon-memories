@@ -41,7 +41,7 @@ order: run them from top to bottom. Run A has all 6 addons on. Run B (section T)
 | B1 | 3, 16 | Group in the AddOn list | Start the game and open the AddOn list on the character screen. | The 6 addons show as one group "Memories": "Memories", "Memories - Character", "Memories - Combat", "Memories - Economy", "Memories - Gathering" and "Memories - Social". | not run |
 | B2 | 1 | All addons load | Enable the 6 addons and log in. | No Lua error. | not run |
 | B3 | 5 | Status | Type `/mem status`. | "Memories: status:", then one `on` line for each of the 6 addons with `<n> lines, <n> kinds off, ...`, then `login time: init <n> ms, login <n> ms, world <n> ms`. Each line starts with "Memories:". | not run |
-| B4 | 1 | Command list | Type `/mem`, then `/memories`. | Each prints "Memories: Commands:" and the `help`, `errors`, `note`, `minimap`, `options`, `settings` and `status` lines. Each line starts with "Memories:". | not run |
+| B4 | 1 | Command list | Type `/mem`, then `/memories`. | Each prints "Memories: Commands:" and the `help`, `errors`, `note`, `options`, `settings`, `status` and `minimap` lines. Each line starts with "Memories:". | not run |
 | B5 | 1 | Errors box, none | On a clean install, type `/mem errors`. | It prints "Memories: no saved errors." | not run |
 | B6 | 3 | Public global | Type `/dump Memories.API_VERSION, Memories.VERSION`. | It prints `1` and the TOC version. | not run |
 
@@ -105,7 +105,7 @@ play starts. Deaths and the low-health popup read no `GlobalStrings` name: the k
 | ID | Source | Check | Steps | Expected | Result |
 |---|---|---|---|---|---|
 | D1 | 5 | Settings page | Type `/mem options`, then `/mem settings`. | Each opens Options > AddOns > Memories with no Lua error. | not run |
-| D2 | 5 | General section | Open the Settings page. | "General" shows "Recording rate" (1, 2, 5, 10 s; 2 s chosen), "Save reminder", "Minimap button" and "Low-health flash" (all on). | not run |
+| D2 | 5 | General section | Open the Settings page. | "General" shows "Recording rate" (1, 2, 5, 10 s; 2 s chosen), "Save reminder", "Low-health flash" and "Minimap button" (all on). | not run |
 | D3 | 5, 11–15 | Kind sections | Scroll the Settings page. | One header `<Addon> — <Group>` per group, each with "Enable all", "Disable all" and one checkbox per kind, all checked: `Memories` — Sessions, Progress, Deaths, Travel, Dungeons, Screenshots, Other addons, Notes (`un`); `Memories_Combat — Combat` (`ki`, `ra`, `fi`); `Memories_Gathering — Gathering` (`ga`, `fs`, `op`, `pp`); `Memories_Character — Character` (`sk`, `lr`, `rc`, `ta`, `cu`, `pt`) and `— Milestones` (`rp`, `qa`, `hb`, `fp`, `bk`); `Memories_Economy — Loot` (`lo`, `rl`, `ge`, `eq`) and `— Money` (`mn`, `tb`, `ah`, `ma`, `tr`); `Memories_Social — Social` (`gj`, `gl`, `gu`) and `— PvP` (`ep`, `pk`, `hk`, `du`, `bg`, `rk`). No checkbox for `nt`. | not run |
 | D4 | 5 | New findings only boxes | Look under each group. | "Gathering: new findings only" under Gathering, "Kills: new findings only" under Combat, "Loot: new findings only" under Loot and "Consumables: new findings only" under Character, all off. | not run |
 | D5 | 5 | Group buttons | Click "Disable all" under "Memories — Travel", then "Enable all". Repeat under "Memories_Economy — Money". | Every checkbox of that group clears at once, then checks again. No other group changes. | not run |

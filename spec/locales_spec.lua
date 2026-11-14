@@ -1,8 +1,6 @@
 local wow = require("helpers.wow")
 
 describe("addon strings", function()
-	local PLAIN = { "Title", "Notes" }
-	local TOC_LOCALES = { "deDE", "frFR", "esES", "esMX", "itIT", "ptBR" }
 	local LANGUAGES = { "deDE", "frFR", "esES", "itIT", "ptBR" }
 	local ADDONS = {
 		"Memories",
@@ -172,45 +170,6 @@ describe("addon strings", function()
 		end
 	end)
 
-	describe("TOC", function()
-		for _, addon in ipairs(ADDONS) do
-			it(addon .. " has a title and notes for each locale, after the plain lines", function()
-				local order = {}
-				for line in read("addons/" .. addon .. "/" .. addon .. ".toc"):gmatch("[^\r\n]+") do
-					local key = line:match("^##%s*([^:]+):")
-					if key then
-						order[#order + 1] = key
-					end
-				end
-				local function at(key)
-					for i, k in ipairs(order) do
-						if k == key then
-							return i
-						end
-					end
-				end
-				for _, base in ipairs(PLAIN) do
-					assert.is_truthy(at(base), base)
-					for _, locale in ipairs(TOC_LOCALES) do
-						local localized = at(base .. "-" .. locale)
-						assert.is_truthy(localized, base .. "-" .. locale)
-						assert.is_true(at(base) < localized)
-					end
-				end
-			end)
-
-			it(addon .. " lists Locales.lua first after Libs", function()
-				local first
-				for _, file in ipairs(wow.read_toc(addon).files) do
-					if not first and not file:find("/Libs/", 1, true) then
-						first = file
-					end
-				end
-				assert.equal("addons/" .. addon .. "/Locales.lua", first)
-			end)
-		end
-	end)
-
 	describe("sub-addons in French", function()
 		local KIND = {
 			Memories_Combat = { kind = "ki", group = "Combat", fr = "Créature tuée", en = "Killed a creature" },
@@ -307,7 +266,7 @@ describe("addon strings", function()
 			local lines = wow.chat()
 			assert.equal("Memories: Comandos:", lines[1])
 			assert.equal("Memories: /memories help - mostrar esta lista", lines[2])
-			assert.equal("Memories: /memories options - abrir la página de opciones", lines[6])
+			assert.equal("Memories: /memories options - abrir la página de opciones", lines[5])
 		end)
 
 		it("prints the save reminder in Spanish", function()

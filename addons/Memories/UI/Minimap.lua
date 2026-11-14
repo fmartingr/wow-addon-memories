@@ -7,7 +7,7 @@ local Minimap = {}
 ns.Minimap = Minimap
 
 Minimap.NAME = "Memories"
-local ICON = "Interface\\AddOns\\Memories\\Media\\icon"
+local ICON = "Interface\\AddOns\\Memories\\assets\\icon"
 local GLOW = "Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight"
 -- One full fade in and out every 1.5 s.
 local PULSE_HALF = 0.75

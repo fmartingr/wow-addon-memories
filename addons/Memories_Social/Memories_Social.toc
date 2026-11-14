@@ -1,20 +1,20 @@
 ## Interface: 16001
+## AllowLoadGameType: camelot
 ## Title: Memories - Social
 ## Notes: Records group members, your guild, enemy players, PvP kills and deaths, honor, duels, battlegrounds and PvP rank.
 ## Title-deDE: Memories - Soziales
 ## Notes-deDE: Zeichnet Gruppenmitglieder, deine Gilde, feindliche Spieler, PvP-Siege und -Tode, Ehre, Duelle, Schlachtfelder und PvP-Rang auf.
-## Title-frFR: Memories - Social
-## Notes-frFR: Enregistre les membres du groupe, votre guilde, les joueurs ennemis, les victoires et morts en JcJ, l'honneur, les duels, les champs de bataille et le rang JcJ.
-## Title-esES: Memories - Social
 ## Notes-esES: Registra miembros del grupo, tu hermandad, jugadores enemigos, muertes y bajas en JcJ, honor, duelos, campos de batalla y rango JcJ.
-## Title-esMX: Memories - Social
 ## Notes-esMX: Registra miembros del grupo, tu hermandad, jugadores enemigos, muertes y bajas en JcJ, honor, duelos, campos de batalla y rango JcJ.
+## Notes-frFR: Enregistre les membres du groupe, votre guilde, les joueurs ennemis, les victoires et morts en JcJ, l'honneur, les duels, les champs de bataille et le rang JcJ.
 ## Title-itIT: Memories - Sociale
 ## Notes-itIT: Registra membri del gruppo, la tua gilda, giocatori nemici, uccisioni e morti in PvP, onore, duelli, campi di battaglia e grado PvP.
-## Title-ptBR: Memories - Social
 ## Notes-ptBR: Registra membros do grupo, sua guilda, jogadores inimigos, abates e mortes em JxJ, honra, duelos, campos de batalha e patente de JxJ.
 ## Author: Felipe M.
 ## Version: @project-version@
+## X-License: GPL-3.0
+## X-Curse-Project-ID: 1798189
+## IconTexture: Interface\AddOns\Memories\assets\icon
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesSocialCharDB

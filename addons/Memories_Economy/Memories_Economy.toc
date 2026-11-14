@@ -1,20 +1,24 @@
 ## Interface: 16001
+## AllowLoadGameType: camelot
 ## Title: Memories - Economy
 ## Notes: Records loot, group rolls, gear, money, trainers, the auction house, mail and trade.
 ## Title-deDE: Memories - Wirtschaft
 ## Notes-deDE: Zeichnet Beute, Gruppenwürfe, Ausrüstung, Geld, Lehrer, das Auktionshaus, Post und Handel auf.
-## Title-frFR: Memories - Économie
-## Notes-frFR: Enregistre le butin, les jets de groupe, l'équipement, l'argent, les maîtres, l'hôtel des ventes, le courrier et les échanges.
 ## Title-esES: Memories - Economía
 ## Notes-esES: Registra botín, tiradas de grupo, equipo, dinero, instructores, la casa de subastas, el correo y el comercio.
 ## Title-esMX: Memories - Economía
 ## Notes-esMX: Registra botín, tiradas de grupo, equipo, dinero, instructores, la casa de subastas, el correo y el comercio.
+## Title-frFR: Memories - Économie
+## Notes-frFR: Enregistre le butin, les jets de groupe, l'équipement, l'argent, les maîtres, l'hôtel des ventes, le courrier et les échanges.
 ## Title-itIT: Memories - Economia
 ## Notes-itIT: Registra bottino, tiri di gruppo, equipaggiamento, denaro, addestratori, casa d'aste, posta e scambi.
 ## Title-ptBR: Memories - Economia
 ## Notes-ptBR: Registra saque, rolagens de grupo, equipamento, dinheiro, instrutores, a casa de leilões, o correio e negociações.
 ## Author: Felipe M.
 ## Version: @project-version@
+## X-License: GPL-3.0
+## X-Curse-Project-ID: 1798189
+## IconTexture: Interface\AddOns\Memories\assets\icon
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesEconomyCharDB

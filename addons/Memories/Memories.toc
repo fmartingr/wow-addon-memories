@@ -1,26 +1,22 @@
 ## Interface: 16001
+## AllowLoadGameType: camelot
 ## Title: Memories
 ## Notes: Records your journey.
-## Title-deDE: Memories
 ## Notes-deDE: Zeichnet deine Reise auf.
-## Title-frFR: Memories
-## Notes-frFR: Enregistre votre aventure.
-## Title-esES: Memories
 ## Notes-esES: Registra tu viaje.
-## Title-esMX: Memories
 ## Notes-esMX: Registra tu viaje.
-## Title-itIT: Memories
+## Notes-frFR: Enregistre votre aventure.
 ## Notes-itIT: Registra il tuo viaggio.
-## Title-ptBR: Memories
 ## Notes-ptBR: Registra a sua jornada.
 ## Author: Felipe M.
 ## Version: @project-version@
+## X-License: GPL-3.0
+## X-Curse-Project-ID: 1798189
+## IconTexture: Interface\AddOns\Memories\assets\icon
 ## SavedVariables: MemoriesDB
 ## SavedVariablesPerCharacter: MemoriesCharDB
 ## LoadSavedVariablesFirst: 1
-## IconTexture: Interface\AddOns\Memories\Media\icon
 ## Category: Map
-## X-Curse-Project-ID: 1798189
 
 Libs\LibStub\LibStub.lua
 Libs\CallbackHandler-1.0\CallbackHandler-1.0.lua
@@ -30,6 +26,7 @@ Locales.lua
 Core\Core.lua
 Core\Secret.lua
 Core\Util.lua
+Core\Commands.lua
 Data\Kinds.lua
 Data\Codec.lua
 Data\TrailCodec.lua
@@ -49,12 +46,9 @@ Record\Screenshots.lua
 Record\Notes.lua
 Record\Travel.lua
 Record\Dungeons.lua
-UI\Commands.lua
 UI\ErrorLog.lua
 UI\Save.lua
 UI\NoteWindow.lua
-UI\Window.lua
-UI\Minimap.lua
 UI\Guard.lua
 UI\Options.lua
 UI\LowHealth.lua
@@ -66,4 +60,6 @@ UI\Map\Overlay.lua
 UI\Map\Panel.lua
 UI\Map\Window.lua
 UI\Map\Tab.lua
+UI\Window.lua
+UI\Minimap.lua
 Init.lua

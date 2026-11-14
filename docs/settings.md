@@ -8,8 +8,8 @@ Back to the [documentation index](README.md).
   note. The window also works in combat.
 - `/mem options` (or `/mem settings`) opens the Settings page (Options > AddOns > Memories). Settings are
   account-wide, in `MemoriesDB.settings`:
-  - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Save reminder", "Minimap button"
-    and "Low-health flash" (all on).
+  - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Save reminder", "Low-health flash"
+    and "Minimap button" (all on).
   - **Kinds:** one checkbox per kind under `<addon> — <group>`, with "Enable all" and "Disable all" for each group.
     Every kind is on by default. A kind that is off writes no line, but its counts go on. The kind `un` (Notes) holds
     the notes that the player writes; a note has at most 400 bytes.

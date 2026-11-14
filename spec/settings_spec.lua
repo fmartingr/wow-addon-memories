@@ -351,7 +351,7 @@ describe("settings", function()
 			for _, toggle in ipairs(ns.Settings.toggles) do
 				keys[#keys + 1] = toggle.key
 			end
-			assert.same({ "saveReminder", "minimapButton", "lowHealthFlash" }, keys)
+			assert.same({ "saveReminder", "lowHealthFlash", "minimapButton" }, keys)
 			assert.equal("Save reminder", ns.Settings.toggles[1].labelKey)
 		end)
 

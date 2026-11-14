@@ -1,20 +1,24 @@
 ## Interface: 16001
+## AllowLoadGameType: camelot
 ## Title: Memories - Character
 ## Notes: Records skills, spells, recipes, talents, consumables, tamed pets, reputation, quests, homes, flight paths and books.
 ## Title-deDE: Memories - Charakter
 ## Notes-deDE: Zeichnet Fertigkeiten, Zauber, Rezepte, Talente, Verbrauchsgüter, gezähmte Tiere, Ruf, Quests, Ruhesteinorte, Flugrouten und Bücher auf.
-## Title-frFR: Memories - Personnage
-## Notes-frFR: Enregistre les compétences, sorts, recettes, talents, consommables, familiers apprivoisés, réputation, quêtes, foyers, trajets de vol et livres.
 ## Title-esES: Memories - Personaje
 ## Notes-esES: Registra habilidades, hechizos, recetas, talentos, consumibles, mascotas domadas, reputación, misiones, hogares, rutas de vuelo y libros.
 ## Title-esMX: Memories - Personaje
 ## Notes-esMX: Registra habilidades, hechizos, recetas, talentos, consumibles, mascotas domadas, reputación, misiones, hogares, rutas de vuelo y libros.
+## Title-frFR: Memories - Personnage
+## Notes-frFR: Enregistre les compétences, sorts, recettes, talents, consommables, familiers apprivoisés, réputation, quêtes, foyers, trajets de vol et livres.
 ## Title-itIT: Memories - Personaggio
 ## Notes-itIT: Registra abilità, incantesimi, ricette, talenti, consumabili, animali domati, reputazione, missioni, case, rotte di volo e libri.
 ## Title-ptBR: Memories - Personagem
 ## Notes-ptBR: Registra habilidades, feitiços, receitas, talentos, consumíveis, feras domadas, reputação, missões, lares, rotas de voo e livros.
 ## Author: Felipe M.
 ## Version: @project-version@
+## X-License: GPL-3.0
+## X-Curse-Project-ID: 1798189
+## IconTexture: Interface\AddOns\Memories\assets\icon
 ## Dependencies: Memories
 ## Group: Memories
 ## SavedVariablesPerCharacter: MemoriesCharacterCharDB

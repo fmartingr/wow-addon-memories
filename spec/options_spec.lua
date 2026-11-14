@@ -98,8 +98,8 @@ describe("settings page", function()
 		assert.same({
 			"dropdown recordRate",
 			"checkbox saveReminder",
-			"checkbox minimapButton",
 			"checkbox lowHealthFlash",
+			"checkbox minimapButton",
 		}, section("General"))
 		assert.equal("# General", outline()[1])
 		assert.equal(2, setting("recordRate"):GetDefaultValue())

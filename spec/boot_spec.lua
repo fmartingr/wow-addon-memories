@@ -143,10 +143,10 @@ describe("boot", function()
 				"Memories: /memories help - show this list",
 				"Memories: /memories errors - show the saved errors, ready to copy",
 				"Memories: /memories note - write a note in the journey",
-				"Memories: /memories minimap - show or hide the minimap button",
 				"Memories: /memories options - open the settings page",
 				"Memories: /memories settings - open the settings page",
 				"Memories: /memories status - show the state of each Memories addon",
+				"Memories: /memories minimap - show or hide the minimap button",
 			}, wow.chat())
 			SlashCmdList.MEMORIES("nope")
 			assert.equal(16, #wow.chat())
