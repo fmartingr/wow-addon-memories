@@ -24,7 +24,7 @@ jobs:
           SHA: ${{ github.sha }}
         run: |
           title="Update the CurseForge description"
-          body="$(printf 'Commit %s changed \`.curse/description.md\`.\n\nPaste the file into the project description on CurseForge (markdown editor), then close this issue.\n\n' "$SHA"; echo '````markdown'; cat .curse/description.md; echo '````')"
+          body="$(printf "Commit %s changed \`.curse/description.md\`.\n\nPaste the file into the project description on CurseForge (markdown editor), then close this issue.\n\n" "$SHA"; echo '````markdown'; cat .curse/description.md; echo '````')"
           number="$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')"
           if [ -n "$number" ]; then
             gh issue edit "$number" --body "$body"
