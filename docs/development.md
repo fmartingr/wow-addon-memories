@@ -22,6 +22,7 @@ rewrite.
 | `make deps` | Install busted, luacov and luacheck with luarocks (Lua 5.1). |
 | `make lint` | `lint-lua` (luacheck), `lint-no-go` (`scripts/no-go.sh`: no tracked `*.go`, `go.mod` or `go.sum` outside `server/`; `scripts/no-go_test.sh` tests it), `lint-actions` (actionlint on the workflows, skipped when it is not installed; CI always runs it), `server-lint` (`gofmt` and `go vet` in `server/`), `dart-lint` and `app-lint` (analyze and format check) and `fmt-check` (stylua). |
 | `make fmt` | Format the Lua, Dart and Go code. |
+| `make check` | The addon checks of CI: `lint-lua`, `fmt-check` and `coverage-lua`. Run it before an addon commit. |
 | `make test` | `test-lua` (busted), `test-scripts` (the tests of `scripts/package-addons.sh` and `scripts/release-version.sh`), `server-test` (`go test -race` in `server/`), `dart-test` (Dart core tests) and `app-test` (Flutter app tests). |
 | `make coverage` | `coverage-lua`, `server-coverage` and `dart-coverage`. The Lua files of `addons/` (without `Libs/`), `server/internal/...` and the Dart core `lib/` need 80 %. |
 | `make server-run` | Run the Go server (see [server.md](server.md)). |

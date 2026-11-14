@@ -19,7 +19,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: release-check release-patch release-minor release-major app-viewer app-viewer-check help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test app-theme theme-check app-shots
+.PHONY: check release-check release-patch release-minor release-major app-viewer app-viewer-check help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test app-theme theme-check app-shots
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -91,6 +91,8 @@ fmt: ## Format the Lua, Dart and Go code
 	cd $(CORE) && fvm dart format .
 	cd app && fvm dart format .
 	cd server && gofmt -w .
+
+check: lint-lua fmt-check coverage-lua ## Run the addon checks of CI: luacheck, StyLua, and busted with the coverage threshold
 
 test: test-lua test-scripts server-test web-test dart-test app-test ## Run all tests
 
