@@ -8,6 +8,9 @@ SERVER_COVERAGE_MIN ?= 80
 CORE := packages/memories_core
 COMPANION_DEVICE ?= $(if $(filter Darwin,$(shell uname -s)),macos,$(if $(filter Linux,$(shell uname -s)),linux,windows))
 BUSTED_FLAGS ?=
+MAIN ?= main
+REMOTE ?= origin
+DRY_RUN ?=
 ADDONS := $(notdir $(wildcard addons/*))
 
 LR_PATH := $(shell luarocks --lua-version=5.1 --local path --lr-path 2>/dev/null)
@@ -16,7 +19,7 @@ export PATH := $(HOME)/.luarocks/bin:$(PATH)
 export LUA_PATH := $(LR_PATH);$(LUA_PATH);;
 export LUA_CPATH := $(LR_CPATH);$(LUA_CPATH);;
 
-.PHONY: app-viewer app-viewer-check help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test app-theme theme-check app-shots
+.PHONY: release-check release-patch release-minor release-major app-viewer app-viewer-check help check-tools deps lint lint-lua lint-no-go lint-actions server-lint dart-lint app-lint fmt-check fmt test test-lua test-scripts server-test dart-test app-test companion coverage coverage-lua server-coverage dart-coverage server-run server-build local-up local-down local-logs companion-local export upload e2e link install clean web-assets web-lint web-test app-theme theme-check app-shots
 
 help: ## List the targets
 	@grep -E '^[a-zA-Z_-]+:.*## ' $(MAKEFILE_LIST) | awk -F':.*## ' '{printf "%-16s %s\n", $$1, $$2}'
@@ -200,3 +203,40 @@ web-assets: ## Copy the map art from MAP_SRC (a map art folder with assets/world
 	mkdir -p web/map
 	rm -rf web/map/art web/map/mini web/map/tiles web/map/world.js
 	cp -R "$(MAP_SRC)/assets/art" "$(MAP_SRC)/assets/mini" "$(MAP_SRC)/assets/tiles" "$(MAP_SRC)/assets/world.js" web/map/
+
+release-check: ## Check that the tree is ready for a release
+	@if [ -n "$$(git status --porcelain)" ]; then echo "release: the working tree is dirty" >&2; exit 1; fi
+	@branch=$$(git rev-parse --abbrev-ref HEAD); \
+	if [ "$$branch" != "$(MAIN)" ]; then echo "release: the branch is $$branch, not $(MAIN)" >&2; exit 1; fi
+	@git fetch --quiet --tags $(REMOTE) $(MAIN)
+	@if [ "$$(git rev-parse HEAD)" != "$$(git rev-parse $(REMOTE)/$(MAIN))" ]; then \
+		echo "release: HEAD differs from $(REMOTE)/$(MAIN)" >&2; exit 1; \
+	fi
+
+# The tag is the only stored version: the packager and the app build take it from the tag.
+# Tag from a local machine. A tag that a workflow pushes with GITHUB_TOKEN does not start the release workflow.
+define bump
+	@last=$$(git tag --list 'v[0-9]*.[0-9]*.[0-9]*' --sort=-v:refname | grep -v -- '-' | head -n 1 || true); \
+	last=$${last:-v0.0.0}; \
+	IFS=. read -r major minor patch <<< "$${last#v}"; \
+	case "$(1)" in \
+		major) major=$$((major + 1)); minor=0; patch=0 ;; \
+		minor) minor=$$((minor + 1)); patch=0 ;; \
+		patch) patch=$$((patch + 1)) ;; \
+	esac; \
+	next="v$$major.$$minor.$$patch"; \
+	echo "$$last -> $$next"; \
+	bash scripts/release-notes.sh "$$next" > /dev/null; \
+	if [ -n "$(DRY_RUN)" ]; then exit 0; fi; \
+	git tag -a "$$next" -m "Release $$next"; \
+	git push $(REMOTE) "$$next"
+endef
+
+release-patch: release-check ## Tag and push the next patch version (DRY_RUN=1 only checks)
+	$(call bump,patch)
+
+release-minor: release-check ## Tag and push the next minor version (DRY_RUN=1 only checks)
+	$(call bump,minor)
+
+release-major: release-check ## Tag and push the next major version (DRY_RUN=1 only checks)
+	$(call bump,major)

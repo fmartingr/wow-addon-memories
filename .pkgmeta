@@ -1,4 +1,7 @@
 package-as: Memories
+manual-changelog:
+  filename: RELEASE_NOTES.md
+  markup-type: markdown
 optional-dependencies:
   - paparazzi
 move-folders:
@@ -10,6 +13,7 @@ move-folders:
   Memories/addons/Memories_Social: Memories_Social
 ignore:
   - .busted
+  - .curse
   - .claude
   - .dockerignore
   - .fvmrc
@@ -18,9 +22,11 @@ ignore:
   - .luacov
   - .stylua.toml
   - .styluaignore
+  - CHANGELOG.md
   - LICENSE
   - Makefile
   - README.md
+  - RELEASE_NOTES.md
   - app
   - assets
   - deploy

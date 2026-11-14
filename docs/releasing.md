@@ -5,21 +5,25 @@
 
 ## Cut a release
 
-1. Check that CI passes on `main`.
-2. Tag the commit and push the tag:
+1. Add a `## X.Y.Z` section at the top of `CHANGELOG.md`, with one bullet for each change that a player can see.
+   Push it to `main`. Check that CI passes.
+2. On a clean `main` that is equal to `origin/main`, run `make release-patch`, `make release-minor` or
+   `make release-major`. The target checks that the top heading of `CHANGELOG.md` is the new version, then tags and
+   pushes the tag. `DRY_RUN=1` prints the next tag and checks the changelog only.
+3. The `version` job fails at once when the top heading of `CHANGELOG.md` is not the tag version. The workflow builds
+   the 4 files (the macOS file is optional until the signing secrets exist), then the `publish` job creates the
+   release with the top section of `CHANGELOG.md` as its notes (`scripts/release-notes.sh`).
+4. After the release, the `curseforge` job uploads the addon zip to CurseForge, with the same section as its
+   changelog (see below).
+5. Run `docs/manual-checklist.md` in the game on the released zip.
 
-   ```sh
-   git tag -a v1.2.3 -m "v1.2.3"
-   git push origin v1.2.3
-   ```
-
-3. The workflow builds the 4 files (the macOS file is optional until the signing secrets exist), then the `publish` job creates the release with notes generated from the commits.
-4. After the release, the `curseforge` job uploads the addon zip to CurseForge (see below).
+Do not use `/create-release`: it creates the GitHub release with `gh`, and the workflow creates it too.
 
 - **Version:** the tag without `v` (`v1.2.3` gives `1.2.3`). The tag must be `v` + semver: `vMAJOR.MINOR.PATCH`,
   with an optional pre-release part (`v1.2.3-rc.1`). Build metadata (`v1.2.3+build.5`) is refused, because Flutter
   reads `+` in `--build-name` as the build number. Another tag fails in the `version` job and nothing is built.
-- **Pre-release:** a tag with a pre-release part (`v1.0.0-rc.1`) makes a GitHub pre-release.
+- **Pre-release:** a tag with a pre-release part (`v1.0.0-rc.1`) makes a GitHub pre-release. Tag it by hand, with a
+  `## 1.0.0-rc.1` section at the top of `CHANGELOG.md`. The make targets tag only `vMAJOR.MINOR.PATCH`.
 - **App version:** the app gets `--build-name=<version>`, `--build-number=<run number>` and
   `--dart-define=APP_VERSION=<version>`; the settings page shows `APP_VERSION`. The `version` in `app/pubspec.yaml`
   is not used for a release.

@@ -32,6 +32,12 @@ jobs:
           REF_NAME: ${{ github.ref_name }}
           RUN_NUMBER: ${{ github.run_number }}
         run: bash scripts/release-version.sh "$REF_TYPE" "$REF_NAME" "$RUN_NUMBER" | tee -a "$GITHUB_OUTPUT"
+      # The top section of CHANGELOG.md is the release notes. A tag without its section fails here, before any build.
+      - name: Check the changelog
+        if: github.ref_type == 'tag'
+        env:
+          TAG: ${{ github.ref_name }}
+        run: bash scripts/release-notes.sh "$TAG" > /dev/null
 
   addons:
     needs: version
@@ -269,6 +275,11 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Write the release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: bash scripts/release-notes.sh "$TAG" > RELEASE_NOTES.md
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           pattern: release-*
@@ -303,7 +314,7 @@ jobs:
           if gh release view "$TAG" > /dev/null 2>&1; then
             gh release upload "$TAG" "${files[@]}" --clobber
           else
-            flags=(--verify-tag --generate-notes --title "$TAG")
+            flags=(--verify-tag --notes-file RELEASE_NOTES.md --title "$TAG")
             if [ "$PRERELEASE" = true ]; then flags+=(--prerelease); fi
             gh release create "$TAG" "${files[@]}" "${flags[@]}"
           fi
@@ -330,6 +341,12 @@ jobs:
         env:
           PREVIOUS: ${{ steps.addons.outputs.previous }}
         run: echo "::notice::The addon files did not change since $PREVIOUS, so nothing is uploaded to CurseForge."
+      # .pkgmeta names RELEASE_NOTES.md as the manual changelog. The packager uploads that file whole.
+      - if: steps.addons.outputs.changed == 'true'
+        name: Write the release notes
+        env:
+          TAG: ${{ github.ref_name }}
+        run: bash scripts/release-notes.sh "$TAG" > RELEASE_NOTES.md
       - if: steps.addons.outputs.changed == 'true'
         uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
         with:

@@ -1,4 +1,6 @@
 build/
+.release/
+RELEASE_NOTES.md
 dist-characters/
 backups/
 luacov.*.out
