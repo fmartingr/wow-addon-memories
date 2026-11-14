@@ -26,11 +26,7 @@ describe("addon icon", function()
 
 	it("is the same file on the minimap button", function()
 		wow.boot()
-		local paths = {}
-		for _, texture in ipairs(MemoriesMinimapButton.textures) do
-			paths[texture.texture or ""] = true
-		end
-		assert.is_true(paths["Interface\\AddOns\\Memories\\Media\\icon"])
+		assert.equal("Interface\\AddOns\\Memories\\Media\\icon", wow.ldb.Memories.icon)
 		assert.is_true(exists(file_of("Interface\\AddOns\\Memories\\Media\\icon")))
 	end)
 end)

@@ -25,8 +25,9 @@ Back to the [documentation index](README.md).
   that are off and the age of its backup, then the login time.
 - `/mem errors` shows the saved errors, ready to copy.
 - The minimap button opens the Note window with a left click, saves (reloads the UI) with a shift + left click, and
-  opens the Settings page with a right click. The addon compartment entry saves with a left click and opens the
-  Settings page with a right click.
+  opens the Settings page with a right click. A drag moves it. The addon compartment entry does the same clicks.
+- `/mem minimap` shows or hides the minimap button, the same as the "Minimap button" setting. LibDBIcon keeps the
+  position in `MemoriesDB.minimap`.
 - After 1 hour with no save, a chat line and the pulsing minimap button remind you to save (save reminder).
 - Each journal has a rolling backup in `MemoriesDB.backups`. When a journal loads empty and its backup has lines, a
   popup asks you to restore the backup or start fresh (data guard).

@@ -2,53 +2,17 @@ local _, ns = ...
 
 local L = ns.L
 
-local MinimapButton = {}
-ns.MinimapButton = MinimapButton
+-- One LibDataBroker launcher drives the minimap button and the addon compartment entry, through LibDBIcon.
+local Minimap = {}
+ns.Minimap = Minimap
 
-MinimapButton.DEFAULT_ANGLE = 225
+Minimap.NAME = "Memories"
 local ICON = "Interface\\AddOns\\Memories\\Media\\icon"
+local GLOW = "Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight"
+-- One full fade in and out every 1.5 s.
+local PULSE_HALF = 0.75
 
-local button
--- A MemoriesDB from a newer Memories is never written, so the angle lives in memory for the session, starting from
--- the saved one.
-local sessionOnly
-
-local function saved()
-	local t
-	if ns.Store.ReadOnlyAll() then
-		if not sessionOnly then
-			local stored = type(MemoriesDB.minimap) == "table" and MemoriesDB.minimap or {}
-			sessionOnly = { angle = stored.angle }
-		end
-		t = sessionOnly
-	else
-		t = ns.U.TableAt(MemoriesDB, "minimap")
-	end
-	if type(t.angle) ~= "number" then
-		t.angle = MinimapButton.DEFAULT_ANGLE
-	end
-	return t
-end
-
--- Puts the button on the minimap edge at angle, in degrees counter-clockwise from the right.
-local function place(angle)
-	local rad = math.rad(angle)
-	local radius = Minimap:GetWidth() / 2 + 10
-	button:ClearAllPoints()
-	button:SetPoint("CENTER", Minimap, "CENTER", math.cos(rad) * radius, math.sin(rad) * radius)
-end
-
--- The cursor position is in screen pixels, the minimap center in its own scaled units.
-function MinimapButton.Drag()
-	local mx, my = Minimap:GetCenter()
-	local scale = Minimap:GetEffectiveScale()
-	local cx, cy = GetCursorPosition()
-	local t = saved()
-	t.angle = math.deg(math.atan2(cy / scale - my, cx / scale - mx)) % 360
-	place(t.angle)
-end
-
-function MinimapButton.Click(which)
+function Minimap.OnClick(_, which)
 	if which == "RightButton" then
 		ns.Options.Open()
 	elseif IsShiftKeyDown() then
@@ -58,99 +22,124 @@ function MinimapButton.Click(which)
 	end
 end
 
-function MinimapButton.Tooltip(owner)
-	GameTooltip:SetOwner(owner, "ANCHOR_LEFT")
-	GameTooltip:SetText("Memories")
-	GameTooltip:AddLine(L["%d min since the last save"]:format(math.floor(ns.Save.Age() / 60)), 1, 1, 1)
-	GameTooltip:AddLine(L["Left click: write a note"])
-	GameTooltip:AddLine(L["Shift + left click: save (reload)"])
-	GameTooltip:AddLine(L["Right click: settings"])
-	GameTooltip:Show()
+function Minimap.OnTooltipShow(tooltip)
+	tooltip:AddLine("Memories")
+	tooltip:AddLine(L["%d min since the last save"]:format(math.floor(ns.Save.Age() / 60)), 1, 1, 1)
+	tooltip:AddLine(L["Left click: write a note"])
+	tooltip:AddLine(L["Shift + left click: save (reload)"])
+	tooltip:AddLine(L["Right click: settings"])
+	tooltip:AddLine(L["Drag: move the button"])
 end
 
-local function pulse(self)
-	-- One full fade in and out every 1.5 s.
-	self.glow:SetAlpha(0.5 + 0.5 * math.sin(GetTime() * math.pi * 4 / 3))
+-- LibDBIcon writes the position into its table. A MemoriesDB from a newer Memories is never written, so it gets a
+-- copy for the session. minimap.angle is the position of the button of Memories 0.4.0 and earlier, in the same degrees
+-- as minimapPos.
+function Minimap.IconDB()
+	local db
+	if ns.Store.ReadOnlyAll() then
+		local saved = type(MemoriesDB.minimap) == "table" and MemoriesDB.minimap or {}
+		db = { minimapPos = saved.minimapPos or saved.angle }
+	else
+		db = ns.U.TableAt(MemoriesDB, "minimap")
+		if db.minimapPos == nil then
+			db.minimapPos = db.angle
+		end
+		db.angle = nil
+	end
+	if type(db.minimapPos) ~= "number" then
+		db.minimapPos = nil
+	end
+	db.hide = not ns.Settings.Get("minimapButton")
+	return db
 end
 
-function MinimapButton.Pulse(on)
+function Minimap.Register()
+	local ldb = LibStub and LibStub("LibDataBroker-1.1", true)
+	local icon = LibStub and LibStub("LibDBIcon-1.0", true)
+	if not ldb or not icon then
+		return false
+	end
+	local object = ldb:NewDataObject(Minimap.NAME, {
+		type = "launcher",
+		icon = ICON,
+		OnClick = function(frame, which)
+			ns.Safe("minimap:click", Minimap.OnClick, frame, which)
+		end,
+		OnTooltipShow = function(tooltip)
+			ns.Safe("minimap:tooltip", Minimap.OnTooltipShow, tooltip)
+		end,
+	})
+	Minimap.icon = icon
+	Minimap.db = Minimap.IconDB()
+	icon:Register(Minimap.NAME, object, Minimap.db)
+	icon:AddButtonToCompartment(Minimap.NAME)
+	return true
+end
+
+function Minimap.Button()
+	return Minimap.icon and Minimap.icon:GetMinimapButton(Minimap.NAME)
+end
+
+local function glow(button)
+	if button.memoriesGlow then
+		return button.memoriesGlow
+	end
+	local texture = button:CreateTexture(nil, "OVERLAY")
+	texture:SetTexture(GLOW)
+	texture:SetAllPoints()
+	texture:SetBlendMode("ADD")
+	texture:Hide()
+	local group = texture:CreateAnimationGroup()
+	group:SetLooping("BOUNCE")
+	local alpha = group:CreateAnimation("Alpha")
+	alpha:SetFromAlpha(0)
+	alpha:SetToAlpha(1)
+	alpha:SetDuration(PULSE_HALF)
+	texture.pulse = group
+	button.memoriesGlow = texture
+	return texture
+end
+
+function Minimap.Pulse(on)
+	local button = Minimap.Button()
 	if not button then
 		return
 	end
-	button.pulsing = on == true
-	button.glow:SetShown(button.pulsing)
-	-- A drag owns OnUpdate until it stops; OnDragStop sets the pulse again.
-	if not button.dragging then
-		button:SetScript("OnUpdate", button.pulsing and pulse or nil)
+	local texture = glow(button)
+	texture:SetShown(on == true)
+	if on then
+		texture.pulse:Play()
+	else
+		texture.pulse:Stop()
 	end
 end
 
-function MinimapButton.Refresh()
-	if button then
-		button:SetShown(ns.Settings.Get("minimapButton"))
+function Minimap.Apply(shown)
+	if not Minimap.icon then
+		return
+	end
+	Minimap.db.hide = not shown
+	if shown then
+		Minimap.icon:Show(Minimap.NAME)
+	else
+		Minimap.icon:Hide(Minimap.NAME)
 	end
 end
 
-function MinimapButton.Create()
-	if button then
-		return button
-	end
-	button = CreateFrame("Button", "MemoriesMinimapButton", Minimap)
-	button:SetSize(31, 31)
-	button:SetFrameStrata("MEDIUM")
-	button:SetFrameLevel(8)
-	button:RegisterForClicks("LeftButtonUp", "RightButtonUp")
-	button:RegisterForDrag("LeftButton")
-	button:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-
-	local icon = button:CreateTexture(nil, "BACKGROUND")
-	icon:SetTexture(ICON)
-	icon:SetSize(20, 20)
-	icon:SetPoint("TOPLEFT", 7, -5)
-	icon:SetTexCoord(0.05, 0.95, 0.05, 0.95)
-
-	local border = button:CreateTexture(nil, "OVERLAY")
-	border:SetTexture("Interface\\Minimap\\MiniMap-TrackingBorder")
-	border:SetSize(53, 53)
-	border:SetPoint("TOPLEFT")
-
-	local glow = button:CreateTexture(nil, "OVERLAY")
-	glow:SetTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-	glow:SetAllPoints()
-	glow:Hide()
-	button.glow = glow
-
-	button:SetScript("OnClick", function(_, which)
-		ns.Safe("minimap:click", MinimapButton.Click, which)
-	end)
-	button:SetScript("OnEnter", function(self)
-		ns.Safe("minimap:tooltip", MinimapButton.Tooltip, self)
-	end)
-	button:SetScript("OnLeave", function()
-		GameTooltip:Hide()
-	end)
-	button:SetScript("OnDragStart", function(self)
-		self.dragging = true
-		self:SetScript("OnUpdate", function()
-			ns.Safe("minimap:drag", MinimapButton.Drag)
-		end)
-	end)
-	button:SetScript("OnDragStop", function(self)
-		self.dragging = false
-		MinimapButton.Pulse(self.pulsing)
-	end)
-
-	place(saved().angle)
-	MinimapButton.Refresh()
-	return button
+function Minimap.Toggle()
+	local shown = not ns.Settings.Get("minimapButton")
+	ns.Settings.Set("minimapButton", shown)
+	ns.Print(shown and L["Minimap button shown."] or L["Minimap button hidden."])
 end
 
-ns.Listen("LOGIN", MinimapButton.Create, "minimap")
+ns.Slash.Add("minimap", Minimap.Toggle, L["show or hide the minimap button"])
+ns.Listen("LOGIN", Minimap.Register, "minimap")
 ns.Listen("SAVE_REMINDER", function()
-	MinimapButton.Pulse(true)
+	Minimap.Pulse(true)
 end, "minimap")
-ns.Listen("SETTING_CHANGED", function(_, path)
+-- LibDBIcon reads minimap.hide; the minimapButton setting decides it.
+ns.Listen("SETTING_CHANGED", function(_, path, value)
 	if path == "minimapButton" then
-		MinimapButton.Refresh()
+		Minimap.Apply(value)
 	end
 end, "minimap")

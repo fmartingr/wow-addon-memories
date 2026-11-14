@@ -26,8 +26,10 @@ describe("boot", function()
 		local toc = wow.read_toc("Memories")
 		assert.equal("16001", toc.meta.Interface)
 		assert.same({ "MemoriesDB", "MemoriesCharDB" }, toc.saved)
-		assert.equal("addons/Memories/Locales.lua", toc.files[1])
-		assert.equal("addons/Memories/Core/Core.lua", toc.files[2])
+		assert.equal("addons/Memories/Libs/LibStub/LibStub.lua", toc.files[1])
+		assert.equal("addons/Memories/Libs/LibDBIcon-1.0/LibDBIcon-1.0.lua", toc.files[4])
+		assert.equal("addons/Memories/Locales.lua", toc.files[5])
+		assert.equal("addons/Memories/Core/Core.lua", toc.files[6])
 		assert.equal("addons/Memories/Init.lua", toc.files[#toc.files])
 	end)
 
@@ -143,27 +145,29 @@ describe("boot", function()
 				"  /memories settings - open the settings page",
 				"  /memories note - write a note in the journey",
 				"  /memories status - show the state of each Memories addon",
+				"  /memories minimap - show or hide the minimap button",
 			}, wow.chat())
 			SlashCmdList.MEMORIES("nope")
-			assert.equal(12, #wow.chat())
+			assert.equal(14, #wow.chat())
 		end)
 
 		it("opens the settings page on a right click of the addon compartment", function()
 			wow.boot()
-			Memories_OnAddonCompartmentClick("Memories", "RightButton")
+			wow.compartment.Memories("RightButton")
 			assert.equal(wow.categories[1]:GetID(), wow.opened)
 			assert.same({}, wow.chat())
 			assert.equal(0, wow.reloads)
 		end)
 
-		it("saves on a left click of the addon compartment, never in combat", function()
+		it("saves on a shift + left click of the addon compartment, never in combat", function()
 			wow.boot()
+			wow.shift = true
 			wow.combat = true
-			Memories_OnAddonCompartmentClick("Memories", "LeftButton")
+			wow.compartment.Memories("LeftButton")
 			assert.equal(0, wow.reloads)
 			assert.same({ "Memories: cannot save in combat." }, wow.chat())
 			wow.combat = false
-			Memories_OnAddonCompartmentClick("Memories", "LeftButton")
+			wow.compartment.Memories("LeftButton")
 			assert.equal(1, wow.reloads)
 		end)
 

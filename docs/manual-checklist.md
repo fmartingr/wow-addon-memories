@@ -116,13 +116,14 @@ play starts. Deaths and the low-health popup read no `GlobalStrings` name: the k
 
 | ID | Source | Check | Steps | Expected | Result |
 |---|---|---|---|---|---|
-| E1 | 4 | Minimap tooltip | Hover over the book button on the minimap edge. | The tooltip shows "Memories", the minutes since the last save, "Left click: write a note", "Shift + left click: save (reload)" and "Right click: settings". | not run |
+| E1 | 4 | Minimap tooltip | Hover over the book button on the minimap edge. | The tooltip shows "Memories", the minutes since the last save, "Left click: write a note", "Shift + left click: save (reload)", "Right click: settings" and "Drag: move the button". | not run |
 | E2 | 4 | Minimap settings | Right click the minimap button. | The Memories Settings page opens. | not run |
-| E3 | 4 | Minimap drag | Drag the minimap button around the minimap, then `/reload`. | It follows the minimap edge and stays at the new place after the reload. | not run |
+| E3 | 4 | Minimap drag | Drag the minimap button around the minimap, then `/reload`. | It follows the minimap edge and stays at the new place after the reload. A button moved before this version keeps its place. | not run |
 | E4 | 4 | Minimap save | Shift + left click the minimap button out of combat. Later, in a fight (section H), shift + left click it again. | Out of combat the UI reloads. In combat it prints "Memories: cannot save in combat." | not run |
-| E5 | 4 | Compartment | Right click the Memories entry in the addon compartment, then left click it. | The right click opens the Memories Settings page. The left click reloads the UI. | not run |
-| E6 | 4 | Compartment in combat | In a fight, left click the Memories entry in the addon compartment. | It prints "Memories: cannot save in combat." and does not reload. | not run |
+| E5 | 4 | Compartment | Left click the Memories entry in the addon compartment, then right click it, then shift + left click it. | The left click opens the Note window. The right click opens the Memories Settings page. The shift + left click reloads the UI. | not run |
+| E6 | 4 | Compartment in combat | In a fight, shift + left click the Memories entry in the addon compartment. | It prints "Memories: cannot save in combat." and does not reload. | not run |
 | E7 | 3 | Minimap note | Left click the minimap button. Click it again while the window is open. Then drag the button a little. | The first click opens the Note window. The second click keeps the window and the text. The drag moves the button and does not open the window. | not run |
+| E8 | 3 | Minimap command | Type `/mem minimap` two times. | The first time the button hides and the chat says "Memories: Minimap button hidden.". The second time it shows and the chat says "Memories: Minimap button shown.". The "Minimap button" setting follows. | not run |
 
 ## F. Sessions, trail and progress
 

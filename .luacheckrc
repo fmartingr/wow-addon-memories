@@ -1,14 +1,13 @@
 std = "lua51"
 max_line_length = 120
 codes = true
-exclude_files = { ".lua/", ".luarocks/", "testdata/", "dist-characters/", "backups/", "assets/" }
+exclude_files = { "addons/Memories/Libs/", ".lua/", ".luarocks/", "testdata/", "dist-characters/", "backups/", "assets/" }
 ignore = { "212/self", "211/_.*", "212/_.*" }
 
 globals = {
 	"Memories",
 	"MemoriesDB",
 	"MemoriesCharDB",
-	"Memories_OnAddonCompartmentClick",
 	"SLASH_MEMORIES1",
 	"SLASH_MEMORIES2",
 	"SlashCmdList",
@@ -17,6 +16,7 @@ globals = {
 
 read_globals = {
 	"IsShiftKeyDown",
+	"LibStub",
 	"GetCursorInfo",
 	"ClearCursor",
 	"ChatEdit_GetActiveWindow",
@@ -219,7 +219,7 @@ read_globals = {
 
 files["spec/"] = {
 	std = "+busted",
-	globals = { "_G", "print", "C_EncodingUtil", "Enum", "MemoriesMinimapButton", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "MemoriesSocialCharDB", "SomeBlizzardFunc", "Settings", "CHAT_FRAMES", "ChatFrame1", "C_GameRules", "UnitIsAFK", "GetXPExhaustion", "C_QuestLog", "UnitPosition", "date", "C_DeathRecap", "C_CVar", "LowHealthFrame", "SetCVar" },
+	globals = { "_G", "print", "C_EncodingUtil", "Enum", "LibStub", "LibDBIcon10_Memories", "MemoriesTestCharDB", "MemoriesOtherCharDB", "MemoriesCombatCharDB", "MemoriesSocialCharDB", "SomeBlizzardFunc", "Settings", "CHAT_FRAMES", "ChatFrame1", "C_GameRules", "UnitIsAFK", "GetXPExhaustion", "C_QuestLog", "UnitPosition", "date", "C_DeathRecap", "C_CVar", "LowHealthFrame", "SetCVar" },
 }
 
 -- Translated sentences stay on one line each.

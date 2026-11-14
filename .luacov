@@ -1,4 +1,5 @@
 return {
 	include = { "^addons/" },
+	exclude = { "^addons/Memories/Libs/" },
 	reporter = "default",
 }

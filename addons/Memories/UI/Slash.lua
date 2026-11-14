@@ -112,7 +112,3 @@ SLASH_MEMORIES2 = "/mem"
 SlashCmdList.MEMORIES = function(msg)
 	ns.Safe("slash", Slash.Run, msg)
 end
-
-function Memories_OnAddonCompartmentClick(_, button)
-	ns.Safe("compartment", ns.Save.Click, button)
-end

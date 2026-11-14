@@ -191,8 +191,14 @@ describe("addon strings", function()
 				end
 			end)
 
-			it(addon .. " lists Locales.lua first", function()
-				assert.equal("addons/" .. addon .. "/Locales.lua", wow.read_toc(addon).files[1])
+			it(addon .. " lists Locales.lua first after Libs", function()
+				local first
+				for _, file in ipairs(wow.read_toc(addon).files) do
+					if not first and not file:find("/Libs/", 1, true) then
+						first = file
+					end
+				end
+				assert.equal("addons/" .. addon .. "/Locales.lua", first)
 			end)
 		end
 	end)
@@ -309,13 +315,14 @@ describe("addon strings", function()
 
 		it("shows the minimap tooltip in Spanish", function()
 			boot()
-			MemoriesMinimapButton:GetScript("OnEnter")(MemoriesMinimapButton)
+			LibDBIcon10_Memories:GetScript("OnEnter")(LibDBIcon10_Memories)
 			assert.same({
 				"Memories",
 				"0 min desde el último guardado",
 				"Clic izquierdo: escribir una nota",
 				"Mayús + clic izquierdo: guardar (recargar)",
 				"Clic derecho: opciones",
+				"Arrastrar: mover el botón",
 			}, wow.tooltip.lines)
 		end)
 

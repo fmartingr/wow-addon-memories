@@ -289,6 +289,32 @@ function Frame:CreateTexture(name, layer)
 	return texture
 end
 
+local Animation = {}
+local animation_mt = { __index = Animation }
+for _, name in ipairs({ "SetFromAlpha", "SetToAlpha", "SetDuration", "SetLooping" }) do
+	Animation[name] = noop
+end
+
+function Animation:CreateAnimation(kind)
+	return setmetatable({ kind = kind }, animation_mt)
+end
+
+function Animation:Play()
+	self.playing = true
+end
+
+function Animation:Stop()
+	self.playing = false
+end
+
+function Animation:IsPlaying()
+	return self.playing == true
+end
+
+function Frame:CreateAnimationGroup()
+	return setmetatable({}, animation_mt)
+end
+
 function Frame:SetTexture(path)
 	self.texture = path
 end
@@ -1741,6 +1767,61 @@ function wow.chat()
 	return out
 end
 
+-- LibDataBroker and LibDBIcon --------------------------------------------------
+
+-- The real libraries in Libs/ need the whole client UI, so the specs get a model of the part that the addons use:
+-- LibDBIcon makes a button on the minimap that calls the data object, and an addon compartment entry that does too.
+local function install_libs()
+	wow.ldb = {}
+	wow.compartment = {}
+	local ldb = {}
+	function ldb:NewDataObject(name, object)
+		wow.ldb[name] = object
+		return object
+	end
+	local icon = { buttons = {} }
+	function icon:Register(name, object, db)
+		assert(not self.buttons[name], "LibDBIcon-1.0: Object '" .. name .. "' is already registered.")
+		local button = new_frame("Button", "LibDBIcon10_" .. name, _G.Minimap)
+		button.db, button.object = db, object
+		button:SetScript("OnClick", function(self_, which)
+			object.OnClick(self_, which)
+		end)
+		button:SetScript("OnEnter", function(self_)
+			GameTooltip:SetOwner(self_, "ANCHOR_LEFT")
+			object.OnTooltipShow(GameTooltip)
+			GameTooltip:Show()
+		end)
+		button:SetScript("OnLeave", function()
+			GameTooltip:Hide()
+		end)
+		button:SetShown(not db.hide)
+		self.buttons[name] = button
+	end
+	function icon:GetMinimapButton(name)
+		return self.buttons[name]
+	end
+	function icon:Show(name)
+		self.buttons[name]:Show()
+	end
+	function icon:Hide(name)
+		self.buttons[name]:Hide()
+	end
+	function icon:AddButtonToCompartment(name)
+		local object = self.buttons[name].object
+		self.buttons[name].db.showInCompartment = true
+		wow.compartment[name] = function(which)
+			object.OnClick(nil, which)
+		end
+	end
+	wow.dbicon = icon
+	local libs = { ["LibDataBroker-1.1"] = ldb, ["LibDBIcon-1.0"] = icon }
+	_G.LibStub = function(name, silent)
+		assert(libs[name] or silent, "Cannot find a library instance of " .. tostring(name))
+		return libs[name]
+	end
+end
+
 function wow.reset(opts)
 	opts = opts or {}
 	for k in pairs(_G) do
@@ -1816,6 +1897,7 @@ function wow.reset(opts)
 	if opts.lowHealthFrame ~= false then
 		new_frame("Frame", "LowHealthFrame", _G.UIParent).shown = false
 	end
+	install_libs()
 	wow.cursor = { 0, 0 }
 	_G.GetCursorPosition = function()
 		return wow.cursor[1], wow.cursor[2]
@@ -1996,7 +2078,9 @@ function wow.load_addon(name, saved)
 	local ns = {}
 	wow.ns[name] = ns
 	for _, file in ipairs(toc.files) do
-		assert(loadfile(file))(name, ns)
+		if not file:find("/Libs/", 1, true) then
+			assert(loadfile(file))(name, ns)
+		end
 	end
 	return ns
 end

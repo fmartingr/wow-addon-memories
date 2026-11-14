@@ -26,15 +26,6 @@ function Save.Now()
 	return true
 end
 
--- The left and right click of the addon compartment entry.
-function Save.Click(button)
-	if button == "RightButton" then
-		ns.Options.Open()
-	else
-		Save.Now()
-	end
-end
-
 function Save.Check()
 	if reminded or not ns.Settings.Get("saveReminder") or Save.Age() < Save.REMIND_AFTER then
 		return
