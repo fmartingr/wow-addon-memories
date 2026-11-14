@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Checks the line coverage of the core files (Core/ and Data/) in a luacov report and prints the total.
+# Checks the line coverage of the addon files (every folder of addons/, without Libs/) in a luacov report.
 set -euo pipefail
 
 report="${1:-luacov.report.out}"
@@ -8,13 +8,11 @@ min="${LUA_COVERAGE_MIN:-80}"
 awk -v min="$min" '
 	/^Summary/ { summary = 1 }
 	!summary { next }
-	$1 ~ /^addons\/Memories\/(Core|Data)\// { hits += $2; missed += $3 }
-	$1 == "Total" { total = $NF }
+	index($1, "addons/") == 1 && $1 !~ /\/Libs\// { hits += $2; missed += $3 }
 	END {
-		if (hits + missed == 0) { print "Lua core coverage: no core files in the report"; exit 1 }
-		core = 100 * hits / (hits + missed)
-		printf "Lua core coverage: %.2f%% (min %s%%)\n", core, min
-		printf "Lua total coverage: %s\n", total
-		exit (core < min)
+		if (hits + missed == 0) { print "Coverage: no addon files in the report"; exit 1 }
+		cov = 100 * hits / (hits + missed)
+		printf "Coverage: %.2f%% (min %s%%)\n", cov, min
+		exit (cov < min)
 	}
 ' "$report"

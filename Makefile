@@ -114,7 +114,7 @@ companion: app-viewer ## Run the WoW Journey companion app on this system (COMPA
 
 coverage: coverage-lua server-coverage dart-coverage ## Run tests with coverage thresholds
 
-coverage-lua: ## Run busted with luacov and check the core coverage
+coverage-lua: ## Run busted with luacov and check the coverage of the addon files
 	rm -f luacov.stats.out luacov.report.out
 	busted --coverage $(BUSTED_FLAGS)
 	luacov
