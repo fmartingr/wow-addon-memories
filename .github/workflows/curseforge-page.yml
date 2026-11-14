@@ -1,0 +1,33 @@
+name: CurseForge page
+
+# CurseForge has no API token that can change a project description. When .curse/ changes on main, this opens an
+# issue that holds the new text, to paste into the project page by hand.
+on:
+  push:
+    branches: [main]
+    paths: [".curse/**"]
+
+permissions:
+  contents: read
+
+jobs:
+  remind:
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - name: Open or update the reminder issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          SHA: ${{ github.sha }}
+        run: |
+          title="Update the CurseForge description"
+          body="$(printf 'Commit %s changed \`.curse/description.md\`.\n\nPaste the file into the project description on CurseForge (markdown editor), then close this issue.\n\n' "$SHA"; echo '````markdown'; cat .curse/description.md; echo '````')"
+          number="$(gh issue list --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')"
+          if [ -n "$number" ]; then
+            gh issue edit "$number" --body "$body"
+          else
+            gh issue create --title "$title" --body "$body"
+          fi
