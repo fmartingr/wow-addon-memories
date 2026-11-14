@@ -160,6 +160,7 @@ read_globals = {
 	"C_Timer",
 	"C_UI",
 	"ChatFontNormal",
+	"ButtonFrameTemplate_HidePortrait",
 	"CreateFrame",
 	"CreateFromMixins",
 	"CreateSettingsButtonInitializer",

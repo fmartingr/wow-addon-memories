@@ -124,6 +124,7 @@ play starts. Deaths and the low-health popup read no `GlobalStrings` name: the k
 | E6 | 4 | Compartment in combat | In a fight, shift + left click the Memories entry in the addon compartment. | It prints "Memories: cannot save in combat." and does not reload. | not run |
 | E7 | 3 | Minimap note | Left click the minimap button. Click it again while the window is open. Then drag the button a little. | The first click opens the Note window. The second click keeps the window and the text. The drag moves the button and does not open the window. | not run |
 | E8 | 3 | Minimap command | Type `/mem minimap` two times. | The first time the button hides and the chat says "Memories: Minimap button hidden.". The second time it shows and the chat says "Memories: Minimap button shown.". The "Minimap button" setting follows. | not run |
+| E9 | 3 | Window frames | Open the Note window, the Journey window and the `/mem errors` box (section R9 has an error to show). | Each window has the Blizzard panel frame without a portrait, its title and a close button. The content sits inside the inset and does not cover the title. Each window moves with a drag, stays on the screen and closes with Escape. | not run |
 
 ## F. Sessions, trail and progress
 

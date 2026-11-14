@@ -28,16 +28,7 @@ local function errorBox()
 	if box then
 		return box
 	end
-	box = CreateFrame("Frame", "MemoriesErrorsFrame", UIParent, "BasicFrameTemplateWithInset")
-	box:SetSize(640, 420)
-	box:SetPoint("CENTER")
-	box:SetFrameStrata("DIALOG")
-	if UISpecialFrames then
-		table.insert(UISpecialFrames, "MemoriesErrorsFrame")
-	end
-	if box.TitleText then
-		box.TitleText:SetText(L["Memories errors"])
-	end
+	box = ns.Window.Create("MemoriesErrorsFrame", 640, 420, L["Memories errors"])
 	local scroll = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", 12, -30)
 	scroll:SetPoint("BOTTOMRIGHT", -32, 12)

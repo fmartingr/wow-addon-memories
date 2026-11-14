@@ -68,26 +68,7 @@ local function onDrop()
 end
 
 local function create()
-	frame = CreateFrame("Frame", "MemoriesNoteFrame", UIParent, "BasicFrameTemplateWithInset")
-	frame:SetSize(420, 290)
-	frame:SetPoint("CENTER")
-	frame:SetFrameStrata("DIALOG")
-	frame:SetMovable(true)
-	frame:SetClampedToScreen(true)
-	frame:EnableMouse(true)
-	frame:RegisterForDrag("LeftButton")
-	frame:SetScript("OnDragStart", function(self)
-		self:StartMoving()
-	end)
-	frame:SetScript("OnDragStop", function(self)
-		self:StopMovingOrSizing()
-	end)
-	if UISpecialFrames then
-		table.insert(UISpecialFrames, "MemoriesNoteFrame")
-	end
-	if frame.TitleText then
-		frame.TitleText:SetText(L["Write a note"])
-	end
+	frame = ns.Window.Create("MemoriesNoteFrame", 420, 290, L["Write a note"])
 
 	local scroll = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", 12, -30)

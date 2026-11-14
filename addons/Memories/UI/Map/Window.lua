@@ -279,29 +279,13 @@ local function onHide()
 end
 
 local function build()
-	local f = CreateFrame("Frame", Window.NAME, UIParent, "BasicFrameTemplateWithInset")
-	f:Hide()
-	f:SetSize(
+	-- It opens from the world map; the DIALOG strata of ns.Window keeps it above the map.
+	local f = ns.Window.Create(
+		Window.NAME,
 		Window.PAD * 3 + Window.MAP_W + ns.MapPanel.WIDTH,
-		Window.TOP + Window.MAP_H + Window.GAP + ns.MapPanel.BAR_HEIGHT + Window.PAD
+		Window.TOP + Window.MAP_H + Window.GAP + ns.MapPanel.BAR_HEIGHT + Window.PAD,
+		L["Journey"]
 	)
-	f:SetPoint("CENTER")
-	-- It opens from the world map, so it sits above the strata of the map and comes to the front on a click.
-	f:SetFrameStrata("DIALOG")
-	f:SetToplevel(true)
-	f:SetClampedToScreen(true)
-	f:SetMovable(true)
-	f:EnableMouse(true)
-	f:RegisterForDrag("LeftButton")
-	f:SetScript("OnDragStart", f.StartMoving)
-	f:SetScript("OnDragStop", f.StopMovingOrSizing)
-	if f.TitleText then
-		f.TitleText:SetText(L["Journey"])
-	end
-	-- Escape closes the window, as it closes the game's own windows.
-	if type(UISpecialFrames) == "table" then
-		table.insert(UISpecialFrames, Window.NAME)
-	end
 	local v = CreateFrame("Frame", nil, f)
 	v:SetPoint("TOPLEFT", Window.PAD, -Window.TOP)
 	v:SetSize(Window.MAP_W, Window.MAP_H)

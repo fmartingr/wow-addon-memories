@@ -53,6 +53,7 @@ UI\Commands.lua
 UI\ErrorLog.lua
 UI\Save.lua
 UI\NoteWindow.lua
+UI\Window.lua
 UI\Minimap.lua
 UI\Guard.lua
 UI\Options.lua
