@@ -16,7 +16,7 @@
 ## Notes-ptBR: Registra coleta, pesca, aberturas e furtos.
 ## Author: Felipe M.
 ## Version: @project-version@
-## X-License: GPL-3.0
+## X-License: GPL-3.0-or-later
 ## X-Curse-Project-ID: 1798189
 ## IconTexture: Interface\AddOns\Memories\assets\icon
 ## Dependencies: Memories

@@ -16,7 +16,7 @@
 ## Notes-ptBR: Registra saque, rolagens de grupo, equipamento, dinheiro, instrutores, a casa de leilões, o correio e negociações.
 ## Author: Felipe M.
 ## Version: @project-version@
-## X-License: GPL-3.0
+## X-License: GPL-3.0-or-later
 ## X-Curse-Project-ID: 1798189
 ## IconTexture: Interface\AddOns\Memories\assets\icon
 ## Dependencies: Memories

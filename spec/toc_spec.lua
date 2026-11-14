@@ -58,7 +58,7 @@ for _, addon in ipairs(ADDONS) do
 		it("names the CurseForge project, the author, the license and the icon", function()
 			assert.is_truthy(toc:match("## X%-Curse%-Project%-ID: %d+"))
 			assert.equal("Felipe M.", field(toc, "Author"))
-			assert.equal("GPL-3.0", field(toc, "X-License"))
+			assert.equal("GPL-3.0-or-later", field(toc, "X-License"))
 			assert.equal(ICON, field(toc, "IconTexture"))
 			assert.is_true(exists("addons/Memories/assets/icon.tga"))
 		end)
