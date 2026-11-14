@@ -147,8 +147,7 @@ local function onUse(bag, slot)
 		return
 	end
 	local item = number(info.itemID)
-	local itemName = item and type(C_Item) == "table" and text(call(C_Item.GetItemNameByID, item))
-	used = { item = item, name = itemName or text(info.itemName), at = GetTime() }
+	used = { item = item, name = h:ItemName(item) or text(info.itemName), at = GetTime() }
 end
 
 -- GUID form Type-0-server-instance-zone-ID-spawn.

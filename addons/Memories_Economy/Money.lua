@@ -211,7 +211,7 @@ end
 -- Auction house ------------------------------------------------------------
 
 local function itemName(id)
-	return id and text(call(api(C_Item, "GetItemNameByID"), id)) or nil
+	return h:ItemName(id)
 end
 
 local function linkName(link)

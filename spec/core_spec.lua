@@ -147,6 +147,39 @@ describe("core", function()
 		end)
 	end)
 
+	describe("ItemName", function()
+		it("returns a loaded name and asks the client to load a missing item one time", function()
+			wow.items[6948] = "Piedra de hogar"
+			assert.equal("Piedra de hogar", ns.ItemName(6948))
+			assert.is_nil(ns.ItemName(19019))
+			assert.is_nil(ns.ItemName(19019))
+			assert.same({ 19019 }, wow.item_loads)
+			assert.is_nil(ns.ItemName("19019"))
+		end)
+
+		it("emits ITEM_NAME once when an asked item arrives, and ignores other items", function()
+			local got = {}
+			ns.Listen("ITEM_NAME", function(_, id, name)
+				got[#got + 1] = id .. "=" .. tostring(name)
+			end)
+			ns.ItemName(19019)
+			wow.items[19019] = "Trueno"
+			wow.fire("GET_ITEM_INFO_RECEIVED", 2589, true)
+			wow.fire("GET_ITEM_INFO_RECEIVED", 19019, true)
+			wow.fire("GET_ITEM_INFO_RECEIVED", 19019, true)
+			assert.same({ "19019=Trueno" }, got)
+			assert.equal("Trueno", ns.ItemName(19019))
+			assert.same({ 19019 }, wow.item_loads)
+		end)
+
+		it("hides a secret name and asks for nothing without the load API", function()
+			wow.items[1] = wow.secret("x")
+			_G.C_Item.RequestLoadItemDataByID = nil
+			assert.is_nil(ns.ItemName(1))
+			assert.same({}, wow.item_loads)
+		end)
+	end)
+
 	describe("Listen and Emit", function()
 		it("calls each handler in order with the message and its arguments", function()
 			local calls = {}

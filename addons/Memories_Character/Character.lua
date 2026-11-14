@@ -421,7 +421,7 @@ local function credit(drop, cast)
 	if h:NewOnly("consumables") then
 		lines = before == 0 and 1 or 0
 	end
-	local name = names[id] or text(call(api(C_Item, "GetItemNameByID"), id)) or "?"
+	local name = names[id] or h:ItemName(id) or "?"
 	for _ = 1, lines do
 		h:Write("cu", id, kind, name, combat and "1" or nil)
 	end

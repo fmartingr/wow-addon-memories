@@ -160,6 +160,7 @@ apply:
 | `h:Coalesce(key, delay, fn)` | one pending timer per key; keys are per addon |
 | `h:AfterCombat(key, fn)` | now out of combat, else after it; keys are per addon |
 | `h:SpellName(id)` | the localized spell name, or nil |
+| `h:ItemName(id)` | the localized item name, or nil while the client has not loaded the item. The first miss asks the client to load it, one time, and `ITEM_NAME` follows. |
 | `h:Utf8Cut(s, maxBytes)` | cuts at a whole UTF-8 character |
 
 Rules:
@@ -190,6 +191,7 @@ A `/reload` in combat starts a new fight at login.
 | Message | Arguments | From |
 |---|---|---|
 | `LOGIN` | — | after every `OnLogin` of the core and of the sub-addons that registered before login |
+| `ITEM_NAME` | `id, name` | an item that `h:ItemName` asked for has loaded |
 | `LINE_WRITTEN` | `addon, kind, line, ev` | every journal line; `ev` is the decoded line, shared by all listeners: do not change it |
 | `FIGHT_START` | — | `PLAYER_REGEN_DISABLED` |
 | `FIGHT_END` | `fight` | `PLAYER_REGEN_ENABLED` |

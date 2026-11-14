@@ -85,6 +85,55 @@ ns.OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function()
 	end
 end, "fight")
 
+-- Item names ---------------------------------------------------------------
+
+-- pending[id] is true while the client loads an item that ns.ItemName asked for; false once it asked.
+local pending = {}
+local watching = false
+
+local function nameNow(id)
+	local get = type(C_Item) == "table" and C_Item.GetItemNameByID
+	if type(get) ~= "function" then
+		return nil
+	end
+	local ok, name = pcall(get, id)
+	name = ok and ns.R(name) or nil
+	return type(name) == "string" and name ~= "" and name or nil
+end
+
+local function onItemInfo(_, id, ok)
+	if pending[id] then
+		pending[id] = false
+		if ok then
+			ns.Emit("ITEM_NAME", id, nameNow(id))
+		end
+	end
+end
+
+-- The name of an item, or nil while the client has not loaded it. The first miss of an item asks the client to load
+-- it, one time. GET_ITEM_INFO_RECEIVED then emits ITEM_NAME, so a window can draw the name. A journal line is written
+-- once, so a recorder gets the name from the next call.
+function ns.ItemName(id)
+	if type(id) ~= "number" then
+		return nil
+	end
+	local name = nameNow(id)
+	if name or pending[id] ~= nil then
+		return name
+	end
+	local load = type(C_Item) == "table" and C_Item.RequestLoadItemDataByID
+	if type(load) ~= "function" then
+		return nil
+	end
+	pending[id] = true
+	if not watching then
+		watching = true
+		ns.On("GET_ITEM_INFO_RECEIVED", onItemInfo, "item names")
+	end
+	pcall(load, id)
+	return nil
+end
+
 -- The handle is the only way a sub-addon reaches the core. Its journal stays private in entries.
 local Handle = {}
 Handle.__index = Handle
@@ -222,6 +271,10 @@ end
 
 function Handle:SpellName(id)
 	return (ns.R(U.SpellName(id)))
+end
+
+function Handle:ItemName(id)
+	return ns.ItemName(id)
 end
 
 function Handle:Utf8Cut(s, n)

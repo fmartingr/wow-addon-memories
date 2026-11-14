@@ -1239,9 +1239,13 @@ local function install_loot()
 		end,
 		UseContainerItem = noop,
 	}
+	wow.item_loads = {}
 	_G.C_Item = {
 		GetItemNameByID = function(id)
 			return wow.items[id]
+		end,
+		RequestLoadItemDataByID = function(id)
+			wow.item_loads[#wow.item_loads + 1] = id
 		end,
 	}
 end
