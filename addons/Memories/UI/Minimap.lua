@@ -24,11 +24,11 @@ end
 
 function Minimap.OnTooltipShow(tooltip)
 	tooltip:AddLine("Memories")
-	tooltip:AddLine(L["%d min since the last save"]:format(math.floor(ns.Save.Age() / 60)), 1, 1, 1)
-	tooltip:AddLine(L["Left click: write a note"])
-	tooltip:AddLine(L["Shift + left click: save (reload)"])
-	tooltip:AddLine(L["Right click: settings"])
-	tooltip:AddLine(L["Drag: move the button"])
+	tooltip:AddLine(L.STATUS_SINCE_SAVE:format(math.floor(ns.Save.Age() / 60)), 1, 1, 1)
+	tooltip:AddLine(L.HINT_LEFT_NOTE)
+	tooltip:AddLine(L.HINT_SHIFT_SAVE)
+	tooltip:AddLine(L.HINT_RIGHT_SETTINGS)
+	tooltip:AddLine(L.HINT_DRAG)
 end
 
 -- LibDBIcon writes the position into its table. A MemoriesDB from a newer Memories is never written, so it gets a
@@ -129,14 +129,14 @@ end
 function Minimap.Toggle()
 	local shown = not ns.Settings.Get("minimapButton")
 	ns.Settings.Set("minimapButton", shown)
-	ns.Print(shown and L["Minimap button shown."] or L["Minimap button hidden."])
+	ns.Print(shown and L.MINIMAP_SHOWN or L.MINIMAP_HIDDEN)
 end
 
-ns.Commands.Register("minimap", Minimap.Toggle, "show or hide the minimap button")
+ns.Commands.Register("minimap", Minimap.Toggle, "HELP_MINIMAP")
 ns.Listen("LOGIN", Minimap.Register, "minimap")
 ns.Listen("SAVE_REMINDER", function()
 	Minimap.Pulse(true)
 end, "minimap")
-ns.Settings.AddToggle("minimapButton", "Minimap button", "Shows the Memories button on the minimap.", true)
+ns.Settings.AddToggle("minimapButton", "SET_MINIMAP", "MINIMAP_TIP", true)
 -- LibDBIcon reads minimap.hide; the minimapButton setting decides it.
 ns.Settings.OnChange("minimapButton", Minimap.Apply)

@@ -24,7 +24,7 @@ function Commands.Register(name, fn, helpKey)
 end
 
 function Commands.PrintHelp()
-	ns.Print(L["Commands:"])
+	ns.Print(L.HELP_HEADER)
 	for _, entry in ipairs(entries) do
 		ns.Print(("%s %s - %s"):format(COMMAND, entry.name, entry.helpKey and L[entry.helpKey] or ""))
 	end
@@ -37,10 +37,10 @@ function Commands.Dispatch(msg)
 		Commands.PrintHelp()
 		return
 	end
-	ns.ProtectWith(L["The command failed. Some functions can be missing."], "slash:" .. entry.name, entry.fn, rest)
+	ns.ProtectWith(L.COMMAND_FAILED, "slash:" .. entry.name, entry.fn, rest)
 end
 
-Commands.Register("help", Commands.PrintHelp, "show this list")
+Commands.Register("help", Commands.PrintHelp, "HELP_HELP")
 
 SLASH_MEMORIES1 = COMMAND
 SLASH_MEMORIES2 = "/mem"

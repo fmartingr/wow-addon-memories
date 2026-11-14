@@ -284,7 +284,7 @@ local function build()
 		Window.NAME,
 		Window.PAD * 3 + Window.MAP_W + ns.MapPanel.WIDTH,
 		Window.TOP + Window.MAP_H + Window.GAP + ns.MapPanel.BAR_HEIGHT + Window.PAD,
-		L["Journey"]
+		L.JOURNEY
 	)
 	local v = CreateFrame("Frame", nil, f)
 	v:SetPoint("TOPLEFT", Window.PAD, -Window.TOP)
@@ -309,7 +309,7 @@ local function build()
 	f.up = CreateFrame("Button", nil, top, "UIPanelButtonTemplate")
 	f.up:SetSize(60, 22)
 	f.up:SetPoint("TOPRIGHT", -8, -8)
-	f.up:SetText(L["Up"])
+	f.up:SetText(L.UP)
 	f.up:SetEnabled(false)
 	f.up:SetScript("OnClick", function()
 		ns.Protect("journey window:up", Window.Up)

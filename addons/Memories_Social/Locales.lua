@@ -1,78 +1,106 @@
 local _, ns = ...
 
-local T = {
-	-- Machine translated. Corrections are welcome.
-	deDE = {
-		["Battleground ended"] = "Schlachtfeld beendet",
-		["Duel"] = "Duell",
-		["Enemy player met"] = "Feindlichen Spieler getroffen",
-		["Honor gained"] = "Ehre erhalten",
-		["Joined a group"] = "Gruppe beigetreten",
-		["Left a group"] = "Gruppe verlassen",
-		["Memories is not loaded."] = "Memories ist nicht geladen.",
-		["Own guild changed"] = "Eigene Gilde geändert",
-		["PvP kill or death"] = "PvP-Sieg oder -Tod",
-		["PvP rank changed"] = "PvP-Rang geändert",
-	},
-	-- Machine translated. Corrections are welcome.
-	frFR = {
-		["Battleground ended"] = "Champ de bataille terminé",
-		["Duel"] = "Duel",
-		["Enemy player met"] = "Joueur ennemi rencontré",
-		["Honor gained"] = "Honneur gagné",
-		["Joined a group"] = "Groupe rejoint",
-		["Left a group"] = "Groupe quitté",
-		["Memories is not loaded."] = "Memories n'est pas chargé.",
-		["Own guild changed"] = "Guilde modifiée",
-		["PvP kill or death"] = "Victoire ou mort en JcJ",
-		["PvP rank changed"] = "Rang JcJ modifié",
-	},
-	-- Machine translated. Corrections are welcome.
-	esES = {
-		["Battleground ended"] = "Campo de batalla terminado",
-		["Duel"] = "Duelo",
-		["Enemy player met"] = "Jugador enemigo encontrado",
-		["Honor gained"] = "Honor obtenido",
-		["Joined a group"] = "Se unió a un grupo",
-		["Left a group"] = "Salió de un grupo",
-		["Memories is not loaded."] = "Memories no está cargado.",
-		["Own guild changed"] = "Hermandad propia cambiada",
-		["PvP kill or death"] = "Muerte o baja en JcJ",
-		["PvP rank changed"] = "Rango JcJ cambiado",
-	},
-	-- Machine translated. Corrections are welcome.
-	itIT = {
-		["Battleground ended"] = "Campo di battaglia terminato",
-		["Duel"] = "Duello",
-		["Enemy player met"] = "Giocatore nemico incontrato",
-		["Honor gained"] = "Onore ottenuto",
-		["Joined a group"] = "Entrato in un gruppo",
-		["Left a group"] = "Uscito da un gruppo",
-		["Memories is not loaded."] = "Memories non è caricato.",
-		["Own guild changed"] = "Gilda cambiata",
-		["PvP kill or death"] = "Uccisione o morte in PvP",
-		["PvP rank changed"] = "Grado PvP cambiato",
-	},
-	-- Machine translated. Corrections are welcome.
-	ptBR = {
-		["Battleground ended"] = "Campo de batalha encerrado",
-		["Duel"] = "Duelo",
-		["Enemy player met"] = "Jogador inimigo encontrado",
-		["Honor gained"] = "Honra ganha",
-		["Joined a group"] = "Entrou em um grupo",
-		["Left a group"] = "Saiu de um grupo",
-		["Memories is not loaded."] = "Memories não está carregado.",
-		["Own guild changed"] = "Própria guilda alterada",
-		["PvP kill or death"] = "Abate ou morte em JxJ",
-		["PvP rank changed"] = "Patente de JxJ alterada",
-	},
-}
-T.esMX = T.esES
+ns.locales = {}
+local locales = ns.locales
 
-local found = T[GetLocale and GetLocale()] or {}
+locales.enUS = {
+	BATTLEGROUND_ENDED = "Battleground ended",
+	CORE_MISSING = "Memories is not loaded.",
+	DUEL = "Duel",
+	ENEMY_PLAYER_MET = "Enemy player met",
+	HONOR_GAINED = "Honor gained",
+	JOINED_GROUP = "Joined a group",
+	LEFT_GROUP = "Left a group",
+	OWN_GUILD_CHANGED = "Own guild changed",
+	PVP_KILL_OR_DEATH = "PvP kill or death",
+	PVP_RANK_CHANGED = "PvP rank changed",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.deDE = {
+	BATTLEGROUND_ENDED = "Schlachtfeld beendet",
+	CORE_MISSING = "Memories ist nicht geladen.",
+	DUEL = "Duell",
+	ENEMY_PLAYER_MET = "Feindlichen Spieler getroffen",
+	HONOR_GAINED = "Ehre erhalten",
+	JOINED_GROUP = "Gruppe beigetreten",
+	LEFT_GROUP = "Gruppe verlassen",
+	OWN_GUILD_CHANGED = "Eigene Gilde geändert",
+	PVP_KILL_OR_DEATH = "PvP-Sieg oder -Tod",
+	PVP_RANK_CHANGED = "PvP-Rang geändert",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.esES = {
+	BATTLEGROUND_ENDED = "Campo de batalla terminado",
+	CORE_MISSING = "Memories no está cargado.",
+	DUEL = "Duelo",
+	ENEMY_PLAYER_MET = "Jugador enemigo encontrado",
+	HONOR_GAINED = "Honor obtenido",
+	JOINED_GROUP = "Se unió a un grupo",
+	LEFT_GROUP = "Salió de un grupo",
+	OWN_GUILD_CHANGED = "Hermandad propia cambiada",
+	PVP_KILL_OR_DEATH = "Muerte o baja en JcJ",
+	PVP_RANK_CHANGED = "Rango JcJ cambiado",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.frFR = {
+	BATTLEGROUND_ENDED = "Champ de bataille terminé",
+	CORE_MISSING = "Memories n'est pas chargé.",
+	DUEL = "Duel",
+	ENEMY_PLAYER_MET = "Joueur ennemi rencontré",
+	HONOR_GAINED = "Honneur gagné",
+	JOINED_GROUP = "Groupe rejoint",
+	LEFT_GROUP = "Groupe quitté",
+	OWN_GUILD_CHANGED = "Guilde modifiée",
+	PVP_KILL_OR_DEATH = "Victoire ou mort en JcJ",
+	PVP_RANK_CHANGED = "Rang JcJ modifié",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.itIT = {
+	BATTLEGROUND_ENDED = "Campo di battaglia terminato",
+	CORE_MISSING = "Memories non è caricato.",
+	DUEL = "Duello",
+	ENEMY_PLAYER_MET = "Giocatore nemico incontrato",
+	HONOR_GAINED = "Onore ottenuto",
+	JOINED_GROUP = "Entrato in un gruppo",
+	LEFT_GROUP = "Uscito da un gruppo",
+	OWN_GUILD_CHANGED = "Gilda cambiata",
+	PVP_KILL_OR_DEATH = "Uccisione o morte in PvP",
+	PVP_RANK_CHANGED = "Grado PvP cambiato",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.ptBR = {
+	BATTLEGROUND_ENDED = "Campo de batalha encerrado",
+	CORE_MISSING = "Memories não está carregado.",
+	DUEL = "Duelo",
+	ENEMY_PLAYER_MET = "Jogador inimigo encontrado",
+	HONOR_GAINED = "Honra ganha",
+	JOINED_GROUP = "Entrou em um grupo",
+	LEFT_GROUP = "Saiu de um grupo",
+	OWN_GUILD_CHANGED = "Própria guilda alterada",
+	PVP_KILL_OR_DEATH = "Abate ou morte em JxJ",
+	PVP_RANK_CHANGED = "Patente de JxJ alterada",
+}
+
+locales.enGB = locales.enUS
+locales.esMX = locales.esES
+
+local active = locales[GetLocale and GetLocale()] or locales.enUS
+local fallback = locales.enUS
 
 ns.L = setmetatable({}, {
 	__index = function(_, key)
-		return found[key] or key
+		local text = active[key] or fallback[key]
+		if text then
+			return text
+		end
+		if ns.debug and ns.ReportOnce then
+			ns.ReportOnce("missing-" .. tostring(key), "Missing text key: " .. tostring(key))
+		end
+		return tostring(key)
 	end,
 })

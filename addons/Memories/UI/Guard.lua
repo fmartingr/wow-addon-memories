@@ -12,8 +12,8 @@ local showing
 local restored = false
 
 function Guard.Text(addon, rec)
-	local stamp = type(rec.t) == "number" and date("%Y-%m-%d %H:%M", rec.t) or L["an unknown date"]
-	return L["Memories: %s came back empty. A backup from %s has %s lines."]:format(addon, stamp, tostring(rec.lines))
+	local stamp = type(rec.t) == "number" and date("%Y-%m-%d %H:%M", rec.t) or L.UNKNOWN_DATE
+	return L.GUARD_EMPTY:format(addon, stamp, tostring(rec.lines))
 end
 
 local function showNext()
@@ -53,7 +53,7 @@ function Guard.Restore(addon)
 	if ok then
 		restored = true
 	else
-		ns.Print(L["%s: the backup was not restored (%s). See /memories errors."]:format(addon, tostring(err)))
+		ns.Print(L.GUARD_FAILED:format(addon, tostring(err)))
 	end
 	return ok
 end
@@ -95,8 +95,8 @@ end
 
 StaticPopupDialogs[GUARD] = {
 	text = "%s",
-	button1 = L["Restore"],
-	button2 = L["Start fresh"],
+	button1 = L.RESTORE,
+	button2 = L.START_FRESH,
 	OnAccept = function(_, addon)
 		ns.Protect("guard:restore", Guard.Restore, addon)
 		answered()
@@ -120,9 +120,9 @@ StaticPopupDialogs[GUARD] = {
 }
 
 StaticPopupDialogs[RELOAD] = {
-	text = L["Memories: backup restored. Reload the UI now to save it?"],
-	button1 = L["Reload"],
-	button2 = L["Later"],
+	text = L.GUARD_RESTORED,
+	button1 = L.RELOAD,
+	button2 = L.LATER,
 	OnAccept = function()
 		ns.Protect("guard:reload", ns.Save.Now)
 	end,

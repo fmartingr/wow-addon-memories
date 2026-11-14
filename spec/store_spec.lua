@@ -3,7 +3,7 @@ local wow = require("helpers.wow")
 describe("store", function()
 	wow.pin_locale("enUS", before_each, after_each)
 
-	local NEWER = "Memories: saved data from a newer version; this addon will not write"
+	local NEWER = "Memories: The saved data comes from a newer version. Memories does not save changes."
 
 	local function lines(journal)
 		local out = {}

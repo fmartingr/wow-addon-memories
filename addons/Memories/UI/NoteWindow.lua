@@ -16,11 +16,11 @@ local typing = false
 
 local function reasonText(why)
 	if why == "empty" then
-		return L["the note is empty."]
+		return L.NOTE_IS_EMPTY
 	elseif why == "off" then
-		return L["notes are off in the settings."]
+		return L.NOTES_OFF
 	end
-	return L["the journal is read only; the note was not saved."]
+	return L.NOTE_READ_ONLY
 end
 
 local function refresh()
@@ -41,13 +41,13 @@ local function trySave()
 		return
 	end
 	frame:Hide()
-	ns.Print(L["note saved."])
+	ns.Print(L.NOTE_SAVED)
 end
 
 -- Puts a token at the cursor when it fits in the bytes that are left.
 local function insert(token)
 	if #(edit:GetText() or "") + #token > Notes.MAX then
-		ns.Print(L["the link does not fit in the note."])
+		ns.Print(L.NOTE_LINK_TOO_LONG)
 		return false
 	end
 	edit:Insert(token)
@@ -68,7 +68,7 @@ local function onDrop()
 end
 
 local function create()
-	frame = ns.Window.Create("MemoriesNoteFrame", 420, 290, L["Write a note"])
+	frame = ns.Window.Create("MemoriesNoteFrame", 420, 290, L.WRITE_NOTE)
 
 	local scroll = CreateFrame("ScrollFrame", nil, frame, "UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", 12, -30)
@@ -105,21 +105,21 @@ local function create()
 	hint:SetPoint("BOTTOMLEFT", 14, 60)
 	hint:SetWidth(392)
 	hint:SetJustifyH("LEFT")
-	hint:SetText(L["Line breaks become spaces. Shift-click an item or quest to link it."])
+	hint:SetText(L.NOTE_HINT)
 	counter = frame:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	counter:SetPoint("BOTTOMRIGHT", -14, 42)
 
 	save = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 	save:SetSize(100, 24)
 	save:SetPoint("BOTTOMRIGHT", -14, 12)
-	save:SetText(L["Save"])
+	save:SetText(L.SAVE)
 	save:SetScript("OnClick", function()
 		ns.Protect("notewindow:save", trySave)
 	end)
 	local cancel = CreateFrame("Button", nil, frame, "UIPanelButtonTemplate")
 	cancel:SetSize(100, 24)
 	cancel:SetPoint("RIGHT", save, "LEFT", -6, 0)
-	cancel:SetText(L["Cancel"])
+	cancel:SetText(L.CANCEL)
 	cancel:SetScript("OnClick", function()
 		frame:Hide()
 	end)
@@ -179,4 +179,4 @@ ns.Listen("LOGIN", function()
 	ns.U.Hook(nil, "ChatEdit_InsertLink", onInsertLink, "notes:link")
 end, "notewindow")
 
-ns.Commands.Register("note", NoteWindow.Open, "write a note in the journey")
+ns.Commands.Register("note", NoteWindow.Open, "HELP_NOTE")

@@ -1,93 +1,124 @@
 local _, ns = ...
 
-local T = {
-	-- Machine translated. Corrections are welcome.
-	deDE = {
-		["Consumables: new findings only"] = "Verbrauchsgüter: nur neue Funde",
-		["Hearthstone bound"] = "Ruhestein gebunden",
-		["Learned a flight path"] = "Flugroute gelernt",
-		["Learned a recipe"] = "Rezept gelernt",
-		["Learned a spell"] = "Zauber gelernt",
-		["Memories is not loaded."] = "Memories ist nicht geladen.",
-		["Quest accepted"] = "Quest angenommen",
-		["Read a book"] = "Buch gelesen",
-		["Reputation changed"] = "Ruf geändert",
-		["Skill changed"] = "Fertigkeit geändert",
-		["Talent points"] = "Talentpunkte",
-		["Tamed a beast"] = "Wildtier gezähmt",
-		["Used a consumable"] = "Verbrauchsgut benutzt",
-	},
-	-- Machine translated. Corrections are welcome.
-	frFR = {
-		["Consumables: new findings only"] = "Consommables : nouvelles trouvailles uniquement",
-		["Hearthstone bound"] = "Pierre de foyer liée",
-		["Learned a flight path"] = "Trajet de vol appris",
-		["Learned a recipe"] = "Recette apprise",
-		["Learned a spell"] = "Sort appris",
-		["Memories is not loaded."] = "Memories n'est pas chargé.",
-		["Quest accepted"] = "Quête acceptée",
-		["Read a book"] = "Livre lu",
-		["Reputation changed"] = "Réputation modifiée",
-		["Skill changed"] = "Compétence modifiée",
-		["Talent points"] = "Points de talent",
-		["Tamed a beast"] = "Bête apprivoisée",
-		["Used a consumable"] = "Consommable utilisé",
-	},
-	-- Machine translated. Corrections are welcome.
-	esES = {
-		["Consumables: new findings only"] = "Consumibles: solo hallazgos nuevos",
-		["Hearthstone bound"] = "Piedra de hogar vinculada",
-		["Learned a flight path"] = "Ruta de vuelo aprendida",
-		["Learned a recipe"] = "Receta aprendida",
-		["Learned a spell"] = "Hechizo aprendido",
-		["Memories is not loaded."] = "Memories no está cargado.",
-		["Quest accepted"] = "Misión aceptada",
-		["Read a book"] = "Libro leído",
-		["Reputation changed"] = "Reputación cambiada",
-		["Skill changed"] = "Habilidad cambiada",
-		["Talent points"] = "Puntos de talento",
-		["Tamed a beast"] = "Bestia domada",
-		["Used a consumable"] = "Consumible usado",
-	},
-	-- Machine translated. Corrections are welcome.
-	itIT = {
-		["Consumables: new findings only"] = "Consumabili: solo nuovi ritrovamenti",
-		["Hearthstone bound"] = "Pietra del Ritorno vincolata",
-		["Learned a flight path"] = "Rotta di volo appresa",
-		["Learned a recipe"] = "Ricetta appresa",
-		["Learned a spell"] = "Incantesimo appreso",
-		["Memories is not loaded."] = "Memories non è caricato.",
-		["Quest accepted"] = "Missione accettata",
-		["Read a book"] = "Libro letto",
-		["Reputation changed"] = "Reputazione cambiata",
-		["Skill changed"] = "Abilità cambiata",
-		["Talent points"] = "Punti talento",
-		["Tamed a beast"] = "Bestia domata",
-		["Used a consumable"] = "Consumabile usato",
-	},
-	-- Machine translated. Corrections are welcome.
-	ptBR = {
-		["Consumables: new findings only"] = "Consumíveis: apenas novos achados",
-		["Hearthstone bound"] = "Pedra de Regresso vinculada",
-		["Learned a flight path"] = "Rota de voo aprendida",
-		["Learned a recipe"] = "Receita aprendida",
-		["Learned a spell"] = "Feitiço aprendido",
-		["Memories is not loaded."] = "Memories não está carregado.",
-		["Quest accepted"] = "Missão aceita",
-		["Read a book"] = "Livro lido",
-		["Reputation changed"] = "Reputação alterada",
-		["Skill changed"] = "Habilidade alterada",
-		["Talent points"] = "Pontos de talento",
-		["Tamed a beast"] = "Fera domada",
-		["Used a consumable"] = "Consumível usado",
-	},
-}
-T.esMX = T.esES
+ns.locales = {}
+local locales = ns.locales
 
-local found = T[GetLocale and GetLocale()] or {}
+locales.enUS = {
+	CONSUMABLES_NEW_FINDINGS_ONLY = "Consumables: new findings only",
+	CORE_MISSING = "Memories is not loaded.",
+	HEARTHSTONE_BOUND = "Hearthstone bound",
+	LEARNED_FLIGHT_PATH = "Learned a flight path",
+	LEARNED_RECIPE = "Learned a recipe",
+	LEARNED_SPELL = "Learned a spell",
+	QUEST_ACCEPTED = "Quest accepted",
+	READ_BOOK = "Read a book",
+	REPUTATION_CHANGED = "Reputation changed",
+	SKILL_CHANGED = "Skill changed",
+	TALENT_POINTS = "Talent points",
+	TAMED_BEAST = "Tamed a beast",
+	USED_CONSUMABLE = "Used a consumable",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.deDE = {
+	CONSUMABLES_NEW_FINDINGS_ONLY = "Verbrauchsgüter: nur neue Funde",
+	CORE_MISSING = "Memories ist nicht geladen.",
+	HEARTHSTONE_BOUND = "Ruhestein gebunden",
+	LEARNED_FLIGHT_PATH = "Flugroute gelernt",
+	LEARNED_RECIPE = "Rezept gelernt",
+	LEARNED_SPELL = "Zauber gelernt",
+	QUEST_ACCEPTED = "Quest angenommen",
+	READ_BOOK = "Buch gelesen",
+	REPUTATION_CHANGED = "Ruf geändert",
+	SKILL_CHANGED = "Fertigkeit geändert",
+	TALENT_POINTS = "Talentpunkte",
+	TAMED_BEAST = "Wildtier gezähmt",
+	USED_CONSUMABLE = "Verbrauchsgut benutzt",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.esES = {
+	CONSUMABLES_NEW_FINDINGS_ONLY = "Consumibles: solo hallazgos nuevos",
+	CORE_MISSING = "Memories no está cargado.",
+	HEARTHSTONE_BOUND = "Piedra de hogar vinculada",
+	LEARNED_FLIGHT_PATH = "Ruta de vuelo aprendida",
+	LEARNED_RECIPE = "Receta aprendida",
+	LEARNED_SPELL = "Hechizo aprendido",
+	QUEST_ACCEPTED = "Misión aceptada",
+	READ_BOOK = "Libro leído",
+	REPUTATION_CHANGED = "Reputación cambiada",
+	SKILL_CHANGED = "Habilidad cambiada",
+	TALENT_POINTS = "Puntos de talento",
+	TAMED_BEAST = "Bestia domada",
+	USED_CONSUMABLE = "Consumible usado",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.frFR = {
+	CONSUMABLES_NEW_FINDINGS_ONLY = "Consommables : nouvelles trouvailles uniquement",
+	CORE_MISSING = "Memories n'est pas chargé.",
+	HEARTHSTONE_BOUND = "Pierre de foyer liée",
+	LEARNED_FLIGHT_PATH = "Trajet de vol appris",
+	LEARNED_RECIPE = "Recette apprise",
+	LEARNED_SPELL = "Sort appris",
+	QUEST_ACCEPTED = "Quête acceptée",
+	READ_BOOK = "Livre lu",
+	REPUTATION_CHANGED = "Réputation modifiée",
+	SKILL_CHANGED = "Compétence modifiée",
+	TALENT_POINTS = "Points de talent",
+	TAMED_BEAST = "Bête apprivoisée",
+	USED_CONSUMABLE = "Consommable utilisé",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.itIT = {
+	CONSUMABLES_NEW_FINDINGS_ONLY = "Consumabili: solo nuovi ritrovamenti",
+	CORE_MISSING = "Memories non è caricato.",
+	HEARTHSTONE_BOUND = "Pietra del Ritorno vincolata",
+	LEARNED_FLIGHT_PATH = "Rotta di volo appresa",
+	LEARNED_RECIPE = "Ricetta appresa",
+	LEARNED_SPELL = "Incantesimo appreso",
+	QUEST_ACCEPTED = "Missione accettata",
+	READ_BOOK = "Libro letto",
+	REPUTATION_CHANGED = "Reputazione cambiata",
+	SKILL_CHANGED = "Abilità cambiata",
+	TALENT_POINTS = "Punti talento",
+	TAMED_BEAST = "Bestia domata",
+	USED_CONSUMABLE = "Consumabile usato",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.ptBR = {
+	CONSUMABLES_NEW_FINDINGS_ONLY = "Consumíveis: apenas novos achados",
+	CORE_MISSING = "Memories não está carregado.",
+	HEARTHSTONE_BOUND = "Pedra de Regresso vinculada",
+	LEARNED_FLIGHT_PATH = "Rota de voo aprendida",
+	LEARNED_RECIPE = "Receita aprendida",
+	LEARNED_SPELL = "Feitiço aprendido",
+	QUEST_ACCEPTED = "Missão aceita",
+	READ_BOOK = "Livro lido",
+	REPUTATION_CHANGED = "Reputação alterada",
+	SKILL_CHANGED = "Habilidade alterada",
+	TALENT_POINTS = "Pontos de talento",
+	TAMED_BEAST = "Fera domada",
+	USED_CONSUMABLE = "Consumível usado",
+}
+
+locales.enGB = locales.enUS
+locales.esMX = locales.esES
+
+local active = locales[GetLocale and GetLocale()] or locales.enUS
+local fallback = locales.enUS
 
 ns.L = setmetatable({}, {
 	__index = function(_, key)
-		return found[key] or key
+		local text = active[key] or fallback[key]
+		if text then
+			return text
+		end
+		if ns.debug and ns.ReportOnce then
+			ns.ReportOnce("missing-" .. tostring(key), "Missing text key: " .. tostring(key))
+		end
+		return tostring(key)
 	end,
 })

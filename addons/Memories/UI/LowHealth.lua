@@ -12,9 +12,9 @@ LowHealth.CVAR = "doNotFlashLowHealthWarning"
 local CVAR = LowHealth.CVAR
 local POPUP = "MEMORIES_LOW_HEALTH"
 
-LowHealth.TITLE = L["Memories needs this setting on"]
+LowHealth.TITLE = L.LOW_HEALTH_ASK
 LowHealth.BODY =
-	L["Memories needs the low-health flash to record close calls. With it off, close calls are not counted."]
+	L.LOW_HEALTH_WHY
 
 local dialog
 -- The value of our own CVar write, so its CVAR_UPDATE is no change by the player.
@@ -78,8 +78,8 @@ end
 
 StaticPopupDialogs[POPUP] = {
 	text = "|cffffd100" .. LowHealth.TITLE .. "|r\n\n" .. LowHealth.BODY,
-	button1 = L["Keep it on"],
-	button2 = L["Turn it off"],
+	button1 = L.KEEP_IT_ON,
+	button2 = L.TURN_IT_OFF,
 	OnAccept = function()
 		ns.Protect("low health:on", LowHealth.Set, true)
 	end,
@@ -134,8 +134,8 @@ end, "low health")
 
 ns.Settings.AddToggle(
 	"lowHealthFlash",
-	"Low-health flash",
-	"Keeps the game's low-health flash on, so Memories can record close calls.",
+	"LOW_HEALTH_FLASH",
+	"LOW_HEALTH_FLASH_TIP",
 	true
 )
 

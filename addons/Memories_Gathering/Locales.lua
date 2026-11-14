@@ -1,58 +1,82 @@
 local _, ns = ...
 
-local T = {
-	-- Machine translated. Corrections are welcome.
-	deDE = {
-		["Caught while fishing"] = "Beim Angeln gefangen",
-		["Gathered"] = "Gesammelt",
-		["Gathering: new findings only"] = "Sammeln: nur neue Funde",
-		["Memories is not loaded."] = "Memories ist nicht geladen.",
-		["Opened a container or chest"] = "Behälter oder Truhe geöffnet",
-		["Picked a pocket"] = "Taschendiebstahl",
-	},
-	-- Machine translated. Corrections are welcome.
-	frFR = {
-		["Caught while fishing"] = "Pêché",
-		["Gathered"] = "Récolté",
-		["Gathering: new findings only"] = "Récolte : nouvelles trouvailles uniquement",
-		["Memories is not loaded."] = "Memories n'est pas chargé.",
-		["Opened a container or chest"] = "Conteneur ou coffre ouvert",
-		["Picked a pocket"] = "Vol à la tire",
-	},
-	-- Machine translated. Corrections are welcome.
-	esES = {
-		["Caught while fishing"] = "Pescado",
-		["Gathered"] = "Recolectado",
-		["Gathering: new findings only"] = "Recolección: solo hallazgos nuevos",
-		["Memories is not loaded."] = "Memories no está cargado.",
-		["Opened a container or chest"] = "Contenedor o cofre abierto",
-		["Picked a pocket"] = "Bolsillo robado",
-	},
-	-- Machine translated. Corrections are welcome.
-	itIT = {
-		["Caught while fishing"] = "Pescato",
-		["Gathered"] = "Raccolto",
-		["Gathering: new findings only"] = "Raccolta: solo nuovi ritrovamenti",
-		["Memories is not loaded."] = "Memories non è caricato.",
-		["Opened a container or chest"] = "Contenitore o forziere aperto",
-		["Picked a pocket"] = "Borseggio",
-	},
-	-- Machine translated. Corrections are welcome.
-	ptBR = {
-		["Caught while fishing"] = "Pescado",
-		["Gathered"] = "Coletado",
-		["Gathering: new findings only"] = "Coleta: apenas novos achados",
-		["Memories is not loaded."] = "Memories não está carregado.",
-		["Opened a container or chest"] = "Recipiente ou baú aberto",
-		["Picked a pocket"] = "Furto",
-	},
-}
-T.esMX = T.esES
+ns.locales = {}
+local locales = ns.locales
 
-local found = T[GetLocale and GetLocale()] or {}
+locales.enUS = {
+	CAUGHT_WHILE_FISHING = "Caught while fishing",
+	CORE_MISSING = "Memories is not loaded.",
+	GATHERED = "Gathered",
+	GATHERING_NEW_FINDINGS_ONLY = "Gathering: new findings only",
+	OPENED_CONTAINER_OR_CHEST = "Opened a container or chest",
+	PICKED_POCKET = "Picked a pocket",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.deDE = {
+	CAUGHT_WHILE_FISHING = "Beim Angeln gefangen",
+	CORE_MISSING = "Memories ist nicht geladen.",
+	GATHERED = "Gesammelt",
+	GATHERING_NEW_FINDINGS_ONLY = "Sammeln: nur neue Funde",
+	OPENED_CONTAINER_OR_CHEST = "Behälter oder Truhe geöffnet",
+	PICKED_POCKET = "Taschendiebstahl",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.esES = {
+	CAUGHT_WHILE_FISHING = "Pescado",
+	CORE_MISSING = "Memories no está cargado.",
+	GATHERED = "Recolectado",
+	GATHERING_NEW_FINDINGS_ONLY = "Recolección: solo hallazgos nuevos",
+	OPENED_CONTAINER_OR_CHEST = "Contenedor o cofre abierto",
+	PICKED_POCKET = "Bolsillo robado",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.frFR = {
+	CAUGHT_WHILE_FISHING = "Pêché",
+	CORE_MISSING = "Memories n'est pas chargé.",
+	GATHERED = "Récolté",
+	GATHERING_NEW_FINDINGS_ONLY = "Récolte : nouvelles trouvailles uniquement",
+	OPENED_CONTAINER_OR_CHEST = "Conteneur ou coffre ouvert",
+	PICKED_POCKET = "Vol à la tire",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.itIT = {
+	CAUGHT_WHILE_FISHING = "Pescato",
+	CORE_MISSING = "Memories non è caricato.",
+	GATHERED = "Raccolto",
+	GATHERING_NEW_FINDINGS_ONLY = "Raccolta: solo nuovi ritrovamenti",
+	OPENED_CONTAINER_OR_CHEST = "Contenitore o forziere aperto",
+	PICKED_POCKET = "Borseggio",
+}
+
+-- Machine translated. Corrections are welcome.
+locales.ptBR = {
+	CAUGHT_WHILE_FISHING = "Pescado",
+	CORE_MISSING = "Memories não está carregado.",
+	GATHERED = "Coletado",
+	GATHERING_NEW_FINDINGS_ONLY = "Coleta: apenas novos achados",
+	OPENED_CONTAINER_OR_CHEST = "Recipiente ou baú aberto",
+	PICKED_POCKET = "Furto",
+}
+
+locales.enGB = locales.enUS
+locales.esMX = locales.esES
+
+local active = locales[GetLocale and GetLocale()] or locales.enUS
+local fallback = locales.enUS
 
 ns.L = setmetatable({}, {
 	__index = function(_, key)
-		return found[key] or key
+		local text = active[key] or fallback[key]
+		if text then
+			return text
+		end
+		if ns.debug and ns.ReportOnce then
+			ns.ReportOnce("missing-" .. tostring(key), "Missing text key: " .. tostring(key))
+		end
+		return tostring(key)
 	end,
 })

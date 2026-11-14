@@ -90,10 +90,7 @@ function Store.Open(addon, data)
 	end
 	if readOnly and not warned[addon] then
 		warned[addon] = true
-		ns.Print(
-			addon == ADDON and L["saved data from a newer version; this addon will not write"]
-				or L["%s: saved data from a newer version; this addon will not write"]:format(addon)
-		)
+		ns.Print(L.DB_NEWER:format(addon))
 	end
 	local j = ns.Journal.New(data, { addon = addon, readOnly = readOnly })
 	if not readOnly then

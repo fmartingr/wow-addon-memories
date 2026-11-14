@@ -9,7 +9,7 @@ Back to the [documentation index](README.md).
 - `/mem options` (or `/mem settings`) opens the Settings page (Options > AddOns > Memories). Settings are
   account-wide, in `MemoriesDB.settings`:
   - **General:** "Recording rate" of the trail (1, 2, 5 or 10 s; default 2 s), "Save reminder", "Low-health flash"
-    and "Minimap button" (all on).
+    and "Show the minimap button" (all on).
   - **Kinds:** one checkbox per kind under `<addon> — <group>`, with "Enable all" and "Disable all" for each group.
     Every kind is on by default. A kind that is off writes no line, but its counts go on. The kind `un` (Notes) holds
     the notes that the player writes; a note has at most 400 bytes.
@@ -26,7 +26,7 @@ Back to the [documentation index](README.md).
 - `/mem errors` shows the saved errors, ready to copy.
 - The minimap button opens the Note window with a left click, saves (reloads the UI) with a shift + left click, and
   opens the Settings page with a right click. A drag moves it. The addon compartment entry does the same clicks.
-- `/mem minimap` shows or hides the minimap button, the same as the "Minimap button" setting. LibDBIcon keeps the
+- `/mem minimap` shows or hides the minimap button, the same as the "Show the minimap button" setting. LibDBIcon keeps the
   position in `MemoriesDB.minimap`.
 - After 1 hour with no save, a chat line and the pulsing minimap button remind you to save (save reminder).
 - Each journal has a rolling backup in `MemoriesDB.backups`. When a journal loads empty and its backup has lines, a

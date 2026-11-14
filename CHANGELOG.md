@@ -9,6 +9,8 @@
 - **New commands:** `/memories minimap` shows or hides the minimap button. `/memories help` shows the command list.
 - **Windows:** the Note window, the Journey window and the errors box use the Blizzard panel frame. The errors box
   moves and stays on the screen.
+- **Texts:** the minimap setting is "Show the minimap button". The German texts say "Minikarten-Button" in every
+  place.
 - **Error lines:** a feature that fails prints one line for each session, with the place and the Lua error.
 - **Item names:** when the game has not loaded an item yet, Memories asks for it. The next line of that item has its
   name.

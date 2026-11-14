@@ -352,7 +352,7 @@ describe("settings", function()
 				keys[#keys + 1] = toggle.key
 			end
 			assert.same({ "saveReminder", "lowHealthFlash", "minimapButton" }, keys)
-			assert.equal("Save reminder", ns.Settings.toggles[1].labelKey)
+			assert.equal("SAVE_REMINDER", ns.Settings.toggles[1].labelKey)
 		end)
 
 		it("keeps one checkbox for a key added twice and takes the last default", function()

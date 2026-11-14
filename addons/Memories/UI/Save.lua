@@ -19,7 +19,7 @@ end
 
 function Save.Now()
 	if InCombatLockdown() then
-		ns.Print(L["cannot save in combat."])
+		ns.Print(L.CANNOT_SAVE_IN_COMBAT)
 		return false
 	end
 	C_UI.Reload()
@@ -35,11 +35,11 @@ function Save.Check()
 		ticker:Cancel()
 		ticker = nil
 	end
-	ns.Print(L["1 hour since the last save. Shift-click the minimap button to save (reloads the UI)."])
+	ns.Print(L.SAVE_DUE)
 	ns.Emit("SAVE_REMINDER")
 end
 
-ns.Settings.AddToggle("saveReminder", "Save reminder", "Reminds you to save after one hour without a reload.", true)
+ns.Settings.AddToggle("saveReminder", "SAVE_REMINDER", "SAVE_REMINDER_TIP", true)
 
 ns.Listen("LOGIN", function()
 	since = GetTime()

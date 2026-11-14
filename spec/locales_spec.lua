@@ -1,175 +1,167 @@
 local wow = require("helpers.wow")
 
-describe("addon strings", function()
-	local LANGUAGES = { "deDE", "frFR", "esES", "itIT", "ptBR" }
-	local ADDONS = {
-		"Memories",
-		"Memories_Character",
-		"Memories_Combat",
-		"Memories_Economy",
-		"Memories_Gathering",
-		"Memories_Social",
-	}
+local ADDONS = {
+	"Memories",
+	"Memories_Character",
+	"Memories_Combat",
+	"Memories_Economy",
+	"Memories_Gathering",
+	"Memories_Social",
+}
+local LOCALES = { "enUS", "deDE", "esES", "esMX", "frFR", "itIT", "ptBR" }
+local TRANSLATED = { "deDE", "esES", "frFR", "itIT", "ptBR" }
+-- Keys that the code builds at run time, such as L["GROUP_" .. key]. A key with one of these prefixes counts as used.
+local DYNAMIC_PREFIXES = {}
 
-	local function read(path)
-		local f = assert(io.open(path))
-		local text = f:read("*a")
-		f:close()
-		return text
+local function read(path)
+	local f = assert(io.open(path, "r"))
+	local text = f:read("*a")
+	f:close()
+	return text
+end
+
+local function load(addon, client)
+	local saved = _G.GetLocale
+	_G.GetLocale = function()
+		return client
 	end
+	local ns = {}
+	local ok, err = pcall(assert(loadfile("addons/" .. addon .. "/Locales.lua")), addon, ns)
+	_G.GetLocale = saved
+	assert(ok, err)
+	return ns
+end
 
-	local function luaFiles(dir)
-		local out = {}
-		local p = assert(io.popen("find " .. dir .. " -name '*.lua' | sort"))
-		for path in p:lines() do
-			out[#out + 1] = path
-		end
-		p:close()
-		return out
+local function specifiers(text)
+	local found = {}
+	for spec in text:gmatch("%%[%-%d%.]*[%a%%]") do
+		found[#found + 1] = spec
 	end
+	return table.concat(found, ",")
+end
 
-	local function placeholders(text)
-		local out = {}
-		for spec in text:gmatch("%%[%-%d%.]*[%a%%]") do
-			out[#out + 1] = spec
-		end
-		return table.concat(out, " ")
-	end
-
-	-- Runs Locales.lua and returns the table of every language, which the file keeps in a local.
-	local function catalogs(addon)
-		local source = read("addons/" .. addon .. "/Locales.lua")
-		local patched, n = source:gsub("local found =", "ns.catalogs = T\nlocal found =", 1)
-		assert.equal(1, n)
-		local ns = {}
-		assert(loadstring(patched, addon .. "/Locales.lua"))(addon, ns)
-		return ns.catalogs
-	end
-
-	local function usedKeys(addon)
-		local keys = {}
-		for _, path in ipairs(luaFiles("addons/" .. addon)) do
-			for key in read(path):gmatch('L%["(.-)"%]') do
-				keys[key] = true
+-- strict: only L.KEY and L["KEY"]. Else also a quoted "KEY", as in AddToggle("minimap", "SET_MINIMAP", ...).
+local function usedKeys(addon, strict)
+	local used = {}
+	local p = assert(io.popen("find addons/" .. addon .. " -name '*.lua' -not -path '*/Libs/*' | sort"))
+	for path in p:lines() do
+		if not path:match("/Locales%.lua$") then
+			local source = read(path)
+			for key in source:gmatch("[%w_]*L%.([A-Z][A-Z0-9_]*)") do
+				used[key] = true
 			end
-			-- A command passes the locale key of its help line, which the help list translates.
-			for key in read(path):gmatch('Commands%.Register%(%b"",[^\n]-,%s*"([^"\n]-)"%)') do
-				keys[key] = true
+			for key in source:gmatch('[%w_]*L%["([A-Z][A-Z0-9_]*)"%]') do
+				used[key] = true
 			end
-			-- A toggle passes the locale keys of its label and its tooltip.
-			for label, tip in read(path):gmatch('AddToggle%(%s*%b"",%s*"([^"]-)",%s*"([^"]-)"') do
-				keys[label], keys[tip] = true, true
-			end
-		end
-		return keys
-	end
-
-	local function loadLocales(locale)
-		local saved = _G.GetLocale
-		_G.GetLocale = function()
-			return locale
-		end
-		local ns = {}
-		local ok, err = pcall(assert(loadfile("addons/Memories/Locales.lua")), "Memories", ns)
-		_G.GetLocale = saved
-		assert(ok, err)
-		return ns.L
-	end
-
-	describe("ns.L", function()
-		it("answers in the language of the client", function()
-			assert.equal("Speichererinnerung", loadLocales("deDE")["Save reminder"])
-			assert.equal("Recordatorio de guardado", loadLocales("esES")["Save reminder"])
-		end)
-
-		it("uses Spanish for esMX", function()
-			assert.equal("Recordatorio de guardado", loadLocales("esMX")["Save reminder"])
-		end)
-
-		it("answers in English for another locale", function()
-			assert.equal("Save reminder", loadLocales("ruRU")["Save reminder"])
-			assert.equal("Save reminder", loadLocales("enGB")["Save reminder"])
-			assert.equal("Save reminder", loadLocales("zhCN")["Save reminder"])
-		end)
-
-		it("answers in English when GetLocale is missing or returns nothing", function()
-			wow.boot({ login = false })
-			local saved = _G.GetLocale
-			finally(function()
-				_G.GetLocale = saved
-			end)
-			local ns = {}
-			_G.GetLocale = nil
-			assert(loadfile("addons/Memories/Locales.lua"))("Memories", ns)
-			assert.equal("Save reminder", ns.L["Save reminder"])
-			_G.GetLocale = function() end
-			ns = {}
-			assert(loadfile("addons/Memories/Locales.lua"))("Memories", ns)
-			assert.equal("Save reminder", ns.L["Save reminder"])
-		end)
-
-		it("answers with the key for a string that has no translation", function()
-			local L = loadLocales("deDE")
-			assert.equal("not a known string", L["not a known string"])
-		end)
-	end)
-
-	describe("catalogs", function()
-		for _, addon in ipairs(ADDONS) do
-			describe(addon, function()
-				local used = usedKeys(addon)
-				local all = catalogs(addon)
-
-				it("uses at least one string", function()
-					assert.is_truthy(next(used))
-				end)
-
-				for _, lang in ipairs(LANGUAGES) do
-					it("has in " .. lang .. " exactly the keys the code uses", function()
-						local missing, extra = {}, {}
-						for key in pairs(used) do
-							if all[lang][key] == nil then
-								missing[#missing + 1] = key
-							end
-						end
-						for key in pairs(all[lang]) do
-							if not used[key] then
-								extra[#extra + 1] = key
-							end
-						end
-						table.sort(missing)
-						table.sort(extra)
-						assert.same({}, missing)
-						assert.same({}, extra)
-					end)
-
-					it("keeps the placeholders of each key in " .. lang, function()
-						local bad = {}
-						for key, text in pairs(all[lang]) do
-							assert.is_string(text)
-							assert.is_truthy(text ~= "")
-							if placeholders(key) ~= placeholders(text) then
-								bad[#bad + 1] = key
-							end
-						end
-						table.sort(bad)
-						assert.same({}, bad)
-					end)
+			if not strict then
+				for key in source:gmatch('"([A-Z][A-Z0-9_]*)"') do
+					used[key] = true
 				end
-
-				it("starts each translation with the machine translation note", function()
-					local source = read("addons/" .. addon .. "/Locales.lua")
-					local _, notes = source:gsub("%-%- Machine translated%. Corrections are welcome%.", "")
-					assert.equal(#LANGUAGES, notes)
-				end)
-
-				it("uses the Spanish catalog for esMX", function()
-					assert.equal(all.esES, all.esMX)
-				end)
-			end)
+			end
 		end
+	end
+	p:close()
+	return used
+end
+
+describe("Locales", function()
+	for _, addon in ipairs(ADDONS) do
+		describe(addon, function()
+			it("has every enUS key in every locale and no extra key", function()
+				local ns = load(addon, "enUS")
+				for _, locale in ipairs(LOCALES) do
+					assert.is_table(ns.locales[locale], locale)
+					for key in pairs(ns.locales.enUS) do
+						assert.is_string(ns.locales[locale][key], locale .. "." .. key)
+					end
+					for key in pairs(ns.locales[locale]) do
+						assert.is_string(ns.locales.enUS[key], locale .. " extra " .. key)
+					end
+				end
+			end)
+
+			it("keeps the format specifiers of enUS", function()
+				local ns = load(addon, "enUS")
+				for _, locale in ipairs(LOCALES) do
+					for key, text in pairs(ns.locales.enUS) do
+						assert.equals(specifiers(text), specifiers(ns.locales[locale][key]), locale .. "." .. key)
+					end
+				end
+			end)
+
+			it("defines every key that the code uses", function()
+				local ns = load(addon, "enUS")
+				for key in pairs(usedKeys(addon, true)) do
+					assert.is_string(ns.locales.enUS[key], "missing enUS." .. key)
+				end
+			end)
+
+			it("uses every enUS key", function()
+				local ns = load(addon, "enUS")
+				local used = usedKeys(addon, false)
+				for key in pairs(ns.locales.enUS) do
+					local dynamic = false
+					for _, prefix in ipairs(DYNAMIC_PREFIXES) do
+						dynamic = dynamic or key:sub(1, #prefix) == prefix
+					end
+					assert.is_true(used[key] or dynamic, "unused enUS." .. key)
+				end
+			end)
+
+			it("marks each translated block as machine translated", function()
+				local source = read("addons/" .. addon .. "/Locales.lua")
+				local _, notes = source:gsub("%-%- Machine translated%. Corrections are welcome%.", "")
+				assert.equals(#TRANSLATED, notes)
+			end)
+
+			it("shares enUS with enGB and esES with esMX", function()
+				local ns = load(addon, "enUS")
+				assert.equals(ns.locales.enUS, ns.locales.enGB)
+				assert.equals(ns.locales.esES, ns.locales.esMX)
+			end)
+		end)
+	end
+
+	it("has the glossary keys of the template in Memories", function()
+		local ns = load("Memories", "enUS")
+		assert.equals("Commands:", ns.locales.enUS.HELP_HEADER)
+		assert.equals("Show the minimap button", ns.locales.enUS.SET_MINIMAP)
+		assert.equals("Minikarten-Button anzeigen", ns.locales.deDE.SET_MINIMAP)
 	end)
 
+	it("uses the client locale", function()
+		local ns = load("Memories", "deDE")
+		assert.equals("Speichererinnerung", ns.L.SAVE_REMINDER)
+		assert.equals("Recordatorio de guardado", load("Memories", "esMX").L.SAVE_REMINDER)
+	end)
+
+	it("falls back to enUS for an unknown client locale and when GetLocale is missing", function()
+		assert.equals("Save reminder", load("Memories", "koKR").L.SAVE_REMINDER)
+		assert.equals("Save reminder", load("Memories", "enGB").L.SAVE_REMINDER)
+		assert.equals("Save reminder", load("Memories", nil).L.SAVE_REMINDER)
+		wow.boot({ login = false })
+		local saved = _G.GetLocale
+		finally(function()
+			_G.GetLocale = saved
+		end)
+		_G.GetLocale = nil
+		local ns = {}
+		assert(loadfile("addons/Memories/Locales.lua"))("Memories", ns)
+		assert.equals("Save reminder", ns.L.SAVE_REMINDER)
+	end)
+
+	it("falls back to enUS for a key missing in the client locale", function()
+		local ns = load("Memories", "frFR")
+		ns.locales.frFR.HELP_HEADER = nil
+		assert.equals("Commands:", ns.L.HELP_HEADER)
+	end)
+
+	it("returns the key for an unknown key", function()
+		assert.equals("NOPE", load("Memories", "enUS").L.NOPE)
+	end)
+end)
+
+describe("translated surfaces", function()
 	describe("sub-addons in French", function()
 		local KIND = {
 			Memories_Combat = { kind = "ki", group = "Combat", fr = "Créature tuée", en = "Killed a creature" },
@@ -345,7 +337,7 @@ describe("addon strings", function()
 		it("names every core kind in Spanish", function()
 			local ns = boot()
 			local spanish = {}
-			for _, text in pairs(catalogs("Memories").esES) do
+			for _, text in pairs(load("Memories", "esES").locales.esES) do
 				spanish[text] = true
 			end
 			local english = {}

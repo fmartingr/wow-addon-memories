@@ -2,7 +2,7 @@ local ADDON, ns = ...
 local L = ns.L
 
 if not Memories or not Memories.RegisterModule then
-	print(ADDON .. ": " .. L["Memories is not loaded."])
+	print(ADDON .. ": " .. L.CORE_MISSING)
 	return
 end
 
@@ -530,17 +530,17 @@ Memories.RegisterModule({
 		{
 			kind = "ki",
 			group = "Combat",
-			name = L["Killed a creature"],
+			name = L.KILLED_CREATURE,
 			fields = { "name", "#npc", "ctype", "class", "#xp", "#level", "inst", "#first" },
 		},
-		{ kind = "ra", group = "Combat", name = L["Killed a rare"], fields = { "name", "#npc", "#level" } },
+		{ kind = "ra", group = "Combat", name = L.KILLED_RARE, fields = { "name", "#npc", "#level" } },
 		{
 			kind = "fi",
 			group = "Combat",
-			name = L["Long fight"],
+			name = L.LONG_FIGHT,
 			fields = { "#seconds", "target", "class", "#level", "died", "#casts" },
 		},
 	},
-	newOnly = { { key = "kills", label = L["Kills: new findings only"], kinds = { "ki" } } },
+	newOnly = { { key = "kills", label = L.KILLS_NEW_FINDINGS_ONLY, kinds = { "ki" } } },
 	OnLogin = onLogin,
 })

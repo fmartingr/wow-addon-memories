@@ -69,10 +69,10 @@ Overlay.BURST = {
 Overlay.MARK = { lv = true, de = true }
 -- The groups that the replay reads, with the label of each box of the panel.
 Overlay.GROUPS = {
-	{ group = "Progress", label = L["Level ups"] },
-	{ group = "Deaths", label = L["Deaths"] },
-	{ group = "Travel", label = L["Travel"] },
-	{ group = "Dungeons", label = L["Dungeons"] },
+	{ group = "Progress", label = L.LEVEL_UPS },
+	{ group = "Deaths", label = L.DEATHS },
+	{ group = "Travel", label = L.TRAVEL },
+	{ group = "Dungeons", label = L.DUNGEONS },
 }
 -- The kinds that MapData reads: those that leave an icon or play a burst.
 local KINDS = {}
@@ -400,7 +400,7 @@ end
 local function burstLabel(data)
 	local level = data.fields and data.fields.level
 	if data.kind == "lv" and type(level) == "number" then
-		return L["Level %d"]:format(level)
+		return L.LEVEL_N:format(level)
 	end
 	local spec = ns.Kinds.Get(data.kind)
 	return spec and spec.name or data.kind

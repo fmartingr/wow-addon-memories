@@ -31,11 +31,12 @@ Locales.lua
 ## Strings
 
 `Locales.lua` is the first file. Each addon carries its own strings, so a sub-addon needs no core API for them. It
-builds `ns.L`, a table that is keyed by the English text and answers with the text in the language of `GetLocale()`
-(`deDE`, `frFR`, `esES`, `esMX`, `itIT`, `ptBR`). A missing translation, a missing key or any other locale gives the
-key itself, so English is the fallback. Code uses `local L = ns.L` and `L["English text"]`. A format string keeps the
-same placeholders, in the same order, in every language. Start each translated table with the note "Machine
-translated. Corrections are welcome."
+keeps one table for each locale in `ns.locales` (`enUS`, `deDE`, `esES`, `frFR`, `itIT`, `ptBR`; `enGB` uses `enUS`
+and `esMX` uses `esES`). The keys are `UPPER_SNAKE` constants, and the English text is the `enUS` value. `ns.L` answers
+in the language of `GetLocale()`. A missing translation gives the `enUS` text, and a missing key gives the key itself.
+Code uses `local L = ns.L` and `L.KEY`. A format string keeps the same placeholders, in the same order, in every
+language. Start each translated table with the note "Machine translated. Corrections are welcome."
+`spec/locales_spec.lua` checks the keys and the placeholders of each addon.
 
 A kind registers its `name` and its new-only `label` through `L`. The `group` stays an English token: it is saved in
 `MemoriesDB.kinds`. The core Settings page translates the group names it knows ("Combat", "Gathering", "Character",
@@ -50,7 +51,7 @@ local ADDON, ns = ...
 local L = ns.L
 
 if not Memories or not Memories.RegisterModule then
-	print(ADDON .. ": " .. L["Memories is not loaded."])
+	print(ADDON .. ": " .. L.CORE_MISSING)
 	return
 end
 ```
@@ -81,9 +82,9 @@ local h, reason = Memories.RegisterModule({
 	api = 1, -- the API_VERSION this addon was written for
 	saved = "MemoriesCombatCharDB", -- its SavedVariablesPerCharacter global
 	kinds = {
-		{ kind = "ki", group = "Combat", name = L["Killed a creature"], fields = { "name", "#npc", "ctype" } },
+		{ kind = "ki", group = "Combat", name = L.KILLED_CREATURE, fields = { "name", "#npc", "ctype" } },
 	},
-	newOnly = { { key = "kills", label = L["Kills: new findings only"], kinds = { "ki" } } },
+	newOnly = { { key = "kills", label = L.KILLS_NEW_FINDINGS_ONLY, kinds = { "ki" } } },
 	OnLogin = function(h) end,
 	OnEnterWorld = function(h, isLogin, isReload) end,
 })
@@ -128,7 +129,7 @@ apply:
 - **New character:** when the stored GUID differs from the player's, the old data moves to `MemoriesDB.orphans` with
   `addon = <addon>`, and the journal starts empty with `nt|new character|<old guid>`.
 - **Newer schema:** data with `schema` above the core's makes only this addon read-only. The core prints
-  "Memories: <addon>: saved data from a newer version; this addon will not write".
+  "Memories: The saved data comes from a newer version. <addon> does not save changes."
 
 ## The handle
 

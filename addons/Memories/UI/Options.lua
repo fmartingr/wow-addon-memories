@@ -6,7 +6,7 @@ local L = ns.L
 local Options = {}
 ns.Options = Options
 
-Options.NAME = L["Memories"]
+Options.NAME = L.TITLE
 local VARIABLE = "Memories_"
 
 local category, layout
@@ -38,25 +38,25 @@ end
 local function rateOptions()
 	local container = Settings.CreateControlTextContainer()
 	for _, rate in ipairs(ns.Settings.RATES) do
-		container:Add(rate, L["%d s"]:format(rate))
+		container:Add(rate, L.DURATION_SECONDS:format(rate))
 	end
 	return container:GetData()
 end
 
 local function general()
-	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["General"]))
-	local rate = register("recordRate", Settings.VarType.Number, L["Recording rate"])
-	Settings.CreateDropdown(category, rate, rateOptions, L["Seconds between two points of the position trail."])
+	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L.GENERAL))
+	local rate = register("recordRate", Settings.VarType.Number, L.RECORDING_RATE)
+	Settings.CreateDropdown(category, rate, rateOptions, L.RECORDING_RATE_TIP)
 	for _, toggle in ipairs(ns.Settings.toggles) do
 		checkbox(toggle.key, L[toggle.labelKey], L[toggle.tipKey])
 	end
 end
 
 local function groupButton(addon, group, label, on)
-	local text = on and L["Enable all"] or L["Disable all"]
+	local text = on and L.ENABLE_ALL or L.DISABLE_ALL
 	return CreateSettingsButtonInitializer(label, text, function()
 		ns.Protect("options:group", ns.Settings.SetGroup, addon, group, on)
-	end, on and L["Turns on every kind of this group."] or L["Turns off every kind of this group."], false)
+	end, on and L.ENABLE_ALL_TIP or L.DISABLE_ALL_TIP, false)
 end
 
 -- The groups of an addon in the order of its first kind, each with its kinds and its new-only boxes.
@@ -84,22 +84,22 @@ end
 -- The groups stay English tokens in MemoriesDB.kinds; only this page shows these labels. The sub-addon groups are here
 -- because this page draws their sections.
 local GROUPS = {
-	Sessions = L["Sessions"],
-	Progress = L["Progress"],
-	Deaths = L["Deaths"],
-	Travel = L["Travel"],
-	Dungeons = L["Dungeons"],
-	Screenshots = L["Screenshots"],
-	["Other addons"] = L["Other addons"],
-	Notes = L["Notes"],
-	Combat = L["Combat"],
-	Gathering = L["Gathering"],
-	Character = L["Character"],
-	Milestones = L["Milestones"],
-	Loot = L["Loot"],
-	Money = L["Money"],
-	Social = L["Social"],
-	PvP = L["PvP"],
+	Sessions = L.SESSIONS,
+	Progress = L.PROGRESS,
+	Deaths = L.DEATHS,
+	Travel = L.TRAVEL,
+	Dungeons = L.DUNGEONS,
+	Screenshots = L.SCREENSHOTS,
+	["Other addons"] = L.OTHER_ADDONS,
+	Notes = L.NOTES,
+	Combat = L.COMBAT,
+	Gathering = L.GATHERING,
+	Character = L.CHARACTER,
+	Milestones = L.MILESTONES,
+	Loot = L.LOOT,
+	Money = L.MONEY,
+	Social = L.SOCIAL,
+	PvP = L.PVP,
 }
 
 Options.GROUPS = GROUPS
@@ -113,16 +113,16 @@ local function section(addon, boxes)
 			title = addon .. " — " .. label
 		end
 		layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(title))
-		layout:AddInitializer(groupButton(addon, g, L["All %s kinds"]:format(label), true))
+		layout:AddInitializer(groupButton(addon, g, L.ALL_KINDS:format(label), true))
 		layout:AddInitializer(groupButton(addon, g, "", false))
 		for _, spec in ipairs(byGroup[g].kinds) do
-			checkbox("kinds." .. spec.kind, spec.name, L["Writes the %s line."]:format(spec.kind))
+			checkbox("kinds." .. spec.kind, spec.name, L.KIND_TIP:format(spec.kind))
 		end
 		for _, box in ipairs(byGroup[g].boxes) do
 			checkbox(
 				"newOnly." .. box.key,
 				box.label or box.key,
-				L["Writes a line only for a first finding or a rare one. Every event is still counted."]
+				L.NEW_FINDINGS_TIP
 			)
 		end
 	end
@@ -143,14 +143,14 @@ end
 -- Runs once, at login after every early registration; a later registration adds its own section. A page that failed
 -- stays failed: its settings are half registered, and the client refuses a variable twice.
 function Options.Build()
-	if not ns.ProtectWith(L["The settings panel is not available on this client."], "options", build) then
+	if not ns.ProtectWith(L.SETTINGS_UNAVAILABLE, "options", build) then
 		category, layout = nil, nil
 	end
 end
 
 function Options.Open()
 	if not category then
-		ns.Print(L["The settings panel is not available on this client."])
+		ns.Print(L.SETTINGS_UNAVAILABLE)
 		return false
 	end
 	Settings.OpenToCategory(category:GetID())
@@ -179,5 +179,5 @@ ns.Listen("SETTING_CHANGED", function(_, path)
 	end
 end, "options")
 
-ns.Commands.Register("options", Options.Open, "open the settings page")
-ns.Commands.Register("settings", Options.Open, "open the settings page")
+ns.Commands.Register("options", Options.Open, "HELP_OPTIONS")
+ns.Commands.Register("settings", Options.Open, "HELP_OPTIONS")

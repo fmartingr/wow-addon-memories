@@ -51,10 +51,10 @@ local function check(parent, text, slot, onClick)
 	return box
 end
 
-local COLOR_LABEL = { way = L["Way"], level = L["Level"], age = L["Age"] }
+local COLOR_LABEL = { way = L.WAY, level = L.LEVEL, age = L.AGE }
 
 local function colorText()
-	return L["Color: %s"]:format(COLOR_LABEL[ns.Settings.Get("map.color")] or "")
+	return L.COLOR:format(COLOR_LABEL[ns.Settings.Get("map.color")] or "")
 end
 
 -- A click on the colour button goes to the next colour mode of the trail.
@@ -163,14 +163,14 @@ end
 local function refreshList()
 	items = {}
 	if listMode == "sessions" then
-		items[1] = { text = L["All"] }
+		items[1] = { text = L.ALL }
 		local sessions = ns.MapData.Sessions()
 		for i = #sessions, 1, -1 do
 			items[#items + 1] = { text = Panel.SessionText(sessions[i]), session = sessions[i] }
 		end
 	else
 		for _, chapter in ipairs(ns.Overlay.Chapters()) do
-			local text = chapter.level and L["Level %d"]:format(chapter.level) or L["Start"]
+			local text = chapter.level and L.LEVEL_N:format(chapter.level) or L.START
 			items[#items + 1] = { text = text, chapter = true, c = chapter.c }
 		end
 		chapterNow = chapterAt((ns.Overlay.Position()))
@@ -188,12 +188,12 @@ end
 
 -- The counts line from the stats of a draw.
 function Panel.CountText(stats)
-	local text = L["%d lines, %d pins"]:format(stats.lines, stats.pins)
+	local text = L.LINES_PINS:format(stats.lines, stats.pins)
 	if stats.cutLines > 0 or stats.cutPins > 0 then
-		text = text .. "\n" .. L["Cut at %d lines and %d pins."]:format(ns.Overlay.MAX_LINES, ns.Overlay.MAX_PINS)
+		text = text .. "\n" .. L.CUT_AT_LINES_AND_PINS:format(ns.Overlay.MAX_LINES, ns.Overlay.MAX_PINS)
 	end
 	if stats.zones > 0 then
-		text = text .. "\n" .. L["%d zones not shown"]:format(stats.zones)
+		text = text .. "\n" .. L.ZONES_NOT_SHOWN:format(stats.zones)
 	end
 	return text
 end
@@ -237,7 +237,7 @@ function Panel.UpdateBar()
 	end
 	local at, total = ns.Overlay.Position()
 	local ready = total > 0
-	bar.play:SetText(ns.Overlay.Playing() and L["Pause"] or L["Play"])
+	bar.play:SetText(ns.Overlay.Playing() and L.PAUSE or L.PLAY)
 	bar.speed:SetText(ns.Overlay.Speed() .. "x")
 	bar.play:SetEnabled(ready)
 	bar.speed:SetEnabled(ready)
@@ -298,7 +298,7 @@ local function buildBar(parent)
 	b.follow:SetPoint("LEFT", b.speed, "RIGHT", 8, 0)
 	b.follow.label = b.follow:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")
 	b.follow.label:SetPoint("LEFT", b.follow, "RIGHT", 2, 0)
-	b.follow.label:SetText(L["Follow"])
+	b.follow.label:SetText(L.FOLLOW)
 	b.follow:SetScript("OnClick", function(self)
 		ns.Protect("map panel:follow", ns.Overlay.SetFollow, self:GetChecked() == true)
 	end)
@@ -394,16 +394,16 @@ function Panel.Create(parent)
 	f.bg:SetColorTexture(0.05, 0.04, 0.03, 0.95)
 	f.title = f:CreateFontString(nil, "OVERLAY", "GameFontNormalLarge")
 	f.title:SetPoint("TOPLEFT", 14, -12)
-	f.title:SetText(L["Journey"])
+	f.title:SetText(L.JOURNEY)
 	-- Refresh sets each box from the settings when the panel shows.
-	local built = { trail = check(f, L["Trail"], 0, setter("map.trail")), groups = {} }
+	local built = { trail = check(f, L.TRAIL, 0, setter("map.trail")), groups = {} }
 	local slot = 0
 	for _, item in ipairs(ns.Overlay.GROUPS) do
 		slot = slot + 1
 		built.groups[item.group] = check(f, item.label, slot, setter("map.groups." .. item.group))
 	end
 	slot = slot + 1
-	built.blind = check(f, L["Colorblind palette"], slot, setter("map.colorblind"))
+	built.blind = check(f, L.COLORBLIND_PALETTE, slot, setter("map.colorblind"))
 	f.color = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	f.color:SetSize(112, 20)
 	f.color:SetPoint("TOPRIGHT", -14, -10)
@@ -414,14 +414,14 @@ function Panel.Create(parent)
 	f.chapters = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	f.chapters:SetSize(100, 20)
 	f.chapters:SetPoint("TOPLEFT", 14, y)
-	f.chapters:SetText(L["Chapters"])
+	f.chapters:SetText(L.CHAPTERS)
 	f.chapters:SetScript("OnClick", function()
 		ns.Protect("map panel:chapters", setListMode, "chapters")
 	end)
 	f.sessions = CreateFrame("Button", nil, f, "UIPanelButtonTemplate")
 	f.sessions:SetSize(100, 20)
 	f.sessions:SetPoint("LEFT", f.chapters, "RIGHT", 4, 0)
-	f.sessions:SetText(L["Sessions"])
+	f.sessions:SetText(L.SESSIONS)
 	f.sessions:SetScript("OnClick", function()
 		ns.Protect("map panel:sessions", setListMode, "sessions")
 	end)
@@ -441,7 +441,7 @@ function Panel.Create(parent)
 	f.count:SetJustifyH("LEFT")
 	f.feedTitle = f:CreateFontString(nil, "OVERLAY", "GameFontNormal")
 	f.feedTitle:SetPoint("TOPLEFT", f.count, "BOTTOMLEFT", 0, -8)
-	f.feedTitle:SetText(L["Highlights"])
+	f.feedTitle:SetText(L.HIGHLIGHTS)
 	f.feed = {}
 	for i = 1, Panel.FEED_SIZE do
 		local line = f:CreateFontString(nil, "OVERLAY", "GameFontHighlightSmall")

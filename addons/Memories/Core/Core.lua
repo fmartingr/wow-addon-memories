@@ -78,7 +78,7 @@ function ns.Errors()
 end
 
 -- quiet saves the error for /memories errors without a chat line or the client's error handler. msg is the chat
--- line: L["A feature could not start. Some functions can be missing."] unless the caller names another one.
+-- line: L.HOOK_FAILED unless the caller names another one.
 function ns.LogError(where, err, stack, quiet, msg)
 	where = tostring(where)
 	local entry = { t = time(), where = where, msg = tostring(err), stack = stack }
@@ -86,7 +86,7 @@ function ns.LogError(where, err, stack, quiet, msg)
 	if quiet then
 		return
 	end
-	ns.ReportOnce(where, msg or L["A feature could not start. Some functions can be missing."], entry.msg)
+	ns.ReportOnce(where, msg or L.HOOK_FAILED, entry.msg)
 	local handler = geterrorhandler and geterrorhandler()
 	if handler then
 		pcall(handler, entry.msg)

@@ -12,7 +12,7 @@ function ErrorLog.Text()
 	for _, e in ipairs(ns.Errors()) do
 		if type(e) == "table" then
 			-- date returns nil for a time out of range.
-			local stamp = type(e.t) == "number" and date("%Y-%m-%d %H:%M:%S", e.t) or L["unknown time"]
+			local stamp = type(e.t) == "number" and date("%Y-%m-%d %H:%M:%S", e.t) or L.UNKNOWN_TIME
 			lines[#lines + 1] = stamp .. "  " .. tostring(e.where) .. ": " .. tostring(e.msg)
 			if e.stack then
 				lines[#lines + 1] = tostring(e.stack)
@@ -28,7 +28,7 @@ local function errorBox()
 	if box then
 		return box
 	end
-	box = ns.Window.Create("MemoriesErrorsFrame", 640, 420, L["Memories errors"])
+	box = ns.Window.Create("MemoriesErrorsFrame", 640, 420, L.MEMORIES_ERRORS)
 	local scroll = CreateFrame("ScrollFrame", nil, box, "UIPanelScrollFrameTemplate")
 	scroll:SetPoint("TOPLEFT", 12, -30)
 	scroll:SetPoint("BOTTOMRIGHT", -32, 12)
@@ -48,7 +48,7 @@ end
 function ErrorLog.Show()
 	local text = ErrorLog.Text()
 	if text == "" then
-		ns.Print(L["no saved errors."])
+		ns.Print(L.NO_SAVED_ERRORS)
 		return
 	end
 	local f = errorBox()
@@ -59,4 +59,4 @@ function ErrorLog.Show()
 	f.EditBox:HighlightText()
 end
 
-ns.Commands.Register("errors", ErrorLog.Show, "show the saved errors, ready to copy")
+ns.Commands.Register("errors", ErrorLog.Show, "HELP_ERRORS")

@@ -470,7 +470,7 @@ describe("sub-addon registry", function()
 		assert.equal(0, test.handle:Count("test", "a"))
 		assert.same({ "1" }, MemoriesTestCharDB.log.open)
 		assert.is_true(
-			has(wow.chat(), "Memories: Memories_Test: saved data from a newer version; this addon will not write")
+			has(wow.chat(), "Memories: The saved data comes from a newer version. Memories_Test does not save changes.")
 		)
 		assert.truthy(ns.Store.Core():Write("lv", 2))
 		local states = byAddon(Memories.Addons())
