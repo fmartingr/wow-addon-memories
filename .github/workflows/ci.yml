@@ -38,6 +38,23 @@ jobs:
       - run: luarocks install luacov 0.17.0-1
       - run: make test-lua coverage-lua BUSTED_FLAGS=--lua=lua
 
+  # A packager dry run: it builds the CurseForge zip from .pkgmeta and uploads nothing.
+  package:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+      - uses: BigWigsMods/packager@e50a250f8705041e40f2fa1ddcb280a686d65aa0 # v2.6.1
+        with:
+          args: -d
+          pandoc: false
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: addon-zip
+          path: .release/*.zip
+          retention-days: 7
+
   # rhysd/actionlint ships no action, so the release binary is pinned by version and SHA-256. The runner image has
   # shellcheck, which actionlint runs on each run: script.
   workflows:
