@@ -856,15 +856,12 @@ local UNIT_EVENTS = {
 }
 
 local function onEvents()
-	-- Other units' events never reach this frame, so a crowded place costs nothing.
-	local frame = CreateFrame("Frame")
 	-- A client without one of the events refuses it; the error is logged and the other recorders still start.
-	for event in pairs(UNIT_EVENTS) do
-		h:Safe("register:" .. event, frame.RegisterUnitEvent, frame, event, "player")
+	for event, fn in pairs(UNIT_EVENTS) do
+		h:OnUnit(event, "player", function(_, ...)
+			fn(...)
+		end)
 	end
-	frame:SetScript("OnEvent", function(_, event, ...)
-		h:Safe(event, UNIT_EVENTS[event], ...)
-	end)
 	h:On("SKILL_LINES_CHANGED", function()
 		h:Coalesce("skills", 3, checkSkills)
 	end)

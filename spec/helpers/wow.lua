@@ -150,6 +150,9 @@ function Frame:RegisterEvent(event)
 		error('Attempt to register unknown event "' .. event .. '"', 2)
 	end
 	self.events[event] = true
+	if self.units then
+		self.units[event] = nil
+	end
 end
 
 function Frame:RegisterUnitEvent(event, ...)
@@ -2141,10 +2144,24 @@ function wow.reload()
 	}))
 end
 
+-- A frame with RegisterUnitEvent gets the event only for its units, as in the client.
+local function wants(frame, event, target)
+	local units = frame.units and frame.units[event]
+	if not units or #units == 0 then
+		return true
+	end
+	for _, u in ipairs(units) do
+		if u == target then
+			return true
+		end
+	end
+	return false
+end
+
 function wow.fire(event, ...)
 	for _, frame in ipairs(wow.frames) do
 		local handler = frame.scripts.OnEvent
-		if handler and frame.events[event] then
+		if handler and frame.events[event] and wants(frame, event, (...)) then
 			handler(frame, event, ...)
 		end
 	end

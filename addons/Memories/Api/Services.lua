@@ -79,15 +79,11 @@ local function countCast()
 	fight.casts = fight.casts + 1
 end
 
--- Other units' casts never reach this frame, and a cast outside a fight returns before the error guard, so a crowded
--- place costs nothing.
-local casts = CreateFrame("Frame")
-casts:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-casts:SetScript("OnEvent", function(_, _, unit)
-	if inFight and unit == "player" then
-		ns.Safe("fight", countCast)
+ns.OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function()
+	if inFight then
+		countCast()
 	end
-end)
+end, "fight")
 
 -- The handle is the only way a sub-addon reaches the core. Its journal stays private in entries.
 local Handle = {}
@@ -119,6 +115,10 @@ end
 
 function Handle:On(event, fn)
 	return ns.On(event, fn, where(self, event))
+end
+
+function Handle:OnUnit(event, unit, fn)
+	return ns.OnUnit(event, unit, fn, where(self, event))
 end
 
 function Handle:Off(event, handle)

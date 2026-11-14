@@ -269,18 +269,12 @@ function Sessions:OnLogin()
 		core():Write("out")
 		save()
 	end, "sessions:logout")
-	local casts = CreateFrame("Frame")
-	casts:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-	-- Only the way back from idle can reach listeners, so a cast while active skips the error guard.
-	casts:SetScript("OnEvent", function(_, _, unit)
-		if unit ~= "player" then
-			return
-		end
+	ns.OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function()
 		lastActive = GetTime()
 		if away == "idle" then
-			ns.Safe("sessions:active", Sessions.CheckAway)
+			Sessions.CheckAway()
 		end
-	end)
+	end, "sessions:active")
 	ns.Listen("RESTORED", function(_, addon)
 		if addon == ns.name and entry then
 			adopt()

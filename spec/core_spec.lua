@@ -100,6 +100,53 @@ describe("core", function()
 		end)
 	end)
 
+	describe("OnUnit", function()
+		it("gets the events of its unit only, through one frame for each unit", function()
+			local frames = #wow.frames
+			local calls = {}
+			ns.OnUnit("UNIT_AURA", "player", function(event, unit)
+				calls[#calls + 1] = event .. ":" .. unit
+			end)
+			ns.OnUnit("UNIT_PET", "player", function(event, unit)
+				calls[#calls + 1] = event .. ":" .. unit
+			end)
+			ns.OnUnit("UNIT_AURA", "target", function(event, unit)
+				calls[#calls + 1] = "target " .. event .. ":" .. unit
+			end)
+			-- The core already has the frame of the player, for the casts of a fight.
+			assert.equal(frames + 1, #wow.frames)
+			wow.fire("UNIT_AURA", "party1")
+			wow.fire("UNIT_AURA", "player")
+			wow.fire("UNIT_PET", "player")
+			wow.fire("UNIT_AURA", "target")
+			assert.same({ "UNIT_AURA:player", "UNIT_PET:player", "target UNIT_AURA:target" }, calls)
+		end)
+
+		it("keeps running the other handlers when one fails, and logs the failure", function()
+			local ran = false
+			ns.OnUnit("UNIT_AURA", "player", function()
+				error("broken unit handler")
+			end, "aura")
+			ns.OnUnit("UNIT_AURA", "player", function()
+				ran = true
+			end)
+			wow.fire("UNIT_AURA", "player")
+			assert.is_true(ran)
+			local errors = ns.Errors()
+			assert.equal("aura", errors[#errors].where)
+		end)
+
+		it("logs an event that the frame refuses once and does not raise", function()
+			ns = wow.boot({ login = false, unknownEvents = { UNIT_NOPE = true } })
+			local before = #ns.Errors()
+			assert.is_nil(ns.OnUnit("UNIT_NOPE", "player", function() end, "nope"))
+			assert.is_nil(ns.OnUnit("UNIT_NOPE", "player", function() end, "nope"))
+			local errors = ns.Errors()
+			assert.equal(before + 1, #errors)
+			assert.equal("nope", errors[#errors].where)
+		end)
+	end)
+
 	describe("Listen and Emit", function()
 		it("calls each handler in order with the message and its arguments", function()
 			local calls = {}

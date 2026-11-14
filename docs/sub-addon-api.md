@@ -136,6 +136,7 @@ apply:
 |---|---|
 | `h.addon` | the addon name |
 | `h:On(event, fn)` → handle | listens to a game event; `fn(event, ...)` |
+| `h:OnUnit(event, unit, fn)` → handle | listens to a unit event of one unit only (`"player"`); `fn(event, unit, ...)`. The client sends no event of another unit. |
 | `h:Off(event, handle)` | stops it |
 | `h:Listen(msg, fn)` | listens to a core message; `fn(msg, ...)` |
 | `h:Hook(target, method, fn)` → bool | `hooksecurefunc` after the function; `target = nil` hooks a global. False when the function is missing. |

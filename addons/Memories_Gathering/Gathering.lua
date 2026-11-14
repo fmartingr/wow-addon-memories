@@ -331,12 +331,11 @@ local function onLogin(handle)
 	if type(C_Container) == "table" then
 		h:Hook(C_Container, "UseContainerItem", onUse)
 	end
-	-- Other units' casts never reach this frame, so a crowded place costs nothing.
-	local frame = CreateFrame("Frame")
-	frame:RegisterUnitEvent("UNIT_SPELLCAST_SENT", "player")
-	frame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-	frame:SetScript("OnEvent", function(_, event, ...)
-		h:Safe(event, event == "UNIT_SPELLCAST_SENT" and onSent or onSucceeded, ...)
+	h:OnUnit("UNIT_SPELLCAST_SENT", "player", function(_, ...)
+		onSent(...)
+	end)
+	h:OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, ...)
+		onSucceeded(...)
 	end)
 end
 

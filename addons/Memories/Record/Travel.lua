@@ -637,13 +637,9 @@ function Travel:OnLogin()
 	end, "travel:alive")
 	U.Hook(nil, "TakeTaxiNode", takeTaxi, "travel:taxi")
 	U.Hook(C_SummonInfo, "ConfirmSummon", onAcceptSummon, "travel:summon")
-	local frame = CreateFrame("Frame")
-	frame:RegisterUnitEvent("UNIT_SPELLCAST_SUCCEEDED", "player")
-	frame:SetScript("OnEvent", function(_, _, unit, _, spell)
-		if unit == "player" then
-			ns.Safe("travel:cast", onCast, spell)
-		end
-	end)
+	ns.OnUnit("UNIT_SPELLCAST_SUCCEEDED", "player", function(_, _, _, spell)
+		onCast(spell)
+	end, "travel:cast")
 	wasMounted = ns.R(IsMounted()) == true
 end
 

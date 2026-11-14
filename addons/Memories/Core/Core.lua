@@ -165,6 +165,41 @@ function ns.Off(event, handle)
 	end
 end
 
+-- RegisterUnitEvent filters a whole frame, so the core keeps one frame for each unit. The client then sends it only
+-- the events of that unit, and a crowded place costs nothing.
+local unitFrames, unitListeners = {}, {}
+
+local function unitFrame(unit)
+	if not unitFrames[unit] then
+		local map = {}
+		local f = CreateFrame("Frame")
+		f:SetScript("OnEvent", function(_, event, ...)
+			dispatch(map[event], event, ...)
+		end)
+		unitFrames[unit], unitListeners[unit] = f, map
+	end
+	return unitFrames[unit], unitListeners[unit]
+end
+
+function ns.OnUnit(event, unit, fn, where)
+	local key = event .. ":" .. tostring(unit)
+	if refused[key] then
+		return nil
+	end
+	local f, map = unitFrame(unit)
+	if not map[event] then
+		local ok, err = pcall(f.RegisterUnitEvent, f, event, unit)
+		if not ok then
+			refused[key] = true
+			ns.LogError(where or event, err)
+			return nil
+		end
+	end
+	local handle = { fn = fn, where = where or event }
+	add(map, event, handle)
+	return handle
+end
+
 local messages = {}
 
 function ns.Listen(msg, fn, where)
