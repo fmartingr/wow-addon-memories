@@ -81,11 +81,11 @@ StaticPopupDialogs[POPUP] = {
 	button1 = L["Keep it on"],
 	button2 = L["Turn it off"],
 	OnAccept = function()
-		ns.Safe("low health:on", LowHealth.Set, true)
+		ns.Protect("low health:on", LowHealth.Set, true)
 	end,
 	OnCancel = function(_, _, reason)
 		if reason == "clicked" then
-			ns.Safe("low health:off", LowHealth.Set, false)
+			ns.Protect("low health:off", LowHealth.Set, false)
 		end
 	end,
 	OnHide = function()

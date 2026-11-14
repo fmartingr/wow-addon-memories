@@ -227,7 +227,7 @@ local function tooltip(pin)
 end
 
 local function onEnter(pin)
-	ns.Safe("map overlay:tooltip", tooltip, pin)
+	ns.Protect("map overlay:tooltip", tooltip, pin)
 end
 
 local function onLeave()
@@ -588,7 +588,7 @@ local function update(dt)
 end
 
 local function onUpdate(_, dt)
-	if not ns.Safe("map overlay:update", update, dt) then
+	if not ns.Protect("map overlay:update", update, dt) then
 		fail()
 	end
 end
@@ -792,7 +792,7 @@ function Overlay.Draw()
 	if not host then
 		return
 	end
-	if not ns.Safe("map overlay", draw) then
+	if not ns.Protect("map overlay", draw) then
 		fail()
 	end
 end

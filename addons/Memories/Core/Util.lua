@@ -122,7 +122,7 @@ function U.Hook(target, method, fn, where)
 	end
 	where = where or "hook:" .. method
 	local function guarded(...)
-		ns.Safe(where, fn, ...)
+		ns.Protect(where, fn, ...)
 	end
 	if target then
 		hooksecurefunc(target, method, guarded)

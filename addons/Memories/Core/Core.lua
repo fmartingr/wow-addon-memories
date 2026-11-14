@@ -39,7 +39,21 @@ end
 
 -- Errors logged before MemoriesDB exists wait here until ns.Errors() moves them.
 local pending = {}
-local printed = {}
+local reported = {}
+
+-- The key names the failed feature and err is the Lua error, so a player report says what broke without a debugger.
+function ns.ReportOnce(key, msg, err)
+	if reported[key] then
+		return false
+	end
+	reported[key] = true
+	if err ~= nil then
+		ns.Print(("%s [%s: %s]"):format(msg, key, tostring(err)))
+	else
+		ns.Print(("%s [%s]"):format(msg, key))
+	end
+	return true
+end
 
 local function push(list, entry)
 	list[#list + 1] = entry
@@ -63,18 +77,16 @@ function ns.Errors()
 	return list
 end
 
--- quiet saves the error for /memories errors without a chat line or the client's error handler.
-function ns.LogError(where, err, stack, quiet)
+-- quiet saves the error for /memories errors without a chat line or the client's error handler. msg is the chat
+-- line: L["A feature could not start. Some functions can be missing."] unless the caller names another one.
+function ns.LogError(where, err, stack, quiet, msg)
 	where = tostring(where)
 	local entry = { t = time(), where = where, msg = tostring(err), stack = stack }
 	push(ns.Errors(), entry)
 	if quiet then
 		return
 	end
-	if not printed[where] then
-		printed[where] = true
-		ns.Print(L["error in %s. See /memories errors."]:format(where))
-	end
+	ns.ReportOnce(where, msg or L["A feature could not start. Some functions can be missing."], entry.msg)
 	local handler = geterrorhandler and geterrorhandler()
 	if handler then
 		pcall(handler, entry.msg)
@@ -85,7 +97,8 @@ local function capture(err)
 	return { err = err, stack = debugstack and debugstack(2) or nil }
 end
 
-function ns.Safe(where, fn, ...)
+-- Runs fn and logs its error; msg is the chat line (see ns.LogError). Returns true and the first 4 results of fn.
+function ns.ProtectWith(msg, where, fn, ...)
 	local n = select("#", ...)
 	local args = { ... }
 	local ok, a, b, c, d = xpcall(function()
@@ -96,10 +109,14 @@ function ns.Safe(where, fn, ...)
 		if type(a) ~= "table" then
 			a = { err = a }
 		end
-		ns.LogError(where, a.err, a.stack)
+		ns.LogError(where, a.err, a.stack, false, msg)
 		return false
 	end
 	return true, a, b, c, d
+end
+
+function ns.Protect(where, fn, ...)
+	return ns.ProtectWith(nil, where, fn, ...)
 end
 
 -- Lists are replaced, never changed in place, so a dispatch that is running keeps the list it started with.
@@ -130,7 +147,7 @@ local function dispatch(list, name, ...)
 		return
 	end
 	for i = 1, #list do
-		ns.Safe(list[i].where, list[i].fn, name, ...)
+		ns.Protect(list[i].where, list[i].fn, name, ...)
 	end
 end
 
@@ -226,7 +243,7 @@ function ns.Coalesce(key, delay, fn)
 	end
 	coalesced[key] = C_Timer.NewTimer(delay, function()
 		coalesced[key] = nil
-		ns.Safe("coalesce:" .. tostring(key), fn)
+		ns.Protect("coalesce:" .. tostring(key), fn)
 	end)
 end
 
@@ -234,7 +251,7 @@ local waiting, waitingOrder = {}, {}
 
 function ns.AfterCombat(key, fn)
 	if not InCombatLockdown() then
-		ns.Safe("after combat:" .. tostring(key), fn)
+		ns.Protect("after combat:" .. tostring(key), fn)
 		return
 	end
 	if not waiting[key] then
@@ -248,6 +265,6 @@ function ns.RunAfterCombat()
 	local fns, order = waiting, waitingOrder
 	waiting, waitingOrder = {}, {}
 	for _, key in ipairs(order) do
-		ns.Safe("after combat:" .. tostring(key), fns[key])
+		ns.Protect("after combat:" .. tostring(key), fns[key])
 	end
 end

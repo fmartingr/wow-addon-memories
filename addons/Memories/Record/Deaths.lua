@@ -238,7 +238,7 @@ end
 
 local function readLater(d)
 	C_Timer.After(Deaths.RECAP_WAIT, function()
-		ns.Safe("deaths:recap", function()
+		ns.Protect("deaths:recap", function()
 			if d ~= pending or d.written then
 				return
 			end
@@ -262,7 +262,7 @@ local function onDead()
 		return
 	end
 	C_Timer.After(Deaths.RECAP_WAIT, function()
-		ns.Safe("deaths:dead", function()
+		ns.Protect("deaths:dead", function()
 			if not dead and deadNow() then
 				-- A release during the wait fired PLAYER_ALIVE while dead was still false.
 				local d = startDeath()
@@ -499,14 +499,14 @@ local function hook(retry)
 	local f = LowHealthFrame
 	if type(f) == "table" and type(f.HookScript) == "function" then
 		f:HookScript("OnShow", function()
-			ns.Safe("deaths:flash", onFlashShow)
+			ns.Protect("deaths:flash", onFlashShow)
 		end)
 		f:HookScript("OnHide", function()
-			ns.Safe("deaths:flash", onFlashHide)
+			ns.Protect("deaths:flash", onFlashHide)
 		end)
 	elseif retry then
 		C_Timer.After(Deaths.HOOK_RETRY, function()
-			ns.Safe("deaths:hook", hook, false)
+			ns.Protect("deaths:hook", hook, false)
 		end)
 	end
 end

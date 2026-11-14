@@ -18,7 +18,7 @@ local function bind(setting, path)
 	byPath[path] = setting
 	setting:SetValueChangedCallback(function(_, value)
 		if not syncing then
-			ns.Safe("options:" .. path, ns.Settings.Set, path, value)
+			ns.Protect("options:" .. path, ns.Settings.Set, path, value)
 		end
 	end)
 	return setting
@@ -59,7 +59,7 @@ end
 local function groupButton(addon, group, label, on)
 	local text = on and L["Enable all"] or L["Disable all"]
 	return CreateSettingsButtonInitializer(label, text, function()
-		ns.Safe("options:group", ns.Settings.SetGroup, addon, group, on)
+		ns.Protect("options:group", ns.Settings.SetGroup, addon, group, on)
 	end, on and L["Turns on every kind of this group."] or L["Turns off every kind of this group."], false)
 end
 
@@ -147,14 +147,14 @@ end
 -- Runs once, at login after every early registration; a later registration adds its own section. A page that failed
 -- stays failed: its settings are half registered, and the client refuses a variable twice.
 function Options.Build()
-	if not ns.Safe("options", build) then
+	if not ns.ProtectWith(L["The settings panel is not available on this client."], "options", build) then
 		category, layout = nil, nil
 	end
 end
 
 function Options.Open()
 	if not category then
-		ns.Print(L["the settings page failed; see /memories errors"])
+		ns.Print(L["The settings panel is not available on this client."])
 		return false
 	end
 	Settings.OpenToCategory(category:GetID())

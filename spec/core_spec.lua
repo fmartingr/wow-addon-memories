@@ -185,15 +185,15 @@ describe("core", function()
 		end)
 	end)
 
-	describe("Safe", function()
+	describe("Protect", function()
 		it("returns true and up to 4 results", function()
-			assert.same({ true, 1, 2, 3, 4 }, { ns.Safe("w", function(a, b)
+			assert.same({ true, 1, 2, 3, 4 }, { ns.Protect("w", function(a, b)
 				return a, b, 3, 4, 5
 			end, 1, 2) })
 		end)
 
 		it("passes nil arguments in place", function()
-			local ok, n = ns.Safe("w", function(...)
+			local ok, n = ns.Protect("w", function(...)
 				return select("#", ...)
 			end, nil, 2, nil)
 			assert.is_true(ok)
@@ -201,7 +201,7 @@ describe("core", function()
 		end)
 
 		it("returns false, saves the error with a stack and passes it to the error handler", function()
-			assert.is_false(ns.Safe("test", error, "boom", 0))
+			assert.is_false(ns.Protect("test", error, "boom", 0))
 			local e = ns.Errors()[#ns.Errors()]
 			assert.equal("test", e.where)
 			assert.equal("boom", e.msg)
@@ -214,21 +214,33 @@ describe("core", function()
 			_G.debugstack = function()
 				error("no stack")
 			end
-			assert.is_false(ns.Safe("test", error, "boom", 0))
+			assert.is_false(ns.Protect("test", error, "boom", 0))
 			local e = ns.Errors()[#ns.Errors()]
 			assert.equal("test", e.where)
 			assert.is_string(e.msg)
 			assert.are_not.equal("nil", e.msg)
 		end)
 
-		it("prints one chat line for each place per session", function()
-			ns.Safe("a", error, "1")
-			ns.Safe("a", error, "2")
-			ns.Safe("b", error, "3")
-			assert.same(
-				{ "Memories: error in a. See /memories errors.", "Memories: error in b. See /memories errors." },
-				wow.chat()
-			)
+		it("prints one chat line for each place per session, with the place and the error", function()
+			ns.Protect("a", error, "1", 0)
+			ns.Protect("a", error, "2", 0)
+			ns.Protect("b", error, "3", 0)
+			assert.same({
+				"Memories: A feature could not start. Some functions can be missing. [a: 1]",
+				"Memories: A feature could not start. Some functions can be missing. [b: 3]",
+			}, wow.chat())
+		end)
+
+		it("prints the chat line that the caller names", function()
+			assert.is_false(ns.ProtectWith("Custom line.", "c", error, "4", 0))
+			assert.same({ "Memories: Custom line. [c: 4]" }, wow.chat())
+		end)
+
+		it("ReportOnce prints a key once, with or without an error", function()
+			assert.is_true(ns.ReportOnce("k", "Text."))
+			assert.is_false(ns.ReportOnce("k", "Text.", "again"))
+			assert.is_true(ns.ReportOnce("e", "Text.", "boom"))
+			assert.same({ "Memories: Text. [k]", "Memories: Text. [e: boom]" }, wow.chat())
 		end)
 
 		it("keeps the last 100 errors", function()

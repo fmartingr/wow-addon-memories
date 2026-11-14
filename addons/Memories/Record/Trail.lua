@@ -267,7 +267,7 @@ local function restart()
 	stallRate = rate
 	rate = rateSetting()
 	ticker = C_Timer.NewTicker(rate, function()
-		ns.Safe("trail:tick", Trail.Tick)
+		ns.Protect("trail:tick", Trail.Tick)
 	end)
 end
 

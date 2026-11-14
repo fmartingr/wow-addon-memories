@@ -43,6 +43,6 @@ ns.Listen("LOGIN", function()
 	since = GetTime()
 	reminded = false
 	ticker = C_Timer.NewTicker(Save.CHECK_EVERY, function()
-		ns.Safe("save", Save.Check)
+		ns.Protect("save", Save.Check)
 	end)
 end, "save")

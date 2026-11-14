@@ -205,7 +205,7 @@ local function finish(t, after)
 		t.after = after
 		boat = t
 		C_Timer.After(Travel.BOAT_WAIT, function()
-			ns.Safe("travel:boat", function()
+			ns.Protect("travel:boat", function()
 				if boat == t then
 					boat, t.waited = nil, true
 					finish(t, after)
@@ -246,7 +246,7 @@ local function startTrip(t)
 	trip = t
 	stopWatch()
 	watcher = C_Timer.NewTicker(Travel.WATCH, function()
-		ns.Safe("travel:watch", poll)
+		ns.Protect("travel:watch", poll)
 	end, Travel.WATCH_READS)
 end
 
@@ -370,7 +370,7 @@ local function onLoadingEnd()
 	end
 	t.ended = true
 	C_Timer.After(Travel.SETTLE, function()
-		ns.Safe("travel:arrive", function()
+		ns.Protect("travel:arrive", function()
 			-- A second loading screen within the settle time keeps the trip; its own end schedules the arrival.
 			if trip == t and not loading then
 				trip = nil

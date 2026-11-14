@@ -196,7 +196,7 @@ function Handle:Flight()
 end
 
 function Handle:Safe(name, fn, ...)
-	return ns.Safe(where(self, name), fn, ...)
+	return ns.Protect(where(self, name), fn, ...)
 end
 
 function Handle:Print(...)

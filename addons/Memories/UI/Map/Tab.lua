@@ -98,7 +98,7 @@ local function create()
 	button.selected:SetColorTexture(1, 0.82, 0, 0.3)
 	button.selected:Hide()
 	button:SetScript("OnClick", function()
-		ns.Safe("map tab:click", ns.MapWindow.Toggle)
+		ns.Protect("map tab:click", ns.MapWindow.Toggle)
 	end)
 	button:SetScript("OnEnter", function(self)
 		GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
@@ -126,7 +126,7 @@ function Tab.Attach()
 		if type(owner) == "table" and owner.HookScript then
 			for _, script in ipairs(owner == WorldMapFrame and { "OnShow" } or { "OnShow", "OnHide" }) do
 				owner:HookScript(script, function()
-					ns.Safe("map tab:place", Tab.Place)
+					ns.Protect("map tab:place", Tab.Place)
 				end)
 			end
 		end

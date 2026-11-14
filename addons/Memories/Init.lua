@@ -5,7 +5,7 @@ ns.loginTime = {}
 local function each(hook, ...)
 	for _, module in ipairs(ns.modules) do
 		if module[hook] then
-			ns.Safe(module.name .. ":" .. hook, module[hook], module, ...)
+			ns.Protect(module.name .. ":" .. hook, module[hook], module, ...)
 		end
 	end
 end
@@ -37,13 +37,13 @@ end, "init")
 ns.On("PLAYER_LOGIN", function()
 	timed("login", function()
 		-- Every recorder writes through the core journal, so without it they stay off instead of failing one by one.
-		if not ns.Safe("store", ns.Store.Init) then
+		if not ns.Protect("store", ns.Store.Init) then
 			ns.stopped = true
 			ns.Registry.Stop()
 			return
 		end
 		each("OnLogin")
-		ns.Safe("registry", ns.Registry.Login)
+		ns.Protect("registry", ns.Registry.Login)
 		ns.loggedIn = true
 		ns.Emit("LOGIN")
 	end)
@@ -53,7 +53,7 @@ end, "login")
 local function enterWorld(isLogin, isReload)
 	ns.enteringWorld = true
 	each("OnEnterWorld", isLogin, isReload)
-	ns.Safe("registry", ns.Registry.EnterWorld, isLogin, isReload)
+	ns.Protect("registry", ns.Registry.EnterWorld, isLogin, isReload)
 	ns.enteringWorld = false
 end
 

@@ -63,10 +63,10 @@ function Minimap.Register()
 		type = "launcher",
 		icon = ICON,
 		OnClick = function(frame, which)
-			ns.Safe("minimap:click", Minimap.OnClick, frame, which)
+			ns.Protect("minimap:click", Minimap.OnClick, frame, which)
 		end,
 		OnTooltipShow = function(tooltip)
-			ns.Safe("minimap:tooltip", Minimap.OnTooltipShow, tooltip)
+			ns.Protect("minimap:tooltip", Minimap.OnTooltipShow, tooltip)
 		end,
 	})
 	Minimap.icon = icon

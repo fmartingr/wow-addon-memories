@@ -118,13 +118,13 @@ end
 local function call(entry, hook, ...)
 	local fn = entry.def[hook]
 	if fn and entry.state == "on" then
-		ns.Safe(entry.addon .. ":" .. hook, fn, entry.handle, ...)
+		ns.Protect(entry.addon .. ":" .. hook, fn, entry.handle, ...)
 	end
 end
 
 -- The saved global is the table the client writes back, so a new one goes into _G before the journal fills it.
 local function open(entry)
-	local ok = ns.Safe(entry.addon .. ":open", function()
+	local ok = ns.Protect(entry.addon .. ":open", function()
 		local saved = entry.saved
 		if type(_G[saved]) ~= "table" then
 			_G[saved] = {}
@@ -178,7 +178,7 @@ end
 
 -- Returns a handle, or nil and a reason: "bad def", "newer api", "twice", "kind taken" or "error".
 function ns.Public.RegisterModule(def)
-	local ok, h, reason = ns.Safe("register", register, def)
+	local ok, h, reason = ns.Protect("register", register, def)
 	if not ok then
 		return nil, "error"
 	end

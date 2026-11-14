@@ -132,7 +132,7 @@ local function public(where, ...)
 	end
 	busy = true
 	-- The pcall keeps busy from staying set when the error log itself raises.
-	local called, ok, done, reason = pcall(ns.Safe, where, record, ...)
+	local called, ok, done, reason = pcall(ns.Protect, where, record, ...)
 	busy = false
 	if not (called and ok) then
 		return false, "error"

@@ -329,7 +329,7 @@ local function onXP(_, text)
 	end
 	local w = { amount = amount, bonus = bonus, at = at, inst = inst, level = level }
 	w.timer = C_Timer.NewTimer(Progress.XP_WAIT, function()
-		ns.Safe("progress:xp", function()
+		ns.Protect("progress:xp", function()
 			for i, other in ipairs(waiting) do
 				if other == w then
 					table.remove(waiting, i)
@@ -371,7 +371,7 @@ local function onTurnIn(_, questID, xp, money)
 		return
 	end
 	C_Timer.After(Progress.TITLE_RETRY, function()
-		ns.Safe("progress:quest", function()
+		ns.Protect("progress:quest", function()
 			ti.title, ti.waitTitle = title(questID), nil
 			core():WriteAt(at, "qt", questID, xp, money, ti.title)
 			local h = ti.held
@@ -408,7 +408,7 @@ local function onInfo(_, _, message)
 	end
 	local at = ns.Here()
 	C_Timer.After(Progress.DISCOVERY_WAIT, function()
-		ns.Safe("progress:discovery", function()
+		ns.Protect("progress:discovery", function()
 			local last = lastDiscovery
 			if last and last.area == area and GetTime() - last.clock <= Progress.DISCOVERY_SAME then
 				return

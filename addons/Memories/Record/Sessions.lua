@@ -70,7 +70,7 @@ local function unmuteIn(delay)
 		unmuteTimer:Cancel()
 	end
 	unmuteTimer = C_Timer.NewTimer(delay, function()
-		ns.Safe("sessions:unmute", unmute)
+		ns.Protect("sessions:unmute", unmute)
 	end)
 end
 
@@ -242,10 +242,10 @@ local function start(isLogin, isReload)
 		core():WriteAt(startAt, "pc", computer)
 	end
 	C_Timer.After(Sessions.ASK_DELAY, function()
-		ns.Safe("sessions:played", Sessions.RequestPlayed, "login")
+		ns.Protect("sessions:played", Sessions.RequestPlayed, "login")
 	end)
 	C_Timer.NewTicker(Sessions.SAVE_EVERY, function()
-		ns.Safe("sessions:save", save)
+		ns.Protect("sessions:save", save)
 	end)
 end
 

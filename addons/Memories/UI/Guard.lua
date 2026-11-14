@@ -98,13 +98,13 @@ StaticPopupDialogs[GUARD] = {
 	button1 = L["Restore"],
 	button2 = L["Start fresh"],
 	OnAccept = function(_, addon)
-		ns.Safe("guard:restore", Guard.Restore, addon)
+		ns.Protect("guard:restore", Guard.Restore, addon)
 		answered()
 	end,
 	-- Only the button counts as an answer: a popup that another one replaces keeps the hold for the next login.
 	OnCancel = function(_, addon, reason)
 		if reason == "clicked" then
-			ns.Safe("guard:fresh", Guard.StartFresh, addon)
+			ns.Protect("guard:fresh", Guard.StartFresh, addon)
 		end
 		answered()
 	end,
@@ -124,7 +124,7 @@ StaticPopupDialogs[RELOAD] = {
 	button1 = L["Reload"],
 	button2 = L["Later"],
 	OnAccept = function()
-		ns.Safe("guard:reload", ns.Save.Now)
+		ns.Protect("guard:reload", ns.Save.Now)
 	end,
 	timeout = 0,
 	whileDead = 1,

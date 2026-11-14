@@ -25,7 +25,7 @@ function Slash.Run(msg)
 	name = name:lower()
 	for _, c in ipairs(Slash.commands) do
 		if c.name == name then
-			ns.Safe("slash:" .. c.name, c.fn, rest)
+			ns.ProtectWith(L["The command failed. Some functions can be missing."], "slash:" .. c.name, c.fn, rest)
 			return
 		end
 	end
@@ -110,5 +110,5 @@ end, L["show the state of each Memories addon"])
 SLASH_MEMORIES1 = "/memories"
 SLASH_MEMORIES2 = "/mem"
 SlashCmdList.MEMORIES = function(msg)
-	ns.Safe("slash", Slash.Run, msg)
+	ns.Protect("slash", Slash.Run, msg)
 end

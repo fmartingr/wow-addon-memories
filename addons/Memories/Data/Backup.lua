@@ -183,7 +183,7 @@ local function step()
 		end
 		return
 	end
-	ns.Safe("backup:" .. addon, Backup.Write, addon)
+	ns.Protect("backup:" .. addon, Backup.Write, addon)
 	-- One addon per frame spreads the encoding cost of large journals.
 	C_Timer.After(0, function()
 		ns.AfterCombat("backup", step)
@@ -207,7 +207,7 @@ function Backup.Run()
 end
 
 local function run()
-	ns.Safe("backup", Backup.Run)
+	ns.Protect("backup", Backup.Run)
 end
 
 ns.Listen("LOGIN", function()

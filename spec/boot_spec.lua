@@ -244,6 +244,10 @@ describe("boot", function()
 			SlashCmdList.MEMORIES("boom")
 			assert.equal("command failed", MemoriesDB.errors[1].msg)
 			assert.equal("slash:boom", MemoriesDB.errors[1].where)
+			assert.same(
+				{ "Memories: The command failed. Some functions can be missing. [slash:boom: command failed]" },
+				wow.chat()
+			)
 		end)
 	end)
 
