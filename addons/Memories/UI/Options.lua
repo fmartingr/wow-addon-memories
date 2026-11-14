@@ -119,11 +119,7 @@ local function section(addon, boxes)
 			checkbox("kinds." .. spec.kind, spec.name, L.KIND_TIP:format(spec.kind))
 		end
 		for _, box in ipairs(byGroup[g].boxes) do
-			checkbox(
-				"newOnly." .. box.key,
-				box.label or box.key,
-				L.NEW_FINDINGS_TIP
-			)
+			checkbox("newOnly." .. box.key, box.label or box.key, L.NEW_FINDINGS_TIP)
 		end
 	end
 end

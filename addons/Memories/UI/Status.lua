@@ -68,13 +68,8 @@ function Status.Lines()
 	local out = {}
 	local off = kindsOff()
 	for _, a in ipairs(ns.Public.Addons()) do
-		local line = L.STATUS_LINE:format(
-			a.addon,
-			STATE[a.state] or a.state,
-			a.lines,
-			off[a.addon] or 0,
-			backup(a.addon)
-		)
+		local line =
+			L.STATUS_LINE:format(a.addon, STATE[a.state] or a.state, a.lines, off[a.addon] or 0, backup(a.addon))
 		out[#out + 1] = a.readOnly and L.READ_ONLY:format(line) or line
 	end
 	local times = {}

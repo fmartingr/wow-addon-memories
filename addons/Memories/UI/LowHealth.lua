@@ -13,8 +13,7 @@ local CVAR = LowHealth.CVAR
 local POPUP = "MEMORIES_LOW_HEALTH"
 
 LowHealth.TITLE = L.LOW_HEALTH_ASK
-LowHealth.BODY =
-	L.LOW_HEALTH_WHY
+LowHealth.BODY = L.LOW_HEALTH_WHY
 
 local dialog
 -- The value of our own CVar write, so its CVAR_UPDATE is no change by the player.
@@ -132,12 +131,7 @@ ns.On("PLAYER_ENTERING_WORLD", function()
 	end
 end, "low health")
 
-ns.Settings.AddToggle(
-	"lowHealthFlash",
-	"LOW_HEALTH_FLASH",
-	"LOW_HEALTH_FLASH_TIP",
-	true
-)
+ns.Settings.AddToggle("lowHealthFlash", "LOW_HEALTH_FLASH", "LOW_HEALTH_FLASH_TIP", true)
 
 -- A click on the option of the Settings page arrives here as a changed setting.
 ns.Settings.OnChange("lowHealthFlash", function(value)
