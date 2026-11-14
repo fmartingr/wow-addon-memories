@@ -2,37 +2,11 @@ local _, ns = ...
 
 local L = ns.L
 
-local Slash = { commands = {} }
-ns.Slash = Slash
+-- /memories errors: the saved error log in a box, ready to copy.
+local ErrorLog = {}
+ns.ErrorLog = ErrorLog
 
-function Slash.Add(name, fn, help)
-	name = name:lower()
-	for _, c in ipairs(Slash.commands) do
-		assert(c.name ~= name, "duplicate slash command " .. name)
-	end
-	Slash.commands[#Slash.commands + 1] = { name = name, fn = fn, help = help or "" }
-end
-
-function Slash.Help()
-	ns.Print(L["commands:"])
-	for _, c in ipairs(Slash.commands) do
-		ns.Print("/memories " .. c.name .. " - " .. c.help)
-	end
-end
-
-function Slash.Run(msg)
-	local name, rest = (msg or ""):match("^%s*(%S*)%s*(.-)%s*$")
-	name = name:lower()
-	for _, c in ipairs(Slash.commands) do
-		if c.name == name then
-			ns.ProtectWith(L["The command failed. Some functions can be missing."], "slash:" .. c.name, c.fn, rest)
-			return
-		end
-	end
-	Slash.Help()
-end
-
-function Slash.ErrorText()
+function ErrorLog.Text()
 	local lines = {}
 	-- Entries come from the saved file, which a user can edit by hand.
 	for _, e in ipairs(ns.Errors()) do
@@ -80,8 +54,8 @@ local function errorBox()
 	return box
 end
 
-Slash.Add("errors", function()
-	local text = Slash.ErrorText()
+function ErrorLog.Show()
+	local text = ErrorLog.Text()
 	if text == "" then
 		ns.Print(L["no saved errors."])
 		return
@@ -92,23 +66,6 @@ Slash.Add("errors", function()
 	f:Show()
 	f.EditBox:SetFocus()
 	f.EditBox:HighlightText()
-end, L["show the saved errors, ready to copy"])
-
-local function options()
-	ns.Options.Open()
 end
 
-Slash.Add("options", options, L["open the settings page"])
-Slash.Add("settings", options, L["open the settings page"])
-Slash.Add("note", function(rest)
-	ns.NoteWindow.Open(rest)
-end, L["write a note in the journey"])
-Slash.Add("status", function()
-	ns.Status.Print()
-end, L["show the state of each Memories addon"])
-
-SLASH_MEMORIES1 = "/memories"
-SLASH_MEMORIES2 = "/mem"
-SlashCmdList.MEMORIES = function(msg)
-	ns.Protect("slash", Slash.Run, msg)
-end
+ns.Commands.Register("errors", ErrorLog.Show, "show the saved errors, ready to copy")

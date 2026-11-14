@@ -94,3 +94,5 @@ function Status.Print()
 		ns.Print(line)
 	end
 end
+
+ns.Commands.Register("status", Status.Print, "show the state of each Memories addon")

@@ -49,7 +49,8 @@ Record\Screenshots.lua
 Record\Notes.lua
 Record\Travel.lua
 Record\Dungeons.lua
-UI\Slash.lua
+UI\Commands.lua
+UI\ErrorLog.lua
 UI\Save.lua
 UI\NoteWindow.lua
 UI\Minimap.lua

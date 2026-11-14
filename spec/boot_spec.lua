@@ -139,16 +139,19 @@ describe("boot", function()
 			wow.boot()
 			SlashCmdList.MEMORIES("")
 			assert.same({
-				"Memories: commands:",
+				"Memories: Commands:",
+				"Memories: /memories help - show this list",
 				"Memories: /memories errors - show the saved errors, ready to copy",
+				"Memories: /memories note - write a note in the journey",
+				"Memories: /memories minimap - show or hide the minimap button",
 				"Memories: /memories options - open the settings page",
 				"Memories: /memories settings - open the settings page",
-				"Memories: /memories note - write a note in the journey",
 				"Memories: /memories status - show the state of each Memories addon",
-				"Memories: /memories minimap - show or hide the minimap button",
 			}, wow.chat())
 			SlashCmdList.MEMORIES("nope")
-			assert.equal(14, #wow.chat())
+			assert.equal(16, #wow.chat())
+			SlashCmdList.MEMORIES("help")
+			assert.equal(24, #wow.chat())
 		end)
 
 		it("opens the settings page on a right click of the addon compartment", function()
@@ -174,20 +177,22 @@ describe("boot", function()
 		it("adds a sub-command", function()
 			local ns = wow.boot()
 			local got
-			ns.Slash.Add("probe", function(rest)
+			ns.Commands.Register("probe", function(rest)
 				got = rest
 			end, "probe")
 			SlashCmdList.MEMORIES("  PROBE  all now ")
 			assert.equal("all now", got)
-			assert.has_error(function()
-				ns.Slash.Add("probe", function() end, "again")
-			end)
+			ns.Commands.Register("probe", function(rest)
+				got = "again " .. rest
+			end, "probe")
+			SlashCmdList.MEMORIES("probe x")
+			assert.equal("again x", got)
 		end)
 
 		it("runs a sub-command added with capital letters", function()
 			local ns = wow.boot()
 			local ran = false
-			ns.Slash.Add("Backup", function()
+			ns.Commands.Register("Backup", function()
 				ran = true
 			end)
 			SlashCmdList.MEMORIES("backup")
@@ -226,7 +231,7 @@ describe("boot", function()
 				},
 			})
 			local ns = wow.ns.Memories
-			assert.equal("unknown time  far: a\nunknown time  none: b", ns.Slash.ErrorText())
+			assert.equal("unknown time  far: a\nunknown time  none: b", ns.ErrorLog.Text())
 		end)
 
 		it("prints a line when there are no errors", function()
@@ -238,7 +243,7 @@ describe("boot", function()
 
 		it("logs an error inside a command", function()
 			local ns = wow.boot()
-			ns.Slash.Add("boom", function()
+			ns.Commands.Register("boom", function()
 				error("command failed", 0)
 			end, "fail")
 			SlashCmdList.MEMORIES("boom")

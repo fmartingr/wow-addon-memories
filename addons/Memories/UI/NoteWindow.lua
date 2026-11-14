@@ -197,3 +197,5 @@ end
 ns.Listen("LOGIN", function()
 	ns.U.Hook(nil, "ChatEdit_InsertLink", onInsertLink, "notes:link")
 end, "notewindow")
+
+ns.Commands.Register("note", NoteWindow.Open, "write a note in the journey")

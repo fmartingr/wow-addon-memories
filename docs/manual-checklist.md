@@ -41,7 +41,7 @@ order: run them from top to bottom. Run A has all 6 addons on. Run B (section T)
 | B1 | 3, 16 | Group in the AddOn list | Start the game and open the AddOn list on the character screen. | The 6 addons show as one group "Memories": "Memories", "Memories - Character", "Memories - Combat", "Memories - Economy", "Memories - Gathering" and "Memories - Social". | not run |
 | B2 | 1 | All addons load | Enable the 6 addons and log in. | No Lua error. | not run |
 | B3 | 5 | Status | Type `/mem status`. | "Memories: status:", then one `on` line for each of the 6 addons with `<n> lines, <n> kinds off, ...`, then `login time: init <n> ms, login <n> ms, world <n> ms`. Each line starts with "Memories:". | not run |
-| B4 | 1 | Command list | Type `/mem`, then `/memories`. | Each prints "Memories: commands:" and the `errors`, `options`, `settings`, `note`, `status` and `minimap` lines. Each line starts with "Memories:". | not run |
+| B4 | 1 | Command list | Type `/mem`, then `/memories`. | Each prints "Memories: Commands:" and the `help`, `errors`, `note`, `minimap`, `options`, `settings` and `status` lines. Each line starts with "Memories:". | not run |
 | B5 | 1 | Errors box, none | On a clean install, type `/mem errors`. | It prints "Memories: no saved errors." | not run |
 | B6 | 3 | Public global | Type `/dump Memories.API_VERSION, Memories.VERSION`. | It prints `1` and the TOC version. | not run |
 

@@ -182,3 +182,6 @@ ns.Listen("SETTING_CHANGED", function(_, path)
 		error(err, 0)
 	end
 end, "options")
+
+ns.Commands.Register("options", Options.Open, "open the settings page")
+ns.Commands.Register("settings", Options.Open, "open the settings page")

@@ -132,7 +132,7 @@ function Minimap.Toggle()
 	ns.Print(shown and L["Minimap button shown."] or L["Minimap button hidden."])
 end
 
-ns.Slash.Add("minimap", Minimap.Toggle, L["show or hide the minimap button"])
+ns.Commands.Register("minimap", Minimap.Toggle, "show or hide the minimap button")
 ns.Listen("LOGIN", Minimap.Register, "minimap")
 ns.Listen("SAVE_REMINDER", function()
 	Minimap.Pulse(true)

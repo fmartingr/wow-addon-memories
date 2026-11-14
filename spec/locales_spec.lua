@@ -54,6 +54,10 @@ describe("addon strings", function()
 			for key in read(path):gmatch('L%["(.-)"%]') do
 				keys[key] = true
 			end
+			-- A command passes the locale key of its help line, which the help list translates.
+			for key in read(path):gmatch('Commands%.Register%(%b"",[^\n]-,%s*"([^"\n]-)"%)') do
+				keys[key] = true
+			end
 		end
 		return keys
 	end
@@ -297,8 +301,9 @@ describe("addon strings", function()
 			wow.chat_raw = {}
 			SlashCmdList.MEMORIES("nothing")
 			local lines = wow.chat()
-			assert.equal("Memories: comandos:", lines[1])
-			assert.equal("Memories: /memories options - abrir la página de opciones", lines[3])
+			assert.equal("Memories: Comandos:", lines[1])
+			assert.equal("Memories: /memories help - mostrar esta lista", lines[2])
+			assert.equal("Memories: /memories options - abrir la página de opciones", lines[6])
 		end)
 
 		it("prints the save reminder in Spanish", function()
