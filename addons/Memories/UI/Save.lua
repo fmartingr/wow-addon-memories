@@ -39,6 +39,8 @@ function Save.Check()
 	ns.Emit("SAVE_REMINDER")
 end
 
+ns.Settings.AddToggle("saveReminder", "Save reminder", "Reminds you to save after one hour without a reload.", true)
+
 ns.Listen("LOGIN", function()
 	since = GetTime()
 	reminded = false

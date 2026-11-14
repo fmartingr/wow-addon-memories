@@ -17,9 +17,6 @@ local DEFAULTS = {
 	kinds = {},
 	newOnly = {},
 	recordRate = 2,
-	saveReminder = true,
-	minimapButton = true,
-	lowHealthFlash = true,
 	-- "yards" or "meters"; any other value lets the region and the client language decide.
 	distanceUnit = "auto",
 	-- The Journey window: the shown groups, the trail, the colour of the trail ("way", "level" or "age"), the
@@ -207,3 +204,25 @@ function Settings.NewOnly(key)
 end
 
 ns.KindOn = Settings.KindOn
+
+-- The checkboxes of the General section, in the order of the files that add them.
+Settings.toggles = {}
+
+-- Adds an account-wide true or false setting and its checkbox. labelKey and tipKey are locale keys. Call it at load
+-- time, before the settings table is first read.
+function Settings.AddToggle(key, labelKey, tipKey, default)
+	assert(DEFAULTS[key] == nil or type(DEFAULTS[key]) == "boolean", "setting " .. key .. " is not a toggle")
+	if DEFAULTS[key] == nil then
+		Settings.toggles[#Settings.toggles + 1] = { key = key, labelKey = labelKey, tipKey = tipKey }
+	end
+	DEFAULTS[key] = default == true
+end
+
+-- Calls fn(value) after each change of the setting at path, from the Settings page or from code.
+function Settings.OnChange(path, fn)
+	return ns.Listen("SETTING_CHANGED", function(_, changed, value)
+		if changed == path then
+			fn(value)
+		end
+	end, "setting:" .. path)
+end

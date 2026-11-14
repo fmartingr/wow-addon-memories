@@ -58,6 +58,10 @@ describe("addon strings", function()
 			for key in read(path):gmatch('Commands%.Register%(%b"",[^\n]-,%s*"([^"\n]-)"%)') do
 				keys[key] = true
 			end
+			-- A toggle passes the locale keys of its label and its tooltip.
+			for label, tip in read(path):gmatch('AddToggle%(%s*%b"",%s*"([^"]-)",%s*"([^"]-)"') do
+				keys[label], keys[tip] = true, true
+			end
 		end
 		return keys
 	end

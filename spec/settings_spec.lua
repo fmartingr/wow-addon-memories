@@ -343,4 +343,42 @@ describe("settings", function()
 			assert.is_nil(MemoriesDB.settings)
 		end)
 	end)
+
+	describe("toggles", function()
+		it("lists the checkboxes of the General section in load order", function()
+			local ns = boot({ login = false })
+			local keys = {}
+			for _, toggle in ipairs(ns.Settings.toggles) do
+				keys[#keys + 1] = toggle.key
+			end
+			assert.same({ "saveReminder", "minimapButton", "lowHealthFlash" }, keys)
+			assert.equal("Save reminder", ns.Settings.toggles[1].labelKey)
+		end)
+
+		it("keeps one checkbox for a key added twice and takes the last default", function()
+			local ns = boot({ login = false })
+			local n = #ns.Settings.toggles
+			ns.Settings.AddToggle("saveReminder", "Save reminder", "tip", false)
+			assert.equal(n, #ns.Settings.toggles)
+			assert.is_false(ns.Settings.Default("saveReminder"))
+		end)
+
+		it("refuses a key that is not a toggle", function()
+			local ns = boot({ login = false })
+			assert.has_error(function()
+				ns.Settings.AddToggle("recordRate", "label", "tip", true)
+			end)
+		end)
+
+		it("OnChange calls the function with the value of its own setting only", function()
+			local ns = boot()
+			local got = {}
+			ns.Settings.OnChange("saveReminder", function(value)
+				got[#got + 1] = value
+			end)
+			ns.Settings.Set("minimapButton", false)
+			ns.Settings.Set("saveReminder", false)
+			assert.same({ false }, got)
+		end)
+	end)
 end)

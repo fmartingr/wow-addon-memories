@@ -6,7 +6,7 @@ local L = ns.L
 local Options = {}
 ns.Options = Options
 
-Options.NAME = "Memories"
+Options.NAME = L["Memories"]
 local VARIABLE = "Memories_"
 
 local category, layout
@@ -47,13 +47,9 @@ local function general()
 	layout:AddInitializer(CreateSettingsListSectionHeaderInitializer(L["General"]))
 	local rate = register("recordRate", Settings.VarType.Number, L["Recording rate"])
 	Settings.CreateDropdown(category, rate, rateOptions, L["Seconds between two points of the position trail."])
-	checkbox("saveReminder", L["Save reminder"], L["Reminds you to save after one hour without a reload."])
-	checkbox("minimapButton", L["Minimap button"], L["Shows the Memories button on the minimap."])
-	checkbox(
-		"lowHealthFlash",
-		L["Low-health flash"],
-		L["Keeps the game's low-health flash on, so Memories can record close calls."]
-	)
+	for _, toggle in ipairs(ns.Settings.toggles) do
+		checkbox(toggle.key, L[toggle.labelKey], L[toggle.tipKey])
+	end
 end
 
 local function groupButton(addon, group, label, on)

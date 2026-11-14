@@ -137,9 +137,6 @@ ns.Listen("LOGIN", Minimap.Register, "minimap")
 ns.Listen("SAVE_REMINDER", function()
 	Minimap.Pulse(true)
 end, "minimap")
+ns.Settings.AddToggle("minimapButton", "Minimap button", "Shows the Memories button on the minimap.", true)
 -- LibDBIcon reads minimap.hide; the minimapButton setting decides it.
-ns.Listen("SETTING_CHANGED", function(_, path, value)
-	if path == "minimapButton" then
-		Minimap.Apply(value)
-	end
-end, "minimap")
+ns.Settings.OnChange("minimapButton", Minimap.Apply)

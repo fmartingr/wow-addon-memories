@@ -314,11 +314,7 @@ function Trail:OnLogin()
 		lastTick = GetTime()
 	end, "trail:loading")
 	ns.On("PLAYER_LOGOUT", Trail.Close, "trail:logout")
-	ns.Listen("SETTING_CHANGED", function(_, path)
-		if path == "recordRate" then
-			restart()
-		end
-	end, "trail:rate")
+	ns.Settings.OnChange("recordRate", restart)
 	ns.Listen("RESTORED", function(_, addon)
 		if addon == ns.name then
 			fileCopy()

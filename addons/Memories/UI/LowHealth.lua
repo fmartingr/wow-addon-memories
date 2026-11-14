@@ -132,9 +132,16 @@ ns.On("PLAYER_ENTERING_WORLD", function()
 	end
 end, "low health")
 
+ns.Settings.AddToggle(
+	"lowHealthFlash",
+	"Low-health flash",
+	"Keeps the game's low-health flash on, so Memories can record close calls.",
+	true
+)
+
 -- A click on the option of the Settings page arrives here as a changed setting.
-ns.Listen("SETTING_CHANGED", function(_, path, value)
-	if path ~= "lowHealthFlash" or saving then
+ns.Settings.OnChange("lowHealthFlash", function(value)
+	if saving then
 		return
 	end
 	if value then
