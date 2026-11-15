@@ -14,6 +14,8 @@
 - **Error lines:** a feature that fails prints one line for each session, with the place and the Lua error.
 - **Item names:** when the game has not loaded an item yet, Memories asks for it. The next line of that item has its
   name.
+- **WoW Journey tray:** on Windows, a right click on the tray icon opens its menu. The menu has Gather now, Open
+  window and Quit.
 
 ## 0.4.0 and earlier
 
