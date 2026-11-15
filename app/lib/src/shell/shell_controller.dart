@@ -11,7 +11,6 @@ import 'package:flutter/foundation.dart';
 import '../../l10n/app_localizations.dart';
 import '../gather/gather_controller.dart';
 import '../l10n/app_locale.dart';
-import '../platform/folder_opener.dart';
 import '../platform/startup_service.dart';
 import '../platform/tray_service.dart';
 import '../platform/window_service.dart';
@@ -27,15 +26,11 @@ bool startsHidden(List<String> args) => args.contains(hiddenArgument);
 class TrayLabels {
   TrayLabels(AppLocalizations l)
     : gatherNow = l.trayGatherNow,
-      viewJourney = l.trayViewJourney,
       openWindow = l.trayOpenWindow,
-      openBackupFolder = l.trayOpenBackupFolder,
       quit = l.trayQuit;
 
   final String gatherNow;
-  final String viewJourney;
   final String openWindow;
-  final String openBackupFolder;
   final String quit;
 }
 
@@ -49,7 +44,6 @@ class ShellController {
     required this.tray,
     required this.window,
     required this.startup,
-    required this.opener,
     required this.viewer,
     this.startHidden = false,
     Iterable<Locale> Function()? systemLocales,
@@ -62,7 +56,6 @@ class ShellController {
   final TrayService tray;
   final WindowService window;
   final StartupService startup;
-  final FolderOpener opener;
   final ViewerLauncher viewer;
 
   /// Whether the app started with [hiddenArgument]; the runner then left the
@@ -102,9 +95,7 @@ class ShellController {
     final labels = TrayLabels(texts);
     return [
       TrayItem(labels.gatherNow, () => unawaited(gatherNow())),
-      TrayItem(labels.viewJourney, () => unawaited(viewJourney())),
       TrayItem(labels.openWindow, () => unawaited(openWindow())),
-      TrayItem(labels.openBackupFolder, () => unawaited(openBackupFolder())),
       TrayItem(labels.quit, () => unawaited(quit())),
     ];
   }
@@ -163,26 +154,7 @@ class ShellController {
     await gather.gatherNow(flavorDir: s.flavorDir!, backupRoot: s.backupRoot!);
   }
 
-  /// Opens the page of the default character, in the app language. It shows
-  /// the window when there is no character or the page cannot open.
-  Future<void> viewJourney() async {
-    final snap = gather.snapshot;
-    final characters = snap.characters;
-    if (characters.isEmpty) return openWindow();
-    final id = characters.any((c) => c.id == snap.defaultCharacter)
-        ? snap.defaultCharacter!
-        : characters.first.id;
-    final result = await viewer.open(id, _locale().languageCode);
-    if (result is! ViewerOpened) await openWindow();
-  }
-
   Future<void> openWindow() => window.show();
-
-  /// Opens the backup folder, or shows the window when there is none yet.
-  Future<void> openBackupFolder() async {
-    final root = settings.settings.backupRoot;
-    if (root == null || !await opener.open(root)) await openWindow();
-  }
 
   /// Stops Watch, removes the tray icon and ends the app.
   Future<void> quit() async {

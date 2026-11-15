@@ -1163,16 +1163,8 @@
   "@trayGatherNow": {
     "description": "Tray menu item."
   },
-  "trayViewJourney": "View journey",
-  "@trayViewJourney": {
-    "description": "Tray menu item that opens the page of the default character in the browser."
-  },
   "trayOpenWindow": "Open window",
   "@trayOpenWindow": {
-    "description": "Tray menu item."
-  },
-  "trayOpenBackupFolder": "Open backup folder",
-  "@trayOpenBackupFolder": {
     "description": "Tray menu item."
   },
   "trayQuit": "Quit",

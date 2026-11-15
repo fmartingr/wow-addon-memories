@@ -49,7 +49,6 @@ void main() {
     const keys = [
       'viewCharacter',
       'viewCharacterLabel',
-      'trayViewJourney',
       'viewerStartFailed',
       'viewerOpenFailed',
     ];

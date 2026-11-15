@@ -228,8 +228,6 @@
   "notAnswering": "WoW Journey läuft bereits, hat aber nicht geantwortet. Beende es über das Menü seines Tray-Symbols oder im Task-Manager und starte es dann erneut.",
   "close": "Schließen",
   "trayGatherNow": "Jetzt sammeln",
-  "trayViewJourney": "Reise ansehen",
   "trayOpenWindow": "Fenster öffnen",
-  "trayOpenBackupFolder": "Sicherungsordner öffnen",
   "trayQuit": "Beenden"
 }

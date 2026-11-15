@@ -228,8 +228,6 @@
   "notAnswering": "WoW Journey è già in esecuzione, ma non ha risposto. Usa Esci nel menu della sua icona nella barra di sistema, oppure terminalo nel gestore attività, poi avvialo di nuovo.",
   "close": "Chiudi",
   "trayGatherNow": "Raccogli ora",
-  "trayViewJourney": "Visualizza il viaggio",
   "trayOpenWindow": "Apri la finestra",
-  "trayOpenBackupFolder": "Apri la cartella di backup",
   "trayQuit": "Esci"
 }

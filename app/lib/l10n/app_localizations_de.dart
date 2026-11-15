@@ -917,13 +917,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get trayGatherNow => 'Jetzt sammeln';
 
   @override
-  String get trayViewJourney => 'Reise ansehen';
-
-  @override
   String get trayOpenWindow => 'Fenster öffnen';
-
-  @override
-  String get trayOpenBackupFolder => 'Sicherungsordner öffnen';
 
   @override
   String get trayQuit => 'Beenden';

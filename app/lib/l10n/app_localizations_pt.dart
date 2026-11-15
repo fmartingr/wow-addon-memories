@@ -915,13 +915,7 @@ class AppLocalizationsPt extends AppLocalizations {
   String get trayGatherNow => 'Coletar agora';
 
   @override
-  String get trayViewJourney => 'Ver a jornada';
-
-  @override
   String get trayOpenWindow => 'Abrir janela';
-
-  @override
-  String get trayOpenBackupFolder => 'Abrir pasta de backup';
 
   @override
   String get trayQuit => 'Sair';

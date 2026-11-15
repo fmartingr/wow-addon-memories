@@ -1468,23 +1468,11 @@ abstract class AppLocalizations {
   /// **'Gather now'**
   String get trayGatherNow;
 
-  /// Tray menu item that opens the page of the default character in the browser.
-  ///
-  /// In en, this message translates to:
-  /// **'View journey'**
-  String get trayViewJourney;
-
   /// Tray menu item.
   ///
   /// In en, this message translates to:
   /// **'Open window'**
   String get trayOpenWindow;
-
-  /// Tray menu item.
-  ///
-  /// In en, this message translates to:
-  /// **'Open backup folder'**
-  String get trayOpenBackupFolder;
 
   /// Tray menu item.
   ///

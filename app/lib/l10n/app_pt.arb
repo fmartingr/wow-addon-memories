@@ -228,8 +228,6 @@
   "notAnswering": "O WoW Journey já está em execução, mas não respondeu. Use Sair no menu do ícone dele na bandeja, ou encerre-o no gerenciador de tarefas, e inicie-o de novo.",
   "close": "Fechar",
   "trayGatherNow": "Coletar agora",
-  "trayViewJourney": "Ver a jornada",
   "trayOpenWindow": "Abrir janela",
-  "trayOpenBackupFolder": "Abrir pasta de backup",
   "trayQuit": "Sair"
 }

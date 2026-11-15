@@ -55,9 +55,8 @@ Releases are cut as described in [`releasing.md`](releasing.md).
   keeps the old key as `upload-key.<UTC time>.json` next to it, makes a new one, turns Upload off and forgets every
   registration, so you register again and the app sends the ticked characters again. A build can set another default address with
   `--dart-define=WOWJOURNEY_SITE=http://localhost:8080`.
-- **Tray:** the tray icon has the menu Gather now, View journey, Open window, Open backup folder and Quit. View journey
-  opens the default character of `latest/index.json`, or the first character; with no character, it shows the window.
-  Closing the window hides it to the tray; Quit stops Watch and the local viewer and ends the app. A gather from the
+- **Tray:** the tray icon has the menu Gather now, Open window and Quit. On Windows the right button opens the menu;
+  on macOS and Linux a click opens it. Closing the window hides it to the tray; Quit stops Watch and the local viewer and ends the app. A gather from the
   tray leaves a hidden window hidden. When there is no tray, closing the window quits the app. On Linux the icon needs
   a panel with status notifier icons: KDE Plasma and most other desktops have one, GNOME only with the AppIndicator
   extension (Ubuntu has it on).

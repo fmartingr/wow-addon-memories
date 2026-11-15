@@ -62,7 +62,6 @@ class _WowJourneyAppState extends State<WowJourneyApp>
     tray: widget.services.tray,
     window: widget.services.window,
     startup: widget.services.startup,
-    opener: widget.services.opener,
     viewer: widget.services.viewer,
     startHidden: widget.startHidden,
   );

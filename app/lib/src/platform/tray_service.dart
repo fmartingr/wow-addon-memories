@@ -124,6 +124,9 @@ class SystemTrayService implements TrayService {
       icon.icon = image;
       if (Platform.isMacOS) icon.isIconTemplate = true;
       icon.setTooltip(tooltip);
+      // The Windows icon reads its clicks, and so opens its menu, only while
+      // it has a listener.
+      icon.addListener((_) {});
       if (!_setMenu(icon, items)) return _available = false;
       _icon = icon;
       return _available = icon.setVisible(true);

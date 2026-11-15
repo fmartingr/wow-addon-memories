@@ -912,13 +912,7 @@ class AppLocalizationsEs extends AppLocalizations {
   String get trayGatherNow => 'Recopilar ahora';
 
   @override
-  String get trayViewJourney => 'Ver el viaje';
-
-  @override
   String get trayOpenWindow => 'Abrir ventana';
-
-  @override
-  String get trayOpenBackupFolder => 'Abrir carpeta de copias';
 
   @override
   String get trayQuit => 'Salir';
