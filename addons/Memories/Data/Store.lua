@@ -95,10 +95,12 @@ function Store.Open(addon, data)
 	local j = ns.Journal.New(data, { addon = addon, readOnly = readOnly })
 	if not readOnly then
 		local name, realm = ns.RN(UnitName("player"), GetRealmName())
-		-- A rename keeps the GUID, so the name and realm follow the game; a secret value keeps the stored one.
+		-- A rename keeps the GUID, so the name and realm follow the game; a secret or empty value keeps the stored one.
 		data.char.guid = data.char.guid or guid
 		data.char.name = name or data.char.name
-		data.char.realm = realm or data.char.realm
+		if realm ~= nil and realm ~= "" then
+			data.char.realm = realm
+		end
 		if oldGuid then
 			j:Write("nt", "new character", oldGuid)
 		end

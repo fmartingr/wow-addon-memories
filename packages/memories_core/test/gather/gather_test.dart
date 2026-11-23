@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:memories_core/memories_core.dart';
@@ -125,6 +126,33 @@ void main() {
         File(p.join(fx.wow, 'Screenshots', name)).lastModifiedSync(),
       );
     });
+
+    test(
+      'labels the realm with its folder when the saved name is empty',
+      () async {
+        final file = File(
+          p.join(
+            account(fx.wow),
+            'Brumamar',
+            'Ñandú',
+            'SavedVariables',
+            'Memories.lua',
+          ),
+        );
+        file.writeAsStringSync(
+          file.readAsStringSync().replaceFirst(
+            '["realm"] = "Brumamar"',
+            '["realm"] = ""',
+          ),
+        );
+        final r = await runOn(fx.wow, fx.dist);
+        expect(r.result.error, isNull, reason: r.out);
+        final doc = jsonDecode(
+          File(p.join(fx.dist, mainId, 'character.json')).readAsStringSync(),
+        ) as Map<String, Object?>;
+        expect(doc['realmLabel'], 'Brumamar');
+      },
+    );
 
     test('ignores a stale temporary file in the output', () async {
       Directory(p.join(fx.dist, mainId)).createSync(recursive: true);

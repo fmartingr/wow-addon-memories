@@ -120,6 +120,10 @@ class _Character {
   final String guid;
   final String realm;
   final Map<String, Object?> char;
+
+  /// The folder of the realm in the account folder. It is the realm id of the
+  /// Forever client, and the realm of other clients.
+  String realmDir = '';
   String id = '';
   String name = '';
   final Map<String, Map<String, Object?>> addons = {};
@@ -483,6 +487,7 @@ class _Gather {
           final folder = charFolder(realm, name);
           final c = _load(sv, folder.realm, folder.name, kinds);
           if (c == null) continue;
+          c.realmDir = realm;
           final old = byGuid[c.guid];
           if (old != null) {
             _warn(
@@ -771,6 +776,13 @@ class _Gather {
     return (copied: copied, unmatched: unmatched);
   }
 
+  /// The realm name that the game saved. The game gives an empty name for
+  /// some characters, and then the name of their realm folder is the label.
+  String _realmLabel(_Character c) {
+    final saved = c.char['realm'];
+    return saved is String && saved.isNotEmpty ? saved : c.realmDir;
+  }
+
   _IndexEntry _write(_Character c) {
     final folder = p.join(dist, c.id);
     writeJsonl(p.join(folder, 'journey.jsonl'), c.records);
@@ -785,7 +797,7 @@ class _Gather {
       ...c.char,
       'region': regionName,
       'realm': c.realm,
-      'realmLabel': c.char['realm'],
+      'realmLabel': _realmLabel(c),
       'flavor': flavorName,
       'sessions': c.sessions,
       'flags': core['flags'],

@@ -54,6 +54,13 @@ describe("store", function()
 		assert.equal(1, MemoriesDB.schema)
 	end)
 
+	it("keeps the stored realm when the game gives an empty realm name", function()
+		wow.boot()
+		wow.player.realm = ""
+		wow.reload()
+		assert.equal("Brumamar", MemoriesCharDB.char.realm)
+	end)
+
 	it("records the client locale in the core character data", function()
 		wow.boot({ locale = "deDE" })
 		assert.equal("deDE", MemoriesCharDB.char.locale)
