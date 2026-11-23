@@ -1,10 +1,11 @@
 /// The start of the app: one copy only, and the hidden start.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/app_localizations.dart';
 import '../l10n/app_locale.dart';
+import '../l10n/delegates.dart';
 import '../platform/single_instance.dart';
 import '../platform/window_service.dart';
 import 'shell_controller.dart';
@@ -72,7 +73,7 @@ class AlreadyRunningApp extends StatelessWidget {
   Widget build(BuildContext context) => MaterialApp(
     onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
     locale: settingLocale(language),
-    localizationsDelegates: AppLocalizations.localizationsDelegates,
+    localizationsDelegates: appLocalizationsDelegates,
     supportedLocales: AppLocalizations.supportedLocales,
     localeListResolutionCallback: (locales, _) =>
         resolveAppLocale(locales ?? const []),

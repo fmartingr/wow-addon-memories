@@ -1,7 +1,7 @@
 /// The Watch and Start at login switches of the wizard and the settings.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../../l10n/app_localizations.dart';
 

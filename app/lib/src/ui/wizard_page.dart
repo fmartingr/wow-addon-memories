@@ -1,7 +1,7 @@
 /// The first-run wizard: the WoW folder, the backup folder and the switches.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:path/path.dart' as p;
 

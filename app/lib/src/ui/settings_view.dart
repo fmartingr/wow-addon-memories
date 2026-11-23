@@ -1,7 +1,7 @@
 /// The settings: the folders, the switches, the language and the version.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:memories_core/memories_core.dart';
 
 import '../../l10n/app_localizations.dart';

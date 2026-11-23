@@ -27,34 +27,35 @@ abstract interface class WindowService {
 }
 
 /// The window of the system, through `window_manager`.
-class SystemWindowService with WindowListener implements WindowService {
+class SystemWindowService implements WindowService {
   SystemWindowService();
 
   Future<void> Function()? _onClose;
-  Future<void>? _ready;
+  Window? _window;
+  ListenerId? _listenerId;
 
-  // The plugin finds the native window in ensureInitialized; before it, show
-  // does nothing on Windows and crashes on macOS. A copy that shows its
-  // window without init, such as AlreadyRunningApp, needs it too.
-  Future<void> _ensureInitialized() =>
-      _ready ??= windowManager.ensureInitialized();
+  Window _current() {
+    final window = _window ??= WindowManager.instance.getCurrent();
+    if (window == null) throw StateError('The app has no native window.');
+    return window;
+  }
 
   @override
   Future<void> init({required Future<void> Function() onCloseRequested}) async {
     _onClose = onCloseRequested;
     try {
-      await _ensureInitialized();
-      windowManager.addListener(this);
-      await windowManager.setPreventClose(true);
-      await windowManager.setMinimumSize(minimumWindowSize);
+      final window = _current();
+      window.minimumSize = minimumWindowSize.toNative();
+      _listenerId ??= window.addListener(_onWindowEvent);
     } on Object catch (e) {
       // Without the plugin the close button closes the app, as by default.
       debugPrint('window_manager: $e');
     }
   }
 
-  @override
-  void onWindowClose() {
+  void _onWindowEvent(WindowEvent event) {
+    if (event is! WindowCloseRequestedEvent) return;
+    event.request.cancel();
     final close = _onClose;
     if (close == null) return;
     unawaited(
@@ -64,22 +65,24 @@ class SystemWindowService with WindowListener implements WindowService {
 
   @override
   Future<void> show() async {
-    await _ensureInitialized();
-    await windowManager.show();
-    await windowManager.focus();
+    final window = _current();
+    window.show();
+    window.focus();
   }
 
   @override
   Future<void> hide() async {
-    await _ensureInitialized();
-    await windowManager.hide();
+    _current().hide();
   }
 
   @override
   Future<void> quit() async {
-    windowManager.removeListener(this);
     try {
-      await windowManager.destroy();
+      final window = _current();
+      final id = _listenerId;
+      if (id != null) window.removeListener(id);
+      _listenerId = null;
+      if (!window.close()) exit(0);
     } on Object {
       exit(0);
     }

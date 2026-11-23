@@ -3,7 +3,7 @@
 /// upload status and the registration. Settings has the folders and the switches.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:memories_core/memories_core.dart';
 import 'package:path/path.dart' as p;
 

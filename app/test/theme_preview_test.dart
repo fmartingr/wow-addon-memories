@@ -5,7 +5,7 @@ import 'dart:ui' as ui;
 
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart' show RepaintBoundary;
-import 'package:flutter/material.dart' show Scaffold;
+import 'package:material_ui/material_ui.dart' show Scaffold;
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart' show AssetImage, precacheImage;
 import 'package:flutter_test/flutter_test.dart';

@@ -2,7 +2,7 @@
 /// frame, the tags and the panel title. Each one matches a class of web/base.css or web/style.css.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 
 import 'ak_theme.dart' show akRule;

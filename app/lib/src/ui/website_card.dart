@@ -2,7 +2,7 @@
 /// characters to upload, each with its page on the website once uploaded.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:memories_core/memories_core.dart' hide UploadState;
 
 import '../../l10n/app_localizations.dart';

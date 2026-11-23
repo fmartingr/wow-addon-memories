@@ -4,7 +4,7 @@
 /// theme parity check (`make theme-check`) fails when one side changes alone.
 library;
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import 'tokens.dart';
 

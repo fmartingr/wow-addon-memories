@@ -1,10 +1,11 @@
 import 'dart:async';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 import '../l10n/app_localizations.dart';
 import 'gather/gather_controller.dart';
 import 'l10n/app_locale.dart';
+import 'l10n/delegates.dart';
 import 'platform/services.dart';
 import 'settings/settings_controller.dart';
 import 'shell/shell_controller.dart';
@@ -127,7 +128,7 @@ class _WowJourneyAppState extends State<WowJourneyApp>
         onGenerateTitle: (context) => AppLocalizations.of(context).appTitle,
         theme: _theme,
         locale: settingLocale(_settings.settings.language),
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        localizationsDelegates: appLocalizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
         localeListResolutionCallback: (locales, _) =>
             resolveAppLocale(locales ?? const []),
