@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0
+
+- **Realm name:** when the game gives an empty realm name, Memories keeps the name that it saved before. The
+  WoW Journey app uses the realm id as the label when the saved name is empty. The website accepts these
+  characters.
+- **WoW Journey app:** the app uses Flutter 3.50.1, `material_ui` and `window_manager` 0.7.
+
 ## 0.5.0
 
 - **Minimap button:** the button uses LibDBIcon. A drag moves it around the minimap. A button that you moved keeps
@@ -16,9 +23,6 @@
   name.
 - **WoW Journey tray:** on Windows, a right click on the tray icon opens its menu. The menu has Gather now, Open
   window and Quit.
-- **Realm name:** when the game gives an empty realm name, Memories keeps the name that it saved before. The
-  WoW Journey app uses the realm id as the label when the saved name is empty. The website accepts these
-  characters.
 
 ## 0.4.0 and earlier
 
